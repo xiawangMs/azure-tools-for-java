@@ -101,7 +101,6 @@ public class WebAppUtils {
         LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.JAVA_11_JAVA11);
         LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.TOMCAT_8_5_JAVA11);
         LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.TOMCAT_9_0_JAVA11);
-        LINUX_JAVA_RUNTIME_STACKS.add(new RuntimeStack(JBOSS_EAP, "7.2-java8"));
         LINUX_JAVA_RUNTIME_STACKS.add(new RuntimeStack(JBOSS_EAP, "7-java8"));
         LINUX_JAVA_RUNTIME_STACKS.add(new RuntimeStack(JBOSS_EAP, "7-java11"));
     }
