@@ -61,7 +61,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 
 public class WebAppUtils {
@@ -91,7 +90,20 @@ public class WebAppUtils {
             " %s, retrying immediately (%d/%d)";
     public static final String RETRY_FAIL_MESSAGE = "Failed to deploy after %d times of retry.";
     public static final String COPYING_RESOURCES = "Copying resources to staging folder...";
+    public static final String JBOSS_EAP = "JBOSSEAP";
 
+    private static List<RuntimeStack> LINUX_JAVA_RUNTIME_STACKS = new ArrayList<>();
+
+    static {
+        LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.TOMCAT_8_5_JRE8);
+        LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.TOMCAT_9_0_JRE8);
+        LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.JAVA_8_JRE8);
+        LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.JAVA_11_JAVA11);
+        LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.TOMCAT_8_5_JAVA11);
+        LINUX_JAVA_RUNTIME_STACKS.add(RuntimeStack.TOMCAT_9_0_JAVA11);
+        LINUX_JAVA_RUNTIME_STACKS.add(new RuntimeStack(JBOSS_EAP, "7-java8"));
+        LINUX_JAVA_RUNTIME_STACKS.add(new RuntimeStack(JBOSS_EAP, "7-java11"));
+    }
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -568,9 +580,8 @@ public class WebAppUtils {
      * Docker web apps are not included.
      */
     public static boolean isJavaWebApp(@NotNull WebApp webApp) {
-        return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
-         || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8")
-         || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java11")));
+        return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF) ||
+                (webApp.operatingSystem() == OperatingSystem.LINUX && StringUtils.containsAny(StringUtils.lowerCase(webApp.linuxFxVersion()), "jre", "java"));
     }
 
     /**
@@ -629,13 +640,7 @@ public class WebAppUtils {
     }
 
     public static List<RuntimeStack> getAllJavaLinuxRuntimeStacks() {
-        return Arrays.asList(new RuntimeStack[]{
-            RuntimeStack.TOMCAT_8_5_JRE8,
-            RuntimeStack.TOMCAT_9_0_JRE8,
-            RuntimeStack.JAVA_8_JRE8,
-            RuntimeStack.JAVA_11_JAVA11,
-            RuntimeStack.TOMCAT_8_5_JAVA11,
-            RuntimeStack.TOMCAT_9_0_JAVA11});
+        return LINUX_JAVA_RUNTIME_STACKS;
     }
 
     public static String getFileType(String fileName) {

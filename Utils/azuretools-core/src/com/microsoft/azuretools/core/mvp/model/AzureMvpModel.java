@@ -24,6 +24,8 @@ package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -34,6 +36,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
@@ -43,6 +46,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -54,6 +58,10 @@ public class AzureMvpModel {
 
     public static final String CANNOT_GET_RESOURCE_GROUP = "Cannot get Resource Group.";
     public static final String APPLICATION_LOG_NOT_ENABLED = "Application log is not enabled.";
+    private static final PricingTier PREMIUM_P1V3 = new PricingTier("PremiumV3", "P1v3");
+    private static final PricingTier PREMIUM_P2V3 = new PricingTier("PremiumV3", "P2v3");
+    private static final PricingTier PREMIUM_P3V3 = new PricingTier("PremiumV3", "P3v3");
+    private static final List<PricingTier> V3_PRICING_LIST = Arrays.asList(PREMIUM_P1V3, PREMIUM_P2V3, PREMIUM_P3V3);
 
     private AzureMvpModel() {
     }
@@ -268,8 +276,13 @@ public class AzureMvpModel {
                 ret.add(pt);
             }
         }
+        ret.addAll(V3_PRICING_LIST);
         Collections.sort(ret, getComparator(PricingTier::toString));
         return correctPricingTiers(ret);
+    }
+
+    public List<PricingTier> listPricingTierForLinuxRuntime(final RuntimeStack runtimeStack) throws IllegalAccessException {
+        return StringUtils.equalsIgnoreCase(runtimeStack.stack(), WebAppUtils.JBOSS_EAP) ? V3_PRICING_LIST : listPricingTier();
     }
 
     private static <T> Comparator<T> getComparator(Function<T, String> toStringMethod) {

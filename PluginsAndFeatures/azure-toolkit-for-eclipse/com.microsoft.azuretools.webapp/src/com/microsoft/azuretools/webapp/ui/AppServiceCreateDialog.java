@@ -72,9 +72,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -600,6 +603,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
         comboLinuxRuntime = new Combo(compositeRuntime, SWT.READ_ONLY);
         comboLinuxRuntime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        comboLinuxRuntime.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetDefaultSelected(SelectionEvent arg0) {
+                fillAppServicePlanPricingTiers();
+            }
+
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                fillAppServicePlanPricingTiers();
+            }
+        });
 
         lblJavaVersion = new Label(compositeRuntime, SWT.NONE);
         lblJavaVersion.setText(LBL_JAVA);
@@ -848,6 +862,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             comboWebContainer.setEnabled(!enabled);
         }
         fillAppServicePlans();
+        fillAppServicePlanPricingTiers();
     }
 
     private void radioAppServicePlanLogic() {
@@ -1117,14 +1132,22 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     protected void fillAppServicePlanPricingTiers() {
         try {
+            final PricingTier defaultValue = ObjectUtils.firstNonNull(getSelectedPricingTier(), DEFAULT_PRICINGTIER);
+
             comboAppServicePlanPricingTier.removeAll();
             binderAppServicePlanPricingTier = new ArrayList<>();
-            List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
+
+            final OperatingSystem os = getSelectedOS();
+            final RuntimeStack runtimeStack = getSelectedRuntimeStack();
+
+            final List<PricingTier> pricingTiers = os == OperatingSystem.LINUX
+                    ? AzureMvpModel.getInstance().listPricingTierForLinuxRuntime(runtimeStack) : AzureMvpModel.getInstance().listPricingTier();
+
             for (int i = 0; i < pricingTiers.size(); i++) {
                 PricingTier pricingTier = pricingTiers.get(i);
                 comboAppServicePlanPricingTier.add(pricingTier.toString());
                 binderAppServicePlanPricingTier.add(pricingTier);
-                if (pricingTier.equals(DEFAULT_PRICINGTIER)) {
+                if (pricingTier.equals(defaultValue)) {
                     comboAppServicePlanPricingTier.select(i);
                 }
             }
@@ -1348,28 +1371,44 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             index = comboAppServicePlanLocation.getSelectionIndex();
             model.setRegion(index < 0 ? null : binderAppServicePlanLocation.get(index).name());
 
-            index = comboAppServicePlanPricingTier.getSelectionIndex();
-            model.setPricing(index < 0 ? null : binderAppServicePlanPricingTier.get(index).toString());
+            model.setPricing(Optional.ofNullable(getSelectedPricingTier()).map(PricingTier::toString).orElse(APPSETTINGS_TOOLTIP));
         } else {
             index = comboAppServicePlan.getSelectionIndex();
             model.setAppServicePlanId(index < 0 ? null : binderAppServicePlan.get(index).id());
         }
 
         // Runtime
-        chooseWin = btnOSGroupWin.getSelection();
-        model.setOS(chooseWin ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
-        if (chooseWin) {
+        final OperatingSystem os = getSelectedOS();
+        model.setOS(getSelectedOS());
+        if (os == OperatingSystem.WINDOWS) {
             index = cbJavaVersion.getSelectionIndex();
             model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
 
             index = comboWebContainer.getSelectionIndex();
             model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
         } else {
-            String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
-            String[] part = linuxRuntime.split(" ");
-            model.setStack(part[0]);
-            model.setVersion(part[1]);
+            final RuntimeStack runtimeStack = getSelectedRuntimeStack();
+            model.setStack(runtimeStack.stack());
+            model.setVersion(runtimeStack.version());
         }
+    }
+
+    private PricingTier getSelectedPricingTier() {
+        final int index = comboAppServicePlanPricingTier.getSelectionIndex();
+        return index < 0 ? null : binderAppServicePlanPricingTier.get(index);
+    }
+
+    private OperatingSystem getSelectedOS() {
+        return btnOSGroupWin.getSelection() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
+    }
+
+    private RuntimeStack getSelectedRuntimeStack() {
+        final String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
+        final String[] runtime = linuxRuntime.split(" ");
+        return RuntimeStack.getAll().stream()
+                .filter(stack -> StringUtils.equalsIgnoreCase(runtime[0], stack.stack()) && StringUtils.equalsIgnoreCase(runtime[1], stack.version()))
+                .findFirst()
+                .orElseGet(() -> new RuntimeStack(runtime[0], runtime[1]));
     }
 
 }
