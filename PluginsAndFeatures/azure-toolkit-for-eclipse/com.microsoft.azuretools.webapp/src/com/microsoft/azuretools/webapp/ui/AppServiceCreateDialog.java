@@ -43,6 +43,7 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
@@ -418,6 +419,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         });
         comboAppServicePlan.setBounds(0, 0, 26, 22);
         dec_comboAppServicePlan = decorateContorolAndRegister(comboAppServicePlan);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
 
         lblAppServiceUseExictingLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExictingLocation.setEnabled(true);
@@ -466,6 +468,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         dec_textAppSevicePlanName = decorateContorolAndRegister(textAppSevicePlanName);
         textAppSevicePlanName.setText(APP_SERVICE_PLAN_PREFIX + date);
         textAppSevicePlanName.setEnabled(false);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textAppSevicePlanName, "New app service plan");
 
         lblAppServiceCreateNewLocation = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -484,6 +487,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanLocation.setEnabled(false);
         dec_comboAppServicePlanLocation = decorateContorolAndRegister(comboAppServicePlanLocation);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanLocation, "App service plan location");
 
         lblAppServiceCreateNewPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -495,6 +499,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanPricingTier = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlanPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanPricingTier.setEnabled(false);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanPricingTier, "App service plan pricing tier");
 
         new Label(compositeAppServicePlan, SWT.NONE);
         linkAppServicePricing = new Link(compositeAppServicePlan, SWT.NONE);
@@ -540,6 +545,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboResourceGroup.setBounds(0, 0, 26, 22);
         dec_comboSelectResGr = decorateContorolAndRegister(comboResourceGroup);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboResourceGroup, "Existing resource group");
 
         btnResourceGroupCreateNew = new Button(compositeResourceGroup, SWT.RADIO);
         btnResourceGroupCreateNew.addSelectionListener(new SelectionAdapter() {
@@ -563,6 +569,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         textResourceGroupName.setText(RESOURCE_GROUP_PREFIX + date);
         textResourceGroupName.setEnabled(false);
         dec_textNewResGrName = decorateContorolAndRegister(textResourceGroupName);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textResourceGroupName, "New resource group");
     }
 
     private void createRuntimeGroup(Composite composite) {
@@ -682,6 +689,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
             }
         });
+        AccessibilityUtils.addAccessibilityNameForUIComponent(tblAppSettings, "App settings");
 
         appSettingsEditor = new TableEditor(tblAppSettings);
         appSettingsEditor.horizontalAlignment = SWT.LEFT;
