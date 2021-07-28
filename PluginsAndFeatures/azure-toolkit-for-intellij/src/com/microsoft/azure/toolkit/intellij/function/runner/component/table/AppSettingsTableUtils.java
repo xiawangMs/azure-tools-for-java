@@ -38,7 +38,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class AppSettingsTableUtils {
 
     private static final String DEFAULT_LOCAL_SETTINGS_JSON =
-            "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"java\"}}";
+            "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"python\"}}";
     private static final String LOCAL_SETTINGS_VALUES = "Values";
     private static final String LOCAL_SETTINGS_JSON = "local.settings.json";
 
