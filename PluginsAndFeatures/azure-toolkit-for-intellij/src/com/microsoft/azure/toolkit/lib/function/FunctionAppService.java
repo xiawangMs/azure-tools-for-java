@@ -58,9 +58,13 @@ public class FunctionAppService {
             "for the Function App due to error %s. Please use the Azure Portal to manually create and configure the " +
             "Application Insights if needed.";
     private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
-    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
+    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "python";
     private static final String FUNCTIONS_EXTENSION_VERSION_NAME = "FUNCTIONS_EXTENSION_VERSION";
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
+    private static final String ENABLE_ORYX_BUILD_NAME = "ENABLE_ORYX_BUILD";
+    private static final String ENABLE_ORYX_BUILD_VALUE = "true";
+    private static final String SCM_DO_BUILD_DURING_DEPLOYMENT_NAME = "SCM_DO_BUILD_DURING_DEPLOYMENT";
+    private static final String SCM_DO_BUILD_DURING_DEPLOYMENT_VALUE = "1";
     private static final String DEPLOY_START = "Starting deployment...";
     private static final String DEPLOY_FINISH = "Deployment done, you may access your resource through %s";
     private static final String RUNNING = "Running";
@@ -110,6 +114,8 @@ public class FunctionAppService {
                 FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
                 FUNCTIONS_EXTENSION_VERSION_VALUE, null);
+        setDefaultAppSetting(settings, ENABLE_ORYX_BUILD_NAME, "Warning", ENABLE_ORYX_BUILD_VALUE, null);
+        setDefaultAppSetting(settings, SCM_DO_BUILD_DURING_DEPLOYMENT_NAME, "Warning", SCM_DO_BUILD_DURING_DEPLOYMENT_VALUE, null);
         return settings;
     }
 
@@ -213,11 +219,11 @@ public class FunctionAppService {
 
     private FunctionDeployType getDeployType(final IFunctionApp functionApp) {
         if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
-            return FunctionDeployType.RUN_FROM_ZIP;
+            return FunctionDeployType.ZIP;
         }
         final PricingTier pricingTier = functionApp.plan().entity().getPricingTier();
         return StringUtils.equalsAnyIgnoreCase(pricingTier.getTier(), "Dynamic", "ElasticPremium") ?
-                FunctionDeployType.RUN_FROM_BLOB : FunctionDeployType.RUN_FROM_ZIP;
+                FunctionDeployType.ZIP : FunctionDeployType.ZIP;
     }
 
     private File packageStagingDirectory(final File stagingFolder) throws IOException {
