@@ -10,7 +10,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.packaging.artifacts.Artifact;
+//import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTable;
@@ -21,16 +21,14 @@ import com.microsoft.intellij.ui.util.UIUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.project.MavenProject;
+//import org.jetbrains.idea.maven.project.MavenProject;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -42,6 +40,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private TextFieldWithBrowseButton txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
+    private JList<String> listFunctionNames;
     private AppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
@@ -71,6 +70,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
             // swallow as leave blank
         }
         fillModules();
+        fillFunctions();
     }
 
     @NotNull
@@ -114,6 +114,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         // save app settings storage key instead of real value
         configuration.setAppSettings(Collections.EMPTY_MAP);
         configuration.setAppSettingsKey(appSettingsKey);
+        configuration.setFunctionsToRun(listFunctionNames.getSelectedValuesList());
     }
 
     @NotNull
@@ -122,11 +123,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         return pnlMain;
     }
 
-    @NotNull
-    @Override
-    protected JComboBox<Artifact> getCbArtifact() {
-        return new JComboBox<Artifact>();
-    }
+//    @NotNull
+//    @Override
+//    protected JComboBox<Artifact> getCbArtifact() {
+//        return new JComboBox<Artifact>();
+//    }
 
     @NotNull
     @Override
@@ -134,11 +135,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         return new JLabel();
     }
 
-    @NotNull
-    @Override
-    protected JComboBox<MavenProject> getCbMavenProject() {
-        return new JComboBox<MavenProject>();
-    }
+//    @NotNull
+//    @Override
+//    protected JComboBox<MavenProject> getCbMavenProject() {
+//        return new JComboBox<MavenProject>();
+//    }
 
     @NotNull
     @Override
@@ -155,5 +156,21 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     private void fillModules() {
         Arrays.stream(FunctionUtils.listFunctionModules(project)).forEach(module -> cbFunctionModule.addItem(module));
+    }
+
+    private void fillFunctions() {
+        DefaultListModel<String> functionNames = new DefaultListModel<>();
+        FunctionUtils.findFunctionsByAnnotation(project).forEach(functionNames::addElement);
+        listFunctionNames.setModel(functionNames);
+        List<String> functionsToRun = this.functionRunConfiguration.getFunctionsToRun();
+        if(functionsToRun != null) {
+            int[] indices = new int[functionsToRun.size()];
+            int i = 0;
+            for(String funcName : functionsToRun) {
+                indices[i] = functionNames.indexOf(funcName);
+                i++;
+            }
+            listFunctionNames.setSelectedIndices(indices);
+        }
     }
 }
