@@ -5,25 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.localrun;
 
-import com.intellij.packaging.artifacts.Artifact;
+//import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.azure.toolkit.intellij.function.runner.IntelliJFunctionContext;
 
 public class FunctionRunModel extends IntelliJFunctionContext {
 
-    private Artifact artifact;
     private String debugOptions;
     private String stagingFolder;
     private String funcPath;
     private String hostJsonPath;
     private String localSettingsJsonPath;
-
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
-    public void setArtifact(Artifact artifact) {
-        this.artifact = artifact;
-    }
 
     public String getDebugOptions() {
         return debugOptions;
