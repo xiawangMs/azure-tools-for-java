@@ -5,33 +5,27 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
-import com.intellij.ui.SimpleListCellRenderer;
-import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfiguration;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.util.BeforeRunTaskUtils;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
-import com.microsoft.intellij.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import javax.swing.*;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+
+//import com.intellij.packaging.artifacts.Artifact;
+//import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
+//import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfiguration;
+//import com.microsoft.intellij.util.BeforeRunTaskUtils;
+//import com.microsoft.intellij.util.MavenRunTaskUtil;
+//import com.microsoft.intellij.util.MavenUtils;
+//import org.jetbrains.idea.maven.project.MavenProject;
+//import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
 
@@ -43,8 +37,8 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     private boolean isCbArtifactInited;
     private boolean isArtifact;
     private boolean telemetrySent;
-    private Artifact lastSelectedArtifact;
-    protected AzureArtifact lastSelectedAzureArtifact;
+//    private Artifact lastSelectedArtifact;
+//    protected AzureArtifact lastSelectedAzureArtifact;
     protected SecureStore secureStore;
 
     public AzureSettingPanel(@NotNull Project project) {
@@ -63,28 +57,29 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         // legacy initialize, will be removed later
         if (oldMode) {
             if (configuration.isFirstTimeCreated()) {
-                if (FunctionUtils.isFunctionProject(configuration.getProject())) {
-                    // Todo: Add before run build job
-                } else if (MavenUtils.isMavenProject(project)) {
-                    MavenRunTaskUtil.addMavenPackageBeforeRunTask(configuration);
-                } else {
-                    final List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-                    if (artifacts.size() > 0) {
-                        BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, configuration, artifacts.get(0));
-                    }
-                }
+//                if (FunctionUtils.isFunctionProject(configuration.getProject())) {
+//                    // Todo: Add before run build job
+//                } else if (MavenUtils.isMavenProject(project)) {
+//                    MavenRunTaskUtil.addMavenPackageBeforeRunTask(configuration);
+//                } else {
+//                    final List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+//                    if (artifacts.size() > 0) {
+//                        BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, configuration, artifacts.get(0));
+//                    }
+//                }
             }
             configuration.setFirstTimeCreated(false);
-            if (!isMavenProject()) {
-                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-                setupArtifactCombo(artifacts, configuration.getTargetPath());
-            } else {
-                List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-                setupMavenProjectCombo(mavenProjects, configuration.getTargetPath());
-            }
-        } else {
-            setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
+//            if (!isMavenProject()) {
+//                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+//                setupArtifactCombo(artifacts, configuration.getTargetPath());
+//            } else {
+//                List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+//                setupMavenProjectCombo(mavenProjects, configuration.getTargetPath());
+//            }
         }
+//        else {
+//            setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
+//        }
 
         resetFromConfig(configuration);
         sendTelemetry(configuration.getSubscriptionId(), configuration.getTargetName());
@@ -103,15 +98,15 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         }
         try {
             return this.secureStore.loadPassword(serviceName, userName);
-        } catch (java.lang.IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             // Return empty string if no such password
             return StringUtils.EMPTY;
         }
     }
 
-    protected boolean isMavenProject() {
-        return MavenUtils.isMavenProject(project);
-    }
+//    protected boolean isMavenProject() {
+//        return MavenUtils.isMavenProject(project);
+//    }
 
     protected String getProjectBasePath() {
         return project.getBasePath();
@@ -119,64 +114,66 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
 
     protected String getTargetPath() {
         String targetPath = "";
-        if (isArtifact && lastSelectedArtifact != null) {
-            targetPath = lastSelectedArtifact.getOutputFilePath();
-        } else {
-            MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
-            if (mavenProject != null) {
-                targetPath = MavenRunTaskUtil.getTargetPath(mavenProject);
-            }
-        }
+//        if (isArtifact && lastSelectedArtifact != null) {
+//            targetPath = lastSelectedArtifact.getOutputFilePath();
+//        } else {
+//            MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
+//            if (mavenProject != null) {
+//                targetPath = MavenRunTaskUtil.getTargetPath(mavenProject);
+//            }
+//        }
+        //TODO: This is not good
         return targetPath;
     }
 
     protected String getTargetName() {
         String targetName = "";
-        if (isArtifact && lastSelectedArtifact != null) {
-            String targetPath = lastSelectedArtifact.getOutputFilePath();
-            targetName = Paths.get(targetPath).getFileName().toString();
-        } else {
-            MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
-            if (mavenProject != null) {
-                targetName = MavenRunTaskUtil.getTargetName(mavenProject);
-            }
-        }
+//        if (isArtifact && lastSelectedArtifact != null) {
+//            String targetPath = lastSelectedArtifact.getOutputFilePath();
+//            targetName = Paths.get(targetPath).getFileName().toString();
+//        } else {
+//            MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
+//            if (mavenProject != null) {
+//                targetName = MavenRunTaskUtil.getTargetName(mavenProject);
+//            }
+//        }
+        //TODO: This is not good
         return targetName;
     }
 
-    protected void artifactActionPerformed(Artifact selectArtifact) {
-        if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
-            JPanel pnlRoot = getMainPanel();
-            if (lastSelectedArtifact != null && isCbArtifactInited) {
-                BuildArtifactsBeforeRunTaskProvider
-                    .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
-            }
-            if (selectArtifact != null && isCbArtifactInited) {
-                BuildArtifactsBeforeRunTaskProvider
-                    .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
-            }
-            lastSelectedArtifact = selectArtifact;
-        }
-    }
+//    protected void artifactActionPerformed(Artifact selectArtifact) {
+//        if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
+//            JPanel pnlRoot = getMainPanel();
+//            if (lastSelectedArtifact != null && isCbArtifactInited) {
+//                BuildArtifactsBeforeRunTaskProvider
+//                    .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
+//            }
+//            if (selectArtifact != null && isCbArtifactInited) {
+//                BuildArtifactsBeforeRunTaskProvider
+//                    .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
+//            }
+//            lastSelectedArtifact = selectArtifact;
+//        }
+//    }
 
-    protected void syncBeforeRunTasks(AzureArtifact azureArtifact, @NotNull final RunConfiguration configuration) {
-        if (!AzureArtifactManager.getInstance(configuration.getProject()).equalsAzureArtifact(lastSelectedAzureArtifact, azureArtifact)) {
-            final JPanel pnlRoot = getMainPanel();
-            final DataContext context = DataManager.getInstance().getDataContext(pnlRoot);
-            final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);
-            if (editor == null) {
-                return;
-            }
-            if (Objects.nonNull(lastSelectedAzureArtifact)) {
-                BeforeRunTaskUtils.removeBeforeRunTask(editor, lastSelectedAzureArtifact);
-            }
-
-            lastSelectedAzureArtifact = azureArtifact;
-            if (Objects.nonNull(azureArtifact)) {
-                BeforeRunTaskUtils.addBeforeRunTask(editor, azureArtifact, configuration);
-            }
-        }
-    }
+//    protected void syncBeforeRunTasks(AzureArtifact azureArtifact, @NotNull final RunConfiguration configuration) {
+//        if (!AzureArtifactManager.getInstance(configuration.getProject()).equalsAzureArtifact(lastSelectedAzureArtifact, azureArtifact)) {
+//            final JPanel pnlRoot = getMainPanel();
+//            final DataContext context = DataManager.getInstance().getDataContext(pnlRoot);
+//            final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);
+//            if (editor == null) {
+//                return;
+//            }
+//            if (Objects.nonNull(lastSelectedAzureArtifact)) {
+//                BeforeRunTaskUtils.removeBeforeRunTask(editor, lastSelectedAzureArtifact);
+//            }
+//
+//            lastSelectedAzureArtifact = azureArtifact;
+//            if (Objects.nonNull(azureArtifact)) {
+//                BeforeRunTaskUtils.addBeforeRunTask(editor, azureArtifact, configuration);
+//            }
+//        }
+//    }
 
     @NotNull
     public abstract String getPanelName();
@@ -190,14 +187,14 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     @NotNull
     public abstract JPanel getMainPanel();
 
-    @NotNull
-    protected abstract JComboBox<Artifact> getCbArtifact();
+//    @NotNull
+//    protected abstract JComboBox<Artifact> getCbArtifact();
 
     @NotNull
     protected abstract JLabel getLblArtifact();
 
-    @NotNull
-    protected abstract JComboBox<MavenProject> getCbMavenProject();
+//    @NotNull
+//    protected abstract JComboBox<MavenProject> getCbMavenProject();
 
     @NotNull
     protected JLabel getLblMavenProject() {
@@ -209,87 +206,87 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         return EMPTY_LABEL;
     }
 
-    @NotNull
-    protected JComboBox<AzureArtifact> getCbAzureArtifact() {
-        return EMPTY_COMBO_BOX;
-    }
+//    @NotNull
+//    protected JComboBox<AzureArtifact> getCbAzureArtifact() {
+//        return EMPTY_COMBO_BOX;
+//    }
 
-    protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
-        if (isCbArtifactInited || getCbAzureArtifact() == EMPTY_COMBO_BOX) {
-            return;
-        }
-        List<AzureArtifact> azureArtifacts =
-                configuration instanceof SpringCloudDeploymentConfiguration ?
-                AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
-                AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
-        getCbAzureArtifact().removeAllItems();
-        if (!azureArtifacts.isEmpty()) {
-            for (AzureArtifact azureArtifact : azureArtifacts) {
-                getCbAzureArtifact().addItem(azureArtifact);
-                if (StringUtils.equals(AzureArtifactManager.getInstance(project).getArtifactIdentifier(azureArtifact)
-                        , artifactIdentifier)) {
-                    getCbAzureArtifact().setSelectedItem(azureArtifact);
-                }
-            }
-            final AzureArtifact defaultArtifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
-            if (defaultArtifact != null) {
-                syncBeforeRunTasks(defaultArtifact, configuration);
-            }
-        }
+//    protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
+//        if (isCbArtifactInited || getCbAzureArtifact() == EMPTY_COMBO_BOX) {
+//            return;
+//        }
+//        List<AzureArtifact> azureArtifacts =
+//                configuration instanceof SpringCloudDeploymentConfiguration ?
+//                AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
+//                AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+//        getCbAzureArtifact().removeAllItems();
+//        if (!azureArtifacts.isEmpty()) {
+//            for (AzureArtifact azureArtifact : azureArtifacts) {
+//                getCbAzureArtifact().addItem(azureArtifact);
+//                if (StringUtils.equals(AzureArtifactManager.getInstance(project).getArtifactIdentifier(azureArtifact)
+//                        , artifactIdentifier)) {
+//                    getCbAzureArtifact().setSelectedItem(azureArtifact);
+//                }
+//            }
+//            final AzureArtifact defaultArtifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
+//            if (defaultArtifact != null) {
+//                syncBeforeRunTasks(defaultArtifact, configuration);
+//            }
+//        }
+//
+//        getLblAzureArtifact().setVisible(true);
+//        getCbAzureArtifact().setVisible(true);
+//
+//        getCbAzureArtifact().setRenderer(new SimpleListCellRenderer<AzureArtifact>() {
+//            @Override
+//            public void customize(JList list,
+//                                  AzureArtifact artifact,
+//                                  int index,
+//                                  boolean isSelected,
+//                                  boolean cellHasFocus) {
+//                if (Objects.nonNull(artifact)) {
+//                    setIcon(artifact.getIcon());
+//                    setText(artifact.getName());
+//                }
+//            }
+//        });
+//
+//        isCbArtifactInited = true;
+//    }
 
-        getLblAzureArtifact().setVisible(true);
-        getCbAzureArtifact().setVisible(true);
-
-        getCbAzureArtifact().setRenderer(new SimpleListCellRenderer<AzureArtifact>() {
-            @Override
-            public void customize(JList list,
-                                  AzureArtifact artifact,
-                                  int index,
-                                  boolean isSelected,
-                                  boolean cellHasFocus) {
-                if (Objects.nonNull(artifact)) {
-                    setIcon(artifact.getIcon());
-                    setText(artifact.getName());
-                }
-            }
-        });
-
-        isCbArtifactInited = true;
-    }
-
-    private void setupArtifactCombo(List<Artifact> artifacts,
-                                    String targetPath) {
-        isCbArtifactInited = false;
-        JComboBox<Artifact> cbArtifact = getCbArtifact();
-        cbArtifact.removeAllItems();
-        if (null != artifacts) {
-            for (Artifact artifact : artifacts) {
-                cbArtifact.addItem(artifact);
-                if (Comparing.equal(artifact.getOutputFilePath(), targetPath)) {
-                    cbArtifact.setSelectedItem(artifact);
-                }
-            }
-        }
-        cbArtifact.setVisible(true);
-        getLblArtifact().setVisible(true);
-        isArtifact = true;
-        isCbArtifactInited = true;
-    }
-
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
-        JComboBox<MavenProject> cbMavenProject = getCbMavenProject();
-        cbMavenProject.removeAllItems();
-        if (null != mvnprjs) {
-            for (MavenProject prj : mvnprjs) {
-                cbMavenProject.addItem(prj);
-                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
-                    cbMavenProject.setSelectedItem(prj);
-                }
-            }
-        }
-        cbMavenProject.setVisible(true);
-        getLblMavenProject().setVisible(true);
-    }
+//    private void setupArtifactCombo(List<Artifact> artifacts,
+//                                    String targetPath) {
+//        isCbArtifactInited = false;
+//        JComboBox<Artifact> cbArtifact = getCbArtifact();
+//        cbArtifact.removeAllItems();
+//        if (null != artifacts) {
+//            for (Artifact artifact : artifacts) {
+//                cbArtifact.addItem(artifact);
+//                if (Comparing.equal(artifact.getOutputFilePath(), targetPath)) {
+//                    cbArtifact.setSelectedItem(artifact);
+//                }
+//            }
+//        }
+//        cbArtifact.setVisible(true);
+//        getLblArtifact().setVisible(true);
+//        isArtifact = true;
+//        isCbArtifactInited = true;
+//    }
+//
+//    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
+//        JComboBox<MavenProject> cbMavenProject = getCbMavenProject();
+//        cbMavenProject.removeAllItems();
+//        if (null != mvnprjs) {
+//            for (MavenProject prj : mvnprjs) {
+//                cbMavenProject.addItem(prj);
+//                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
+//                    cbMavenProject.setSelectedItem(prj);
+//                }
+//            }
+//        }
+//        cbMavenProject.setVisible(true);
+//        getLblMavenProject().setVisible(true);
+//    }
 
     private void sendTelemetry(String subId, String targetName) {
         if (telemetrySent) {
@@ -299,7 +296,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             Map<String, String> map = new HashMap<>();
             map.put("SubscriptionId", subId != null ? subId : "");
             if (targetName != null) {
-                map.put("FileType", MavenRunTaskUtil.getFileType(targetName));
+                map.put("FileType", ""); //TODO: Fix this too //MavenRunTaskUtil.getFileType(targetName));
             }
             AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
                 getPanelName(),

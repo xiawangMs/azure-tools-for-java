@@ -21,7 +21,6 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.startup.StartupManager;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.ExceptionUtil;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
@@ -34,6 +33,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
+import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -41,10 +41,9 @@ import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.configuration.AzureConfigurations;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
@@ -53,36 +52,24 @@ import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.rest.LogLevel;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Document;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import javax.swing.event.EventListenerList;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -98,15 +85,15 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
 
-    public static boolean IS_WINDOWS = SystemInfo.isWindows;
-
+    public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
     public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());
 
     public static String pluginFolder = PluginUtil.getPluginRootDirectory();
 
     private static final EventListenerList DEPLOYMENT_EVENT_LISTENERS = new EventListenerList();
-
     public static List<DeploymentEventListener> depEveList = new ArrayList<DeploymentEventListener>();
+
+    private String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
 
     private AzureSettings azureSettings;
 
@@ -116,47 +103,11 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        ProxyUtils.initProxy();
-
         this.azureSettings = AzureSettings.getSafeInstance(project);
-
-        if (isDataFileValid()) {
-            // read legacy settings from old data.xml
-            try {
-                final String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
-                final boolean allowTelemetry = Boolean.parseBoolean(DataOperations.getProperty(dataFile, AzureBundle.message("prefVal")));
-                final String installationId = DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
-                final String pluginVersion = DataOperations.getProperty(dataFile, AzureBundle.message("pluginVersion"));
-
-                // check non-empty for valid data.xml
-                if (StringUtils.isNoneBlank(installationId, pluginVersion)) {
-                    final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-                    if (config.allowTelemetry()) {
-                        config.allowTelemetry(allowTelemetry);
-                    }
-                    if (StringUtils.isBlank(config.pluginVersion())) {
-                        config.pluginVersion(pluginVersion);
-                    }
-                    if (StringUtils.isBlank(config.installationId()) && InstallationIdUtils.isValidHashMac(installationId)) {
-                        config.installationId(installationId);
-                    }
-                    AzureConfigurations.getInstance().loadState(config);
-                }
-                FileUtils.deleteQuietly(new File(dataFile));
-            } catch (Exception ex) {
-                final Map<String, String> props = new HashMap<>();
-                props.put("error", ex.getMessage());
-                EventUtil.logEvent(EventType.error, SYSTEM, TelemetryConstants.PLUGIN_TRANSFER_SETTINGS, props, null);
-            }
-        }
-        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-        this.installationID = config.installationId();
-        if (StringUtils.isBlank(this.installationID)) {
-            this.installationID = StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get()));
-        }
-
+        String hasMac = InstallationIdUtils.getHashMac();
+        this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : InstallationIdUtils.hash(PermanentInstallationID.get());
         final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION,
-            config.allowTelemetry() ? installationID : StringUtils.EMPTY);
+                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID")));
         Azure.az().config().setLogLevel(LogLevel.NONE.name());
         Azure.az().config().setUserAgent(userAgent);
         CommonSettings.setUserAgent(userAgent);
@@ -167,7 +118,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
-            firstInstallationByVersion = isFirstInstallationByVersion();
+            firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
             try {
                 //this code is for copying componentset.xml in plugins folder
                 copyPluginComponents();
@@ -205,14 +156,51 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             });
     }
 
-    private synchronized void initializeTelemetry() {
-        final String version = AzureConfigurations.getInstance().getState().pluginVersion();
-        updatePluginVersionAndMachineId();
+    private synchronized void initializeTelemetry() throws Exception {
+        boolean install = false;
+        boolean upgrade = false;
+
+        if (isDataFileValid()) {
+            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
+            if (version == null || version.isEmpty()) {
+                upgrade = true;
+                // proceed with setValues method as no version specified
+                setValues(dataFile);
+            } else {
+                String curVersion = PLUGIN_VERSION;
+                // compare version
+                if (curVersion.equalsIgnoreCase(version)) {
+                    // Case of normal IntelliJ restart
+                    // check preference-value & installation-id exists or not else copy values
+                    String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
+                    String instID = DataOperations.getProperty(dataFile, message("instID"));
+                    if (prefValue == null || prefValue.isEmpty()) {
+                        setValues(dataFile);
+                    } else if (StringUtils.isEmpty(instID) || !InstallationIdUtils.isValidHashMac(instID)) {
+                        upgrade = true;
+                        Document doc = ParserXMLUtility.parseXMLFile(dataFile);
+
+                        DataOperations.updatePropertyValue(doc, message("instID"), installationID);
+                        ParserXMLUtility.saveXMLFile(dataFile, doc);
+                    }
+                } else {
+                    upgrade = true;
+                    // proceed with setValues method. Case of new plugin installation
+                    setValues(dataFile);
+                }
+            }
+        } else {
+            // copy file and proceed with setValues method
+            install = true;
+            copyResourceFile(message("dataFileName"), dataFile);
+            setValues(dataFile);
+        }
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-        if (StringUtils.isBlank(version)) {
+        if (install) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
             EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
-        } else if (StringUtils.isNotBlank(version) && !PLUGIN_VERSION.equalsIgnoreCase(version)) {
+        }
+        if (upgrade) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
             EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
         }
@@ -238,7 +226,6 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     }
 
     private boolean isDataFileValid() {
-        String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
         final File file = new File(dataFile);
         if (!file.exists()) {
             return false;
@@ -284,12 +271,18 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         }
     }
 
-    private void updatePluginVersionAndMachineId() {
+    private void setValues(final String dataFile) throws Exception {
         try {
-            final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-            config.pluginVersion(PLUGIN_VERSION);
-            config.installationId(installationID);
-            AzureConfigurations.getInstance().loadState(config);
+            final Document doc = ParserXMLUtility.parseXMLFile(dataFile);
+            String recordedVersion = DataOperations.getProperty(dataFile, message("pluginVersion"));
+            if (Utils.whetherUpdateTelemetryPref(recordedVersion)) {
+                DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf("true"));
+            }
+
+            DataOperations.updatePropertyValue(doc, message("pluginVersion"), PLUGIN_VERSION);
+            DataOperations.updatePropertyValue(doc, message("instID"), installationID);
+
+            ParserXMLUtility.saveXMLFile(dataFile, doc);
         } catch (Exception ex) {
             LOG.error(message("error"), ex);
         }
@@ -444,9 +437,14 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion;
         }
-        String version = AzureConfigurations.getInstance().getState().pluginVersion();
-        firstInstallationByVersion = StringUtils.equalsIgnoreCase(version, PLUGIN_VERSION);
-        return firstInstallationByVersion;
+
+        if (new File(dataFile).exists()) {
+            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
+            if (!StringHelper.isNullOrWhiteSpace(version) && version.equals(PLUGIN_VERSION)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static class ExtractHdiJobViewException extends IOException {

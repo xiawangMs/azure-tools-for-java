@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.function.runner;
 
 import com.intellij.execution.Location;
-import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.LazyRunConfigurationProducer;
@@ -14,18 +13,17 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
-import com.intellij.psi.PsiMethod;
-import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
-import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.function.runner.localrun.FunctionRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.function.runner.localrun.FunctionRunConfigurationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Iterator;
+
+//import com.intellij.psi.PsiMethod;
+//import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployConfiguration;
+//import com.microsoft.intellij.actions.RunConfigurationUtils;
 
 public class FunctionRunConfigurationProducer extends LazyRunConfigurationProducer<AzureRunConfigurationBase> {
     @NotNull
@@ -39,23 +37,23 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
 
     @Override
     protected boolean setupConfigurationFromContext(AzureRunConfigurationBase runConfigurationBase, ConfigurationContext context, Ref ref) {
-        if (!(runConfigurationBase instanceof FunctionRunConfiguration || runConfigurationBase instanceof FunctionDeployConfiguration)) {
+        if (!(runConfigurationBase instanceof FunctionRunConfiguration)) {
             return false;
         }
         final Location contextLocation = context.getLocation();
         assert contextLocation != null;
-        Location<PsiMethod> methodLocation = getAzureFunctionMethods(contextLocation);
-        if (methodLocation == null) {
-            return false;
-        }
+//        Location<PsiMethod> methodLocation = getAzureFunctionMethods(contextLocation);
+//        if (methodLocation == null) {
+//            return false;
+//        }
         AzureRunConfigurationBase configuration = runConfigurationBase;
-        if (configuration instanceof FunctionDeployConfiguration) {
-            final RunManagerEx manager = RunManagerEx.getInstanceEx(context.getProject());
-            // since deploy configuration doesn't support, we need to create a FunctionRunConfiguration
-            final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(
-                    context.getModule(), manager, getConfigurationFactory());
-            configuration = (AzureRunConfigurationBase) settings.getConfiguration();
-        }
+//        if (configuration instanceof FunctionDeployConfiguration) {
+//            final RunManagerEx manager = RunManagerEx.getInstanceEx(context.getProject());
+//            // since deploy configuration doesn't support, we need to create a FunctionRunConfiguration
+//            final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(
+//                    context.getModule(), manager, getConfigurationFactory());
+//            configuration = (AzureRunConfigurationBase) settings.getConfiguration();
+//        }
 
         FunctionRunConfiguration runConfiguration = (FunctionRunConfiguration) configuration;
         final RunnerAndConfigurationSettings template = context.getRunManager().getConfigurationTemplate(getConfigurationFactory());
@@ -83,26 +81,12 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
         if (!(appConfiguration instanceof FunctionRunConfiguration)) {
             return false;
         }
-        Location<PsiMethod> methodLocation = getAzureFunctionMethods(context.getLocation());
-        if (methodLocation == null) {
-            return false;
-        }
 
         final Module configurationModule = ((FunctionRunConfiguration) appConfiguration).getModule();
         if (Comparing.equal(context.getModule(), configurationModule)) {
             return true;
         }
         return false;
-    }
-
-    private static Location<PsiMethod> getAzureFunctionMethods(final Location<?> location) {
-        for (Iterator<Location<PsiMethod>> iterator = location.getAncestors(PsiMethod.class, false); iterator.hasNext();) {
-            final Location<PsiMethod> methodLocation = iterator.next();
-            if (FunctionUtils.isFunctionClassAnnotated(methodLocation.getPsiElement())) {
-                return methodLocation;
-            }
-        }
-        return null;
     }
 
     private Module findModule(FunctionRunConfiguration configuration, Module contextModule) {
