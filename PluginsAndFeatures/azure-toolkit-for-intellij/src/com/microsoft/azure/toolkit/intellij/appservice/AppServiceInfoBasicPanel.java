@@ -8,9 +8,6 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.RuntimeComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
@@ -20,20 +17,16 @@ import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.SneakyThrows;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
-import static com.microsoft.azuretools.utils.WebAppUtils.isSupportedArtifactType;
 
 public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
@@ -47,11 +40,8 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     private AppNameInput textName;
     private RuntimeComboBox selectorRuntime;
-    private AzureArtifactComboBox selectorApplication;
     private TitledSeparator deploymentTitle;
-    private JLabel lblArtifact;
-    private JLabel lblName;
-    private JLabel lblPlatform;
+    private JLabel deploymentLabel;
 
     private Subscription subscription;
 
@@ -69,18 +59,9 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         this.textName.setSubscription(subscription);
         this.selectorRuntime.setRequired(true);
 
-        this.selectorApplication.setFileFilter(virtualFile -> {
-            final String ext = FileNameUtils.getExtension(virtualFile.getPath());
-            final Runtime platform = this.selectorRuntime.getValue();
-            return org.apache.commons.lang.StringUtils.isNotBlank(ext) && isSupportedArtifactType(platform, ext);
-        });
         this.setDeploymentVisible(false);
         this.config = initConfig();
         setData(this.config);
-
-        this.lblName.setLabelFor(textName);
-        this.lblPlatform.setLabelFor(selectorRuntime);
-        this.lblArtifact.setLabelFor(selectorApplication);
     }
 
     @SneakyThrows
@@ -88,17 +69,11 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     public T getData() {
         final String name = this.textName.getValue();
         final Runtime platform = this.selectorRuntime.getValue();
-        final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final T result = (T) (this.config == null ? initConfig() : this.config).toBuilder().build();
         result.setName(name);
         result.setRuntime(platform);
 
-        if (Objects.nonNull(artifact)) {
-            final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-            final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
-            result.setApplication(Paths.get(path));
-        }
         this.config = result;
         return result;
     }
@@ -130,7 +105,6 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         final AzureFormInput<?>[] inputs = {
             this.textName,
             this.selectorRuntime,
-            this.selectorApplication
         };
         return Arrays.asList(inputs);
     }
@@ -147,12 +121,10 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.selectorApplication = new AzureArtifactComboBox(project, true);
     }
 
     public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
-        this.lblArtifact.setVisible(visible);
-        this.selectorApplication.setVisible(visible);
+        this.deploymentLabel.setVisible(visible);
     }
 }

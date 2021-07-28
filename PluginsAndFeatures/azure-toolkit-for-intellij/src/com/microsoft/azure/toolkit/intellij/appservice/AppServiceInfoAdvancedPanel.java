@@ -13,9 +13,6 @@ import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
@@ -26,20 +23,15 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-
-import static com.microsoft.azuretools.utils.WebAppUtils.isSupportedArtifactType;
 
 public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
@@ -57,17 +49,9 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private RegionComboBox selectorRegion;
 
     private JLabel textSku;
-    private AzureArtifactComboBox selectorApplication;
     private ServicePlanComboBox selectorServicePlan;
     private TitledSeparator deploymentTitle;
-    private JLabel lblArtifact;
-    private JLabel lblSubscription;
-    private JLabel lblResourceGroup;
-    private JLabel lblName;
-    private JLabel lblPlatform;
-    private JLabel lblRegion;
-    private JLabel lblAppServicePlan;
-    private JLabel lblSku;
+    private JLabel deploymentLabel;
 
     public AppServiceInfoAdvancedPanel(final Project project, final Supplier<? extends T> supplier) {
         super();
@@ -85,7 +69,6 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         final Runtime runtime = this.selectorRuntime.getValue();
         final Region region = this.selectorRegion.getValue();
         final AppServicePlanEntity servicePlan = this.selectorServicePlan.getValue();
-        final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final T config = supplier.get();
         config.setSubscription(subscription);
@@ -94,11 +77,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         config.setRuntime(runtime);
         config.setRegion(region);
         config.setServicePlan(servicePlan);
-        if (Objects.nonNull(artifact)) {
-            final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-            final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
-            config.setApplication(Paths.get(path));
-        }
+
         return config;
     }
 
@@ -120,7 +99,6 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
             this.textName,
             this.selectorRuntime,
             this.selectorRegion,
-            this.selectorApplication,
             this.selectorServicePlan
         };
         return Arrays.asList(inputs);
@@ -134,8 +112,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
-        this.lblArtifact.setVisible(visible);
-        this.selectorApplication.setVisible(visible);
+        this.deploymentLabel.setVisible(visible);
     }
 
     public SubscriptionComboBox getSelectorSubscription() {
@@ -170,18 +147,6 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.selectorRuntime.setRequired(true);
         this.selectorRegion.setRequired(true);
 
-        this.lblSubscription.setLabelFor(selectorSubscription);
-        this.lblResourceGroup.setLabelFor(selectorGroup);
-        this.lblName.setLabelFor(textName);
-        this.lblPlatform.setLabelFor(selectorRuntime);
-        this.lblRegion.setLabelFor(selectorRegion);
-        this.lblAppServicePlan.setLabelFor(selectorServicePlan);
-        this.lblArtifact.setLabelFor(selectorApplication);
-        this.selectorApplication.setFileFilter(virtualFile -> {
-            final String ext = FileNameUtils.getExtension(virtualFile.getPath());
-            final Runtime runtime = this.selectorRuntime.getValue();
-            return StringUtils.isNotBlank(ext) && isSupportedArtifactType(runtime, ext);
-        });
     }
 
     private void onRegionChanged(final ItemEvent e) {
@@ -226,8 +191,6 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.selectorApplication = new AzureArtifactComboBox(project, true);
-        this.selectorApplication.refreshItems();
     }
 
     public void setValidPricingTier(List<PricingTier> pricingTier, PricingTier defaultPricingTier) {
