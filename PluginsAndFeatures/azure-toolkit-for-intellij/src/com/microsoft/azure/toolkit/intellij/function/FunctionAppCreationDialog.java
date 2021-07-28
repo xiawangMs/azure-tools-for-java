@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.PythonRuntime;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
@@ -65,7 +65,7 @@ public class FunctionAppCreationDialog extends ConfigDialog<FunctionAppConfig> {
                 return config;
             }
         };
-        basicPanel.getSelectorRuntime().setPlatformList(Runtime.FUNCTION_APP_RUNTIME);
+        basicPanel.getSelectorRuntime().setPlatformList(PythonRuntime.PYTHON_FUNCTION_APP_RUNTIME);
         advancePanel = new FunctionAppConfigFormPanelAdvance(project);
     }
 }
