@@ -8,8 +8,6 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComboBox;
-import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
@@ -23,18 +21,19 @@ import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeplo
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
 import static com.microsoft.intellij.CommonConst.EMPTY_TEXT;
 import static com.microsoft.intellij.CommonConst.LOADING_TEXT;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
+//import com.intellij.packaging.artifacts.Artifact;
+//import org.jetbrains.idea.maven.project.MavenProject;
 
 
 public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements FunctionDeployMvpView {
@@ -98,11 +97,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         return pnlRoot;
     }
 
-    @NotNull
-    @Override
-    protected JComboBox<Artifact> getCbArtifact() {
-        return new ComboBox<>();
-    }
+//    @NotNull
+//    @Override
+//    protected JComboBox<Artifact> getCbArtifact() {
+//        return new ComboBox<>();
+//    }
 
     @NotNull
     @Override
@@ -110,11 +109,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         return new JLabel();
     }
 
-    @NotNull
-    @Override
-    protected JComboBox<MavenProject> getCbMavenProject() {
-        return new ComboBox<>();
-    }
+//    @NotNull
+//    @Override
+//    protected JComboBox<MavenProject> getCbMavenProject() {
+//        return new ComboBox<>();
+//    }
 
     @NotNull
     @Override
@@ -176,8 +175,8 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             return;
         } else if (model.getResource() == null) { // For new create function or template model from configuration
             if (model.isNewCreateResource() && appSettingsFunctionApp != null && !appSettingsFunctionApp.isNewCreateResource()) {
-                // Clear app settings table when user first choose create new function app
-                this.fillAppSettings(Collections.EMPTY_MAP);
+                // Load settings from local.settings.json when user first choose create new function app
+                appSettingsTable.loadLocalSetting();
             }
         } else { // For existing Functions
             if (!AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {

@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
@@ -20,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
@@ -33,7 +31,6 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.RunProcessHandler;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +46,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -66,7 +62,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
             "because they are non-anonymous. To access the non-anonymous triggers, please refer https://aka.ms/azure-functions-key.";
     private static final String FAILED_TO_LIST_TRIGGERS = "Deployment succeeded, but failed to list http trigger urls.";
     private static final String SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION = "Syncing triggers and fetching function information...";
-    private static final String NO_TRIGGERS_FOUNDED = "No triggers found in deployed function app";
 
     private final FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
@@ -93,11 +88,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         } else {
             functionApp = Azure.az(AzureAppService.class).subscription(functionDeployConfiguration.getSubscriptionId())
                     .functionApp(functionDeployConfiguration.getFunctionId());
-            updateApplicationSettings(functionApp);
         }
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler, operation);
-        // deploy function to Azure
+
         FunctionAppService.getInstance().deployFunctionApp(functionApp, stagingFolder);
         // list triggers after deployment
         listHTTPTriggerUrls(functionApp);
@@ -126,35 +120,23 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         return functionApp;
     }
 
-    private void updateApplicationSettings(IFunctionApp deployTarget) {
-        final Map<String, String> applicationSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionDeployConfiguration.getAppSettingsKey());
-        if (MapUtils.isEmpty(applicationSettings)) {
-            return;
-        }
-        AzureMessager.getMessager().info("Updating application settings...");
-        deployTarget.update().withAppSettings(applicationSettings).commit();
-        AzureMessager.getMessager().info("Update application settings successfully.");
-    }
-
     @AzureOperation(
             name = "function.prepare_staging_folder_detail",
             params = {"stagingFolder.getName()", "this.deployModel.getAppName()"},
             type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
-        AzureTaskManager.getInstance().read(() -> {
-            final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
-            final Path folder = stagingFolder.toPath();
-            try {
-                final Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionDeployConfiguration.getModule(), methods);
-                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
-            } catch (final AzureExecutionException | IOException e) {
-                final String error = String.format("failed prepare staging folder[%s]", folder);
-                throw new AzureToolkitRuntimeException(error, e);
-            }
-        });
+        final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
+        final List<String> methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getProject());
+        final Path folder = stagingFolder.toPath();
+        try {
+            final Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, functionDeployConfiguration.getProject(), methods);
+            operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
+        } catch (final AzureExecutionException | IOException e) {
+            final String error = String.format("failed prepare staging folder[%s]", folder);
+            throw new AzureToolkitRuntimeException(error, e);
+        }
     }
 
     @Override
@@ -243,9 +225,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<IFunctionApp> 
         AzureMessager.getMessager().info(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION);
         return Mono.fromCallable(() -> {
             functionApp.syncTriggers();
-            return Optional.ofNullable(functionApp.listFunctions(true))
-                    .filter(CollectionUtils::isNotEmpty)
-                    .orElseThrow(() -> new AzureToolkitRuntimeException(NO_TRIGGERS_FOUNDED));
+            return functionApp.listFunctions();
         }).retryWhen(Retry.withThrowable(flux ->
                 flux.zipWith(Flux.range(1, LIST_TRIGGERS_MAX_RETRY + 1), (throwable, count) -> {
                     if (count < LIST_TRIGGERS_MAX_RETRY) {
