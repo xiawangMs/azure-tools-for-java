@@ -5,11 +5,7 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.RevealFileAction;
@@ -20,8 +16,6 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -36,10 +30,6 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.artifacts.ArtifactUtil;
-import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
-import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
@@ -77,15 +67,16 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Log
 public class IDEHelperImpl implements IDEHelper {
 
     private static final String APP_SERVICE_FILE_EDITING = "App Service File Editing";
     private static final String FILE_HAS_BEEN_DELETED = "File '%s' has been deleted from remote server, "
-        + "do you want to create a new file with the changed content?";
+            + "do you want to create a new file with the changed content?";
     private static final String FILE_HAS_BEEN_MODIFIED = "File '%s' has been modified since you view it, do you still want to save your changes?";
     private static final String SAVE_CHANGES = "Do you want to save your changes?";
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
@@ -212,59 +203,69 @@ public class IDEHelperImpl implements IDEHelper {
         AzureSettings.getSafeInstance(PluginUtil.getSelectedProject()).setProperties(name, value);
     }
 
-    @NotNull
     @Override
-    public List<ArtifactDescriptor> getArtifacts(@NotNull ProjectDescriptor projectDescriptor)
-        throws AzureCmdException {
-        final Project project = findOpenProject(projectDescriptor);
-
-        final List<ArtifactDescriptor> artifactDescriptors = new ArrayList<>();
-
-        for (final Artifact artifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
-            artifactDescriptors.add(new ArtifactDescriptor(artifact.getName(), artifact.getArtifactType().getId()));
-        }
-
-        return artifactDescriptors;
+    public List<ArtifactDescriptor> getArtifacts(ProjectDescriptor projectDescriptor) throws AzureCmdException {
+        return null;
     }
 
-    @NotNull
     @Override
-    public ListenableFuture<String> buildArtifact(@NotNull ProjectDescriptor projectDescriptor,
-                                                  @NotNull ArtifactDescriptor artifactDescriptor) {
-        try {
-            final Project project = findOpenProject(projectDescriptor);
-
-            final Artifact artifact = findProjectArtifact(project, artifactDescriptor);
-
-            final SettableFuture<String> future = SettableFuture.create();
-
-            Futures.addCallback(buildArtifact(project, artifact, false), new FutureCallback<>() {
-                @Override
-                public void onSuccess(@Nullable Boolean succeded) {
-                    if (succeded != null && succeded) {
-                        future.set(artifact.getOutputFilePath());
-                    } else {
-                        future.setException(new AzureCmdException("An error occurred while building the artifact"));
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable throwable) {
-                    if (throwable instanceof ExecutionException) {
-                        future.setException(new AzureCmdException("An error occurred while building the artifact",
-                                                                  throwable.getCause()));
-                    } else {
-                        future.setException(new AzureCmdException("An error occurred while building the artifact",
-                                                                  throwable));
-                    }
-                }
-            }, MoreExecutors.directExecutor());
-
-            return future;
-        } catch (final AzureCmdException e) {
-            return Futures.immediateFailedFuture(e);
-        }
+    public ListenableFuture<String> buildArtifact(ProjectDescriptor projectDescriptor, ArtifactDescriptor artifactDescriptor) {
+        return null;
     }
+
+//    @NotNull
+//    @Override
+//    public List<ArtifactDescriptor> getArtifacts(@NotNull ProjectDescriptor projectDescriptor)
+//            throws AzureCmdException {
+//        final Project project = findOpenProject(projectDescriptor);
+//
+//        final List<ArtifactDescriptor> artifactDescriptors = new ArrayList<>();
+//
+//        for (final Artifact artifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
+//            artifactDescriptors.add(new ArtifactDescriptor(artifact.getName(), artifact.getArtifactType().getId()));
+//        }
+//
+//        return artifactDescriptors;
+//    }
+
+//    @NotNull
+//    @Override
+//    public ListenableFuture<String> buildArtifact(@NotNull ProjectDescriptor projectDescriptor,
+//                                                  @NotNull ArtifactDescriptor artifactDescriptor) {
+//        try {
+//            final Project project = findOpenProject(projectDescriptor);
+//
+//            final Artifact artifact = findProjectArtifact(project, artifactDescriptor);
+//
+//            final SettableFuture<String> future = SettableFuture.create();
+//
+//            Futures.addCallback(buildArtifact(project, artifact, false), new FutureCallback<>() {
+//                @Override
+//                public void onSuccess(@Nullable Boolean succeded) {
+//                    if (succeded != null && succeded) {
+//                        future.set(artifact.getOutputFilePath());
+//                    } else {
+//                        future.setException(new AzureCmdException("An error occurred while building the artifact"));
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Throwable throwable) {
+//                    if (throwable instanceof ExecutionException) {
+//                        future.setException(new AzureCmdException("An error occurred while building the artifact",
+//                                throwable.getCause()));
+//                    } else {
+//                        future.setException(new AzureCmdException("An error occurred while building the artifact",
+//                                throwable));
+//                    }
+//                }
+//            }, MoreExecutors.directExecutor());
+//
+//            return future;
+//        } catch (final AzureCmdException e) {
+//            return Futures.immediateFailedFuture(e);
+//        }
+//    }
 
     @Override
     public Object getCurrentProject() {
@@ -287,27 +288,27 @@ public class IDEHelperImpl implements IDEHelper {
         return buffer.toByteArray();
     }
 
-    private static ListenableFuture<Boolean> buildArtifact(@NotNull Project project, final @NotNull Artifact artifact, boolean rebuild) {
-        final SettableFuture<Boolean> future = SettableFuture.create();
-
-        final Set<Artifact> artifacts = new LinkedHashSet<>(1);
-        artifacts.add(artifact);
-        final CompileScope scope = ArtifactCompileScope.createArtifactsScope(project, artifacts, rebuild);
-        ArtifactsWorkspaceSettings.getInstance(project).setArtifactsToBuild(artifacts);
-
-        CompilerManager.getInstance(project).make(scope, (aborted, errors, warnings, compileContext) -> future.set(!aborted && errors == 0));
-
-        return future;
-    }
+//    private static ListenableFuture<Boolean> buildArtifact(@NotNull Project project, final @NotNull Artifact artifact, boolean rebuild) {
+//        final SettableFuture<Boolean> future = SettableFuture.create();
+//
+//        final Set<Artifact> artifacts = new LinkedHashSet<>(1);
+//        artifacts.add(artifact);
+//        final CompileScope scope = ArtifactCompileScope.createArtifactsScope(project, artifacts, rebuild);
+//        ArtifactsWorkspaceSettings.getInstance(project).setArtifactsToBuild(artifacts);
+//
+//        CompilerManager.getInstance(project).make(scope, (aborted, errors, warnings, compileContext) -> future.set(!aborted && errors == 0));
+//
+//        return future;
+//    }
 
     @NotNull
     private static Project findOpenProject(@NotNull ProjectDescriptor projectDescriptor)
-        throws AzureCmdException {
+            throws AzureCmdException {
         Project project = null;
 
         for (final Project openProject : ProjectManager.getInstance().getOpenProjects()) {
             if (StringUtils.equals(projectDescriptor.getName(), openProject.getName()) &&
-                StringUtils.equals(projectDescriptor.getPath(), openProject.getBasePath())) {
+                    StringUtils.equals(projectDescriptor.getPath(), openProject.getBasePath())) {
                 project = openProject;
                 break;
             }
@@ -320,25 +321,25 @@ public class IDEHelperImpl implements IDEHelper {
         return project;
     }
 
-    @NotNull
-    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull ArtifactDescriptor artifactDescriptor)
-        throws AzureCmdException {
-        Artifact artifact = null;
-
-        for (final Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
-            if (artifactDescriptor.getName().equals(projectArtifact.getName()) &&
-                artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
-                artifact = projectArtifact;
-                break;
-            }
-        }
-
-        if (artifact == null) {
-            throw new AzureCmdException("Unable to find an artifact with the specified description.");
-        }
-
-        return artifact;
-    }
+//    @NotNull
+//    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull ArtifactDescriptor artifactDescriptor)
+//            throws AzureCmdException {
+//        Artifact artifact = null;
+//
+//        for (final Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
+//            if (artifactDescriptor.getName().equals(projectArtifact.getName()) &&
+//                    artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
+//                artifact = projectArtifact;
+//                break;
+//            }
+//        }
+//
+//        if (artifact == null) {
+//            throw new AzureCmdException("Unable to find an artifact with the specified description.");
+//        }
+//
+//        return artifact;
+//    }
 
     public void openLinkInBrowser(@NotNull String url) {
         try {
@@ -423,7 +424,7 @@ public class IDEHelperImpl implements IDEHelper {
                             final String content = getTextEditorContent((TextEditor) fileEditor);
                             if (file == virtualFile && !StringUtils.equals(content, originContent)) {
                                 final boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
-                                    fileEditor.getComponent(), SAVE_CHANGES, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+                                        fileEditor.getComponent(), SAVE_CHANGES, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
                                 if (result) {
                                     contentSaver.consume(content);
                                 }

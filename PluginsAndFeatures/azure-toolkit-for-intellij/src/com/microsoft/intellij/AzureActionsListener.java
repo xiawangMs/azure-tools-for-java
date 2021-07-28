@@ -5,23 +5,18 @@
 
 package com.microsoft.intellij;
 
-import com.azure.core.implementation.http.HttpClientProviders;
 import com.google.gson.Gson;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.diagnostic.Logger;
-import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
-import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
-import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+//import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
+//import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
+//import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
+//import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -30,9 +25,9 @@ import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
-import com.microsoft.intellij.configuration.AzureConfigurations;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
@@ -40,12 +35,10 @@ import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 import rx.internal.util.PlatformDependent;
@@ -70,18 +63,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     private PluginSettings settings;
 
-    static {
-        // fix the class load problem for intellij plugin
-        final ClassLoader current = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
-            HttpClientProviders.createInstance();
-            Azure.az(AzureAccount.class);
-        } finally {
-            Thread.currentThread().setContextClassLoader(current);
-        }
-    }
-
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
         DefaultLoader.setPluginComponent(this);
@@ -94,7 +75,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
-        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
+        //HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
         try {
             loadPluginSettings();
         } catch (IOException e) {
@@ -104,8 +85,8 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
-            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
-                    new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
+            //ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
+            //        new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
 
             ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             initAuthManage();

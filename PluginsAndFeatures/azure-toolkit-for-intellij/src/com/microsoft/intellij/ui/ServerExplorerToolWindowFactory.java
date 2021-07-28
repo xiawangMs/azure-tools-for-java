@@ -19,17 +19,14 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
-import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightUtil;
-import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.intellij.function.runner.core.CLIOutputWriter;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
@@ -67,6 +64,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+//import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
 
@@ -76,15 +75,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     @AzureOperation(name = "common|explorer.initialize", type = AzureOperation.Type.SERVICE)
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
-        AzureModule azureModule = new AzureModuleImpl(project);
-        HDInsightUtil.setHDInsightRootModule(azureModule);
-        azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
-        azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
-        // initialize aris service module
-        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
+        AzureModule azureModule;
+        try {
+            azureModule = new AzureModuleImpl(project);
+            //HDInsightUtil.setHDInsightRootModule(azureModule);
+            //azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
+            //azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
+            // initialize aris service module
+            //SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
 
         // initialize with all the service modules
-        DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, ImmutableList.of(azureModule, arisModule)));
+        DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, ImmutableList.of(azureModule)));
         treeModelMap.put(project, treeModel);
 
         // initialize tree
@@ -150,8 +151,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         azureModule.setTree(tree);
         azureModule.setTreePath(tree.getPathForRow(0));
 
-        // setup toolbar icons
-        addToolbarItems(toolWindow, project, azureModule);
+            // setup toolbar icons
+            addToolbarItems(toolWindow, project, azureModule);        }
+        catch (Exception ex) {
+            new CLIOutputWriter(project).printLineToConsole(ex.getMessage());
+        }
 
     }
 
