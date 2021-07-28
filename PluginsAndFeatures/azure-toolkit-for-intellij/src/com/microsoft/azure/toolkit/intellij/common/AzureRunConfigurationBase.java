@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase implements LocatableConfiguration {
     private boolean firstTimeCreated = true;
-    protected JavaRunConfigurationModule myModule;
+    protected RunConfigurationModule myModule;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -75,7 +75,7 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
     public void checkConfiguration() throws RuntimeConfigurationException {
     }
 
-    public JavaRunConfigurationModule getConfigurationModule() {
+    public RunConfigurationModule getConfigurationModule() {
         return myModule;
     }
 
