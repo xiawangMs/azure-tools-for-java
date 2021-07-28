@@ -25,10 +25,8 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.util.ValidationUtils;
-import com.microsoft.azure.toolkit.intellij.function.wizard.module.FunctionTriggerChooserStep;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -45,9 +43,13 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class CreateFunctionForm extends DialogWrapper implements TelemetryProperties {
 
-    public static final String HTTP_TRIGGER = "HttpTrigger";
-    public static final String TIMER_TRIGGER = "TimerTrigger";
-    public static final String EVENT_HUB_TRIGGER = "EventHubTrigger";
+    public static final String NO_TRIGGER = "Skip for now";
+    public static final String HTTP_TRIGGER = "HTTP trigger";
+    public static final String TIMER_TRIGGER = "Timer trigger";
+    public static final String EVENT_HUB_TRIGGER = "Azure Event Hub trigger";
+    public static final String COSMOS_DB_TRIGGER = "Azure Cosmos DB trigger";
+    public static final String SERVICEBUS_QUEUE_TRIGGER = "Azure Service Bus Queue Trigger";
+    public static final String SERVICEBUS_TOPIC_TRIGGER = "Azure Service Bus Topic Trigger";
     public static final String CUSTOMIZED_TIMER_CRON_MESSAGE =
             "Enter a cron expression of the format '{second} {minute} {hour} {day} {month} {day of week}' to specify the schedule";
     public static final String CUSTOMIZED_TIMER_CRON = "Customized Timer Cron";
@@ -57,14 +59,12 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private JComboBox<String> cbTriggerType;
     private JTextField txtFunctionName;
     private JComboBox<AuthorizationLevel> cbAuthLevel;
-    private JTextField txtPackageName;
     private JTextField txtCron;
     private JComboBox cbEventHubNamespace;
     private JTextField txtConnection;
     private JPanel pnlRoot;
     private JLabel lblTriggerType;
     private JLabel lblFunctionName;
-    private JLabel lblPackageName;
     private JLabel lblAuthLevel;
     private JLabel lblCron;
     private JLabel lblEventHubNamespace;
@@ -75,12 +75,27 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private JLabel lblEventHubName;
     private JLabel lblConsumerGroup;
     private JComboBox cbCron;
+    private JCheckBox chkIsFunctionApp;
+    private JTextField txtQueueName;
+    private JLabel lblQueueName;
+    private JLabel lblTopicName;
+    private JTextField txtTopicName;
+    private JLabel lblSubscriptionName;
+    private JTextField txtSubscriptionName;
+    private JLabel lblDatabaseName;
+    private JTextField txtDatabaseName;
+    private JTextField txtCollectionName;
+    private JLabel lblLeasesName;
+    private JTextField txtLeasesName;
+    private JLabel lblAutoCreateLeases;
+    private JCheckBox chkCreateLease;
+    private JLabel lblCollectionName;
     private Project project;
 
-    public CreateFunctionForm(@Nullable Project project, String packageName) {
+    public CreateFunctionForm(@Nullable Project project) {
         super(project, true);
         setModal(true);
-        setTitle("Create Function Class");
+        setTitle("Create Azure Function");
 
         this.project = project;
         this.isSignedIn = AuthMethodManager.getInstance().isSignedIn();
@@ -177,7 +192,6 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         fillModules();
         fillAuthLevel();
         fillTimerSchedule();
-        this.txtPackageName.setText(packageName);
     }
 
     @Nullable
@@ -201,14 +215,17 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
     public Map<String, String> getTemplateParameters() {
         Map<String, String> result = new HashMap<>();
-        result.put("functionName", txtFunctionName.getText());
-        result.put("packageName", txtPackageName.getText());
+        result.put("function_name", txtFunctionName.getText() != null ? txtFunctionName.getText() : "");
+        /*
         String className = AzureFunctionsUtils.normalizeClassName(StringUtils.capitalize(txtFunctionName.getText()));
         if (FunctionTriggerChooserStep.SUPPORTED_TRIGGERS.contains(className)) {
             className = className + "1"; // avoid duplicate class with function annotation
         }
         result.put("className", className);
-        switch ((String) cbTriggerType.getSelectedItem()) {
+        */
+        switch (cbTriggerType.getSelectedItem() != null ? (String)cbTriggerType.getSelectedItem() : NO_TRIGGER) {
+            case NO_TRIGGER:
+                break;
             case HTTP_TRIGGER:
                 result.put("authLevel", cbAuthLevel.getSelectedItem().toString());
                 break;
@@ -219,8 +236,24 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
                 break;
             case EVENT_HUB_TRIGGER:
                 result.put("connection", txtConnection.getText());
-                result.put("eventHubName", getSelectedEventHubName());
-                result.put("consumerGroup", getConsumerGroupName());
+                result.put("event_hub_name", getSelectedEventHubName());
+                result.put("consumer_group", getConsumerGroupName());
+                break;
+            case COSMOS_DB_TRIGGER:
+                result.put("connection", txtConnection.getText());
+                result.put("database", txtDatabaseName.getText());
+                result.put("collection", txtCollectionName.getText());
+                result.put("leases", txtLeasesName.getText());
+                result.put("create_leases", chkCreateLease.isSelected() ? "true" : "false");
+                break;
+            case SERVICEBUS_QUEUE_TRIGGER:
+                result.put("connection", txtConnection.getText());
+                result.put("queue", txtQueueName.getText());
+                break;
+            case SERVICEBUS_TOPIC_TRIGGER:
+                result.put("connection", txtConnection.getText());
+                result.put("topic", txtTopicName.getText());
+                result.put("subscription", txtSubscriptionName.getText());
                 break;
             default:
                 break;
@@ -244,6 +277,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
     private void initTriggers() {
         triggerComponents.keySet().stream().filter(StringUtils::isNoneBlank).forEach(triggerType -> cbTriggerType.addItem(triggerType));
+        cbTriggerType.setSelectedItem(HTTP_TRIGGER);
         hideDynamicComponents();
         onSelectTriggerType();
     }
@@ -255,12 +289,30 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     @Override
     protected List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
-        validateProperties(res, "Package name", txtPackageName, ValidationUtils::isValidJavaPackageName);
-        validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidAppServiceName);
-
         final String trigger = (String) cbTriggerType.getSelectedItem();
+        if(!StringUtils.equals(trigger, NO_TRIGGER)) {
+            validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidAppServiceName);
+            //TODO: Make sure the function name is not already in use
+        }
+
         if (StringUtils.equals(trigger, EVENT_HUB_TRIGGER)) {
             validateProperties(res, "Connection name", this.txtConnection, StringUtils::isNotBlank);
+        }
+        else if(trigger.equals(COSMOS_DB_TRIGGER)) {
+            validateProperties(res, "Connection name", this.txtConnection, StringUtils::isNotBlank);
+            validateProperties(res, "Database name", this.txtDatabaseName, StringUtils::isNotBlank);
+            validateProperties(res, "Collection name", this.txtCollectionName, StringUtils::isNotBlank);
+            validateProperties(res, "Leases name", this.txtLeasesName, StringUtils::isNotBlank);
+        }
+        else if(trigger.equals(SERVICEBUS_TOPIC_TRIGGER)) {
+            validateProperties(res, "Connection name", this.txtConnection, StringUtils::isNotBlank);
+            validateProperties(res, "Topic name", this.txtTopicName, StringUtils::isNotBlank);
+            validateProperties(res, "Subscription name", this.txtSubscriptionName, StringUtils::isNotBlank);
+
+        }
+        else if(trigger.equals(SERVICEBUS_QUEUE_TRIGGER)) {
+            validateProperties(res, "Connection name", this.txtConnection, StringUtils::isNotBlank);
+            validateProperties(res, "Queue name", this.txtQueueName, StringUtils::isNotBlank);
         }
 
         return res;
@@ -282,20 +334,25 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
     private void initComponentOfTriggers() {
         this.triggerComponents = new HashMap<>();
-        triggerComponents.put(HTTP_TRIGGER, new JComponent[]{lblAuthLevel, cbAuthLevel});
-        triggerComponents.put(TIMER_TRIGGER, new JComponent[]{lblCron, cbCron});
+        triggerComponents.put(NO_TRIGGER, new JComponent[]{});
+        triggerComponents.put(HTTP_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblAuthLevel, cbAuthLevel});
+        triggerComponents.put(TIMER_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblCron, cbCron});
+        triggerComponents.put(COSMOS_DB_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblConnectionName, txtConnection, lblDatabaseName, txtDatabaseName, lblCollectionName, txtCollectionName, lblLeasesName, txtLeasesName, lblAutoCreateLeases, chkCreateLease}); //TODO: Add the specific components for that function type
+        triggerComponents.put(SERVICEBUS_QUEUE_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblConnectionName, txtConnection, lblQueueName, txtQueueName});
+        triggerComponents.put(SERVICEBUS_TOPIC_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblConnectionName, txtConnection, lblTopicName, txtTopicName, lblSubscriptionName, txtSubscriptionName});
         if (isSignedIn) {
-            triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
+            triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
                 cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
         } else {
-            triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblConnectionName, txtConnection});
-            triggerComponents.put("", new JComponent[]{lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
+            triggerComponents.put(EVENT_HUB_TRIGGER, new JComponent[]{lblFunctionName, txtFunctionName, lblConnectionName, txtConnection});
+            triggerComponents.put("", new JComponent[]{lblFunctionName, txtFunctionName, lblEventHubNamespace, lblConnectionName, lblEventHubName, lblConsumerGroup,
                 cbEventHubNamespace, txtConnection, cbEventHubName, cbConsumerGroup});
         }
     }
 
     private void fillAuthLevel() {
         Arrays.stream(AuthorizationLevel.values()).forEach(authLevel -> cbAuthLevel.addItem(authLevel));
+        cbAuthLevel.setSelectedItem(AuthorizationLevel.FUNCTION);
     }
 
     private List<EventHub> getEventHubByNamespaces(EventHubNamespace eventHubNamespace) {
@@ -417,5 +474,6 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         public static TimerCron[] getDefaultCrons() {
             return new TimerCron[]{HOURLY, DAILY, MONTHLY};
         }
+
     }
 }
