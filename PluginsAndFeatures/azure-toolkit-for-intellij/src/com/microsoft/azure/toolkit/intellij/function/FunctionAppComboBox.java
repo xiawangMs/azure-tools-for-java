@@ -43,7 +43,8 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
     )
     protected List<FunctionAppComboBoxModel> loadAppServiceModels() {
         return Azure.az(AzureAppService.class).functionApps().parallelStream()
-                .filter(this::isJavaAppService)
+                .filter(functionApp -> functionApp.entity().getAppSettings().containsKey("FUNCTIONS_WORKER_RUNTIME") &&
+                        functionApp.entity().getAppSettings().get("FUNCTIONS_WORKER_RUNTIME").equalsIgnoreCase("python"))
                 .map(FunctionAppComboBoxModel::new)
                 .sorted((app1, app2) -> app1.getAppName().compareToIgnoreCase(app2.getAppName()))
                 .collect(Collectors.toList());
