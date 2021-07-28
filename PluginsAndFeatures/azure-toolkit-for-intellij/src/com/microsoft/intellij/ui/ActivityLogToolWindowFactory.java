@@ -6,117 +6,101 @@
 package com.microsoft.intellij.ui;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.BrowserHyperlinkListener;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.intellij.util.ui.PlatformColors;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
-import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
-import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
-import java.io.IOException;
-import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class ActivityLogToolWindowFactory implements ToolWindowFactory {
-    public static final String ACTIVITY_LOG_WINDOW = "Azure Activity Log";
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss", Locale.getDefault());
-
+//    public static final String ACTIVITY_LOG_WINDOW = "Azure Activity Log";
+//    private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss", Locale.getDefault());
+//
     private TableView<DeploymentTableItem> table;
     private HashMap<String, DeploymentTableItem> rows = new HashMap<String, DeploymentTableItem>();
     private Project project;
 
-    @Override
-    public boolean isApplicable(@NotNull Project project) {
-        return !AzurePlugin.IS_ANDROID_STUDIO;
-    }
+//    @Override
+//    public boolean isApplicable(@NotNull Project project) {
+//        return !AzurePlugin.IS_ANDROID_STUDIO;
+//    }
 
     @Override
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         this.project = project;
         table = new TableView<DeploymentTableItem>(new ListTableModel<DeploymentTableItem>(DESC, PROGRESS, STATUS, START_TIME));
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        // add mouse listener for links in table
-        table.addMouseListener(createTableMouseListener());
-
-        toolWindow.getComponent().add(new JBScrollPane(table));
-        registerDeploymentListener();
+//        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        // add mouse listener for links in table
+//        table.addMouseListener(createTableMouseListener());
+//
+//        toolWindow.getComponent().add(new JBScrollPane(table));
+//        registerDeploymentListener();
     }
 
-    private MouseListener createTableMouseListener() {
-        return new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (table.getSelectedColumn() == 2) {
-                    DeploymentTableItem item = table.getSelectedObject();
-                    if (item != null && item.link != null) {
-                        try {
-                            Desktop.getDesktop().browse(URI.create(item.link));
-                        } catch (IOException e1) {
-                            PluginUtil.displayErrorDialogAndLog(message("error"), message("error"), e1);
-                        }
-                    }
-                }
-            }
-        };
-    }
-
-    public void registerDeploymentListener() {
-        AzurePlugin.addDeploymentEventListener(
-                new DeploymentEventListener() {
-
-                    @Override
-                    public void onDeploymentStep(final DeploymentEventArgs args) {
-                        // unique identifier for deployment
-                        String key = args.getId() + args.getStartTime().getTime();
-                        if (rows.containsKey(key)) {
-                            final DeploymentTableItem item = rows.get(key);
-                            AzureTaskManager.getInstance().runLater(() -> {
-                                item.progress = args.getDeployCompleteness();
-                                if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
-                                    String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
-                                    item.description = message("runStatusVisible");
-                                    item.link = args.getDeploymentURL();
-                                    if (!ToolWindowManager.getInstance(project).getToolWindow(ActivityLogToolWindowFactory.ACTIVITY_LOG_WINDOW).isVisible()) {
-                                        ToolWindowManager.getInstance(project).notifyByBalloon(ACTIVITY_LOG_WINDOW, MessageType.INFO, html, null,
-                                                new BrowserHyperlinkListener());
-                                    }
-                                } else {
-                                    item.description = args.getDeployMessage();
-                                }
-                                table.getListTableModel().fireTableDataChanged();
-                            });
-                        } else {
-                            final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(),
-                                    dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
-                            rows.put(key, item);
-                            AzureTaskManager.getInstance().runLater(() -> table.getListTableModel().addRow(item));
-                        }
-                    }
-                });
-    }
-
+//    private MouseListener createTableMouseListener() {
+//        return new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                if (table.getSelectedColumn() == 2) {
+//                    DeploymentTableItem item = table.getSelectedObject();
+//                    if (item != null && item.link != null) {
+//                        try {
+//                            Desktop.getDesktop().browse(URI.create(item.link));
+//                        } catch (IOException e1) {
+//                            PluginUtil.displayErrorDialogAndLog(message("error"), message("error"), e1);
+//                        }
+//                    }
+//                }
+//            }
+//        };
+//    }
+//
+//    public void registerDeploymentListener() {
+//        AzurePlugin.addDeploymentEventListener(
+//                new DeploymentEventListener() {
+//
+//                    @Override
+//                    public void onDeploymentStep(final DeploymentEventArgs args) {
+//                        // unique identifier for deployment
+//                        String key = args.getId() + args.getStartTime().getTime();
+//                        if (rows.containsKey(key)) {
+//                            final DeploymentTableItem item = rows.get(key);
+//                            AzureTaskManager.getInstance().runLater(() -> {
+//                                item.progress = args.getDeployCompleteness();
+//                                if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
+//                                    String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
+//                                    item.description = message("runStatusVisible");
+//                                    item.link = args.getDeploymentURL();
+//                                    if (!ToolWindowManager.getInstance(project).getToolWindow(ActivityLogToolWindowFactory.ACTIVITY_LOG_WINDOW).isVisible()) {
+//                                        ToolWindowManager.getInstance(project).notifyByBalloon(ACTIVITY_LOG_WINDOW, MessageType.INFO, html, null,
+//                                                new BrowserHyperlinkListener());
+//                                    }
+//                                } else {
+//                                    item.description = args.getDeployMessage();
+//                                }
+//                                table.getListTableModel().fireTableDataChanged();
+//                            });
+//                        } else {
+//                            final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(),
+//                                    dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
+//                            rows.put(key, item);
+//                            AzureTaskManager.getInstance().runLater(() -> table.getListTableModel().addRow(item));
+//                        }
+//                    }
+//                });
+//    }
+//
     private class ProgressBarRenderer implements TableCellRenderer {
         private final JProgressBar progressBar = new JProgressBar();
         private final JLabel label = new JLabel();
