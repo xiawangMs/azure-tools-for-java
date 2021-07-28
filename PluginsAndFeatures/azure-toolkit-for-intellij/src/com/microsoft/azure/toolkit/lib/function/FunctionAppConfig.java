@@ -6,9 +6,7 @@
 package com.microsoft.azure.toolkit.lib.function;
 
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.*;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -24,7 +22,7 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
 public class FunctionAppConfig extends AppServiceConfig {
-    public static final Runtime DEFAULT_RUNTIME = Runtime.FUNCTION_WINDOWS_JAVA8;
+    public static final Runtime DEFAULT_RUNTIME = PythonRuntime.FUNCTION_LINUX_PYTHON39;
     @Builder.Default
     protected Runtime runtime = DEFAULT_RUNTIME;
 

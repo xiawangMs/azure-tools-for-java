@@ -25,7 +25,7 @@ public class AppSettingModel implements TableModel {
     private static final String[] TITLE = {"Key", "Value"};
     private static final String FUNCTIONS_WORKER_RUNTIME_KEY = "FUNCTIONS_WORKER_RUNTIME";
     private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
-    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
+    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "python";
     private static final String AZURE_WEB_JOB_STORAGE_VALUE = "";
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
