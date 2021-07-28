@@ -17,7 +17,7 @@ public class AzureBundle extends AbstractBundle {
     }
 
     @NonNls
-    private static final String BUNDLE = "com.microsoft.intellij.ui.messages.messages";
+    private static final String BUNDLE = "messages";
     private static final AzureBundle ourInstance = new AzureBundle();
 
     private AzureBundle() {
