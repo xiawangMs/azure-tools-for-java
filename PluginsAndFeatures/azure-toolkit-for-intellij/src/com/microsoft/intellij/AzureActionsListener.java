@@ -84,11 +84,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
-        if (StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().environment())) {
-            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(AzureConfigurations.getInstance().getState().environment()));
-        } else if (CommonSettings.getEnvironment() != null) {
-            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
-        }
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
