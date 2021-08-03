@@ -5,7 +5,7 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ public class TelemetryManager {
         return SingletonHolder.INSTANCE;
     }
 
-    public void setTelemetryClient(TelemetryClient telemetryClient) {
+    public void setTelemetryClient(AzureTelemetryClient telemetryClient) {
         CommonUtil.client = telemetryClient;
     }
 

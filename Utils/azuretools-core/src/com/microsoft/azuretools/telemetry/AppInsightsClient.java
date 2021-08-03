@@ -5,13 +5,12 @@
 
 package com.microsoft.azuretools.telemetry;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class AppInsightsClient {
@@ -97,11 +96,10 @@ public class AppInsightsClient {
         if (isAppInsightsClientAvailable() && configuration.validated()) {
             String prefValue = configuration.preferenceVal();
             if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true") || force) {
-                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
+                AzureTelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
                 Map<String, String> properties = buildProperties(version, myProperties);
                 synchronized (TelemetryClientSingleton.class) {
                     telemetry.trackEvent(eventName, properties, metrics);
-                    telemetry.flush();
                 }
             }
         }
@@ -113,12 +111,7 @@ public class AppInsightsClient {
         properties.put("IDE", configuration.ide());
 
         // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
-        for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry<String, String> entry = iter.next();
-            if (StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue())) {
-                iter.remove();
-            }
-        }
+        properties.entrySet().removeIf(entry -> StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue()));
         if (version != null && !version.isEmpty()) {
             properties.put("Library Version", version);
         }
@@ -134,50 +127,19 @@ public class AppInsightsClient {
         return properties;
     }
 
-    public static void createFTPEvent(String eventName, String uri, String appName, String subId) {
-        if (!isAppInsightsClientAvailable())
-            return;
-
-        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
-
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put("SessionId", configuration.sessionId());
-        if (uri != null && !uri.isEmpty()) {
-            properties.put("WebApp URI", uri);
-        }
-        if (appName != null && !appName.isEmpty()) {
-            properties.put("Java app name", appName);
-        }
-        if (subId != null && !subId.isEmpty()) {
-            properties.put("Subscription ID", subId);
-        }
-        if (configuration.validated()) {
-            String pluginVersion = configuration.pluginVersion();
-            if (pluginVersion != null && !pluginVersion.isEmpty()) {
-                properties.put("Plugin Version", pluginVersion);
-            }
-
-            String instID = configuration.installationId();
-            if (instID != null && !instID.isEmpty()) {
-                properties.put("Installation ID", instID);
-            }
-        }
-        synchronized (TelemetryClientSingleton.class) {
-            telemetry.trackEvent(eventName, properties, null);
-            telemetry.flush();
-        }
-    }
-
     private static boolean isAppInsightsClientAvailable() {
         return configuration != null;
     }
 
     private static void initTelemetryManager() {
         try {
+            final Map<String, String> properties = buildProperties("", new HashMap<>());
             TelemetryClientSingleton.setConfiguration(configuration);
-            TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
-            TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
-            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventName());
+            final AzureTelemetryClient client = TelemetryClientSingleton.getTelemetry();
+            final String eventNamePrefix = configuration.eventName();
+            TelemetryManager.getInstance().setTelemetryClient(client);
+            TelemetryManager.getInstance().setCommonProperties(properties);
+            TelemetryManager.getInstance().setEventNamePrefix(eventNamePrefix);
             TelemetryManager.getInstance().sendCachedTelemetries();
         } catch (Exception ignore) {
         }
