@@ -32,7 +32,8 @@
     <name>${project.artifactId}-${project.version}</name>
     <properties>
         <azuretool.version>3.44.0</azuretool.version>
-        <applicationinsights.version>2.6.1</applicationinsights.version>
+        <applicationinsights.version>2.6.3</applicationinsights.version>
+        <azure.toolkit-lib.version>0.10.0</azure.toolkit-lib.version>
         <kotlin.version>1.3.72</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
         <jackson.version>2.11.1</jackson.version>
@@ -131,6 +132,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-common-lib</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-storage-queue</artifactId>
