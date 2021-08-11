@@ -11,13 +11,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azuretools.azureexplorer.helpers.UIHelperImpl;
-import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-
 /**
  * The activator class controls the plug-in life cycle
  */
@@ -47,10 +40,6 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        DefaultLoader.setUiHelper(new UIHelperImpl());
-        com.microsoft.azuretools.azureexplorer.helpers.HDInsightHelperImpl.initHDInsightLoader();
-
-        Node.setNode2Actions(NodeActionsMap.node2Actions);
 //        ServiceExplorerView serviceExplorerView = (ServiceExplorerView) PlatformUI
 //                .getWorkbench().getActiveWorkbenchWindow()
 //                .getActivePage().showView("ServiceExplorerView");

@@ -8,24 +8,8 @@
   <version>${azuretool.eclipse.version}</version>
   <packaging>pom</packaging>
   <modules>
-    <module>../AddLibrary/AppInsights/com.microsoft.applicationinsights.feature</module>
-    <module>../AddLibrary/AppInsights/com.microsoft.applicationinsights.ui</module>
-    <module>../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk</module>
-    <module>../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk.feature</module>
-    <module>../AddLibrary/AzureLibraries/com.microsoft.azuretools.wasdkjava.ui</module>
-    <module>com.microsoft.azuretools.core</module>
-    <module>com.microsoft.azuretools.core.feature</module>
-    <module>../AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4</module>
-    <module>../AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4.feature</module>
-    <module>../AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4.ui</module>
     <module>com.microsoft.azuretools.azureexplorer</module>
     <module>com.microsoft.azuretools.azureexplorer.feature</module>
-    <module>com.microsoft.azuretools.hdinsight</module>
-    <module>com.microsoft.azuretools.hdinsight.feature</module>
-    <module>com.microsoft.azuretools.webapp</module>
-    <module>com.microsoft.azuretools.webapp.feature</module>
-    <module>com.microsoft.azuretools.container</module>
-    <module>com.microsoft.azuretools.container.feature</module>
     <module>WindowsAzurePlugin4EJ</module>
   </modules>
   <properties>

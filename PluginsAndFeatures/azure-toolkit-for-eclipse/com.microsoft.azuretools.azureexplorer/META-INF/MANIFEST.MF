@@ -7,25 +7,14 @@ Bundle-Activator: com.microsoft.azuretools.azureexplorer.Activator
 Bundle-Vendor: Microsoft Corp.
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- com.microsoft.azuretools.sdk;bundle-version="3.26.0",
  org.eclipse.ui.forms,
  org.eclipse.ui.editors,
- org.eclipse.text,
- com.microsoft.azuretools.core;bundle-version="3.26.0",
- com.microsoft.azuretools.container;bundle-version="3.26.0"
+ org.eclipse.text
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
-Import-Package: com.microsoft.tooling.msservices.serviceexplorer.azure,
- org.eclipse.core.resources,
+Import-Package: org.eclipse.core.resources,
  org.eclipse.jface.text.revisions
 Export-Package: com.microsoft.azuretools.azureexplorer,
  com.microsoft.azuretools.azureexplorer.actions,
- com.microsoft.azuretools.azureexplorer.editors,
- com.microsoft.azuretools.azureexplorer.editors.rediscache,
- com.microsoft.azuretools.azureexplorer.forms,
- com.microsoft.azuretools.azureexplorer.forms.createvm,
- com.microsoft.azuretools.azureexplorer.hdinsight,
- com.microsoft.azuretools.azureexplorer.helpers,
- com.microsoft.azuretools.azureexplorer.views,
- com.microsoft.azuretools.azureexplorer.messages 
+ com.microsoft.azuretools.azureexplorer.views 

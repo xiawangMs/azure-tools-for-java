@@ -21,69 +21,12 @@
          point="org.eclipse.ui.views">
        <view
                name="Azure Explorer"
-               icon="icons/AzureExplorer_16.png"
                category="com.microsoft.azuretools"
                class="com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView"
                id="com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView"
                restorable="true">
        </view>
-       <view
-             class="com.microsoft.azuretools.azureexplorer.views.RedisPropertyView"
-             id="com.microsoft.azuretools.azureexplorer.views.RedisPropertyView"
-             icon="icons/RedisCache.png"
-             name="Redis Cache Property">
-       </view>
    </extension>
-   <extension
-            point="org.eclipse.ui.editors">
-       <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor"
-               icon="icons/BlobFile_16.png"
-               name="[Container]"
-               extensions="mtl"
-               id="com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor"/>
-       <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.TableFileEditor"
-               icon="icons/storage.png"
-               name="[Table]"
-               extensions="mtl"
-               id="com.microsoft.azuretools.azureexplorer.editors.TableFileEditor"/>
-       <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor"
-               icon="icons/storage.png"
-               name="[Queue]"
-               extensions="mtl"
-               id="com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor"/>
-       <editor
-               class="com.microsoft.azuretools.azureexplorer.editors.JobViewEditor"
-               icon="icons/JobViewTitle.png"
-               name="Spark JobView"
-               id="com.microsoft.azure.hdinsight.jobview"/>
-       <editor
-             class="com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor"
-             icon="icons/RedisCache.png"
-             id="com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor"
-             name="Redis Cache Explorer">
-       </editor>
-       <editor
-             class="com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor"
-             icon="icons/acr.png"
-             id="com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor"
-             name="ACR Explorer">
-       </editor>
-       <editor
-             class="com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor"
-             icon="icons/WebApp_16.png"
-             id="com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor"
-             name="WebApp Properties">
-       </editor>
-       <editor
-             class="com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor"
-             icon="icons/Slot_16.png"
-             id="com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor"
-             name="Deployment slot Properties">
-     </editor>
-    </extension>
 
 	<extension point="org.eclipse.ui.handlers">
         <handler
@@ -98,7 +41,6 @@
                 commandId="com.microsoft.azuretools.azureexplorer.commands.ShowAzureExplorer"
                 label="Show Azure Explorer"
                 tooltip="Show Azure Explorer"
-                icon="icons/AzureExplorer_16.png"
                 style="push">
             </command>
          </toolbar>
