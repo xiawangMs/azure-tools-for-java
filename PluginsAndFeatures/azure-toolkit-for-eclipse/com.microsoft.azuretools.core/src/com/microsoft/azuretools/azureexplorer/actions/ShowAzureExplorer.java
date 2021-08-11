@@ -18,7 +18,7 @@ public class ShowAzureExplorer  extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
-            ServiceExplorerView view = (ServiceExplorerView) PlatformUI
+            PlatformUI
                     .getWorkbench().getActiveWorkbenchWindow()
                     .getActivePage().showView(ServiceExplorerView.ID);
         } catch (PartInitException e) {
