@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<contexts>
-	<context id="storage_account_dialog">
-        <description>
-This dialog allows you to create new Azure storage account.
-  		</description>
-  		<topic label="Introduction to Microsoft Azure Storage" href="https://docs.microsoft.com/en-us/azure/storage/storage-introduction"/>
-   </context>
-</contexts>

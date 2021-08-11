@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.microsoft.azuretools.core.feature"
+      label="Azure Common Plugin"
+      version="3.26.0.qualifier"
+      provider-name="Microsoft Corp.">
+
+   <description>
+      Provides the common functionality needed by other toolkit components.
+   </description>
+
+   <copyright>
+      Copyright (c) Microsoft Corp.
+   </copyright>
+
+<license url="">
+MICROSOFT SOFTWARE LICENSE TERMS
+Azure Toolkit for Eclipse
+
+</license>
+
+   <plugin
+         id="com.microsoft.azuretools.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.jdt.ui.classpathContainerPage">
+     <classpathContainerPage
+       id="com.microsoft.azuretools.SDK_CONTAINER"
+       name="%page.name"
+       class="com.microsoft.azuretools.wasdkjava.ui.classpath.ClasspathContainerPage"/>
+   </extension>
+   <extension
+         point="org.eclipse.jdt.core.classpathContainerInitializer">
+     <classpathContainerInitializer
+       id="com.microsoft.azuretools.SDK_CONTAINER"
+       class="com.microsoft.azuretools.wasdkjava.ui.classpath.ContainerInitializer"/>
+   </extension>
+
+</plugin>

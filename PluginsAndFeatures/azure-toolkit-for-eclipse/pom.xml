@@ -8,8 +8,10 @@
   <version>${azuretool.eclipse.version}</version>
   <packaging>pom</packaging>
   <modules>
-    <module>com.microsoft.azuretools.azureexplorer</module>
-    <module>com.microsoft.azuretools.azureexplorer.feature</module>
+    <module>../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk</module>
+    <module>../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk.feature</module>
+    <module>com.microsoft.azuretools.core</module>
+    <module>com.microsoft.azuretools.core.feature</module>
     <module>WindowsAzurePlugin4EJ</module>
   </modules>
   <properties>

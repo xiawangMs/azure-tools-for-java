@@ -1,1 +1,0 @@
-Hello Spark local run world with a mocked local fs

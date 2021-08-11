@@ -26,11 +26,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-    <groupId>com.microsoft.azuretools</groupId>
-    <artifactId>utils</artifactId>
-    <version>3.44.0</version>
+    <groupId>com.microsoft.azure</groupId>
+    <artifactId>azure-toolkit-ide-libs</artifactId>
+    <version>0.11.0-SNAPSHOT</version>
     </parent>
-    <groupId>com.microsoft.azuretools</groupId>
+    <groupId>com.microsoft.azure</groupId>
     <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
     <version>3.26.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
@@ -40,23 +40,26 @@
     <properties>
         <azuretool.version>3.44.0</azuretool.version>
         <azuretool.sdk.version>3.26.0.qualifier</azuretool.sdk.version>
+        <azure.toolkit-lib.version>0.11.0-SNAPSHOT</azure.toolkit-lib.version>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>azuretools-core</artifactId>
-            <version>${azuretool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>azure-explorer-common</artifactId>
-            <version>${azuretool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>hdinsight-node-common</artifactId>
-            <version>${azuretool.version}</version>
-        </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-libs</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-common-lib</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-springcloud-lib</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+            </dependency>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
@@ -86,7 +89,7 @@
             </execution>
         </executions>
         <configuration>
-          <excludeDependencies>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeDependencies>
+          <excludeDependencies>azure-toolkit-ide-common-lib,azure-toolkit-ide-springcloud-lib</excludeDependencies>
           <instructions>
             <Bundle-SymbolicName>com.microsoft.azuretools.sdk;singleton:=true</Bundle-SymbolicName>
             <Bundle-Version>${azuretool.sdk.version}</Bundle-Version>
@@ -138,7 +141,7 @@
                     <overWriteReleases>true</overWriteReleases>
                     <overWriteSnapshots>true</overWriteSnapshots>
                     <overWriteIfNewer>true</overWriteIfNewer>
-                    <excludeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeArtifactIds>
+                    <excludeArtifactIds>azure-toolkit-ide-common-lib,azure-toolkit-ide-springcloud-lib</excludeArtifactIds>
                 </configuration>
             </execution>
             <execution>
@@ -153,7 +156,7 @@
                     <overWriteSnapshots>true</overWriteSnapshots>
                     <overWriteIfNewer>true</overWriteIfNewer>
                     <stripVersion>true</stripVersion>
-                    <includeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</includeArtifactIds>
+                    <includeArtifactIds>azure-toolkit-ide-common-lib,azure-toolkit-ide-springcloud-lib</includeArtifactIds>
                 </configuration>
             </execution>
         </executions>
