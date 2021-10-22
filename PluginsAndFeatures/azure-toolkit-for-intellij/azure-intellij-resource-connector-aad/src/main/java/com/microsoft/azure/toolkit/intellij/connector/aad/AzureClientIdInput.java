@@ -15,18 +15,23 @@ import java.util.UUID;
  * Component for the client ID text input.
  */
 class AzureClientIdInput extends AzureTextInput {
-    @Nonnull
-    @Override
-    public AzureValidationInfo doValidate() {
-        var value = this.getValue();
-        if (value == null || value.isEmpty() || isValid(value)) {
-            return super.doValidate();
-        }
 
-        return AzureValidationInfo.builder()
-                .input(this)
-                .message(MessageBundle.message("action.azure.aad.registerApp.clientIdInvalid"))
-                .build();
+    public AzureClientIdInput() {
+        super();
+        this.setValidator(this::doValidateValue);
+        this.setRequired(true);
+    }
+
+    @Nonnull
+    public AzureValidationInfo doValidateValue() {
+        final var value = this.getValue();
+        if (!isValid(value)) {
+            return AzureValidationInfo.builder()
+                    .input(this)
+                    .message(MessageBundle.message("action.azure.aad.registerApp.clientIdInvalid"))
+                    .build();
+        }
+        return AzureValidationInfo.OK;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
