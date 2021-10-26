@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.component;
 
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -37,6 +38,7 @@ import java.util.function.Supplier;
 public class AzureComboBox<T> extends Composite implements AzureFormInputControl<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
     private static final int DEBOUNCE_DELAY = 300;
+    public static final String REFRESHING = "Refreshing...";
     private Object value;
     private boolean valueNotSet = true;
     protected boolean enabled = true;
@@ -63,8 +65,10 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         super(parent, SWT.NONE);
         this.itemsLoader = itemsLoader;
         this.valueDebouncer = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(() -> {
-            this.fireValueChangedEvent(this.getValue());
-            AzureTaskManager.getInstance().runInBackground("validating " + this.getLabel(), this::revalidateAndDecorate);
+            if (!REFRESHING.equals(this.getValue())) {
+                this.fireValueChangedEvent(this.getValue());
+                AzureTaskManager.getInstance().runInBackground("validating " + this.getLabel(), this::revalidateAndDecorate);
+            }
         }), DEBOUNCE_DELAY);
         this.setupUI();
         this.init();
@@ -75,10 +79,10 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
 
     private void init() {
         this.viewer.addPostSelectionChangedListener((e) -> {
-            if (!e.getSelection().isEmpty()) {
+            if (!e.getSelection().isEmpty() && !REFRESHING.equals(this.viewer.getSelectedItem())) {
                 this.setValue(this.getValue());
+                this.valueDebouncer.debounce();
             }
-            this.valueDebouncer.debounce();
         });
     }
 
@@ -107,11 +111,17 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
         this.viewer.setLabelProvider(new LabelProvider() {
             @Override
             public Image getImage(Object element) {
+                if (REFRESHING.equals(element)) {
+                    return null;
+                }
                 return AzureComboBox.this.getItemIcon(element);
             }
 
             @Override
             public String getText(Object element) {
+                if (REFRESHING.equals(element)) {
+                    return REFRESHING;
+                }
                 return AzureComboBox.this.getItemText(element);
             }
         });
@@ -164,7 +174,9 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
             }
         } else {
             final Object selected = this.viewer.getSelectedItem();
-            if (Objects.equals(selected, this.value) || (this.value instanceof AzureComboBox.ItemReference && ((AzureComboBox.ItemReference<?>) this.value).is(selected))) {
+            if (Objects.equals(selected, REFRESHING) ||
+                Objects.equals(selected, this.value) ||
+                (this.value instanceof AzureComboBox.ItemReference && ((AzureComboBox.ItemReference<?>) this.value).is(selected))) {
                 return;
             }
             final List<T> items = this.getItems();
@@ -183,7 +195,8 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     public void refreshItems() {
-        final String title = String.format("load/refresh %s items in combo box", this.getLabel());
+        final String title = String.format("refresh %s items in combo box", this.getLabel());
+        AzureMessager.getMessager().info(AzureString.fromString(title), "Temp");
         AzureTaskManager.getInstance().runInBackground(title, this::doRefreshItems);
     }
 
@@ -247,18 +260,23 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
                 return;
             }
             if (loading) {
-                this.viewer.setEnabled(false);
                 this.toggleLoadingSpinner(true);
+                this.viewer.setEnabled(false);
             } else {
-                this.viewer.setEnabled(this.enabled);
                 this.toggleLoadingSpinner(false);
+                this.viewer.setEnabled(this.enabled);
             }
             this.viewer.repaint();
         });
     }
 
     private void toggleLoadingSpinner(boolean b) {
-
+        if (b) {
+            this.viewer.add(REFRESHING);
+            this.viewer.setSelectedItem(REFRESHING);
+        } else {
+            this.viewer.remove(REFRESHING);
+        }
     }
 
     private void setEditable(boolean b) {
