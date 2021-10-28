@@ -7,19 +7,20 @@ package com.microsoft.azure.toolkit.intellij.redis;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyViewPresenter;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.swing.*;
 
 public class RedisCachePropertyView extends BaseEditor implements RedisPropertyMvpView {
 
     public static final String ID = "com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView";
-
-    private final RedisPropertyViewPresenter<RedisCachePropertyView> redisPropertyViewPresenter;
 
     private String primaryKey = "";
     private String secondaryKey = "";
@@ -42,9 +43,6 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
 
     public RedisCachePropertyView(@NotNull final VirtualFile virtualFile) {
         super(virtualFile);
-        this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<>();
-        this.redisPropertyViewPresenter.onAttachView(this);
-
         disableTxtBoard();
         makeTxtOpaque();
 
@@ -79,12 +77,20 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
 
     @Override
     public void dispose() {
-        redisPropertyViewPresenter.onDetachView();
     }
 
     @Override
     public void onReadProperty(String sid, String id) {
-        redisPropertyViewPresenter.onGetRedisProperty(sid, id);
+        AzureRedis az = Azure.az(AzureRedis.class).subscription(sid);
+        Mono.fromCallable(() -> az.get(id).entity()).map(redis -> {
+            RedisCacheProperty property = new RedisCacheProperty(redis.getName(), redis.getType(), redis.getResourceGroupName(),
+                    redis.getRegion().getName(), sid, redis.getRedisVersion(), redis.getSSLPort(), redis.getNonSslPortEnabled(),
+                    redis.getPrimaryKey(), redis.getSecondaryKey(), redis.getHostName());
+            return property;
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe(property -> {
+            this.showProperty(property);
+        });
+
     }
 
     @Override

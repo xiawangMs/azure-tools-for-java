@@ -17,7 +17,7 @@ import com.microsoft.azure.management.compute.VirtualMachineImage;
 import com.microsoft.azure.management.compute.VirtualMachineOffer;
 import com.microsoft.azure.management.compute.VirtualMachinePublisher;
 import com.microsoft.azure.management.compute.VirtualMachineSku;
-import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.VMWizardModel;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -71,7 +71,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
     private JPanel rootPanel;
     private JList createVmStepsList;
-    private com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox regionComboBox;
+    private RegionComboBox regionComboBox;
 
     private JList imageLabelList;
     private JComboBox publisherComboBox;

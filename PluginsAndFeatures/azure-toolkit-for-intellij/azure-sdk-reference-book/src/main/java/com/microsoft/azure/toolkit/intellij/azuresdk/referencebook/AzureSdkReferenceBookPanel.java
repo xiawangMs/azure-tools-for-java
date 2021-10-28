@@ -20,7 +20,7 @@ public class AzureSdkReferenceBookPanel {
     private JPanel leftPanel;
 
     public AzureSdkReferenceBookPanel() {
-        this.contentPanel.setPreferredSize(new Dimension(800, 600));
+        this.contentPanel.setPreferredSize(new Dimension(840, 600));
         this.initListeners();
         this.servicesTreePanel.refresh();
     }

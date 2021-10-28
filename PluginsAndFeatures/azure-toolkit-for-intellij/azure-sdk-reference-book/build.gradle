@@ -12,7 +12,7 @@ dependencies {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
     compile project(':azure-intellij-plugin-lib')
-    compile "com.microsoft.azure:azure-toolkit-common-lib:0.11.0"
+    compile "com.microsoft.azure:azure-toolkit-common-lib:0.12.1"
 
-    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.11.0"
+    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.12.1"
 }

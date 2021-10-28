@@ -1,0 +1,18 @@
+intellij {
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-plugin-storage')
+    compile 'com.microsoft.azure:azure-toolkit-compute-lib:0.12.1'
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.12.1'
+    compile 'com.microsoft.azure:azure-toolkit-ide-vm-lib:0.12.1'
+}

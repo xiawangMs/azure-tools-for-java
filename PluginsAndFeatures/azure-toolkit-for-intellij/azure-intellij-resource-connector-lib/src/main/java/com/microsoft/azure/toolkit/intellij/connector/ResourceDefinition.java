@@ -10,8 +10,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public interface ResourceDefinition<T extends Resource> {
+public interface ResourceDefinition<T> {
     int RESOURCE = 1;
     int CONSUMER = 2;
     int BOTH = RESOURCE | CONSUMER;
@@ -28,28 +29,37 @@ public interface ResourceDefinition<T extends Resource> {
     }
 
     default String getTitle() {
-        return this.getType();
+        return this.getName();
     }
 
-    String getType();
+    @Nullable
+    default String getIcon() {
+        return null;
+    }
+
+    String getName();
+
+    Resource<T> define(T resource);
 
     /**
      * get resource selection panel<br>
      * with this panel, user could select/create a {@link T} resource.
-     *
-     * @param type type of the resource
      */
-    AzureFormJPanel<T> getResourcesPanel(@Nonnull final String type, final Project project);
+    AzureFormJPanel<T> getResourcePanel(final Project project);
 
     /**
      * write/serialize {@code resouce} to {@code element} for persistence
      *
      * @return true if to persist, false otherwise
      */
-    boolean write(@Nonnull final Element element, @Nonnull final T resource);
+    boolean write(@Nonnull final Element element, @Nonnull final Resource<T> resource);
 
     /**
      * read/deserialize a instance of {@link T} from {@code element}
      */
-    T read(@Nonnull final Element element);
+    Resource<T> read(@Nonnull final Element element);
+
+    default String getDefaultEnvPrefix() {
+        return this.getName().toUpperCase().replaceAll("[^a-zA-Z0-9]", "_");
+    }
 }

@@ -25,8 +25,8 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.azure.toolkit.ide.common.action.Action;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -46,6 +46,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -297,6 +299,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // create child tree nodes for each child node
         node.getChildNodes().stream()
+            .filter(s -> !isOutdatedModule(s))
             .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
             .map(childNode -> createTreeNode(childNode, project))
             .forEach(treeNode::add);
@@ -363,6 +366,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 case add:
                     // create child tree nodes for the new nodes
                     for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                        if (isOutdatedModule(childNode)) {
+                            continue;
+                        }
                         treeNode.add(createTreeNode(childNode, project));
                     }
                     break;
@@ -370,9 +376,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     // unregistered all event handlers recursively and remove
                     // child nodes from the tree
                     for (Node childNode : (Collection<Node>) e.getOldItems()) {
-                        removeEventHandlers(childNode);
-
+                        if (isOutdatedModule(childNode)) {
+                            continue;
+                        }
                         // remove this node from the tree
+                        removeEventHandlers(childNode);
                         treeNode.remove((MutableTreeNode) childNode.getViewData());
                     }
                     break;
@@ -480,5 +488,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 AzurePlugin.log(e.getMessage(), e);
             }
         }
+    }
+
+    private boolean isOutdatedModule(Node node) {
+        return node instanceof StorageModule || node instanceof VMArmModule;
     }
 }

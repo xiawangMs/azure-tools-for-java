@@ -12,7 +12,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
@@ -27,9 +27,9 @@ import java.util.Objects;
 public class IntellijShowPropertiesViewAction {
     private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
     private static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
-    public static final Key<IAzureResource<?>> AZURE_RESOURCE_KEY = new Key<>("AzureResource");
+    public static final Key<IAzureBaseResource<?, ?>> AZURE_RESOURCE_KEY = new Key<>("AzureResource");
 
-    public static void showPropertyView(@Nonnull IAzureResource<?> resource, @Nonnull Project project) {
+    public static void showPropertyView(@Nonnull IAzureBaseResource<?, ?> resource, @Nonnull Project project) {
         final FileEditorManager manager = FileEditorManager.getInstance(project);
         if (manager == null) {
             AzureMessager.getMessager().error(UNABLE_TO_OPEN_EDITOR_WINDOW);
@@ -46,7 +46,7 @@ public class IntellijShowPropertiesViewAction {
         AzureTaskManager.getInstance().runLater(() -> manager.openFile(itemVirtualFile, true, true));
     }
 
-    public static void closePropertiesView(@Nonnull IAzureResource<?> resource, @Nonnull Project project) {
+    public static void closePropertiesView(@Nonnull IAzureBaseResource<?, ?> resource, @Nonnull Project project) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final LightVirtualFile file = searchOpenedFile(fileEditorManager, resource);
         if (file != null) {
@@ -55,9 +55,9 @@ public class IntellijShowPropertiesViewAction {
     }
 
     @Nullable
-    private static LightVirtualFile searchOpenedFile(FileEditorManager manager, IAzureResource<?> resource) {
+    private static LightVirtualFile searchOpenedFile(FileEditorManager manager, IAzureBaseResource<?, ?> resource) {
         for (final VirtualFile openedFile : manager.getOpenFiles()) {
-            final IAzureResource<?> opened = openedFile.getUserData(AZURE_RESOURCE_KEY);
+            final IAzureBaseResource<?, ?> opened = openedFile.getUserData(AZURE_RESOURCE_KEY);
             if (openedFile.getFileType().getName().equals(getFileTypeName(resource)) && opened != null && opened.id().equals(resource.id())) {
                 return (LightVirtualFile) openedFile;
             }
@@ -65,17 +65,17 @@ public class IntellijShowPropertiesViewAction {
         return null;
     }
 
-    private static LightVirtualFile createVirtualFile(IAzureResource<?> resource) {
+    private static LightVirtualFile createVirtualFile(IAzureBaseResource<?, ?> resource) {
         final LightVirtualFile itemVirtualFile = new LightVirtualFile(resource.name());
         itemVirtualFile.putUserData(AZURE_RESOURCE_KEY, resource);
         return itemVirtualFile;
     }
 
-    private static String getFileTypeName(@Nonnull IAzureResource<?> resource) {
+    private static String getFileTypeName(@Nonnull IAzureBaseResource<?, ?> resource) {
         return String.format("%s_FILE_TYPE", resource.getClass().getSimpleName().toUpperCase());
     }
 
-    private static Icon getFileTypeIcon(@Nonnull IAzureResource<?> resource) {
+    private static Icon getFileTypeIcon(@Nonnull IAzureBaseResource<?, ?> resource) {
         return AzureIcons.getIcon(String.format("/icons/%s.svg", resource.getClass().getSimpleName().toLowerCase()));
     }
 

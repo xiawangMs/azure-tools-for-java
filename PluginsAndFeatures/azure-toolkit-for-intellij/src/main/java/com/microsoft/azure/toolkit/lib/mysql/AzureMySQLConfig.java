@@ -6,8 +6,10 @@
 package com.microsoft.azure.toolkit.lib.mysql;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
+import com.microsoft.azure.toolkit.intellij.mysql.creation.MySQLCreationAdvancedPanel;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -52,16 +54,15 @@ public class AzureMySQLConfig {
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
         config.setResourceGroup(resourceGroup);
         final AzureMySql azureMySql = az(AzureMySql.class).subscription(subscription.getId());
-        final List<Region> supportedRegions = azureMySql.listSupportedRegions();
-        if (CollectionUtils.isNotEmpty(supportedRegions)) {
-            config.setRegion(supportedRegions.get(0));
-        }
         config.setServerName("mysql-" + defaultNameSuffix);
         config.setAdminUsername(StringUtils.EMPTY);
-        config.setVersion("5.7"); // defeault to 5.7
+        config.setVersion("5.7"); // default to 5.7
         config.setPassword(StringUtils.EMPTY.toCharArray());
         config.setConfirmPassword(StringUtils.EMPTY.toCharArray());
-
+        // TODO(andy): remove the dependency to MySQLCreationAdvancedPanel
+        config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region",
+            MySQLCreationAdvancedPanel.loadSupportedRegions(az(AzureMySql.class), subscription.getId()),
+            Region.US_EAST));
         return config;
     }
 

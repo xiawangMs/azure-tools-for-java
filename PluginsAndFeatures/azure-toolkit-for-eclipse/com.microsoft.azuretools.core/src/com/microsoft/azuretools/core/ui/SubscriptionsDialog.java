@@ -5,15 +5,17 @@
 
 package com.microsoft.azuretools.core.ui;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
-
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.utils.ProgressDialog;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,20 +28,20 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.*;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.utils.ProgressDialog;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
 
 public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     private static final String SUBSCRIPTION_MESSAGE = "Select subscription(s) you want to use.";
@@ -100,17 +102,39 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         tblclmnNewColumn1.setWidth(270);
         tblclmnNewColumn1.setText("Subscription ID");
 
-        Button btnRefresh = new Button(container, SWT.NONE);
+        Composite composite = new Composite(container, SWT.NONE);
+        composite.setLayout(new RowLayout(SWT.HORIZONTAL));
+
+        Button btnRefresh = new Button(composite, SWT.NONE);
         btnRefresh.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 refreshSubscriptions();
             }
         });
-        GridData gdBtnRefresh = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
-        gdBtnRefresh.widthHint = 78;
-        btnRefresh.setLayoutData(gdBtnRefresh);
         btnRefresh.setText("Refresh");
+
+        Button btnSelectAll = new Button(composite, SWT.NONE);
+        btnSelectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Arrays.stream(table.getItems()).forEach(d -> {
+                    d.setChecked(true);
+                });
+            }
+        });
+        btnSelectAll.setText("Select All");
+
+        Button btnDeselectAll = new Button(composite, SWT.NONE);
+        btnDeselectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Arrays.stream(table.getItems()).forEach(d -> {
+                    d.setChecked(false);
+                });
+            }
+        });
+        btnDeselectAll.setText("Deselect All");
 
         return area;
     }
@@ -122,7 +146,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             public void run() {
                 System.out.println("refreshSubscriptionsAsync");
                 refreshSubscriptionsAsync();
-                setSubscriptionDetails();
+                setSubscriptions();
             }
         });
     }
@@ -134,7 +158,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Reading subscriptions...", IProgressMonitor.UNKNOWN);
                     EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
-                        subscriptionManager.getSubscriptionDetails();
+                        Azure.az(AzureAccount.class).account().reloadSubscriptions().block();
                     }, (ex) -> {
                             ex.printStackTrace();
                             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
@@ -149,7 +173,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
-    private void setSubscriptionDetails() {
+    private void setSubscriptions() {
         sdl = subscriptionManager.getSubscriptionDetails();
         for (SubscriptionDetail sd : sdl) {
             TableItem item = new TableItem(table, SWT.NULL);
@@ -163,7 +187,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         table.removeAll();
         subscriptionManager.cleanSubscriptions();
         refreshSubscriptionsAsync();
-        setSubscriptionDetails();
+        setSubscriptions();
         subscriptionManager.setSubscriptionDetails(sdl);
     }
 
@@ -182,6 +206,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     public void okPressed() {
         EventUtil.logEvent(EventType.info, ACCOUNT, SELECT_SUBSCRIPTIONS, null);
         TableItem[] tia = table.getItems();
+        int rc = tia.length;
         int chekedCount = 0;
         for (TableItem ti : tia) {
             if (ti.getChecked()) {
@@ -204,6 +229,25 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@SubscriptionDialog", ex));
         }
+
+        List<String> selectedIds = this.sdl.stream().filter(SubscriptionDetail::isSelected)
+                .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
+        IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
+
+        IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
+        Mono.fromCallable(() -> {
+            AzureAccount az = Azure.az(AzureAccount.class);
+            selectedIds.stream().limit(5).forEach(sid -> {
+                // pr-load regions
+                az.listRegions(sid);
+            });
+            return 1;
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
+
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("subsCount", String.valueOf(rc));
+        properties.put("selectedSubsCount", String.valueOf(chekedCount));
+        EventUtil.logEvent(EventType.info, ACCOUNT, SELECT_SUBSCRIPTIONS, null);
 
         super.okPressed();
     }

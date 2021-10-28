@@ -13,7 +13,6 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementa
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -240,7 +239,6 @@ public abstract class AzureManagerBase implements AzureManager {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         final Azure.Configurable configurable = Azure.configure()
             .withInterceptor(new TelemetryInterceptor())
-            .withInterceptor(new RestExceptionHandlerInterceptor())
             .withUserAgent(CommonSettings.USER_AGENT);
         Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
             configurable.withProxy(proxy);
@@ -252,8 +250,7 @@ public abstract class AzureManagerBase implements AzureManager {
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         final InsightsManager.Configurable configurable = buildAzureManager(InsightsManager.configure())
-            .withInterceptor(new TelemetryInterceptor())
-            .withInterceptor(new RestExceptionHandlerInterceptor());
+            .withInterceptor(new TelemetryInterceptor());
         Optional.ofNullable(createProxyFromConfig()).ifPresent(proxy -> {
             configurable.withProxy(proxy);
             Optional.ofNullable(createProxyAuthenticatorFromConfig()).ifPresent(configurable::withProxyAuthenticator);

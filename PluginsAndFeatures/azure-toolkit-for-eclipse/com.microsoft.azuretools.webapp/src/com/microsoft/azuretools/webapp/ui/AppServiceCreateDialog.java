@@ -11,53 +11,28 @@ import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_LOCATI
 import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_PRICING;
 import static com.microsoft.azuretools.webapp.util.CommonUtils.getSelectedItem;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.core.ui.ErrorWindow;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.core.utils.ProgressDialog;
-import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.azuretools.utils.WebAppUtils.WebContainerMod;
-import com.microsoft.azuretools.webapp.Activator;
-import com.microsoft.azuretools.webapp.util.CommonUtils;
-
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -103,9 +78,38 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import rx.Observable;
-import rx.exceptions.Exceptions;
-import rx.schedulers.Schedulers;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
+import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.core.utils.ProgressDialog;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.webapp.util.CommonUtils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
@@ -127,6 +131,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             + "characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
     private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the"
             + " first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
+    private static final String REFRESHING = "Refreshing...";
 
     // validation regex
     private static final String WEB_APP_NAME_REGEX = "^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$";
@@ -156,10 +161,10 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private static final String GROUP_APPSETTING = "App Settings";
 
     private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
-    public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
-    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8_NEWEST;
-    private static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_9_0_JRE8;
-    private static final WebContainerMod DEFAULT_WEB_CONTAINER = WebContainerMod.Newest_Tomcat_90;
+    public static final PricingTier DEFAULT_PRICINGTIER = PricingTier.BASIC_B2;
+    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8;
+    private static final WebContainer DEFAULT_WEB_CONTAINER = WebContainer.TOMCAT_9;
+    private static final Runtime DEFAULT_LINUX_RUNTIME = Runtime.LINUX_JAVA8_TOMCAT9;
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     private static final String LNK_PRICING = "<a>App service pricing details</a>";
     private static final String NOT_AVAILABLE = "N/A";
@@ -215,13 +220,14 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private ControlDecoration dec_cbJavaVersion;
 
     // controls to types bindings by index
-    private List<WebAppUtils.WebContainerMod> binderWebConteiners;
-    private List<SubscriptionDetail> binderSubscriptionDetails;
+    private List<JavaVersion> binderJavaVersions;
+    private List<WebContainer> binderWebConteiners;
+    private List<Subscription> binderSubscriptionDetails;
     private List<ResourceGroup> binderResourceGroup;
-    private List<AppServicePlan> binderAppServicePlan;
-    private List<Location> binderAppServicePlanLocation;
+    private List<IAppServicePlan> binderAppServicePlan;
+    private List<Region> binderAppServicePlanLocation;
     private List<PricingTier> binderAppServicePlanPricingTier;
-    private List<JdkModel> javaVersions;
+    private List<Runtime> binderRuntimeStacks;
 
     private Composite compositeAppServicePlan;
     private Button btnAppServiceCreateNew;
@@ -247,15 +253,15 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private Composite compositeRuntime;
 
     private boolean chooseWin = false;
-    protected WebApp webApp;
-    private String packaging = WebAppUtils.TYPE_WAR;
+    protected IWebApp webApp;
+    private String packaging = "war";
 
     private final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
-    private static Map<String, List<AppServicePlan>> sidAspMap = new ConcurrentHashMap<>();
+    private static Map<String, List<IAppServicePlan>> sidAspMap = new ConcurrentHashMap<>();
     private Map<String, String> appSettings = new HashMap<>();
     protected WebAppSettingModel model = new WebAppSettingModel();
 
-    public WebApp getWebApp() {
+    public IWebApp getWebApp() {
         return this.webApp;
     }
 
@@ -329,7 +335,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 fillResourceGroups();
                 fillAppServicePlans();
                 fillAppServicePlansDetails();
-                fillAppServicePlanLocations();
+                fillRegions();
             }
         });
         dec_comboSubscription = decorateContorolAndRegister(comboSubscription);
@@ -345,24 +351,24 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
+        fillSubscriptions();
+        fillRegions();
+        fillResourceGroups();
+        fillJavaVersion();
         fillLinuxRuntime();
         fillWebContainers();
-        fillSubscriptions();
+        fillPricingTiers();
+
         String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
-        if (os.equalsIgnoreCase(OperatingSystem.LINUX.toString())) {
+        if (StringUtils.equalsIgnoreCase(os, OperatingSystem.LINUX.toString())) {
             btnOSGroupLinux.setSelection(true);
             btnOSGroupWin.setSelection(false);
-        } else if (os.equalsIgnoreCase(OperatingSystem.WINDOWS.toString())) {
+        } else if (StringUtils.equalsIgnoreCase(os, OperatingSystem.WINDOWS.toString())) {
             btnOSGroupLinux.setSelection(false);
             btnOSGroupWin.setSelection(true);
         }
         radioRuntimeLogic();
-        fillResourceGroups();
-        fillAppServicePlans();
-        fillAppServicePlansDetails();
-        fillAppServicePlanLocations();
-        fillAppServicePlanPricingTiers();
-        fillJavaVersion();
+
         return scrolledComposite;
     }
 
@@ -398,6 +404,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         });
         comboAppServicePlan.setBounds(0, 0, 26, 22);
         dec_comboAppServicePlan = decorateContorolAndRegister(comboAppServicePlan);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlan, "Existing app service plan");
 
         lblAppServiceUseExictingLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExictingLocation.setEnabled(true);
@@ -446,6 +453,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         dec_textAppSevicePlanName = decorateContorolAndRegister(textAppSevicePlanName);
         textAppSevicePlanName.setText(APP_SERVICE_PLAN_PREFIX + date);
         textAppSevicePlanName.setEnabled(false);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textAppSevicePlanName, "New app service plan");
 
         lblAppServiceCreateNewLocation = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -464,6 +472,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanLocation.setEnabled(false);
         dec_comboAppServicePlanLocation = decorateContorolAndRegister(comboAppServicePlanLocation);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanLocation, "App service plan location");
 
         lblAppServiceCreateNewPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gdLblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -475,6 +484,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboAppServicePlanPricingTier = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlanPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboAppServicePlanPricingTier.setEnabled(false);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboAppServicePlanPricingTier,
+                "App service plan pricing tier");
 
         new Label(compositeAppServicePlan, SWT.NONE);
         linkAppServicePricing = new Link(compositeAppServicePlan, SWT.NONE);
@@ -520,6 +531,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboResourceGroup.setBounds(0, 0, 26, 22);
         dec_comboSelectResGr = decorateContorolAndRegister(comboResourceGroup);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(comboResourceGroup, "Existing resource group");
 
         btnResourceGroupCreateNew = new Button(compositeResourceGroup, SWT.RADIO);
         btnResourceGroupCreateNew.addSelectionListener(new SelectionAdapter() {
@@ -543,6 +555,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         textResourceGroupName.setText(RESOURCE_GROUP_PREFIX + date);
         textResourceGroupName.setEnabled(false);
         dec_textNewResGrName = decorateContorolAndRegister(textResourceGroupName);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(textResourceGroupName, "New resource group");
     }
 
     private void createRuntimeGroup(Composite composite) {
@@ -651,6 +664,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
             }
         });
+        AccessibilityUtils.addAccessibilityNameForUIComponent(tblAppSettings, "App settings");
 
         appSettingsEditor = new TableEditor(tblAppSettings);
         appSettingsEditor.horizontalAlignment = SWT.LEFT;
@@ -720,41 +734,41 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         final Text text = new Text(tblAppSettings, SWT.NONE);
         Listener textListener = e -> {
             switch (e.type) {
-                case SWT.FocusOut:
+            case SWT.FocusOut:
+                item.setText(column, text.getText());
+                text.dispose();
+                readTblAppSettings();
+                updateTableActionBtnStatus(true);
+                break;
+            case SWT.Traverse:
+                switch (e.detail) {
+                case SWT.TRAVERSE_RETURN:
                     item.setText(column, text.getText());
                     text.dispose();
+                    e.doit = false;
                     readTblAppSettings();
                     updateTableActionBtnStatus(true);
                     break;
-                case SWT.Traverse:
-                    switch (e.detail) {
-                        case SWT.TRAVERSE_RETURN:
-                            item.setText(column, text.getText());
-                            text.dispose();
-                            e.doit = false;
-                            readTblAppSettings();
-                            updateTableActionBtnStatus(true);
-                            break;
-                        case SWT.TRAVERSE_ESCAPE:
-                            text.dispose();
-                            e.doit = false;
-                            readTblAppSettings();
-                            updateTableActionBtnStatus(true);
-                            break;
-                        case SWT.TRAVERSE_TAB_NEXT:
-                            if (column < tblAppSettings.getColumnCount()) {
-                                editingTableItem(item, column + 1);
-                            }
-                            break;
-                        case SWT.TRAVERSE_TAB_PREVIOUS:
-                            if (column > 0) {
-                                editingTableItem(item, column - 1);
-                            }
-                            break;
-                        default:
+                case SWT.TRAVERSE_ESCAPE:
+                    text.dispose();
+                    e.doit = false;
+                    readTblAppSettings();
+                    updateTableActionBtnStatus(true);
+                    break;
+                case SWT.TRAVERSE_TAB_NEXT:
+                    if (column < tblAppSettings.getColumnCount()) {
+                        editingTableItem(item, column + 1);
+                    }
+                    break;
+                case SWT.TRAVERSE_TAB_PREVIOUS:
+                    if (column > 0) {
+                        editingTableItem(item, column - 1);
                     }
                     break;
                 default:
+                }
+                break;
+            default:
             }
         };
         text.addListener(SWT.FocusOut, textListener);
@@ -803,7 +817,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private void onBtnNewItemSelection() {
         updateTableActionBtnStatus(false);
         TableItem item = new TableItem(tblAppSettings, SWT.NONE);
-        item.setText(new String[]{"<key>", "<value>"});
+        item.setText(new String[] { "<key>", "<value>" });
         tblAppSettings.setSelection(item);
         editingTableItem(item, 0);
     }
@@ -860,32 +874,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         comboResourceGroup.setEnabled(!enabled);
     }
 
-    protected void fillWebContainers() {
-        try {
-            if (MavenUtils.isMavenProject(project)) {
-                packaging = MavenUtils.getPackaging(project);
-            }
-        } catch (Exception e) {
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
-        }
-        final boolean isJarPacking = packaging.equals(WebAppUtils.TYPE_JAR);
-        final JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
-        final List<WebContainerMod> webContainers =
-                isJarPacking ? AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.listWebContainersForWarFile();
-        comboWebContainer.removeAll();
-        binderWebConteiners = new ArrayList<>();
-        for (int i = 0; i < webContainers.size(); i++) {
-            WebContainerMod webContainerMod = webContainers.get(i);
-            comboWebContainer.add(webContainerMod.toString());
-            binderWebConteiners.add(webContainerMod);
-            if (i == 0 || webContainerMod == DEFAULT_WEB_CONTAINER) {
-                comboWebContainer.select(i);
-            }
-        }
-        String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
-        CommonUtils.selectComboIndex(comboWebContainer, webContainer);
-    }
-
     protected static <T> List<T> createListFromClassFields(Class<?> c) throws IllegalAccessException {
         List<T> list = new LinkedList<T>();
 
@@ -901,51 +889,19 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         return list;
     }
 
-    protected void fillSubscriptions() {
-        if (AzureModel.getInstance().getResourceGroupToWebAppMap() == null) {
-            updateAndFillSubscriptions();
-        } else {
-            doFillSubscriptions();
-        }
-    }
-
-    private void updateAndFillSubscriptions() {
+    private void fillSubscriptions() {
         try {
-            ProgressDialog.get(this.getShell(), GETTING_APP_SERVICES).run(true, true, (monitor) -> {
-                monitor.beginTask(UPDATING_AZURE_LOCAL_CACHE, IProgressMonitor.UNKNOWN);
-                if (monitor.isCanceled()) {
-                    AzureModel.getInstance().setResourceGroupToWebAppMap(null);
-                    Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
-                }
-                try {
-                    AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
-                    Display.getDefault().asyncExec(() -> doFillSubscriptions());
-                } catch (Exception ex) {
-                    LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@updateAndFillSubscriptions@AppServiceCreateDialog", ex));
-                }
-            });
-        } catch (InvocationTargetException | InterruptedException ex) {
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillSubscriptions@AppServiceCreateDialog",
-                    ex));
-        }
-    }
-
-    private void doFillSubscriptions() {
-        try {
+            List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account()
+                    .getSelectedSubscriptions();
             // reset model
-            Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
-            if (sdl == null) {
+            if (selectedSubscriptions == null) {
                 return;
             }
-
             comboSubscription.removeAll();
             binderSubscriptionDetails = new ArrayList<>();
-            for (SubscriptionDetail sd : sdl) {
-                if (sd != null && sd.isSelected()) {
-                    comboSubscription.add(sd.getSubscriptionName());
-                    binderSubscriptionDetails.add(sd);
-                }
+            for (Subscription sd : selectedSubscriptions) {
+                comboSubscription.add(sd.getName());
+                binderSubscriptionDetails.add(sd);
             }
             if (comboSubscription.getItemCount() > 0) {
                 comboSubscription.select(0);
@@ -959,103 +915,64 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     }
 
     protected void fillResourceGroups() {
-        int i = comboSubscription.getSelectionIndex();
-        if (i < 0) { // empty
+        Subscription selectedSubscription = getSelectedSubscription();
+        if (selectedSubscription == null) {
             return;
         }
 
-        List<ResourceGroup> rgl = AzureModel.getInstance().getSubscriptionToResourceGroupMap()
-                .get(binderSubscriptionDetails.get(i));
-        if (rgl == null) {
-            return;
-        }
-        Collections.sort(rgl, Comparator.comparing(ResourceGroup::name));
+        setComboRefreshingStatus(comboResourceGroup, true);
+        Mono.fromCallable(() -> {
+            List<ResourceGroup> list = Azure.az(AzureGroup.class).list(selectedSubscription.getId(), false);
+            list.sort(Comparator.comparing(ResourceGroup::getName));
+            return list;
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe(groupList -> {
+            binderResourceGroup = new ArrayList<>();
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                comboResourceGroup.removeAll();
+                for (ResourceGroup rg : groupList) {
+                    comboResourceGroup.add(rg.getName());
+                    binderResourceGroup.add(rg);
+                }
 
-        comboResourceGroup.removeAll();
-        binderResourceGroup = new ArrayList<>();
-        for (ResourceGroup rg : rgl) {
-            comboResourceGroup.add(rg.name());
-            binderResourceGroup.add(rg);
-        }
-
-        if (comboResourceGroup.getItemCount() > 0) {
-            comboResourceGroup.select(0);
-        }
-        String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
-        CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
+                if (comboResourceGroup.getItemCount() > 0) {
+                    comboResourceGroup.select(0);
+                }
+                String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
+                CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
+            });
+        });
     }
 
     protected void fillAppServicePlans() {
-        int i = comboSubscription.getSelectionIndex();
-        if (i < 0) { // empty
+        Subscription selectedSubscription = getSelectedSubscription();
+        if (selectedSubscription == null) {
             return;
         }
-
-        List<AppServicePlan> appServicePlans = getAppservicePlanBySID(
-                binderSubscriptionDetails.get(i).getSubscriptionId());
-        if (appServicePlans == null) {
-            return;
-        }
-
-        comboAppServicePlan.removeAll();
-        binderAppServicePlan = new ArrayList<>();
-        appServicePlans.sort(Comparator.comparing(AppServicePlan::name));
-        for (AppServicePlan asp : appServicePlans) {
-            if (chooseWin) {
-                if (asp.operatingSystem() == null || asp.operatingSystem() == OperatingSystem.WINDOWS) {
+        OperatingSystem os = getSelectedOS();
+        setComboRefreshingStatus(comboAppServicePlan, true);
+        Mono.fromCallable(() -> {
+            return Azure.az(AzureAppService.class).appServicePlans(selectedSubscription.getId(), false).stream()
+                    .filter(asp -> asp.entity().getOperatingSystem() == null || asp.entity().getOperatingSystem() == os)
+                    .collect(Collectors.toList());
+        }).subscribeOn(Schedulers.boundedElastic())
+        .subscribe(appServicePlans -> {
+            appServicePlans.sort(Comparator.comparing(IAppServicePlan::name));
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                setComboRefreshingStatus(comboAppServicePlan, false);
+                binderAppServicePlan = new ArrayList<>();
+                for (IAppServicePlan asp : appServicePlans) {
                     binderAppServicePlan.add(asp);
                     comboAppServicePlan.add(asp.name());
                 }
-            } else {
-                if (asp.operatingSystem() == null || asp.operatingSystem() == OperatingSystem.LINUX) {
-                    binderAppServicePlan.add(asp);
-                    comboAppServicePlan.add(asp.name());
+
+                if (comboAppServicePlan.getItemCount() > 0) {
+                    comboAppServicePlan.select(0);
                 }
-            }
-        }
-
-        if (comboAppServicePlan.getItemCount() > 0) {
-            comboAppServicePlan.select(0);
-        }
-        String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
-        CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
-        fillAppServicePlansDetails();
-    }
-
-    private List<AppServicePlan> getAppservicePlanBySID(String sid) {
-        try {
-            if (sidAspMap.containsKey(sid)) {
-                return sidAspMap.get(sid);
-            }
-            List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
-                    .listAppServicePlanBySubscriptionId(sid);
-            sidAspMap.put(sid, appServicePlans);
-            return appServicePlans;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static void initAspCache() {
-        try {
-            Map<String, List<AppServicePlan>> map = new ConcurrentHashMap<>();
-            Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
-            if (sdl.size() > 0) {
-                Observable.from(sdl).flatMap((sd) ->
-                        Observable.create((subscriber) -> {
-                            try {
-                                List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
-                                        .listAppServicePlanBySubscriptionId(sd.getSubscriptionId());
-                                map.put(sd.getSubscriptionId(), appServicePlans);
-                                subscriber.onCompleted();
-                            } catch (Exception e) {
-                                Exceptions.propagate(e);
-                            }
-                        }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
-            }
-            sidAspMap = map;
-        } catch (Exception ignore) {
-        }
+                String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
+                CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
+                fillAppServicePlansDetails();
+            });
+        });
     }
 
     protected void fillAppServicePlansDetails() {
@@ -1064,45 +981,51 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             lblAppSevicePlanLocation.setText(NOT_AVAILABLE);
             lblAppServicePlanPricingTier.setText(NOT_AVAILABLE);
         } else {
-            AppServicePlan asp = binderAppServicePlan.get(i);
-            lblAppSevicePlanLocation.setText(asp.region().label());
-            lblAppServicePlanPricingTier.setText(asp.pricingTier().toString());
+            IAppServicePlan asp = binderAppServicePlan.get(i);
+            lblAppSevicePlanLocation.setText(asp.entity().getRegion());
+            lblAppServicePlanPricingTier.setText(asp.entity().getPricingTier().toString());
         }
     }
 
-    protected void fillAppServicePlanLocations() {
-        int i = comboSubscription.getSelectionIndex();
-        if (i < 0) { // empty
+    protected void fillRegions() {
+        Subscription selectedSubscription = getSelectedSubscription();
+        if (selectedSubscription == null) {
             return;
         }
 
-        comboAppServicePlanLocation.removeAll();
-        binderAppServicePlanLocation = new ArrayList<>();
-        Map<SubscriptionDetail, List<Location>> sdlocMap = AzureModel.getInstance().getSubscriptionToLocationMap();
-        SubscriptionDetail sd = binderSubscriptionDetails.get(i);
-        List<Location> locl = sdlocMap.get(sd);
-        if (locl != null) {
-            for (i = 0; i < locl.size(); i++) {
-                Location loc = locl.get(i);
-                comboAppServicePlanLocation.add(loc.displayName());
-                binderAppServicePlanLocation.add(loc);
-                if (loc.name().equals(DEFAULT_REGION.name())) {
-                    comboAppServicePlanLocation.select(i);
-                }
-            }
-            if (comboAppServicePlanLocation.getSelectionIndex() < 0 && comboAppServicePlanLocation.getItemCount() > 0) {
-                comboAppServicePlanLocation.select(0);
-            }
-            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
-            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
-        }
+        setComboRefreshingStatus(comboAppServicePlanLocation, true);
+
+        Mono.fromCallable(() -> Azure.az(AzureAccount.class).listRegions(selectedSubscription.getId()))
+                .subscribeOn(Schedulers.boundedElastic()).subscribe(locl -> {
+                    if (locl != null) {
+                        binderAppServicePlanLocation = new ArrayList<>();
+                        DefaultLoader.getIdeHelper().invokeLater(() -> {
+                            for (int i = 0; i < locl.size(); i++) {
+                                Region loc = locl.get(i);
+                                comboAppServicePlanLocation.add(loc.getLabel());
+                                binderAppServicePlanLocation.add(loc);
+                                if (Objects.equals(loc, DEFAULT_REGION)) {
+                                    comboAppServicePlanLocation.select(i);
+                                }
+                            }
+                            if (comboAppServicePlanLocation.getSelectionIndex() < 0
+                                    && comboAppServicePlanLocation.getItemCount() > 0) {
+                                comboAppServicePlanLocation.select(0);
+                            }
+                            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
+                            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
+                        });
+                    }
+                });
     }
 
-    protected void fillAppServicePlanPricingTiers() {
+    protected void fillPricingTiers() {
         try {
             comboAppServicePlanPricingTier.removeAll();
             binderAppServicePlanPricingTier = new ArrayList<>();
-            List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
+
+            final List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
+
             for (int i = 0; i < pricingTiers.size(); i++) {
                 PricingTier pricingTier = pricingTiers.get(i);
                 comboAppServicePlanPricingTier.add(pricingTier.toString());
@@ -1124,11 +1047,14 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     }
 
     private void fillLinuxRuntime() {
-        List<RuntimeStack> runtimeStacks = WebAppUtils.getAllJavaLinuxRuntimeStacks();
+        List<Runtime> runtimeStacks = Runtime.WEBAPP_RUNTIME.stream().filter(runtime -> runtime.isLinux())
+                .collect(Collectors.toList());
+        binderRuntimeStacks = new ArrayList<Runtime>();
         for (int i = 0; i < runtimeStacks.size(); i++) {
-            RuntimeStack runtimeStack = runtimeStacks.get(i);
-            comboLinuxRuntime.add(runtimeStack.stack() + " " + runtimeStack.version());
-            if (runtimeStack == DEFAULT_LINUX_RUNTIME) {
+            Runtime runtimeStack = runtimeStacks.get(i);
+            comboLinuxRuntime.add(runtimeStack.toString());
+            binderRuntimeStacks.add(runtimeStack);
+            if (Objects.equals(runtimeStack, DEFAULT_LINUX_RUNTIME)) {
                 comboLinuxRuntime.select(i);
             }
         }
@@ -1136,13 +1062,46 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         CommonUtils.selectComboIndex(comboLinuxRuntime, linuxRuntime);
     }
 
+    protected void fillWebContainers() {
+        try {
+            if (MavenUtils.isMavenProject(project)) {
+                packaging = MavenUtils.getPackaging(project);
+            }
+        } catch (Exception e) {
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
+        }
+        final boolean isJarPacking = packaging.equals("jar");
+        final JavaVersion jdkModel = getSelectedJavaVersion();
+        final List<WebContainer> webContainers = isJarPacking ? Arrays.asList(WebContainer.JAVA_SE)
+                : listWindowsWebContainersForWarFile(jdkModel);
+        comboWebContainer.removeAll();
+        binderWebConteiners = new ArrayList<>();
+        for (int i = 0; i < webContainers.size(); i++) {
+            WebContainer webContainerMod = webContainers.get(i);
+            comboWebContainer.add(webContainerMod.toString());
+            binderWebConteiners.add(webContainerMod);
+            if (i == 0 || webContainerMod == DEFAULT_WEB_CONTAINER) {
+                comboWebContainer.select(i);
+            }
+        }
+        String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
+        CommonUtils.selectComboIndex(comboWebContainer, webContainer);
+    }
+
+    private List<WebContainer> listWindowsWebContainersForWarFile(JavaVersion javaVersion) {
+        return Runtime.WEBAPP_RUNTIME.stream().filter(runtime -> runtime.isWindows())
+                .filter(runtime -> !Objects.equals(runtime.getWebContainer(), WebContainer.JAVA_SE)
+                        && Objects.equals(runtime.getJavaVersion(), javaVersion))
+                .map(Runtime::getWebContainer).distinct().collect(Collectors.toList());
+    }
+
     protected void fillJavaVersion() {
-        javaVersions = AzureWebAppMvpModel.getInstance().listJdks();
-        for (int i = 0; i < javaVersions.size(); i++) {
-            JdkModel jdk = javaVersions.get(i);
-            cbJavaVersion.add(jdk.toString());
-            if (jdk.getJavaVersion() == DEFAULT_JAVA_VERSION) {
-                cbJavaVersion.select(i);
+        binderJavaVersions = new ArrayList<JavaVersion>();
+        for (JavaVersion javaVersion : JavaVersion.values()) {
+            cbJavaVersion.add(javaVersion.toString());
+            binderJavaVersions.add(javaVersion);
+            if (Objects.equals(javaVersion, DEFAULT_JAVA_VERSION)) {
+                cbJavaVersion.select(binderJavaVersions.size() - 1);
             }
         }
         String javaversion = CommonUtils.getPreference(CommonUtils.RUNTIME_JAVAVERSION);
@@ -1176,43 +1135,36 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         cleanError();
         collectData();
         recordUserSettings();
-        Map<String, String> properties = new HashMap<>();
-        properties.put("runtime",
-                model.getOS() == OperatingSystem.LINUX ? "Linux-" + model.getLinuxRuntime().toString()
-                        : "windows-" + model.getWebContainer());
+        final Map<String, String> properties = model.getTelemetryProperties(new HashMap<String, String>());
         if (!validated()) {
             return;
         }
         try {
-            ProgressDialog.get(this.getShell(), CREATE_APP_SERVICE_PROGRESS_TITLE).run(true, true,
-                (monitor) -> {
-                    monitor.beginTask(VALIDATING_FORM_FIELDS, IProgressMonitor.UNKNOWN);
-                    monitor.setTaskName(CREATING_APP_SERVICE);
-                    if (monitor.isCanceled()) {
-                        AzureModel.getInstance().setResourceGroupToWebAppMap(null);
-                        Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
-                    }
+            ProgressDialog.get(this.getShell(), CREATE_APP_SERVICE_PROGRESS_TITLE).run(true, true, (monitor) -> {
+                monitor.beginTask(VALIDATING_FORM_FIELDS, IProgressMonitor.UNKNOWN);
+                monitor.setTaskName(CREATING_APP_SERVICE);
+                if (monitor.isCanceled()) {
+                    Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
+                }
 
-                    EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, (operation) -> {
-                        EventUtil.logEvent(EventType.info, operation, properties);
-                        webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
-                        if (!appSettings.isEmpty()) {
-                            webApp.update().withAppSettings(appSettings).apply();
-                        }
-                        monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
-                        AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
-                        initAspCache();
-                        Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.okPressed());
-                        if (AzureUIRefreshCore.listeners != null) {
-                            AzureUIRefreshCore.execute(
-                                new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
-                        }
-                    }, (ex) -> {
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
-                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                        });
+                EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, (operation) -> {
+                    EventUtil.logEvent(EventType.info, operation, properties);
+                    webApp = AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(model);
+                    if (!appSettings.isEmpty()) {
+                        webApp.update().withAppSettings(appSettings).commit();
+                    }
+                    monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
+                    Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.okPressed());
+                    if (AzureUIRefreshCore.listeners != null) {
+                        AzureUIRefreshCore
+                                .execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                    }
+                }, (ex) -> {
+                    LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                            "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
+                    Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
                 });
+            });
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
             ErrorWindow.go(getShell(), ex.getMessage(), errTitle);
@@ -1224,13 +1176,11 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         if (webappName.length() > 60 || !webappName.matches(WEB_APP_NAME_REGEX)) {
             setError(dec_textAppName, WEB_APP_NAME_INVALID_MSG);
             return false;
-        } else if (AzureModel.getInstance().getResourceGroupToWebAppMap() != null) {
-            for (List<WebApp> wal : AzureModel.getInstance().getResourceGroupToWebAppMap().values()) {
-                for (WebApp wa : wal) {
-                    if (wa != null && wa.name().toLowerCase().equals(webappName.toLowerCase())) {
-                        setError(dec_textAppName, NAME_ALREADY_TAKEN);
-                        return false;
-                    }
+        } else {
+            for (IWebApp wa : Azure.az(AzureAppService.class).subscription(model.getSubscriptionId()).webapps(false)) {
+                if (wa != null && wa.name().toLowerCase().equals(webappName.toLowerCase())) {
+                    setError(dec_textAppName, NAME_ALREADY_TAKEN);
+                    return false;
                 }
             }
         }
@@ -1250,10 +1200,10 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     return false;
                 }
                 // App service plan name must be unique in each subscription
-                List<AppServicePlan> appServicePlans = getAppservicePlanBySID(model.getSubscriptionId());
-                for (AppServicePlan asp : appServicePlans) {
-                    if (asp != null
-                            && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
+                List<IAppServicePlan> appServicePlans = Azure.az(AzureAppService.class)
+                        .appServicePlans(model.getSubscriptionId(), false);
+                for (IAppServicePlan asp : appServicePlans) {
+                    if (asp != null && StringUtils.equalsIgnoreCase(asp.name(), model.getAppServicePlanName())) {
                         setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
                         return false;
                     }
@@ -1279,9 +1229,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 setError(dec_textNewResGrName, RESOURCE_GROUP_NAME_INVALID_MSG);
                 return false;
             }
-            for (ResourceGroup rg : AzureMvpModel.getInstance()
-                    .getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
-                if (rg != null && rg.name().toLowerCase().equals(model.getResourceGroup().toLowerCase())) {
+            for (ResourceGroup rg : Azure.az(AzureGroup.class).list(model.getSubscriptionId(), false)) {
+                if (rg != null && StringUtils.equalsIgnoreCase(rg.getName(), model.getResourceGroup())) {
                     setError(dec_textNewResGrName, NAME_ALREADY_TAKEN);
                     return false;
                 }
@@ -1302,7 +1251,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             setError(dec_comboWebContainer, SELECT_WEB_CONTAINER);
             return false;
         }
-
+        // todo: add validation for jboss, only v3 pricing is supported
         return true;
     }
 
@@ -1310,7 +1259,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         model.setCreatingNew(true);
         model.setWebAppName(textAppName.getText().trim());
         int index = comboSubscription.getSelectionIndex();
-        model.setSubscriptionId(index < 0 ? null : binderSubscriptionDetails.get(index).getSubscriptionId());
+        model.setSubscriptionId(index < 0 ? null : binderSubscriptionDetails.get(index).getId());
 
         // Resource Group
         boolean isCreatingNewResGrp = btnResourceGroupCreateNew.getSelection();
@@ -1319,7 +1268,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             model.setResourceGroup(textResourceGroupName.getText().trim());
         } else {
             index = comboResourceGroup.getSelectionIndex();
-            model.setResourceGroup(index < 0 ? null : binderResourceGroup.get(index).name());
+            model.setResourceGroup(index < 0 ? null : binderResourceGroup.get(index).getName());
         }
 
         // App Service Plan
@@ -1329,30 +1278,58 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             model.setAppServicePlanName(textAppSevicePlanName.getText().trim());
 
             index = comboAppServicePlanLocation.getSelectionIndex();
-            model.setRegion(index < 0 ? null : binderAppServicePlanLocation.get(index).name());
+            model.setRegion(index < 0 ? null : binderAppServicePlanLocation.get(index).getName());
 
-            index = comboAppServicePlanPricingTier.getSelectionIndex();
-            model.setPricing(index < 0 ? null : binderAppServicePlanPricingTier.get(index).toString());
+            model.setPricing(Optional.ofNullable(getSelectedPricingTier()).map(PricingTier::toString)
+                    .orElse(APPSETTINGS_TOOLTIP));
         } else {
             index = comboAppServicePlan.getSelectionIndex();
             model.setAppServicePlanId(index < 0 ? null : binderAppServicePlan.get(index).id());
         }
 
         // Runtime
-        chooseWin = btnOSGroupWin.getSelection();
-        model.setOS(chooseWin ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
-        if (chooseWin) {
-            index = cbJavaVersion.getSelectionIndex();
-            model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
-
-            index = comboWebContainer.getSelectionIndex();
-            model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
-        } else {
-            String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
-            String[] part = linuxRuntime.split(" ");
-            model.setStack(part[0]);
-            model.setVersion(part[1]);
-        }
+        final OperatingSystem os = getSelectedOS();
+        final Runtime runtime = os == OperatingSystem.LINUX ? getSelectedRuntimeStack()
+                : Runtime.getRuntime(OperatingSystem.WINDOWS, getSelectedWebcontainer(), getSelectedJavaVersion());
+        model.saveRuntime(runtime);
     }
 
+    private JavaVersion getSelectedJavaVersion() {
+        int index = cbJavaVersion.getSelectionIndex();
+        return index < 0 ? null : binderJavaVersions.get(index);
+    }
+
+    private WebContainer getSelectedWebcontainer() {
+        int index = comboWebContainer.getSelectionIndex();
+        return index < 0 ? null : binderWebConteiners.get(index);
+    }
+
+    private PricingTier getSelectedPricingTier() {
+        final int index = comboAppServicePlanPricingTier.getSelectionIndex();
+        return index < 0 ? null : binderAppServicePlanPricingTier.get(index);
+    }
+
+    private OperatingSystem getSelectedOS() {
+        return btnOSGroupWin.getSelection() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
+    }
+
+    private Runtime getSelectedRuntimeStack() {
+        final int index = comboLinuxRuntime.getSelectionIndex();
+        return index < 0 ? null : binderRuntimeStacks.get(index);
+    }
+
+    @Nullable
+    private Subscription getSelectedSubscription() {
+        int i = comboSubscription.getSelectionIndex();
+        return i < 0 ? null : binderSubscriptionDetails.get(i);
+    }
+
+    private void setComboRefreshingStatus(Combo combo, boolean isRefreshing) {
+        combo.removeAll();
+        combo.setEnabled(!isRefreshing);
+        if (isRefreshing) {
+            combo.add(REFRESHING);
+            combo.select(0);
+        }
+    }
 }

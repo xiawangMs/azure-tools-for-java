@@ -9,17 +9,13 @@ import com.azure.core.implementation.http.HttpClientProviders;
 import com.intellij.ide.AppLifecycleListener;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Hooks;
 
@@ -44,9 +40,6 @@ public class PluginLifeCycleListener implements AppLifecycleListener {
 
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
-        if (StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().environment())) {
-            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(AzureConfigurations.getInstance().getState().environment()));
-        }
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());

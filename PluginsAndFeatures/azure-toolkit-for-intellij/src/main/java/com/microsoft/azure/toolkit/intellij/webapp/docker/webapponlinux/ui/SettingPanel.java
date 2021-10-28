@@ -6,6 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.ui;
 
 import com.intellij.ui.SimpleListCellRenderer;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
@@ -15,8 +17,6 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -68,10 +68,10 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private static final String APP_NAME_PREFIX = "webapp-linux";
     private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
     private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
-    private static final String TITLE_RESOURCE_GROUP = "Resource Group";
-    private static final String TITLE_APP_SERVICE_PLAN = "App Service Plan";
-    private static final String TITLE_ACR = "Azure Container Registry";
-    private static final String TITLE_WEB_APP = "Web App for Containers";
+    private static final String TITLE_RESOURCE_GROUP = "&Resource Group";
+    private static final String TITLE_APP_SERVICE_PLAN = "App Service &Plan";
+    private static final String TITLE_ACR = "Azure &Container Registry";
+    private static final String TITLE_WEB_APP = "&Web App for Containers";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private JTextField textAppName;
@@ -351,7 +351,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 containerSettingPanel.getImageTag(),
                 containerSettingPanel.getStartupFile()
         ));
-        final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        final ISecureStore secureStore = AzureStoreManager.getInstance().getSecureStore();
         secureStore.savePassword(PRIVATE_DOCKER_REGISTRY, containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
                 containerSettingPanel.getPassword());
 
@@ -453,7 +453,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
 
         final PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         if (StringUtils.isNotEmpty(acrInfo.getServerUrl())) {
-            final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+            final ISecureStore secureStore = AzureStoreManager.getInstance().getSecureStore();
             secureStore.migratePassword(acrInfo.getServerUrl(), acrInfo.getUsername(), PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername());
             acrInfo.setPassword(secureStore.loadPassword(PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername()));
         }

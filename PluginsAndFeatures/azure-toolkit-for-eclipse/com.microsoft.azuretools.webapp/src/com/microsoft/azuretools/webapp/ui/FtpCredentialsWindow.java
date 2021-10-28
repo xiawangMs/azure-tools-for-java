@@ -5,9 +5,6 @@
 
 package com.microsoft.azuretools.webapp.ui;
 
-import com.microsoft.azure.management.appservice.PublishingProfile;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -20,19 +17,23 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.microsoft.azure.toolkit.lib.appservice.model.PublishingProfile;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+
 public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
 
     private Text textHost;
     private Text textUsername;
     private Text textPassword;
-    private WebApp webApp;
+    private IWebApp webApp;
 
     /**
      * Create the dialog.
      *
      * @param parentShell
      */
-    public FtpCredentialsWindow(Shell parentShell, WebApp webApp) {
+    public FtpCredentialsWindow(Shell parentShell, IWebApp webApp) {
         super(parentShell);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         setHelpAvailable(false);
@@ -63,7 +64,7 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         textHost = new Text(container, SWT.BORDER);
         textHost.setEditable(false);
         textHost.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textHost.setText(pp.ftpUrl());
+        textHost.setText(pp.getFtpUrl());
 
         Label lblUserName = new Label(container, SWT.NONE);
         lblUserName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -72,7 +73,7 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         textUsername = new Text(container, SWT.BORDER);
         textUsername.setEditable(false);
         textUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textUsername.setText(pp.ftpUsername());
+        textUsername.setText(pp.getFtpUsername());
 
         Label lblNewLabel_1 = new Label(container, SWT.NONE);
         lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -81,7 +82,7 @@ public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
         textPassword = new Text(container, SWT.BORDER);
         textPassword.setEditable(false);
         textPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textPassword.setText(pp.ftpPassword());
+        textPassword.setText(pp.getFtpPassword());
 
         return area;
     }

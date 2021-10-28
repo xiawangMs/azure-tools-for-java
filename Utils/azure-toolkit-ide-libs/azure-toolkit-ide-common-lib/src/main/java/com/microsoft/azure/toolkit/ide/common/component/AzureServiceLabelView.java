@@ -16,7 +16,7 @@ import lombok.Setter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AzureServiceLabelView<T extends AzureService> implements IView.Label, IView.Dynamic {
+public class AzureServiceLabelView<T extends AzureService> implements NodeView {
     @Nonnull
     @Getter
     private final T service;
@@ -30,7 +30,7 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
     @Nullable
     @Setter
     @Getter
-    private Updater updater;
+    private Refresher refresher;
 
     public AzureServiceLabelView(@Nonnull T service) {
         this(service, service.name());
@@ -46,12 +46,12 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
         this.iconPath = iconPath;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("common|service.refresh", listener);
-        this.updateView();
+        this.refreshView();
     }
 
     public void dispose() {
         AzureEventBus.off("common|service.refresh", listener);
-        this.updater = null;
+        this.refresher = null;
     }
 
     public void onEvent(AzureEvent<Object> event) {
@@ -60,8 +60,8 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
         if ("common|service.refresh".equals(type)
                 && source instanceof AzureService
                 && ((AzureService) source).name().equals(this.service.name())) {
-            if (((AzureOperationEvent<?>) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                AzureTaskManager.getInstance().runLater(this::updateChildren);
+            if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
+                AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }
     }

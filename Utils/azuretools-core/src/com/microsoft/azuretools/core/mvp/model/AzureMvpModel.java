@@ -22,6 +22,7 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -35,6 +36,10 @@ public class AzureMvpModel {
 
     public static final String CANNOT_GET_RESOURCE_GROUP = "Cannot get Resource Group.";
     public static final String APPLICATION_LOG_NOT_ENABLED = "Application log is not enabled.";
+    private static final PricingTier PREMIUM_P1V3 = new PricingTier("PremiumV3", "P1v3");
+    private static final PricingTier PREMIUM_P2V3 = new PricingTier("PremiumV3", "P2v3");
+    private static final PricingTier PREMIUM_P3V3 = new PricingTier("PremiumV3", "P3v3");
+    private static final List<PricingTier> V3_PRICING_LIST = Arrays.asList(PREMIUM_P1V3, PREMIUM_P2V3, PREMIUM_P3V3);
 
     private AzureMvpModel() {
     }

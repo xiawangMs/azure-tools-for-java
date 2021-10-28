@@ -29,8 +29,8 @@ import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkSubmitModel
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
-import com.microsoft.azuretools.securestore.SecureStore
-import com.microsoft.azuretools.service.ServiceManager
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
 import rx.Observable
 import java.net.URI
 
@@ -43,7 +43,7 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
         return "ArcadiaSparkBatchRun"
     }
 
-    val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
+    val secureStore: ISecureStore? = AzureStoreManager.getInstance().secureStore
 
     override fun buildSparkBatchJob(submitModel: SparkSubmitModel)
             : Observable<ISparkBatchJob> = Observable.fromCallable {

@@ -22,7 +22,11 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
-import java.util.List;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -33,12 +37,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.core.Activator;
+import java.util.List;
 
 
 public class SubscriptionStep extends WizardPage {
@@ -110,7 +109,7 @@ public class SubscriptionStep extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (subscriptionComboBox.getText() != null && !(subscriptionComboBox.getText().length() == 0)) {
-                    wizard.setSubscription((SubscriptionDetail) subscriptionComboBox.getData(subscriptionComboBox.getText()));
+                    wizard.setSubscription((Subscription) subscriptionComboBox.getData(subscriptionComboBox.getText()));
                 }
             }
         });
@@ -131,20 +130,19 @@ public class SubscriptionStep extends WizardPage {
              * upn.split("#")[1] : upn)); } else { userInfoLabel.setText(""); }
              */
 
-            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
-            for (SubscriptionDetail subscription : subscriptionDetails) {
+            List<Subscription> Subscriptions = AuthMethodManager.getInstance().getAzureManager().getSelectedSubscriptions();
+            for (Subscription subscription : Subscriptions) {
                 if (subscription.isSelected()) {
-                    subscriptionComboBox.add(subscription.getSubscriptionName());
-                    subscriptionComboBox.setData(subscription.getSubscriptionName(), subscription);
+                    subscriptionComboBox.add(subscription.getName());
+                    subscriptionComboBox.setData(subscription.getName(), subscription);
                 }
             }
-            if (!subscriptionDetails.isEmpty()) {
+            if (!Subscriptions.isEmpty()) {
                 subscriptionComboBox.select(0);
                 wizard.setSubscription(
-                        (SubscriptionDetail) subscriptionComboBox.getData(subscriptionComboBox.getText()));
+                        (Subscription) subscriptionComboBox.getData(subscriptionComboBox.getText()));
             }
-            setPageComplete(!subscriptionDetails.isEmpty());
+            setPageComplete(!Subscriptions.isEmpty());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper()
                     .logError("An error occurred when trying to load Subscriptions\n\n" + ex.getMessage(), ex);

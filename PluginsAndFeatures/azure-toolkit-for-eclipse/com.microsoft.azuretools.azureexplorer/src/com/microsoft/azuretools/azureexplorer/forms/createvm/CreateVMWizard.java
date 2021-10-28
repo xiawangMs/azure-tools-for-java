@@ -22,9 +22,6 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_VM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
-
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.compute.VirtualMachine;
@@ -33,38 +30,42 @@ import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azureexplorer.helpers.CreateStorageAccountTask;
+import com.microsoft.azuretools.core.utils.Messages;
+import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.utils.Messages;
-import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMNode;
+import org.eclipse.jface.wizard.Wizard;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-import org.eclipse.jface.wizard.Wizard;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
 
 public class CreateVMWizard extends Wizard implements TelemetryProperties {
     private VMArmModule node;
 
-    protected SubscriptionDetail subscription;
+    protected Subscription subscription;
     protected String name;
     protected String userName;
     protected String password;
@@ -72,7 +73,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     protected String subnet;
     protected VirtualMachineSize size;
 
-    private Location region;
+    private Region region;
     private Network virtualNetwork;
     private VirtualNetwork newNetwork;
     private boolean isNewNetwork;
@@ -82,7 +83,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     private Object knownMachineImage;
     private boolean isKnownMachineImage;
     private StorageAccount storageAccount;
-    private com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount;
+    private StorageAccountConfig newStorageAccount;
     private boolean withNewStorageAccount;
     private PublicIPAddress publicIpAddress;
     private boolean withNewPip;
@@ -108,8 +109,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     @Override
     public boolean performFinish() {
         Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-        DefaultLoader.getIdeHelper().runInBackground(null, "Creating virtual machine " + name + "...", false, true,
-            "Creating virtual machine " + name + "...", new Runnable() {
+        AzureTaskManager.getInstance().runInBackground("Creating virtual machine " + name + "...", new Runnable() {
             @Override
             public void run() {
                 try {
@@ -128,19 +128,20 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                             }
                         }
                     }
-
-                    VirtualMachine vm = AzureSDKManager.createVirtualMachine(subscription.getSubscriptionId(),
+                    // create storage account when use choose to create new one
+                    if (Objects.nonNull(newStorageAccount)) {
+                        storageAccount = new CreateStorageAccountTask(newStorageAccount).execute();
+                    }
+                    VirtualMachine vm = AzureSDKManager.createVirtualMachine(subscription.getId(),
                             name,
                             resourceGroupName,
                             isNewResourceGroup,
                             size.name(),
-                            region.name(),
+                            region.getName(),
                             virtualMachineImage,
                             knownMachineImage,
                             isKnownMachineImage,
                             storageAccount,
-                            newStorageAccount,
-                            withNewStorageAccount,
                             virtualNetwork,
                             newNetwork,
                             isNewNetwork,
@@ -153,22 +154,11 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                             password,
                             certData.length > 0 ? new String(certData) : null);
                     // update resource groups cache if new resource group was created when creating storage account
-                    ResourceGroup rg = null;
-                    if (isNewResourceGroup) {
-                        rg = azure.resourceGroups().getByName(resourceGroupName);
-                        AzureModelController.addNewResourceGroup(subscription, rg);
-                    }
-                    if (withNewStorageAccount && newStorageAccount.isNewResourceGroup() &&
-                            (rg == null ||!rg.name().equals(newStorageAccount.getResourceGroupName()))) {
-                        rg = azure.resourceGroups().getByName(newStorageAccount.getResourceGroupName());
-                        AzureModelController.addNewResourceGroup(subscription, rg);
-                    }
-//                    virtualMachine = AzureManagerImpl.getManager().refreshVirtualMachineInformation(virtualMachine);
                     DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                node.addChildNode(new VMNode(node, subscription.getSubscriptionId(), vm));
+                                node.addChildNode(new VMNode(node, subscription.getId(), vm));
                             } catch (AzureCmdException e) {
                                 PluginUtil.displayErrorDialogWithAzureMsg(PluginUtil.getParentShell(), Messages.err,
                                         "An error occurred while refreshing the list of virtual machines.", e);
@@ -203,17 +193,17 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
         this.azure = azure;
     }
 
-    public void setSubscription(SubscriptionDetail subscription) {
+    public void setSubscription(Subscription subscription) {
         try {
             this.subscription = subscription;
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(subscription.getSubscriptionId());
+            azure = azureManager.getAzure(subscription.getId());
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().showException(ex.getMessage(), ex, "Error selecting subscription", true, false);
         }
     }
 
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return subscription;
     }
 
@@ -257,11 +247,11 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
         this.subnet = subnet;
     }
 
-    public Location getRegion() {
+    public Region getRegion() {
         return region;
     }
 
-    public void setRegion(Location region) {
+    public void setRegion(Region region) {
         this.region = region;
     }
 
@@ -337,11 +327,11 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
         this.storageAccount = storageAccount;
     }
 
-    public com.microsoft.tooling.msservices.model.storage.StorageAccount getNewStorageAccount() {
+    public StorageAccountConfig getNewStorageAccount() {
         return newStorageAccount;
     }
 
-    public void setNewStorageAccount(com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount) {
+    public void setNewStorageAccount(StorageAccountConfig newStorageAccount) {
         this.newStorageAccount = newStorageAccount;
     }
 
@@ -406,11 +396,11 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
         final Map<String, String> properties = new HashMap<>();
         if(this.getSubnet() != null) properties.put("Size", this.getSubnet());
         if(this.getSubscription() != null) {
-            properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-            properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+            properties.put("SubscriptionName", this.getSubscription().getName());
+            properties.put("SubscriptionId", this.getSubscription().getId());
         }
         if(this.getName() != null) properties.put("Name", this.getName());
-        if(this.getRegion() != null) properties.put("Region", this.getRegion().displayName());
+        if(this.getRegion() != null) properties.put("Region", this.getRegion().getLabel());
         if(this.getSize() != null) properties.put("Size", this.getSize().name());
 
         return properties;

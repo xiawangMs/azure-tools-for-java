@@ -191,7 +191,7 @@
                       <text value="Location:"/>
                     </properties>
                   </component>
-                  <component id="f90f0" class="com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox" binding="regionComboBox" custom-create="true">
+                  <component id="f90f0" class="com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox" binding="regionComboBox" custom-create="true">
                     <constraints>
                       <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                       <forms/>

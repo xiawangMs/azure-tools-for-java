@@ -7,13 +7,13 @@ package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.CreateSpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 
@@ -31,20 +31,20 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
     }
 
     private void registerShowPropertiesActionHandler(AzureActionManager am) {
-        final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
-        final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
+        final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
     }
 
     private void registerCreateAppActionHandler(AzureActionManager am) {
-        final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
-        final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
+        final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
     }
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
-        final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
-        final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getProject());
+        final BiPredicate<IAzureBaseResource<?, ?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
+        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> handler = (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getProject());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, condition, handler);
     }
 
@@ -52,10 +52,5 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogAction.startLogStreaming(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
-    }
-
-    @Override
-    public int getOrder() {
-        return IActionsContributor.super.getOrder();
     }
 }

@@ -48,6 +48,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -396,10 +397,13 @@ public class UIHelperImpl implements UIHelper {
         if (Utils.isEmptyString(node.getId())) {
             return;
         }
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(node.getSubscriptionId(), node.getId(), node.getName());
-        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
-        openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
+        AzureTaskManager.getInstance().runLater(() -> {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(node.getSubscriptionId(), node.getId(),
+                    node.getName());
+            IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
+            openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
+        });
     }
 
     @Override
@@ -407,11 +411,13 @@ public class UIHelperImpl implements UIHelper {
         if (Utils.isEmptyString(node.getId())) {
             return;
         }
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
-            node.getSubscriptionId(), node.getWebAppId(), node.getName());
-        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
-        openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
+        AzureTaskManager.getInstance().runLater(() -> {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
+                    node.getSubscriptionId(), node.getWebAppId(), node.getName());
+            IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
+            openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
+        });
     }
 
     @Override

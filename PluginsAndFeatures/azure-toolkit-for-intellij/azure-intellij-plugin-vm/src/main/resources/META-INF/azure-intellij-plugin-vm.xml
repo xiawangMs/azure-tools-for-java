@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.vm.VirtualMachineExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.vm.IntelliJVMActionsContributor"/>
+    </extensions>
+</idea-plugin>

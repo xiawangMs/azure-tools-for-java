@@ -6,7 +6,6 @@
 package com.microsoft.intellij.util;
 
 import com.azure.core.management.exception.ManagementException;
-import com.azure.resourcemanager.AzureResourceManager;
 import com.azure.resourcemanager.appservice.fluent.models.ResourceNameAvailabilityInner;
 import com.azure.resourcemanager.appservice.models.CheckNameResourceTypes;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -14,7 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -33,7 +32,8 @@ public class ValidationUtils {
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
     private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
-    //refer: https://dev.azure.com/msazure/AzureDMSS/_git/AzureDMSS-PortalExtension?path=%2Fsrc%2FSpringCloudPortalExt%2FClient%2FCreateApplication%2FCreateApplicationBlade.ts&version=GBdev&line=463&lineEnd=463&lineStartColumn=25&lineEndColumn=55&lineStyle=plain&_a=contents
+    // refer: https://dev.azure.com/msazure/AzureDMSS/_git/AzureDMSS-PortalExtension?path=%2Fsrc%2FSpringCloudPortalExt%2FClient%2FCreateApplication%2F
+    // CreateApplicationBlade.ts&version=GBdev&line=463&lineEnd=463&lineStartColumn=25&lineEndColumn=55&lineStyle=plain&_a=contents
     private static final String SPRING_CLOUD_APP_NAME_PATTERN = "^[a-z][a-z0-9-]{2,30}[a-z0-9]$";
     private static final String APP_INSIGHTS_NAME_INVALID_CHARACTERS = "[*;/?:@&=+$,<>#%\\\"\\{}|^'`\\\\\\[\\]]";
 
@@ -73,8 +73,7 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
         }
-        final AzureResourceManager azureResourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
-        final ResourceNameAvailabilityInner result = azureResourceManager.webApps().manager().serviceClient()
+        final ResourceNameAvailabilityInner result = Azure.az(AzureAppService.class).getAppServiceManager(subscriptionId).webApps().manager().serviceClient()
                 .getResourceProviders().checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEB_SITES);
         if (!result.nameAvailable()) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
@@ -145,7 +144,6 @@ public class ValidationUtils {
             throw new IllegalArgumentException(message("springCloud.app.name.validate.exist", name));
         }
     }
-
 
     private static void cacheAndThrow(Map exceptionCache, Object key, String errorMessage) {
         exceptionCache.put(key, errorMessage);

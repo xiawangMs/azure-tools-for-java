@@ -5,9 +5,15 @@
 
 package com.microsoft.applicationinsights.preference;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.microsoft.applicationinsights.ui.activator.Activator;
+import com.microsoft.applicationinsights.util.AILibraryUtil;
+import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -27,15 +33,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.microsoft.applicationinsights.ui.activator.Activator;
-import com.microsoft.applicationinsights.util.AILibraryUtil;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class is intended for creating new application insights resources remotely in the cloud.
@@ -51,7 +50,7 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
     private Combo resourceGrpCombo;
     Combo region;
     Button okButton;
-    private SubscriptionDetail currentSub;
+    private Subscription currentSub;
     static ApplicationInsightsResource resourceToAdd;
     private Runnable onCreate;
 
@@ -109,19 +108,19 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
             if (azureManager == null) {
                 return;
             }
-            List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails();
+            List<Subscription> subList = azureManager.getSelectedSubscriptions();
             // check at least single subscription is associated with the account
             if (subList.size() > 0) {
-                for (SubscriptionDetail sub : subList) {
-                    subscription.add(sub.getSubscriptionName());
-                    subscription.setData(sub.getSubscriptionName(), sub);
+                for (Subscription sub : subList) {
+                    subscription.add(sub.getName());
+                    subscription.setData(sub.getName(), sub);
                 }
                 subscription.select(0);
                 currentSub = subList.get(0);
 
-                populateResourceGroupValues(currentSub.getSubscriptionId(), "");
+                populateResourceGroupValues(currentSub.getId(), "");
 
-                List<String> regionList = AzureSDKManager.getLocationsForInsights(currentSub);
+                List<String> regionList = AzureSDKManager.getLocationsForInsights(currentSub.getId());
                 String[] regionArray = regionList.toArray(new String[regionList.size()]);
                 region.setItems(regionArray);
                 region.setText(regionArray[0]);
@@ -187,12 +186,12 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
 
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                SubscriptionDetail newSub = (SubscriptionDetail) subscription.getData(subscription.getText());
+                Subscription newSub = (Subscription) subscription.getData(subscription.getText());
                 String prevResGrpVal = resourceGrpCombo.getText();
                 if (currentSub.equals(newSub)) {
-                    populateResourceGroupValues(currentSub.getSubscriptionId(), prevResGrpVal);
+                    populateResourceGroupValues(currentSub.getId(), prevResGrpVal);
                 } else {
-                    populateResourceGroupValues(newSub.getSubscriptionId(), "");
+                    populateResourceGroupValues(newSub.getId(), "");
                 }
                 currentSub = newSub;
                 enableOkBtn();
@@ -321,7 +320,7 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
 
     @Override
     protected void okPressed() {
-        String subId = currentSub.getSubscriptionId();
+        String subId = currentSub.getId();
         boolean isNewGroup = createNewRadioButton.getSelection();
         String resourceGroup = isNewGroup ? resourceGrpField.getText() : resourceGrpCombo.getText();
         String name = txtName.getText();

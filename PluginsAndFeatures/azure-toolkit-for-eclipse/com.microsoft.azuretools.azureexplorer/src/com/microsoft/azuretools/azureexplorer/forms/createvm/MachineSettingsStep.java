@@ -26,6 +26,7 @@ import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -273,11 +274,11 @@ public class MachineSettingsStep extends WizardPage {
 
         if (vmSizeComboBox.getItemCount() == 0) {
             vmSizeComboBox.setItems(new String[] { LOADING });
-            DefaultLoader.getIdeHelper().runInBackground(null, "Loading VM sizes...", false, true, "", new Runnable() {
+            AzureTaskManager.getInstance().runInBackground( "Loading VM sizes...", new Runnable() {
                 @Override
                 public void run() {
                     PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = wizard.getAzure()
-                            .virtualMachines().sizes().listByRegion(wizard.getRegion().name());
+                            .virtualMachines().sizes().listByRegion(wizard.getRegion().getName());
                     Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
                         @Override
                         public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {

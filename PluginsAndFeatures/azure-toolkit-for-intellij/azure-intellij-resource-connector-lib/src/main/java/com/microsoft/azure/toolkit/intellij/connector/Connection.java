@@ -5,13 +5,29 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configurations.JavaParameters;
+import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.jdom.Element;
 
-import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * the <b>{@code resource connection}</b>
@@ -21,16 +37,25 @@ import java.util.Optional;
  *            it can only be {@link ModuleResource} for now({@code v3.52.0})
  * @since 3.52.0
  */
-public interface Connection<R extends Resource, C extends Resource> {
-    /**
-     * @return the resource consumed by consumer
-     */
-    R getResource();
-
-    /**
-     * @return the consumer consuming resource
-     */
-    C getConsumer();
+@Getter
+@RequiredArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class Connection<R, C> {
+    public static final String ENV_PREFIX = "%ENV_PREFIX%";
+    private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
+    @Nonnull
+    @EqualsAndHashCode.Include
+    protected final Resource<R> resource;
+    @Nonnull
+    @EqualsAndHashCode.Include
+    protected final Resource<C> consumer;
+    @Nonnull
+    @EqualsAndHashCode.Include
+    protected final ConnectionDefinition<R, C> definition;
+    @Setter
+    @Getter(AccessLevel.NONE)
+    private String envPrefix;
+    private Map<String, String> env = new HashMap<>();
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
@@ -40,7 +65,14 @@ public interface Connection<R extends Resource, C extends Resource> {
      *
      * @return true if this connection should intervene the specified {@code configuration}.
      */
-    default boolean isApplicableFor(@NotNull RunConfiguration configuration) {
+    public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
+        final boolean javaAppRunConfiguration = configuration instanceof ApplicationConfiguration;
+        final boolean springbootAppRunConfiguration = StringUtils.equals(configuration.getClass().getName(), SPRING_BOOT_CONFIGURATION);
+        final boolean azureWebAppRunConfiguration = configuration instanceof IWebAppRunConfiguration;
+        if (javaAppRunConfiguration || azureWebAppRunConfiguration || springbootAppRunConfiguration) {
+            final Module module = getTargetModule(configuration);
+            return Objects.nonNull(module) && Objects.equals(module.getName(), this.consumer.getName());
+        }
         return false;
     }
 
@@ -48,17 +80,52 @@ public interface Connection<R extends Resource, C extends Resource> {
      * do some preparation in the {@code Connect Azure Resource} before run task
      * of the {@code configuration}<br>
      */
-    boolean prepareBeforeRun(@NotNull RunConfiguration configuration, DataContext dataContext);
+    @AzureOperation(name = "connector|connection.prepare_before_run", type = AzureOperation.Type.ACTION)
+    public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
+        this.env = this.resource.initEnv(configuration.getProject()).entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()),
+                        Map.Entry::getValue));
+        if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
+            final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
+            webAppConfiguration.setApplicationSettings(this.env);
+        }
+        return true;
+    }
 
     /**
      * update java parameters exactly before start the {@code configuration}
      */
-    default void updateJavaParametersAtRun(RunConfiguration configuration, @NotNull JavaParameters parameters) {
+    public void updateJavaParametersAtRun(@Nonnull RunConfiguration configuration, @Nonnull JavaParameters parameters) {
+        if (Objects.nonNull(this.env)) {
+            for (final Map.Entry<String, String> entry : this.env.entrySet()) {
+                parameters.addEnv(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
-    default String getType() {
-        final String resourceType = Optional.ofNullable(getResource()).map(Resource::getType).filter(StringUtils::isNotBlank).orElse("default");
-        final String consumerType = Optional.ofNullable(getConsumer()).map(Resource::getType).filter(StringUtils::isNotBlank).orElse("default");
-        return resourceType + ":" + consumerType;
+    @Nullable
+    private static Module getTargetModule(@Nonnull RunConfiguration configuration) {
+        if (configuration instanceof ModuleBasedConfiguration) {
+            return ((ModuleBasedConfiguration<?, ?>) configuration).getConfigurationModule().getModule();
+        } else if (configuration instanceof IWebAppRunConfiguration) {
+            return ((IWebAppRunConfiguration) configuration).getModule();
+        }
+        return null;
+    }
+
+    public String getEnvPrefix() {
+        if (StringUtils.isBlank(this.envPrefix)) {
+            return this.definition.getResourceDefinition().getDefaultEnvPrefix();
+        }
+        return this.envPrefix;
+    }
+
+    public void write(Element connectionEle) {
+        this.getDefinition().write(connectionEle, this);
+    }
+
+    public boolean validate(Project project) {
+        return this.getDefinition().validate(this, project);
     }
 }

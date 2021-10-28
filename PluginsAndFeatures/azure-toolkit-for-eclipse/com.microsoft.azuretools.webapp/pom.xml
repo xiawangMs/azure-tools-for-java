@@ -16,7 +16,7 @@
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <skip>false</skip>
+          <skip>true</skip>
         </configuration>
       </plugin>
     </plugins>

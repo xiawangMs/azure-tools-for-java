@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
@@ -25,23 +8,16 @@ package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_REDIS;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
 
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -66,41 +42,50 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
+import com.microsoft.azure.toolkit.redis.AzureRedis;
+import com.microsoft.azure.toolkit.redis.PricingTier;
+import com.microsoft.azure.toolkit.redis.RedisCache;
+import com.microsoft.azure.toolkit.redis.RedisConfig;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
-import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
-import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azureexplorer.forms.common.Draft;
+import com.microsoft.azuretools.azureexplorer.forms.common.DraftResourceGroup;
 import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private static Activator LOG = Activator.getDefault();
     protected final AzureManager azureManager;
-    private List<SubscriptionDetail> selectedSubscriptions;
-    private List<Location> sortedLocations;
+    private List<Subscription> selectedSubscriptions;
+    private List<Region> sortedLocations;
     private List<String> sortedGroups;
-    private SubscriptionDetail currentSub;
+    private Subscription currentSub;
     private boolean noSSLPort = false;
     private boolean newResGrp = true;
     private boolean loaded = false;
-    private final LinkedHashMap<String, String> skus;
 
     private String dnsNameValue = null;
     private String selectedLocationValue = null;
@@ -169,12 +154,10 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     public CreateRedisCacheForm(Shell parentShell) throws IOException {
         super(parentShell);
         azureManager = AuthMethodManager.getInstance().getAzureManager();
-        List<SubscriptionDetail> allSubs = azureManager.getSubscriptionManager().getSubscriptionDetails();
-        selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
+        selectedSubscriptions = azureManager.getSelectedSubscriptions();
         if (selectedSubscriptions.size() > 0) {
             currentSub = selectedSubscriptions.get(0);
         }
-        skus = RedisCacheUtil.initSkus();
     }
 
     /**
@@ -268,13 +251,11 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbPricetiers = new Combo(container, SWT.READ_ONLY);
         cbPricetiers.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
-        if (skus.keySet().size() > 0) {
-            for (String price : skus.keySet()) {
-                cbPricetiers.add(price);
-            }
-            cbPricetiers.select(0);
-            selectedPriceTierValue = cbPricetiers.getText();
+        for (PricingTier price : PricingTier.values()) {
+            cbPricetiers.add(price.toString());
         }
+        cbPricetiers.select(0);
+        selectedPriceTierValue = cbPricetiers.getText();
 
         Link lnkPrice = new Link(container, SWT.NONE);
         lnkPrice.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
@@ -305,8 +286,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
         });
 
-        for (SubscriptionDetail sub : selectedSubscriptions) {
-            cbSubs.add(String.format(SUBS_COMBO_ITEMS_FORMAT, sub.getSubscriptionName(), sub.getSubscriptionId()));
+        for (Subscription sub : selectedSubscriptions) {
+            cbSubs.add(String.format(SUBS_COMBO_ITEMS_FORMAT, sub.getName(), sub.getId()));
         }
 
         cbSubs.addSelectionListener(new SelectionAdapter() {
@@ -367,7 +348,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbLocations.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).name();
+                selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).getLabel();
                 validateFields();
             }
         });
@@ -392,25 +373,21 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
         });
 
-        DefaultLoader.getIdeHelper().runInBackground(null,
-                MessageHandler.getResourceString(resourceBundle, LOADING_LOCATION_AND_GRPS), false, true,
-                MessageHandler.getResourceString(resourceBundle, LOADING_LOCATION_AND_GRPS), new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            AzureModelController.updateSubscriptionMaps(null);
-                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fillLocationsAndResourceGrps(currentSub);
-                                    cbLocations.setEnabled(true);
-                                    loaded = true;
-                                    validateFields();
-                                }
-                            });
-                        } catch (Exception ex) {
-                            LOG.log(MessageHandler.getCommonStr(LOAD_LOCATION_AND_RESOURCE_ERROR), ex);
-                        }
+        AzureTaskManager.getInstance().runInBackground(
+                MessageHandler.getResourceString(resourceBundle, LOADING_LOCATION_AND_GRPS), false,
+                () -> {
+                    try {
+                        DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fillLocationsAndResourceGrps(currentSub);
+                                cbLocations.setEnabled(true);
+                                loaded = true;
+                                validateFields();
+                            }
+                        });
+                    } catch (Exception ex) {
+                        LOG.log(MessageHandler.getCommonStr(LOAD_LOCATION_AND_RESOURCE_ERROR), ex);
                     }
                 });
 
@@ -449,6 +426,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         try {
             RedisCacheUtil.doValidate(currentSub, dnsNameValue, selectedLocationValue, selectedResGrpValue,
                     selectedPriceTierValue);
+
             if (newResGrp) {
                 for (String resGrp : sortedGroups) {
                     if (selectedResGrpValue.equals(resGrp)) {
@@ -461,73 +439,65 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             MessageDialog.openError(getShell(), "Form Validation Error", e.getMessage());
             return;
         }
-        final Operation operation = TelemetryManager.createOperation(REDIS, CREATE_REDIS);
-        try {
-            operation.start();
-            Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
-            ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, dnsNameValue,
-                    selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
+        RedisConfig config = getData();
 
-            ListenableFuture<Void> futureTask = executorService.submit(new CreateRedisCacheCallable(processor));
-            final ProcessingStrategy processorInner = processor;
-            Futures.addCallback(futureTask, new FutureCallback<Void>() {
-                @Override
-                public void onSuccess(Void arg0) {
-                    if (onCreate != null) {
-                        operation.complete();
-                        onCreate.run();
-                    }
+        final Runnable runnable = () -> {
+            final Operation operation = TelemetryManager.createOperation(REDIS, CREATE_REDIS);
+            try {
+                operation.start();
+                new CreateRedisTask(config).execute();
+                if (onCreate != null) {
+                    onCreate.run();
                 }
+            } catch (Exception ex) {
+                EventUtil.logError(operation, ErrorType.userError, ex, null, null);
+                operation.complete();
+                MessageDialog.openError(getShell(),
+                        String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
+                                dnsNameValue),
+                        ex.getMessage());
+                LOG.log(String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
+                        dnsNameValue), ex);
+            }
+        };
+        String progressMessage = Node.getProgressMessage(AzureActionEnum.CREATE.getDoingName(), RedisCacheModule.MODULE_NAME, config.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, progressMessage, false, runnable));
 
-                @Override
-                public void onFailure(Throwable throwable) {
-                    EventUtil.logError(operation, ErrorType.userError, new Exception(throwable), null, null);
-                    operation.complete();
-                    MessageDialog.openError(getShell(),
-                            String.format(
-                                    MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
-                                    dnsNameValue),
-                            throwable.getMessage());
-                    try {
-                        processorInner.notifyCompletion();
-                    } catch (InterruptedException ex) {
-                        LOG.log("Error occurred while notifyCompletion in RedisCache.", ex);
-                    }
-                }
-            }, MoreExecutors.directExecutor());
-        } catch (Exception ex) {
-            EventUtil.logError(operation, ErrorType.userError, ex, null, null);
-            operation.complete();
-            MessageDialog.openError(getShell(),
-                    String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
-                            dnsNameValue),
-                    ex.getMessage());
-            LOG.log(String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
-                    dnsNameValue), ex);
-        }
         super.okPressed();
     }
 
-    private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
+    private RedisConfig getData() {
+        RedisConfig redisConfig = new RedisConfig();
+        redisConfig.setSubscription(this.currentSub);
+        redisConfig.setRegion(Region.fromName(selectedLocationValue));
+        redisConfig.setResourceGroup(newResGrp ? new DraftResourceGroup(this.currentSub, selectedResGrpValue) :
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureGroup.class).get(this.currentSub.getId(), selectedResGrpValue));
+        redisConfig.setEnableNonSslPort(noSSLPort);
+        redisConfig.setPricingTier(PricingTier.values().stream()
+                .filter(pricingTier -> StringUtils.equalsIgnoreCase(pricingTier.toString(), selectedPriceTierValue)).findFirst().orElse(null));
+        redisConfig.setName(dnsNameValue);
+        return redisConfig;
+    }
+
+    private void fillLocationsAndResourceGrps(Subscription selectedSub) {
         cbLocations.removeAll();
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
+        List<? extends Region> locations = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).listRegions(selectedSub.getId());
         if (locations != null) {
-            sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName))
+            sortedLocations = locations.stream().sorted(Comparator.comparing(Region::getLabel))
                     .collect(Collectors.toList());
-            for (Location location : sortedLocations) {
-                cbLocations.add(location.displayName());
+            for (Region location : sortedLocations) {
+                cbLocations.add(location.getLabel());
             }
             if (sortedLocations.size() > 0) {
                 cbLocations.select(0);
-                selectedLocationValue = sortedLocations.get(0).name();
+                selectedLocationValue = sortedLocations.get(0).getLabel();
             }
         }
         cbUseExisting.removeAll();
-        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
+        List<ResourceGroup> groups = AzureMvpModel.getInstance().getResourceGroups(selectedSub.getId()).stream()
+                .map(ResourceEx::getResource).collect(Collectors.toList());
         if (groups != null) {
-            sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+            sortedGroups = groups.stream().map(ResourceGroup::getName).sorted().collect(Collectors.toList());
             for (String group : sortedGroups) {
                 cbUseExisting.add(group);
             }
@@ -566,10 +536,10 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         if (currentSub != null) {
-            if (currentSub.getSubscriptionName() != null)
-                properties.put("SubscriptionName", currentSub.getSubscriptionName());
-            if (currentSub.getSubscriptionId() != null)
-                properties.put("SubscriptionId", currentSub.getSubscriptionId());
+            if (currentSub.getName() != null)
+                properties.put("SubscriptionName", currentSub.getName());
+            if (currentSub.getId() != null)
+                properties.put("SubscriptionId", currentSub.getId());
         }
         return properties;
     }
@@ -578,35 +548,20 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         this.onCreate = onCreate;
     }
 
-    class CreateRedisCacheCallable implements Callable<Void> {
-        private ProcessingStrategy processor;
+    static class CreateRedisTask extends AzureTask<RedisCache> {
 
-        public CreateRedisCacheCallable(ProcessingStrategy processor) {
-            this.processor = processor;
+        private RedisConfig config;
+        
+        CreateRedisTask(RedisConfig config) {
+            this.config = config;
         }
 
-        @Override
-        public Void call() throws Exception {
-            DefaultLoader.getIdeHelper().runInBackground(null,
-                    String.format(MessageHandler.getResourceString(resourceBundle, CREATING_INDICATOR_FORMAT),
-                            ((ProcessorBase) processor).DNSName()),
-                    false, true,
-                    String.format(MessageHandler.getResourceString(resourceBundle, CREATING_INDICATOR_FORMAT),
-                            ((ProcessorBase) processor).DNSName()),
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                processor.waitForCompletion("PRODUCE");
-                            } catch (InterruptedException ex) {
-                                LOG.log(String.format(MessageHandler.getResourceString(resourceBundle,
-                                        CREATING_ERROR_INDICATOR_FORMAT), dnsNameValue), ex);
-                            }
-                        }
-                    });
-            // consume
-            processor.process().notifyCompletion();
-            return null;
+        public RedisCache execute() {
+            ResourceGroup rg = config.getResourceGroup();
+            if (rg instanceof Draft) {
+                new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
+            }
+            return com.microsoft.azure.toolkit.lib.Azure.az(AzureRedis.class).subscription(config.getSubscription()).create(config);
         }
     }
 }

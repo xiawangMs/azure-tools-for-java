@@ -6,8 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.database;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -17,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -31,6 +30,9 @@ public class RegionComboBox extends AzureComboBox<Region> {
     private boolean validateRequired;
     private boolean itemLoaded;
     private AzureValidationInfo validatedInfo;
+
+    @Setter
+    private Function<String, List<? extends Region>> loader;
 
     public void setSubscription(Subscription subscription) {
         if (Objects.equals(subscription, this.subscription)) {
@@ -54,7 +56,10 @@ public class RegionComboBox extends AzureComboBox<Region> {
         if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
-        List<? extends Region> regions = Azure.az(AzureAccount.class).listRegions(subscription.getId());
+        if (loader == null) {
+            return Collections.emptyList();
+        }
+        final List<? extends Region> regions = loader.apply(subscription.getId());
         itemLoaded = true;
         return regions;
     }

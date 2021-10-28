@@ -5,10 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.sqlserver.creation;
 
-import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.AdminUsernameTextField;
@@ -17,8 +17,10 @@ import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.database.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerNameValidator;
 import com.microsoft.azure.toolkit.intellij.sqlserver.common.SqlServerRegionValidator;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServerConfig;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +67,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private void init() {
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        regionComboBox.setLoader(sid -> Azure.az(AzureSqlServer.class).listSupportedRegions(sid));
         regionComboBox.setValidateFunction(new SqlServerRegionValidator());
         serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         serverNameTextField.setMinLength(1);

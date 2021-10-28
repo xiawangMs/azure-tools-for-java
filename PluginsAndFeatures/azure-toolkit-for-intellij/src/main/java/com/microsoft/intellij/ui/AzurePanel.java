@@ -13,7 +13,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -179,7 +179,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
             config.getTelemetryEnabled() ? config.getMachineId() : StringUtils.EMPTY);
         config.setUserAgent(userAgent);
-
+        CommonSettings.setUserAgent(config.getUserAgent());
         // apply changes
 
         // we need to get rid of AuthMethodManager, using az.azure_account
@@ -194,12 +194,10 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         }
 
-        // we need get rid of CommonSettings later
-        CommonSettings.setUserAgent(config.getUserAgent());
         if (StringUtils.isNotBlank(config.getCloud())) {
             Azure.az(AzureCloud.class).setByName(config.getCloud());
         }
-        AzureConfigurations.getInstance().saveAzConfig();
+        AzureConfigInitializer.saveAzConfig();
         return true;
     }
 

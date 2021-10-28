@@ -24,11 +24,6 @@ public class UIFactory implements IUIFactory {
     }
 
     @Override
-    public IWebUi getWebUi() {
-        return new LoginWindow();
-    }
-
-    @Override
     public IProgressTaskImpl getProgressTaskImpl() {
         Display display = Display.getDefault();
         Shell activeShell = display.getActiveShell();
@@ -37,6 +32,6 @@ public class UIFactory implements IUIFactory {
 
     @Override
     public IDeviceLoginUI getDeviceLoginUI() {
-        return new DeviceLoginWindow();
+        return null;
     }
 }

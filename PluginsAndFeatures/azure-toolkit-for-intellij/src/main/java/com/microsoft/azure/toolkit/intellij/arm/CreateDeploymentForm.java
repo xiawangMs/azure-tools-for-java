@@ -17,7 +17,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Deployment.DefinitionStages.WithTemplate;
 import com.microsoft.azure.management.resources.DeploymentMode;
-import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -67,7 +67,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     private JRadioButton createNewRgButton;
     private JRadioButton useExistingRgButton;
     private JTextField deploymentNameTextField;
-    private com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox regionCb;
+    private RegionComboBox regionCb;
     private JLabel usingExistRgRegionLabel;
     private JLabel usingExistRgRegionDetailLabel;
     private JLabel createNewRgRegionLabel;

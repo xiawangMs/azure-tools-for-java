@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.database;
 
-import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.apache.commons.lang3.CharUtils;

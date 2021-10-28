@@ -25,6 +25,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployments
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class WebAppNode extends WebAppBaseNode {
     private static final String LABEL = "WebApp";
@@ -110,8 +111,8 @@ public class WebAppNode extends WebAppBaseNode {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(SSH_INTO).setEnabled(running && webApp.getRuntime().isLinux());
-        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
+        Optional.ofNullable(getNodeActionByName(SSH_INTO)).ifPresent(action -> action.setEnabled(running && webApp.getRuntime().isLinux()));
+        Optional.ofNullable(getNodeActionByName(PROFILE_FLIGHT_RECORDER)).ifPresent(action -> action.setEnabled(running));
         return super.getNodeActions();
     }
 

@@ -12,11 +12,11 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.SneakyThrows;
@@ -72,7 +72,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             final Runtime platform = this.selectorRuntime.getValue();
-            return org.apache.commons.lang.StringUtils.isNotBlank(ext) && isSupportedArtifactType(platform, ext);
+            return StringUtils.isNotBlank(ext) && isSupportedArtifactType(platform, ext);
         });
         this.setDeploymentVisible(false);
         this.config = initConfig();

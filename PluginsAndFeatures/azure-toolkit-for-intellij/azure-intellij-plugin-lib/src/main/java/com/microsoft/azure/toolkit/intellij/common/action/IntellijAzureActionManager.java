@@ -13,11 +13,12 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.action.Action;
-import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,7 @@ import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class IntellijAzureActionManager extends AzureActionManager {
     private static final ExtensionPointName<IActionsContributor> actionsExtensionPoint =
@@ -54,11 +56,16 @@ public class IntellijAzureActionManager extends AzureActionManager {
         ActionManager.getInstance().registerAction(id.getId(), new AnActionWrapper<>(action));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <D> Action<D> getAction(Action.Id<D> id) {
-        //noinspection unchecked
-        final AnActionWrapper<D> action = ((AnActionWrapper<D>) ActionManager.getInstance().getAction(id.getId()));
-        return new Action.Delegate<>(action.getAction(), id.getId());
+        final AnAction origin = ActionManager.getInstance().getAction(id.getId());
+        if (origin instanceof AnActionWrapper) {
+            return (Action<D>) ((AnActionWrapper<?>) origin).getAction();
+        } else {
+            final ActionView.Builder view = new ActionView.Builder(origin.getTemplateText());
+            return new Action<>((D d, AnActionEvent e) -> origin.actionPerformed(e), view).authRequired(false);
+        }
     }
 
     @Override
@@ -95,6 +102,12 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
             final IView.Label view = this.action.view(source);
             applyView(view, e.getPresentation());
+
+            final BiConsumer<T, Object> handler = action.handler(source, e);
+            if (handler == null) {
+                // Disable action if no handler is registered
+                e.getPresentation().setEnabled(false);
+            }
         }
 
         private static void applyView(IView.Label view, Presentation presentation) {

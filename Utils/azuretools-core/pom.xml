@@ -29,12 +29,13 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.56.0</version>
+        <version>3.57.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <checkstyle.skip>true</checkstyle.skip>
+        <azure-toolkit-ide-common-lib.version>0.12.1</azure-toolkit-ide-common-lib.version>
     </properties>
     <profiles>
         <profile>
@@ -146,6 +147,10 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-common-lib</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-queue</artifactId>
         </dependency>
@@ -201,6 +206,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure</artifactId>
+            <version>${azure.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -329,6 +335,10 @@
             <groupId>org.jtwig</groupId>
             <artifactId>jtwig-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-ide-common-lib</artifactId>
+            <version>${azure-toolkit-ide-common-lib.version}</version>
+        </dependency>
     </dependencies>
-
 </project>

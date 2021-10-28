@@ -9,11 +9,11 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.enums.ErrorEnum;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -101,6 +101,9 @@ public class AzureModule extends AzureRefreshableNode {
     private static String composeName() {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (AuthMethodManager.getInstance().isRestoringSignIn()) {
+                return BASE_MODULE_NAME + " (Signing In...)";
+            }
             // not signed in
             if (azureManager == null) {
                 return BASE_MODULE_NAME + " (Not Signed In)";

@@ -9,7 +9,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +20,8 @@ import java.util.Optional;
 @Slf4j
 public class IntellijNeverShowAgainAction extends NotificationAction {
 
+    public static final String ID = "AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain";
+
     public IntellijNeverShowAgainAction() {
         super("Never Show Again");
     }
@@ -27,7 +29,7 @@ public class IntellijNeverShowAgainAction extends NotificationAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event, @NotNull Notification notification) {
         Optional.ofNullable(ActionManager.getInstance().getId(this)).ifPresent(id -> {
-            AzureConfigurations.getInstance().getState().getSuppressedActions().put(id, Boolean.TRUE);
+            IntellijStore.getInstance().getState().getSuppressedActions().put(id, Boolean.TRUE);
             notification.expire();
         });
     }

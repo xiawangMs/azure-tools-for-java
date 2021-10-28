@@ -5,9 +5,18 @@
 
 package com.microsoft.applicationinsights.preference;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.microsoft.applicationinsights.ui.activator.Activator;
+import com.microsoft.applicationinsights.ui.config.AIResourceChangeListener;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
+import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
+import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
+import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
+import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -32,18 +41,8 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import com.microsoft.applicationinsights.ui.activator.Activator;
-import com.microsoft.applicationinsights.ui.config.AIResourceChangeListener;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
-import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
-import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
-import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
-import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class for Application Insights preference page. Creates UI components and their listeners.
@@ -473,7 +472,7 @@ public class ApplicationInsightsPreferencePage extends PreferencePage implements
         try {
             if (AuthMethodManager.getInstance().isSignedIn()) {
                 AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails();
+                List<Subscription> subList = azureManager.getSelectedSubscriptions();
                 if (subList.size() > 0) {
                     // if (!ApplicationInsightsPreferences.isLoaded()) {
                     // authenticated using AD. Proceed for updating application insights registry.

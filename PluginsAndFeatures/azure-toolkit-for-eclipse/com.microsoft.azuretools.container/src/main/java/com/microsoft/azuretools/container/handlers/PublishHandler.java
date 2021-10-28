@@ -33,41 +33,41 @@ public class PublishHandler extends AzureAbstractHandler {
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
         project = PluginUtil.getSelectedProject();
-        if (project == null || !SignInCommandHandler.doSignIn(PluginUtil.getParentShell())) {
+        if (project == null) {
             return null;
         }
-        basePath = project.getLocation().toString();
 
-        try {
-            if (MavenUtils.isMavenProject(project)) {
-                destinationPath = MavenUtils.getTargetPath(project);
-                ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
-                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
-                IContainer container;
-                container = MavenUtils.getPomFile(project).getParent();
-                action.launch(container, () -> {
+        SignInCommandHandler.requireSignedIn(PluginUtil.getParentShell(), () -> {
+            basePath = project.getLocation().toString();
+            try {
+                if (MavenUtils.isMavenProject(project)) {
+                    destinationPath = MavenUtils.getTargetPath(project);
+                    ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
+                    MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+                    IContainer container;
+                    container = MavenUtils.getPomFile(project).getParent();
+                    action.launch(container, () -> {
+                        buildAndRun(event);
+                        return null;
+                    });
+                } else {
+                    destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize().toString();
+                    ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
+                    WarUtil.export(project, destinationPath);
                     buildAndRun(event);
-                    return null;
-                });
-            } else {
-                destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
-                        .normalize().toString();
-                ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
-                WarUtil.export(project, destinationPath);
-                buildAndRun(event);
-            }
+                }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendTelemetryOnException(event, e);
-        }
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendTelemetryOnException(event, e);
+            }
+        });
         return null;
     }
 
     private void buildAndRun(ExecutionEvent event) {
         DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-            PublishWebAppOnLinuxDialog dialog = new PublishWebAppOnLinuxDialog(PluginUtil.getParentShell(), basePath,
-                    destinationPath);
+            PublishWebAppOnLinuxDialog dialog = new PublishWebAppOnLinuxDialog(PluginUtil.getParentShell(), basePath, destinationPath);
             dialog.open();
         });
     }

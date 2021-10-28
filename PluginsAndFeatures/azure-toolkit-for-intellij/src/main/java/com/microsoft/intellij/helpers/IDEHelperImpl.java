@@ -64,7 +64,7 @@ import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.swing.*;
@@ -84,8 +84,8 @@ import java.util.concurrent.ExecutionException;
 public class IDEHelperImpl implements IDEHelper {
 
     private static final String APP_SERVICE_FILE_EDITING = "App Service File Editing";
-    private static final String FILE_HAS_BEEN_DELETED = "File '%s' has been deleted from remote server, "
-        + "do you want to create a new file with the changed content?";
+    private static final String FILE_HAS_BEEN_DELETED = "File '%s' has been deleted from remote server, " +
+            "do you want to create a new file with the changed content?";
     private static final String FILE_HAS_BEEN_MODIFIED = "File '%s' has been modified since you view it, do you still want to save your changes?";
     private static final String SAVE_CHANGES = "Do you want to save your changes?";
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
@@ -396,7 +396,9 @@ public class IDEHelperImpl implements IDEHelper {
                     .doAfterTerminate(() -> IOUtils.closeQuietly(output, null))
                     .subscribe(bytes -> {
                         try {
-                            IOUtils.write(bytes.array(), output);
+                            if (bytes != null) {
+                                output.write(bytes.array(), 0, bytes.limit());
+                            }
                         } catch (final IOException e) {
                             final String error = "failed to load data into editor";
                             final String action = "try later or downloading it first";
@@ -489,7 +491,9 @@ public class IDEHelperImpl implements IDEHelper {
                     .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
                     .subscribe(bytes -> {
                         try {
-                            IOUtils.write(bytes.array(), output);
+                            if (bytes != null) {
+                                output.write(bytes.array(), 0, bytes.limit());
+                            }
                         } catch (final IOException e) {
                             final String error = "failed to write data into local file";
                             final String action = "try later";

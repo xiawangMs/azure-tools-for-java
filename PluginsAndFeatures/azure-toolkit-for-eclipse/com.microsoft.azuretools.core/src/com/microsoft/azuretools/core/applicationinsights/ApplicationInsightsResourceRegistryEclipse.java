@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -18,31 +20,29 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
 
 public class ApplicationInsightsResourceRegistryEclipse {
-
     /**
      * Method updates application insights registry by adding, removing or updating resources.
      * @param client
-     * @throws IOException
+     * @throws java.io.IOException
      * @throws RestOperationException
      * @throws AzureCmdException
      */
-    public static void updateApplicationInsightsResourceRegistry(List<SubscriptionDetail> subList) throws Exception {
-        for (SubscriptionDetail sub : subList) {
+    public static void updateApplicationInsightsResourceRegistry(List<Subscription> subList) throws Exception {
+        for (Subscription sub : subList) {
             if (sub.isSelected()) {
                 try {
                     // fetch resources available for particular subscription
-                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub);
+                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub.getId());
 
                     // Removal logic
                     List<ApplicationInsightsResource> registryList = ApplicationInsightsResourceRegistry
-                            .getResourceListAsPerSub(sub.getSubscriptionId());
+                            .getResourceListAsPerSub(sub.getId());
                     List<ApplicationInsightsResource> importedList = ApplicationInsightsResourceRegistry
                             .prepareAppResListFromRes(resourceList, sub);
                     List<String> inUsekeyList = getInUseInstrumentationKeys();
@@ -83,7 +83,7 @@ public class ApplicationInsightsResourceRegistryEclipse {
                         }
                     }
                 } catch (Exception e) {
-                    Activator.getDefault().log(String.format(Messages.aiListErr, sub.getSubscriptionName()), e);
+                    Activator.getDefault().log(String.format(Messages.aiListErr, sub.getName()), e);
                 }
             }
         }

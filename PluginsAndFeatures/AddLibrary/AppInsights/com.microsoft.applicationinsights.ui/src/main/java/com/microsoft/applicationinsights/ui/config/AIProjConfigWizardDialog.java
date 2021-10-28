@@ -5,13 +5,19 @@
 
 package com.microsoft.applicationinsights.ui.config;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import com.microsoft.applicationinsights.preference.ApplicationInsightsPreferencePage;
+import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.applicationinsights.ui.activator.Activator;
+import com.microsoft.applicationinsights.util.AILibraryUtil;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.applicationinsights.AILibraryHandler;
+import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
+import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -48,19 +54,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
-import com.microsoft.applicationinsights.preference.ApplicationInsightsPreferencePage;
-import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.applicationinsights.ui.activator.Activator;
-import com.microsoft.applicationinsights.util.AILibraryUtil;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.applicationinsights.AILibraryHandler;
-import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
-import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
     private Button aiCheck;
@@ -168,10 +167,10 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             // not signed in
-            if (azureManager == null) {
+            if (azureManager == null || !AuthMethodManager.getInstance().isSignedIn()) {
                 return;
             }
-            List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails();
+            List<Subscription> subList = azureManager.getSelectedSubscriptions();
             if (subList.size() > 0 && !ApplicationInsightsPreferences.isLoaded()) {
                 // if (manager.authenticated()) {
                 // authenticated using AD. Proceed for updating application insights registry.

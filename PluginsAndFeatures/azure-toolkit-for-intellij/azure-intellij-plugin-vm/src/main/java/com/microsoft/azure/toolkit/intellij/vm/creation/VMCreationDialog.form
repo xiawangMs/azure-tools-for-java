@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.vm.creation.VMCreationDialog">
+  <grid id="27dc6" binding="rootPane" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="801" height="660"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <tabbedpane id="5cfbe" binding="tabbedPane">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="200"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="33202" binding="basicPane" layout-manager="GridLayoutManager" row-count="18" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="10" right="0"/>
+            <constraints>
+              <tabbedpane title="Basic"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="4bce6" class="com.intellij.ui.TitledSeparator">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Project Details"/>
+                  <titleFont style="1"/>
+                  <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+                </properties>
+              </component>
+              <component id="f3ec9" class="javax.swing.JLabel" binding="lblResourceGroup">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Resource group:"/>
+                  <toolTipText value="A resource group is a collection of resources that share the same lifecycle, permissions, and policies."/>
+                </properties>
+              </component>
+              <component id="4154" class="javax.swing.JLabel" binding="lblSubscription">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Subscription:"/>
+                  <toolTipText value="All resources in an Azure subscription are billed together."/>
+                </properties>
+              </component>
+              <component id="c76ae" class="com.intellij.ui.TitledSeparator">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Instance Details"/>
+                  <titleFont style="1"/>
+                  <toolTipText value=""/>
+                </properties>
+              </component>
+              <component id="a91dc" class="javax.swing.JLabel" binding="lblVirtualMachineName">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
+                </constraints>
+                <properties>
+                  <text value="Virtual machine name:"/>
+                </properties>
+              </component>
+              <component id="b85ab" class="javax.swing.JLabel" binding="lblRegion">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Region:"/>
+                </properties>
+              </component>
+              <component id="b6b10" class="javax.swing.JLabel" binding="lblImage">
+                <constraints>
+                  <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Image:"/>
+                </properties>
+              </component>
+              <component id="d0d56" class="javax.swing.JLabel" binding="lblSize">
+                <constraints>
+                  <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Size:"/>
+                </properties>
+              </component>
+              <component id="8a071" class="com.intellij.ui.TitledSeparator">
+                <constraints>
+                  <grid row="9" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Administrator Account "/>
+                  <titleFont style="1"/>
+                  <toolTipText value=""/>
+                </properties>
+              </component>
+              <component id="22d68" class="javax.swing.JRadioButton" binding="rdoSshPublicKey">
+                <constraints>
+                  <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="SSH public key"/>
+                </properties>
+              </component>
+              <component id="ff38" class="javax.swing.JLabel" binding="lblAuthenticationType">
+                <constraints>
+                  <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Authentication type:"/>
+                  <toolTipText value="Choose whether the administrator account will use username/password or SSH keys for authentication."/>
+                </properties>
+              </component>
+              <component id="8673" class="javax.swing.JRadioButton" binding="rdoPassword">
+                <constraints>
+                  <grid row="10" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Password"/>
+                </properties>
+              </component>
+              <hspacer id="f2a37">
+                <constraints>
+                  <grid row="10" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </hspacer>
+              <component id="fa86b" class="javax.swing.JLabel" binding="lblUserName">
+                <constraints>
+                  <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="User name:"/>
+                </properties>
+              </component>
+              <component id="73157" class="javax.swing.JLabel" binding="lblPassword">
+                <constraints>
+                  <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Password:"/>
+                </properties>
+              </component>
+              <component id="9b6a" class="javax.swing.JLabel" binding="lblConfirmPassword">
+                <constraints>
+                  <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Confirm password:"/>
+                </properties>
+              </component>
+              <component id="7e5f4" class="javax.swing.JLabel" binding="lblCertificate">
+                <constraints>
+                  <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Public key:"/>
+                </properties>
+              </component>
+              <component id="517c5" class="javax.swing.JLabel" binding="lblAvailabilityOptions">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Availability options:"/>
+                  <toolTipText value="Azure offers a range of options for managing availability and resiliency for your applications. Architect your solution to use replicated VMs in Availability Zones or Availability Sets to protect your apps and data from datacenter outages and maintenance events."/>
+                </properties>
+              </component>
+              <vspacer id="a8580">
+                <constraints>
+                  <grid row="17" column="0" row-span="1" col-span="4" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+              <component id="ff203" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="cbSubscription" custom-create="true">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </component>
+              <component id="45141" class="com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox" binding="cbResourceGroup">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="2d532" class="com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox" binding="cbRegion">
+                <constraints>
+                  <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="3275" class="com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput" binding="txtCertificate">
+                <constraints>
+                  <grid row="14" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="1cb26" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineImageComboBox" binding="cbImage" custom-create="true">
+                <constraints>
+                  <grid row="7" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="ea17" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineSizeComboBox" binding="cbSize" custom-create="true">
+                <constraints>
+                  <grid row="8" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="aeee" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.NetworkAvailabilityOptionsComboBox" binding="cbAvailabilityOptions" custom-create="true">
+                <constraints>
+                  <grid row="6" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="feea" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtVisualMachineName" custom-create="true">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="944f4" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtUserName" custom-create="true">
+                <constraints>
+                  <grid row="11" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="b5512" class="javax.swing.JPasswordField" binding="txtPassword" custom-create="true">
+                <constraints>
+                  <grid row="12" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="19b45" class="javax.swing.JPasswordField" binding="txtConfirmPassword" custom-create="true">
+                <constraints>
+                  <grid row="13" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="b717b" class="com.intellij.ui.TitledSeparator" binding="titleInboundPortRules">
+                <constraints>
+                  <grid row="15" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Inbound Port Rules "/>
+                  <titleFont style="1"/>
+                  <toolTipText value="Select which virtual machine network ports are accessible from the public internet. You can specify more limited or granular network access on the Networking tab. "/>
+                </properties>
+              </component>
+              <nested-form id="745ca" form-file="com/microsoft/azure/toolkit/intellij/vm/creation/component/InboundPortRulesForm.form" binding="pnlBasicPorts">
+                <constraints>
+                  <grid row="16" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+            </children>
+          </grid>
+          <grid id="4e5" layout-manager="GridLayoutManager" row-count="9" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <tabbedpane title="Networking"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="90742" class="com.intellij.ui.TitledSeparator">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Network Interface"/>
+                  <titleFont style="1"/>
+                  <toolTipText value="When creating a virtual machine, a network interface will be created for you. "/>
+                </properties>
+              </component>
+              <vspacer id="40b38">
+                <constraints>
+                  <grid row="8" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+              <component id="104e9" class="javax.swing.JLabel" binding="lblVirtualNetwork">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Virtual network:"/>
+                  <toolTipText value="Virtual networks are logically isolated from each other in Azure. You can configure their IP address ranges, subnets, route tables, gateways, and security settings, much like a traditional network in your data center. Virtual machines in the same virtual network can access each other by default."/>
+                </properties>
+              </component>
+              <component id="8bd11" class="javax.swing.JLabel" binding="lblPublicIP">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Public IP:"/>
+                  <toolTipText value="Use a public IP address if you want to communicate with the virtual machine from outside the virtual network."/>
+                </properties>
+              </component>
+              <component id="2a165" class="javax.swing.JLabel" binding="lblSubnet">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Subnet:"/>
+                  <toolTipText value="A subnet is a range of IP addresses in your virtual network, which can be used to isolate virtual machines from each other or from the Internet."/>
+                </properties>
+              </component>
+              <component id="6d49f" class="javax.swing.JLabel" binding="lblSecurityGroup">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Security group:"/>
+                  <toolTipText value="A network security group contains security rules that allow or deny inbound network traffic to, or outbound network traffic from, the virtual machine. To simplify management of security rules, it's recommended that you associate a network security group to individual subnets, rather than individual network interfaces within the subnet, whenever possible."/>
+                </properties>
+              </component>
+              <component id="bfa76" class="javax.swing.JLabel" binding="lblConfigureSecurityGroup">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <text value="Configure security group:"/>
+                  <toolTipText value=""/>
+                </properties>
+              </component>
+              <grid id="9e000" binding="pnlSecurityRadios" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="fb177" class="javax.swing.JRadioButton" binding="rdoAdvancedSecurityGroup">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Advanced"/>
+                    </properties>
+                  </component>
+                  <component id="91e51" class="javax.swing.JRadioButton" binding="rdoBasicSecurityGroup">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Basic"/>
+                    </properties>
+                  </component>
+                  <component id="a21b3" class="javax.swing.JRadioButton" binding="rdoNoneSecurityGroup">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="None"/>
+                    </properties>
+                  </component>
+                  <hspacer id="ba175">
+                    <constraints>
+                      <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                </children>
+              </grid>
+              <component id="e963f" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualNetworkComboBox" binding="cbVirtualNetwork" custom-create="true">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="82b" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.SubnetComboBox" binding="cbSubnet" custom-create="true">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="3c090" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.SecurityGroupComboBox" binding="cbSecurityGroup" custom-create="true">
+                <constraints>
+                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="d067d" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.ip.PublicIPAddressComboBox" binding="cbPublicIp" custom-create="true">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <nested-form id="2790c" form-file="com/microsoft/azure/toolkit/intellij/vm/creation/component/InboundPortRulesForm.form" binding="pnlPorts">
+                <constraints>
+                  <grid row="7" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+              <component id="2eaa5" class="javax.swing.JLabel" binding="lblPublicInboundPorts">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Public inbound ports:"/>
+                  <toolTipText value="By default, access to the virtual machine is restricted to sources in the same virtual network, and traffic from Azure load balancing solutions. Select None to confirm, or choose to allow traffic from the public internet to one of these common ports."/>
+                  <visible value="false"/>
+                </properties>
+              </component>
+              <grid id="cc9ab" binding="pnlPublicInboundsRadios" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <visible value="false"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="d6294" class="javax.swing.JRadioButton" binding="rdoAllowSelectedInboundPorts">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Allow selected"/>
+                    </properties>
+                  </component>
+                  <component id="df9c0" class="javax.swing.JRadioButton" binding="rdoNoneInboundPorts">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="None"/>
+                    </properties>
+                  </component>
+                  <hspacer id="24c17">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="d8b48" binding="advancedPane" layout-manager="GridLayoutManager" row-count="7" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <tabbedpane title="Advanced"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="64301" class="com.intellij.ui.TitledSeparator">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Azure Spot Instance"/>
+                  <titleFont style="1"/>
+                  <toolTipText value="Select a subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources."/>
+                </properties>
+              </component>
+              <vspacer id="18924">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="4" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+              <component id="4075c" class="javax.swing.JLabel" binding="lblAzureSportInstance">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Enable Azure Spot instance:"/>
+                  <toolTipText value="Azure Spot offers unused Azure capacity at a discounted rate versus pay as you go prices. Workloads should be tolerant to infrastructure loss as Azure may recall capacity for pay as you go workloads."/>
+                </properties>
+              </component>
+              <component id="e9a56" class="javax.swing.JCheckBox" binding="chkAzureSpotInstance">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <selected value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="6217e" class="javax.swing.JLabel" binding="lblEvictionPolicy">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Eviction policy:"/>
+                  <toolTipText value="Choose what happens to the virtual machine when it's evicted. Upon eviction, the VM can either be stopped and deallocated if you plan to re-deploy or need access to the disk after eviction, or the VM can be deleted to clean up the VM and disks"/>
+                </properties>
+              </component>
+              <component id="9f8e" class="javax.swing.JRadioButton" binding="rdoStopAndDeallocate">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <selected value="true"/>
+                  <text value="Stop / Deallocate "/>
+                </properties>
+              </component>
+              <component id="d7963" class="javax.swing.JRadioButton" binding="rdoDelete">
+                <constraints>
+                  <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <selected value="false"/>
+                  <text value="Delete"/>
+                </properties>
+              </component>
+              <component id="a9caa" class="javax.swing.JLabel" binding="lblMaximumPrice">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <horizontalTextPosition value="10"/>
+                  <icon value="general/contextHelp.png"/>
+                  <text value="Maximum price per hour:"/>
+                  <toolTipText value="Choose the maximum price per hour you are willing to pay for a single instance of the selected virtual machine size. While your selected price is greater than the platform price and Azure has excess capacity, you will be allocated capacity. Azure Spot prices are in USD ($) only."/>
+                </properties>
+              </component>
+              <component id="610a6" class="com.intellij.ui.TitledSeparator">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font/>
+                  <text value="Storage Account"/>
+                  <titleFont style="1"/>
+                  <toolTipText value="Select a subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources."/>
+                </properties>
+              </component>
+              <component id="1daed" class="javax.swing.JLabel" binding="lblStorageAccount">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Storage account:"/>
+                </properties>
+              </component>
+              <hspacer id="64">
+                <constraints>
+                  <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </hspacer>
+              <component id="e081f" class="com.microsoft.azure.toolkit.intellij.vm.creation.component.AzureStorageAccountComboBox" binding="cbStorageAccount" custom-create="true">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="3db52" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtMaximumPrice" custom-create="true">
+                <constraints>
+                  <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </tabbedpane>
+    </children>
+  </grid>
+</form>

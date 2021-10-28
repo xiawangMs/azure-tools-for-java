@@ -10,8 +10,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +40,15 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.Gson;
+import com.microsoft.azure.toolkit.eclipse.common.messager.EclipseAzureMessager;
+import com.microsoft.azure.toolkit.eclipse.common.task.EclipseAzureTaskManager;
+import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -55,10 +62,11 @@ import com.microsoft.azuretools.core.azureexplorer.helpers.MvpUIHelperImpl;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.azuretools.core.store.EclipseSecureStore;
+import com.microsoft.azuretools.core.store.EclipseStore;
 import com.microsoft.azuretools.core.ui.UIFactory;
 import com.microsoft.azuretools.core.ui.views.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
@@ -72,7 +80,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     // The plug-in ID
     public static final String PLUGIN_ID = "com.microsoft.azuretools.core"; //$NON-NLS-1$
 
-    public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s, machineid:%s";
@@ -114,10 +122,16 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
                 com.microsoft.azuretools.core.utils.Messages.commonPluginID).toString();
         dataFile = Paths.get(pluginInstLoc, File.separator,
                 com.microsoft.azuretools.core.utils.Messages.dataFileName).toString();
+        AzureStoreManager.register(new DefaultMachineStore(Paths.get(pluginInstLoc, 
+                "azure.json").toString()),
+                new EclipseStore(), new EclipseSecureStore());
+        AzureTaskManager.register(new EclipseAzureTaskManager());
+        AzureMessager.setDefaultMessager(new EclipseAzureMessager());
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
+        AzureConfigInitializer.initialize(InstallationIdUtils.getHashMac(), "Azure Toolkit for Eclipse", Activator.getDefault().getBundle().getVersion().toString());
         initAzureToolsCoreLibsSettings();
 
         // load up the plugin settings
@@ -127,6 +141,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             showException("Azure Core Plugin", "An error occurred while attempting to load settings for the Azure Core plugin.", e);
         }
         findObsoletePackages(context);
+        
         super.start(context);
     }
 
@@ -145,11 +160,12 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsSettings() {
         try {
-            CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(),
-                    TelemetryUtils.getMachieId(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal,
-                            com.microsoft.azuretools.core.utils.Messages.instID)));
-            if (CommonSettings.getUiFactory() == null)
+            CommonSettings.setUserAgent(String.format(USER_AGENT, 
+                    Azure.az().config().getVersion(),
+                    Azure.az().config().getMachineId()));
+            if (CommonSettings.getUiFactory() == null) {
                 CommonSettings.setUiFactory(new UIFactory());
+            }
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
             final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
             CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
@@ -222,6 +238,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             }
         }
     }
+
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
@@ -324,7 +341,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     }
 
     public static void removeUnNecessaryListener() {
-        for (int i = 0 ; i < depEveList.size(); i++) {
+        for (int i = 0; i < depEveList.size(); i++) {
             removeDeploymentEventListener(depEveList.get(i));
         }
         depEveList.clear();
@@ -371,8 +388,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
         IConsoleManager conMan = consolePlugin.getConsoleManager();
         IConsole[] existing = conMan.getConsoles();
         for (int i = 0; i < existing.length; i++) {
-            if (name.equals(existing[i].getName()))
+            if (name.equals(existing[i].getName())) {
                 return (MessageConsole) existing[i];
+            }
         }
         // no console found, so create a new one
         MessageConsole messageConsole = new MessageConsole(name, null);

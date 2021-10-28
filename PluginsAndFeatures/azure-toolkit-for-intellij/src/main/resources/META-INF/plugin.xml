@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.56.0</version>
+  <version>3.57.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,20 +25,10 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.56.0</h3>
-        <h4>Added</h4>
+        <h3>3.57.1</h3>
+        <h4>Fixed</h4>
         <ul>
-            <li>Support proxy with credential(username, password)</li>
-            <li>Add `Samples` link for SDK libs on Azure SDK reference book</li>
-        </ul>
-        <h4>Changed</h4>
-        <ul>
-            <li>Fix the high failure rate problem for SSH into Linux Webapp operation</li>
-            <li>List all local-installed function core tools for function core tools path setting</li>
-            <li>Synchronize status on storage account in different views</li>
-            <li>Synchronize status on Azure Database for MySQL in different views</li>
-            <li>Synchronize status on SQL Server in different views</li>
-            <li>Redesign the creation UI of storage account</li>
+            <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5888">#5888</a> Fix bug: Conflicting component name 'RunManager'</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
@@ -55,18 +45,22 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
-  <xi:include href="/META-INF/operation-titles.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-service-explorer.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-resource-connector-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-resource-connector-aad.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-springcloud.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-storage.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-vm.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
   <depends>com.intellij.modules.lang</depends>
   -->
+  <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+    <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.LegacyIntellijActionsContributor"/>
+  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow
@@ -115,7 +109,6 @@
             factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
             id="Cosmos Serverless Spark Jobs"
             canCloseContents="true"/>
-    <toolWindow id="Azure Resource Connector" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" factoryClass="com.microsoft.azure.toolkit.intellij.connector.explorer.ConnectorToolWindowFactory"/>
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
@@ -159,11 +152,7 @@
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionDefinitionPreloadingActivity"/>
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerConnectionDefinitionPreloadingActivity"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLSpringDatasourceCompletionContributor"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.sql.SQLSpringDatasourceCompletionContributor"/>
-    <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceLineMarkerProvider"/>
+    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResourceDefinitionRegisterActivity"/>
   </extensions>
 
   <applicationListeners>

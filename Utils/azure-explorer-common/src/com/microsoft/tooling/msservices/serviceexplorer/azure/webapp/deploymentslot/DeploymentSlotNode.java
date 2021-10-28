@@ -5,9 +5,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.azure.resourcemanager.AzureResourceManager;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
@@ -127,9 +124,7 @@ public class DeploymentSlotNode extends WebAppBaseNode {
 
     @AzureOperation(name = "webapp|deployment.swap", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void swap() {
-        // todo: add swap method to app service library
-        final AzureResourceManager resourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
-        resourceManager.webApps().getById(webApp.id()).swap(slot.name());
+        webApp.swap(slot.name());
     }
 
     @AzureOperation(name = "webapp|deployment.open_portal", params = {"this.slot.name()"}, type = AzureOperation.Type.ACTION)

@@ -5,7 +5,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.56.0</version>
+        <version>3.57.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
@@ -141,6 +141,10 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-storage-lib</artifactId>
         </dependency>
+          <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-redis-lib</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>retrofit</artifactId>
@@ -148,6 +152,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure</artifactId>
+            <version>${azure.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -181,7 +186,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.12</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>

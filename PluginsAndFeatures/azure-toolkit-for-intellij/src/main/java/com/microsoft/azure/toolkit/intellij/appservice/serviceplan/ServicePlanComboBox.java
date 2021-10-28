@@ -60,7 +60,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
         // Clean up app service plan cache when switch subscription
         // todo: leverage event hub to update resource cache automatically
         try {
-            CacheManager.evictCache("appservcie/{}/plans", subscription.getId());
+            CacheManager.evictCache("appservice/{}/plans", subscription.getId());
         } catch (ExecutionException e) {
             // swallow exception while clean up cache
         }

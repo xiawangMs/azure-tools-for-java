@@ -16,7 +16,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -86,7 +86,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private JRadioButton rdoUseExist;
     private JComboBox<String> cbUseExist;
     // TODO(qianjin) : use AzureComboBox
-    private com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox cbLocations;
+    private RegionComboBox cbLocations;
     private JComboBox<String> cbPricing;
     private JCheckBox chkNoSSL;
     private JLabel lblPricing;

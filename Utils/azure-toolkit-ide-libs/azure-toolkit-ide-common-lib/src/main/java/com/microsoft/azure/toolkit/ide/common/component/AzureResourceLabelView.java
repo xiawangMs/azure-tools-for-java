@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AzureResourceLabelView<T extends IAzureResource<?>> implements IView.Label, IView.Dynamic {
+public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
     @Nonnull
     @Getter
     private final T resource;
@@ -29,7 +29,7 @@ public class AzureResourceLabelView<T extends IAzureResource<?>> implements IVie
     @Nullable
     @Setter
     @Getter
-    private Updater updater;
+    private Refresher refresher;
 
     public AzureResourceLabelView(@Nonnull T resource) {
         this.resource = resource;
@@ -37,20 +37,20 @@ public class AzureResourceLabelView<T extends IAzureResource<?>> implements IVie
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("common|resource.refresh", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
-        this.updateView();
+        this.refreshView();
     }
 
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if (source instanceof IAzureResource && ((IAzureResource<?>) source).id().equals(this.resource.id())) {
+        if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).id().equals(this.resource.id())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             if ("common|resource.refresh".equals(type)) {
                 if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                    tm.runLater(this::updateChildren);
+                    tm.runLater(this::refreshChildren);
                 }
             } else if ("common|resource.status_changed".equals(type)) {
-                tm.runLater(this::updateView);
+                tm.runLater(this::refreshView);
             }
         }
     }
@@ -58,7 +58,7 @@ public class AzureResourceLabelView<T extends IAzureResource<?>> implements IVie
     public void dispose() {
         AzureEventBus.off("common|resource.refresh", listener);
         AzureEventBus.off("common|resource.status_changed", listener);
-        this.updater = null;
+        this.refresher = null;
     }
 
     public String getIconPath() {

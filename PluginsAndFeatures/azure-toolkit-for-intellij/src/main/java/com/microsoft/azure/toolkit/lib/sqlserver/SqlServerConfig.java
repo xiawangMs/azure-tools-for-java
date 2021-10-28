@@ -5,7 +5,9 @@
 
 package com.microsoft.azure.toolkit.lib.sqlserver;
 
-import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
+import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -43,7 +45,8 @@ public class SqlServerConfig {
         config.setResourceGroup(resourceGroup);
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
-        config.setRegion(Region.US_EAST);
+        config.setRegion(Utils.selectFirstOptionIfCurrentInvalid("region", Azure.az(AzureSqlServer.class).listSupportedRegions(subscription.getId()),
+            Region.US_EAST));
         config.setServerName("sqlserver-" + defaultNameSuffix);
         config.setAdminUsername(StringUtils.EMPTY);
         config.setPassword(StringUtils.EMPTY.toCharArray());

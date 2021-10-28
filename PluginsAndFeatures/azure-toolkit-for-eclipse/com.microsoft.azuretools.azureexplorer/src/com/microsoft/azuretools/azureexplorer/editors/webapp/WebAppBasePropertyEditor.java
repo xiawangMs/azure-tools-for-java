@@ -60,7 +60,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azuretools.core.components.AzureListenerWrapper;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
@@ -88,13 +88,11 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
     private Text txtPricingTier;
     private Text txtJavaVersion;
     private Text txtContainer;
-    private Text txtContainerVersion;
     private Table tblAppSettings;
     private String subscriptionId;
     private String webAppId;
     private String slotName;
     private Link lnkUrl;
-    private Label lblContainerVersion;
     private Label lblContainer;
     private Label lblJavaVersion;
     private Button btnSave;
@@ -270,14 +268,6 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         txtContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtContainer.setEditable(false);
         txtContainer.setText(TXT_LOADING);
-
-        lblContainerVersion = new Label(cpExtraInfo, SWT.NONE);
-        lblContainerVersion.setText("Container Version:");
-
-        txtContainerVersion = new Text(cpExtraInfo, SWT.NONE);
-        txtContainerVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        txtContainerVersion.setEditable(false);
-        txtContainerVersion.setText(TXT_LOADING);
 
         Composite cpAppSettings = new Composite(composite, SWT.NONE);
         cpAppSettings.setLayout(new GridLayout(2, false));
@@ -572,23 +562,17 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         if (os != null && os instanceof OperatingSystem) {
             switch ((OperatingSystem) os) {
                 case WINDOWS:
+                case LINUX:
                     txtJavaVersion.setText(
                         webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null ? TXT_NA
                             : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
                     txtContainer.setText(
                         webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null ? TXT_NA
                             : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
-                    txtContainerVersion.setText(
-                        webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null
-                            ? TXT_NA
-                            : (String) webAppProperty
-                                .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION));
                     setExtraInfoVisible(true);
                     break;
-                case LINUX:
-                    setExtraInfoVisible(false);
-                    break;
                 default:
+                    setExtraInfoVisible(false);
                     break;
             }
         }

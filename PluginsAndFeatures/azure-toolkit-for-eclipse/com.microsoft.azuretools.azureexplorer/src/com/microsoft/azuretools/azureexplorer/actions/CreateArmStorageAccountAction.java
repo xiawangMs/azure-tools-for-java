@@ -1,34 +1,31 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.azureexplorer.actions;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
+import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import com.microsoft.azuretools.azureexplorer.forms.CreateArmStorageAccountForm;
+import com.microsoft.azuretools.azureexplorer.forms.common.Draft;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
+import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 @Name("Create Storage Account...")
 public class CreateArmStorageAccountAction extends NodeActionListener {
@@ -41,15 +38,39 @@ public class CreateArmStorageAccountAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        if (!SignInCommandHandler.doSignIn(PluginUtil.getParentShell())) return;
-        CreateArmStorageAccountForm createStorageAccountForm = new CreateArmStorageAccountForm(PluginUtil.getParentShell(), null, null);
+        SignInCommandHandler.requireSignedIn(PluginUtil.getParentShell(), () -> {
+            CreateArmStorageAccountForm createStorageAccountForm = new CreateArmStorageAccountForm(PluginUtil.getParentShell(), null, null);
+            createStorageAccountForm.setOnCreate(() -> {
+                AzureTaskManager.getInstance().runInBackground(
+                        "Creating storage account " + createStorageAccountForm.getStorageAccount().getName() + "...", new Runnable() {
+                            @Override
+                            public void run() {
+                                EventUtil.executeWithLog(STORAGE, CREATE_STORAGE_ACCOUNT, (operation) -> {
+                                    createStorageAccount(createStorageAccountForm.getStorageAccount());
+                                            storageModule.load(false);
+                                        }, (e) ->
+                                                AzureTaskManager.getInstance().runLater(() ->
+                                                        PluginUtil.displayErrorDialog(PluginUtil.getParentShell(), Messages.err,
+                                                                "An error occurred while creating the storage account: " + e.getMessage())
+                                                )
+                                );
+                            }
+                        });
 
-        createStorageAccountForm.setOnCreate(new Runnable() {
-            @Override
-            public void run() {
-                storageModule.load(false);
-            }
+            });
+            createStorageAccountForm.open();
         });
-        createStorageAccountForm.open();
     }
+    private static StorageAccount createStorageAccount(StorageAccountConfig config) {
+        final String subscriptionId = config.getSubscription().getId();
+        AzureTelemetry.getActionContext().setProperty("subscriptionId", subscriptionId);
+        if (config.getResourceGroup() instanceof Draft) { // create resource group if necessary.
+            final ResourceGroup newResourceGroup = Azure.az(AzureGroup.class)
+                    .subscription(subscriptionId).create(config.getResourceGroup().getName(), config.getRegion().getName());
+            config.setResourceGroup(newResourceGroup);
+        }
+        return Azure.az(AzureStorageAccount.class).create(config).commit();
+    }
+
+
 }

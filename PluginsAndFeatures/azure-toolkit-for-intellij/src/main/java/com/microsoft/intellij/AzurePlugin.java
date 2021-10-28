@@ -31,10 +31,10 @@ import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
 import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -70,6 +70,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY;
+import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY_PLUGIN_VERSION;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
@@ -80,7 +82,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERSION;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
-    public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
+    public static final String JDBC_LIBRARIES_VERSION = "9.4.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
     private static PluginStateListener pluginStateListener = null;
     private static final int POP_UP_DELAY = 30;
@@ -350,10 +352,10 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion;
         }
-        String version = AzureConfigurations.getInstance().getState().pluginVersion();
+        String version = AzureStoreManager.getInstance().getIdeStore().getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION);
         firstInstallationByVersion = StringUtils.equalsIgnoreCase(version, PLUGIN_VERSION);
         // update plugin version;
-        AzureConfigurations.getInstance().getState().pluginVersion(PLUGIN_VERSION);
+        AzureStoreManager.getInstance().getIdeStore().setProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, PLUGIN_VERSION);
         return firstInstallationByVersion;
     }
 

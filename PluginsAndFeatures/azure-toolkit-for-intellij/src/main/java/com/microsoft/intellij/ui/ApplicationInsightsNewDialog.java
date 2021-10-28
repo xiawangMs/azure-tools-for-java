@@ -8,7 +8,7 @@ package com.microsoft.intellij.ui;
 import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;

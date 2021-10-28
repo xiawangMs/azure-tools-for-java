@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.azureexplorer.views;
@@ -28,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -231,7 +215,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         //
         if (node.hasChildNodes()) {
             // this remove call should cause the NodeListChangeListener object
-            // registered on it's child nodes to fire which should recursively
+            // registered on its child nodes to fire which should recursively
             // clean up event handlers on it's children
             node.removeAllChildNodes();
         }
@@ -265,7 +249,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 case add:
                     // create child tree nodes for the new nodes
                     for (Node childNode : (Collection<Node>) e.getNewItems()) {
-                        // Eclipse do no support arm, so here need to skip resource management node
+                        // Eclipse does no support arm, so here need to skip resource management node
                         if (UNSUPPORTED_NODE_LIST.contains(childNode.getClass().getName())) {
                             continue;
                         }
@@ -305,7 +289,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             if (obj instanceof TreeNode) {
                 String iconPath = ((TreeNode) obj).node.getIconPath();
                 if (iconPath != null) {
-                    return Activator.getImageDescriptor("icons/" + iconPath).createImage();
+                    return Optional.ofNullable(Activator.getImageDescriptor("icons/" + iconPath)).map(image -> image.createImage()).orElse(super.getImage(obj));
                     // Activator.getDefault().getImageRegistry().get((((Node) obj).getIconPath()));
                 }
             }

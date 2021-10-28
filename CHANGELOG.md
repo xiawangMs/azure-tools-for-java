@@ -3,6 +3,9 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.57.1](#3571)
+  - [3.57.0](#3570)
+  - [3.56.0](#3560)
   - [3.55.0](#3550)
   - [3.54.0](#3540)
   - [3.53.0](#3530)
@@ -69,6 +72,26 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.57.1
+### Fixed
+- [#5888](https://github.com/microsoft/azure-tools-for-java/pull/5888) Fix bug: Conflicting component name 'RunManager'
+
+## 3.57.0
+### Added
+- Support connect to Azure Storage account for spring boot project
+
+### Changed
+- Redesign the creation UI of VM
+- Redesign the creation UI of Redis
+- Show supported regions only for Redis/MySql/Sql Server/Storage account in creation dialog
+- Remove JBoss 7.2 from webapp since it is deprecated
+- Show intermediate status for login restore
+
+### Fixed
+- [#5857](https://github.com/microsoft/azure-tools-for-java/pull/5857) Fix bug: fail to load plugin error
+- [#5761](https://github.com/microsoft/azure-tools-for-java/issues/5761) Fix bug: generated funciton jar cannot be started
+- [#1781](https://github.com/microsoft/azure-maven-plugins/pull/1781) Fix bug: blank Sql Server version in property view
 
 ## 3.56.0
 ### Added

@@ -48,7 +48,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
     private static final String[] FILE_NAME_EXT = {"war", "jar", "ear"};
-    private static final String DEPLOYMENT_SLOT = "Deployment Slot";
+    private static final String DEPLOYMENT_SLOT = "&Deployment Slot";
     private static final String DEFAULT_SLOT_NAME = "slot-%s";
 
     private final WebAppDeployViewPresenterSlim presenter;

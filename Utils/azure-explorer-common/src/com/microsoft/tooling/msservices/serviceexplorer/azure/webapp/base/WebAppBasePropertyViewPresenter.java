@@ -53,6 +53,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     public static final String KEY_JAVA_CONTAINER = "javaContainer";
     public static final String KEY_OPERATING_SYS = "operatingSystem";
     public static final String KEY_APP_SETTING = "appSetting";
+    public static final String KEY_JAVA_CONTAINER_VERSION = "javaContainerVersion";
 
     public <T extends AppServiceBaseEntity> void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String webAppId, @Nullable final String name) {
         Mono.fromCallable(() -> getWebAppBase(sid, webAppId, name)).map(appService -> {

@@ -20,7 +20,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
@@ -36,7 +36,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     public static final String PLUGIN_NAME = "azure-toolkit-for-intellij";
     public static final String PLUGIN_VERSION = Objects.requireNonNull(PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))).getVersion();
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
-    public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
+    public static final String JDBC_LIBRARIES_VERSION = "9.4.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
     private static final PluginStateListener pluginStateListener = null;
     private static final int POP_UP_DELAY = 30;
@@ -60,26 +60,16 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         final String pluginVersion = "0.0.1-SNAPSHOT";
         // check non-empty for valid data.xml
         if (StringUtils.isNoneBlank(installationId, pluginVersion)) {
-            final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-            if (config.allowTelemetry()) {
-                config.allowTelemetry(true);
-            }
-            if (StringUtils.isBlank(config.pluginVersion())) {
-                config.pluginVersion(pluginVersion);
-            }
-            if (StringUtils.isBlank(config.installationId()) && InstallationIdUtils.isValidHashMac(installationId)) {
-                config.installationId(installationId);
-            }
-            AzureConfigurations.getInstance().loadState(config);
+            final IntellijStore.AzureConfigurationData config = IntellijStore.getInstance().getState();
+            IntellijStore.getInstance().loadState(config);
         }
-        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-        String installationID = config.installationId();
+        final IntellijStore.AzureConfigurationData config = IntellijStore.getInstance().getState();
+        String installationID = InstallationIdUtils.getHashMac();
         if (StringUtils.isBlank(installationID)) {
             installationID = StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get()));
         }
 
-        final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION,
-                config.allowTelemetry() ? installationID : StringUtils.EMPTY);
+        final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION, installationID);
         Azure.az().config().setLogLevel("NONE");
         Azure.az().config().setUserAgent(userAgent);
         final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);

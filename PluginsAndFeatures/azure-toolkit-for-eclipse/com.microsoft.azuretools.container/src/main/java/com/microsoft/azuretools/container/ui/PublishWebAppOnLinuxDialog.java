@@ -8,10 +8,6 @@ package com.microsoft.azuretools.container.ui;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_CONTAINER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
@@ -39,12 +35,12 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -55,12 +51,15 @@ import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.ui.common.ContainerSettingComposite;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
@@ -109,12 +108,12 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private final WebAppOnLinuxDeployModel model;
     private String basePath;
     // cached lists of resources
-    private List<AppServicePlan> appServicePlanList;
-    private List<Location> locationList;
+    private List<IAppServicePlan> appServicePlanList;
+    private List<Region> locationList;
     private List<Subscription> subscriptionList;
     private List<PricingTier> pricingTierList;
     private List<ResourceGroup> resourceGroupList;
-    private List<ResourceEx<WebApp>> webAppList;
+    private List<IWebApp> webAppList;
     // Widgets
     private Button rdoExistingWebApp;
     private Button rdoNewWebApp;
@@ -276,12 +275,12 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         if (rdoExistingWebApp.getSelection()) {
             // existing web app
             model.setCreatingNewWebAppOnLinux(false);
-            ResourceEx<WebApp> selectedWebApp = getSelectedWebApp();
+            IWebApp selectedWebApp = getSelectedWebApp();
             if (selectedWebApp != null) {
-                model.setWebAppId(selectedWebApp.getResource().id());
-                model.setWebAppName(selectedWebApp.getResource().name());
-                model.setSubscriptionId(selectedWebApp.getSubscriptionId());
-                model.setResourceGroupName(selectedWebApp.getResource().resourceGroupName());
+                model.setWebAppId(selectedWebApp.id());
+                model.setWebAppName(selectedWebApp.name());
+                model.setSubscriptionId(selectedWebApp.subscriptionId());
+                model.setResourceGroupName(selectedWebApp.resourceGroup());
             } else {
                 model.setWebAppId(null);
                 model.setWebAppName(null);
@@ -295,7 +294,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             model.setWebAppName(cpNew.txtAppName.getText());
             Subscription selectedSubscription = getSelectedSubscription();
             if (selectedSubscription != null) {
-                model.setSubscriptionId(selectedSubscription.subscriptionId());
+                model.setSubscriptionId(selectedSubscription.getId());
             }
 
             // resource group
@@ -304,7 +303,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 model.setCreatingNewResourceGroup(false);
                 ResourceGroup selectedRg = getSelectedResourceGroup();
                 if (selectedRg != null) {
-                    model.setResourceGroupName(selectedRg.name());
+                    model.setResourceGroupName(selectedRg.getName());
                 } else {
                     model.setResourceGroupName(null);
                 }
@@ -318,24 +317,24 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             if (cpNew.rdoNewAppServicePlan.getSelection()) {
                 model.setCreatingNewAppServicePlan(true);
                 model.setAppServicePlanName(cpNew.txtAppServicePlanName.getText());
-                Location selectedLocation = getSelectedLocation();
+                Region selectedLocation = getSelectedLocation();
                 if (selectedLocation != null) {
-                    model.setLocationName(selectedLocation.region().name());
+                    model.setLocationName(selectedLocation.getLabel());
                 } else {
                     model.setLocationName(null);
                 }
 
                 PricingTier selectedPricingTier = getSelectedPricingTier();
                 if (selectedPricingTier != null) {
-                    model.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
-                    model.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
+                    model.setPricingSkuTier(selectedPricingTier.getTier());
+                    model.setPricingSkuSize(selectedPricingTier.getSize());
                 } else {
                     model.setPricingSkuTier(null);
                     model.setPricingSkuSize(null);
                 }
             } else if (cpNew.rdoExistingAppServicePlan.getSelection()) {
                 model.setCreatingNewAppServicePlan(false);
-                AppServicePlan selectedAsp = getSelectedAppServicePlan();
+                IAppServicePlan selectedAsp = getSelectedAppServicePlan();
                 if (selectedAsp != null) {
                     model.setAppServicePlanId(selectedAsp.id());
                 } else {
@@ -482,7 +481,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             if (model.isCreatingNewWebAppOnLinux()) {
                 // create new WebApp
                 ConsoleLogger.info(String.format("Creating new WebApp ... [%s]", model.getWebAppName()));
-                WebApp app = AzureWebAppMvpModel.getInstance().createWebAppWithPrivateRegistryImage(model);
+                IWebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(model);
 
                 if (app != null && app.name() != null) {
                     ConsoleLogger.info(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
@@ -492,25 +491,20 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             } else {
                 // update WebApp
                 ConsoleLogger.info(String.format("Updating WebApp ... [%s]", model.getWebAppName()));
-                WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(model.getSubscriptionId(),
-                        model.getWebAppId(), acrInfo);
+                IWebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(model.getWebAppId(), acrInfo);
                 if (app != null && app.name() != null) {
                     ConsoleLogger.info(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                 }
             }
             return null;
-        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-            ret -> {
-                ConsoleLogger.info("Updating cache ... ");
-                AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
-                ConsoleLogger.info("Job done");
-                if (model.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
-                    AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
-                }
-                sendTelemetry(true, null);
-                operation.complete();
-            },
-            err -> {
+        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
+            ConsoleLogger.info("Job done");
+            if (model.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+            }
+            sendTelemetry(true, null);
+            operation.complete();
+        }, err -> {
                 err.printStackTrace();
                 ConsoleLogger.error(err.getMessage());
                 EventUtil.logError(operation, ErrorType.systemError, new Exception(err), null, null);
@@ -539,8 +533,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     // get selected items in Combo
-    private ResourceEx<WebApp> getSelectedWebApp() {
-        ResourceEx<WebApp> selectedWebApp = null;
+    private IWebApp getSelectedWebApp() {
+        IWebApp selectedWebApp = null;
         int index = cpExisting.tblWebApps.getSelectionIndex();
         if (webAppList != null && index >= 0 && index < webAppList.size()) {
             selectedWebApp = webAppList.get(index);
@@ -548,8 +542,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         return selectedWebApp;
     }
 
-    private AppServicePlan getSelectedAppServicePlan() {
-        AppServicePlan asp = null;
+    private IAppServicePlan getSelectedAppServicePlan() {
+        IAppServicePlan asp = null;
         int index = cpNew.cbExistingAppServicePlan.getSelectionIndex();
         if (appServicePlanList != null && index >= 0 && index < appServicePlanList.size()) {
             asp = appServicePlanList.get(index);
@@ -566,8 +560,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         return pt;
     }
 
-    private Location getSelectedLocation() {
-        Location loc = null;
+    private Region getSelectedLocation() {
+        Region loc = null;
         int locIndex = cpNew.cbLocation.getSelectionIndex();
         if (locationList != null && locIndex >= 0 && locIndex < locationList.size()) {
             loc = locationList.get(locIndex);
@@ -660,10 +654,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private void onAppServicePlanSelection() {
         cpNew.lblLocationValue.setText("N/A");
         cpNew.lblPricingTierValue.setText("N/A");
-        AppServicePlan asp = getSelectedAppServicePlan();
+        IAppServicePlan asp = getSelectedAppServicePlan();
         if (asp != null) {
-            cpNew.lblLocationValue.setText(asp.regionName());
-            cpNew.lblPricingTierValue.setText(asp.pricingTier().toString());
+            cpNew.lblLocationValue.setText(asp.entity().getRegion());
+            cpNew.lblPricingTierValue.setText(asp.entity().getPricingTier().getSize());
         }
     }
 
@@ -675,7 +669,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         ResourceGroup rg = getSelectedResourceGroup();
         if (sub != null && rg != null) {
             // TODO: a minor bug here, if rg is null, related labels should be set to "N/A"
-            webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sub.subscriptionId(), rg.name());
+            webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sub.getId(), rg.getName());
         }
     }
 
@@ -684,8 +678,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         cpNew.cbLocation.removeAll();
         Subscription sb = getSelectedSubscription();
         if (sb != null) {
-            webAppOnLinuxDeployPresenter.onLoadResourceGroup(sb.subscriptionId());
-            webAppOnLinuxDeployPresenter.onLoadLocationList(sb.subscriptionId());
+            webAppOnLinuxDeployPresenter.onLoadResourceGroup(sb.getId());
+            webAppOnLinuxDeployPresenter.onLoadLocationList(sb.getId());
         }
     }
 
@@ -699,48 +693,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
     // Implementation of WebAppOnLinuxDeployView
     @Override
-    public void renderAppServicePlanList(List<AppServicePlan> list) {
-        appServicePlanList = list;
-        cpNew.cbExistingAppServicePlan.removeAll();
-        for (AppServicePlan asp : appServicePlanList) {
-            cpNew.cbExistingAppServicePlan.add(asp.name());
-        }
-        if (cpNew.cbExistingAppServicePlan.getItemCount() > 0) {
-            cpNew.cbExistingAppServicePlan.select(0);
-        }
-        onAppServicePlanSelection();
-    }
-
-    @Override
-    public void renderLocationList(List<Location> list) {
-        locationList = list;
-        cpNew.cbLocation.removeAll();
-        for (Location l : locationList) {
-            cpNew.cbLocation.add(l.displayName());
-        }
-        if (cpNew.cbLocation.getItemCount() > 0) {
-            cpNew.cbLocation.select(0);
-        }
-    }
-
-    @Override
-    public void renderPricingTierList(List<PricingTier> list) {
-        pricingTierList = list;
-        cpNew.cbPricingTier.removeAll();
-        for (PricingTier pt : pricingTierList) {
-            cpNew.cbPricingTier.add(pt.toString());
-        }
-        if (cpNew.cbPricingTier.getItemCount() > 0) {
-            cpNew.cbPricingTier.select(0);
-        }
-    }
-
-    @Override
     public void renderResourceGroupList(List<ResourceGroup> list) {
         resourceGroupList = list;
         cpNew.cbExistingResourceGroup.removeAll();
         for (ResourceGroup rg : resourceGroupList) {
-            cpNew.cbExistingResourceGroup.add(rg.name());
+            cpNew.cbExistingResourceGroup.add(rg.getName());
         }
         if (cpNew.cbExistingResourceGroup.getItemCount() > 0) {
             cpNew.cbExistingResourceGroup.select(0);
@@ -753,7 +710,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         subscriptionList = list;
         cpNew.cbSubscription.removeAll();
         for (Subscription sub : subscriptionList) {
-            cpNew.cbSubscription.add(sub.displayName());
+            cpNew.cbSubscription.add(sub.getName());
         }
         if (cpNew.cbSubscription.getItemCount() > 0) {
             cpNew.cbSubscription.select(0);
@@ -762,19 +719,58 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     @Override
-    public void renderWebAppOnLinuxList(List<ResourceEx<WebApp>> list) {
+    public void renderAppServicePlanList(List<IAppServicePlan> list) {
+        // TODO Auto-generated method stub
+        appServicePlanList = list;
+        cpNew.cbExistingAppServicePlan.removeAll();
+        for (IAppServicePlan asp : appServicePlanList) {
+            cpNew.cbExistingAppServicePlan.add(asp.name());
+        }
+        if (cpNew.cbExistingAppServicePlan.getItemCount() > 0) {
+            cpNew.cbExistingAppServicePlan.select(0);
+        }
+        onAppServicePlanSelection();
+    }
+
+    @Override
+    public void renderLocationList(List<Region> list) {
+        // TODO Auto-generated method stub
+        locationList = list;
+        cpNew.cbLocation.removeAll();
+        for (Region l : locationList) {
+            cpNew.cbLocation.add(l.getLabel());
+        }
+        if (cpNew.cbLocation.getItemCount() > 0) {
+            cpNew.cbLocation.select(0);
+        }
+    }
+
+    @Override
+    public void renderPricingTierList(List<PricingTier> list) {
+        // TODO Auto-generated method stub
+        pricingTierList = list;
+        cpNew.cbPricingTier.removeAll();
+        for (PricingTier pt : pricingTierList) {
+            cpNew.cbPricingTier.add(pt.toString());
+        }
+        if (cpNew.cbPricingTier.getItemCount() > 0) {
+            cpNew.cbPricingTier.select(0);
+        }
+    }
+
+    @Override
+    public void renderWebAppOnLinuxList(List<IWebApp> list) {
+        // TODO Auto-generated method stub
         cpExisting.btnRefresh.setEnabled(true);
-        webAppList = list.stream().sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
+        webAppList = list.stream().sorted((a, b) -> a.subscriptionId().compareToIgnoreCase(b.subscriptionId()))
                 .collect(Collectors.toList());
 
         // TODO: where to show loading ...
-
         if (webAppList.size() > 0) {
             cpExisting.tblWebApps.removeAll();
-            for (ResourceEx<WebApp> resource : webAppList) {
-                WebApp app = resource.getResource();
+            for (IWebApp app : webAppList) {
                 TableItem it = new TableItem(cpExisting.tblWebApps, SWT.NULL);
-                it.setText(new String[] {app.name(), app.resourceGroupName()});
+                it.setText(new String[] {app.name(), app.resourceGroup()});
             }
         }
     }

@@ -97,8 +97,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.11.0'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.11.0'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
         }
     }
 
@@ -108,13 +108,13 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.11.0', {
+        compile 'com.microsoft.azure:azure-toolkit-common-lib:0.12.1', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
         }
 
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.11.0', {
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.12.1', {
             exclude group: "com.squareup.okhttp3", module: "okhttp"
             exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
             exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
@@ -151,9 +151,7 @@ configurations {
     compile.exclude module:'slf4j-api'
     compile.exclude module:'log4j'
     compile.exclude module:'stax-api'
-    compile.exclude module:'azure-core-http-netty'
-    compile.exclude module:'netty-transport'
-    compile.exclude module:'netty-resolver'
+    compile.exclude module:'groovy-templates'
     cucumberRuntime {
         extendsFrom testRuntime
     }
@@ -161,8 +159,8 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.11.0'
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.11.0'
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.12.1'
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.12.1'
     }
 }
 
@@ -171,7 +169,9 @@ dependencies {
     compile project(':azure-sdk-reference-book')
     compile project(':azure-intellij-resource-connector-lib')
     compile project(':azure-intellij-resource-connector-aad')
+    compile project(':azure-intellij-plugin-vm')
     compile project(':azure-intellij-plugin-springcloud')
+    compile project(':azure-intellij-plugin-storage')
     compile project(':azure-intellij-plugin-service-explorer')
 
     compile 'com.microsoft.azure:azure-client-authentication'
@@ -180,6 +180,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-springcloud-lib'
     compile 'com.microsoft.azure:azure-toolkit-mysql-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
+    compile 'com.microsoft.azure:azure-toolkit-redis-lib'
     aspect "com.microsoft.azure:azure-toolkit-common-lib",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
@@ -191,26 +192,23 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.56.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.57.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.56.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.57.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.56.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.57.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
     compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
-    compile 'com.squareup.okhttp3:okhttp:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:4.9.1' , { force = true }
-    compile 'com.squareup.okhttp3:logging-interceptor:4.9.1' , { force = true }
 
     compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
     compile "com.github.akarnokd:rxjava3-interop:3.0.2"
@@ -237,6 +235,7 @@ dependencies {
     compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
     compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
+    compile group: 'org.apache.maven', name: 'maven-archiver', version: '3.5.1'
 
     testCompile 'junit:junit:4.13'
     testCompile 'info.cukes:cucumber-junit:1.2.6'

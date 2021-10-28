@@ -22,12 +22,17 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.microsoft.azure.management.compute.*;
+import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.utils.Messages;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -40,20 +45,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
-import com.microsoft.azure.management.compute.KnownWindowsVirtualMachineImage;
-import com.microsoft.azure.management.compute.VirtualMachineImage;
-import com.microsoft.azure.management.compute.VirtualMachineOffer;
-import com.microsoft.azure.management.compute.VirtualMachinePublisher;
-import com.microsoft.azure.management.compute.VirtualMachineSku;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.utils.Messages;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SelectImageStep extends WizardPage {
     private static final String LOADING = "<Loading...>";
@@ -242,8 +235,8 @@ public class SelectImageStep extends WizardPage {
          // will set to null if selected subscription changes
             if (wizard.getRegion() == null) {
                 setPageComplete(false);
-                Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-                if (subscription2Location == null || subscription2Location.get(wizard.getSubscription()) == null) {
+
+                if (wizard.getSubscription() == null) {
                     DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
@@ -252,11 +245,10 @@ public class SelectImageStep extends WizardPage {
                             regionComboBox.setEnabled(false);
                         }
                     });
-                    DefaultLoader.getIdeHelper().runInBackground(null, "Loading Available Locations...", true, true, "", new Runnable() {
+                    AzureTaskManager.getInstance().runInBackground("Loading Available Locations...", new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                AzureModelController.updateSubscriptionMaps(null);
                                 DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
@@ -279,11 +271,11 @@ public class SelectImageStep extends WizardPage {
 
     private void fillRegions() {
         regionComboBox.removeAll();
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(wizard.getSubscription())
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
-        for (Location location : locations) {
-            regionComboBox.add(location.displayName());
-            regionComboBox.setData(location.displayName(), location);
+        Subscription subs = wizard.getSubscription();
+        List<Region> locations = Azure.az(AzureAccount.class).listRegions(subs.getId());
+        for (Region location : locations) {
+            regionComboBox.add(location.getLabel());
+            regionComboBox.setData(location.getLabel(), location);
         }
         if (locations.size() > 0) {
             regionComboBox.select(0);
@@ -311,7 +303,7 @@ public class SelectImageStep extends WizardPage {
         if (customImageBtn.getSelection()) {
             fillPublishers();
         }
-        wizard.setRegion((Location) regionComboBox.getData(regionComboBox.getText()));
+        wizard.setRegion((Region) regionComboBox.getData(regionComboBox.getText()));
     }
 
     private void fillPublishers() {
@@ -323,7 +315,7 @@ public class SelectImageStep extends WizardPage {
         offerComboBox.setEnabled(false);
         skuComboBox.setEnabled(false);
         imageLabelList.setEnabled(false);
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading image publishers...", false, true, "", new Runnable() {
+        AzureTaskManager.getInstance().runInBackground("Loading image publishers...", new Runnable() {
             @Override
                     public void run() {
                         final java.util.List<VirtualMachinePublisher> publishers = wizard.getAzure()
@@ -354,7 +346,7 @@ public class SelectImageStep extends WizardPage {
         imageLabelList.setEnabled(false);
         VirtualMachinePublisher publisher = (VirtualMachinePublisher) publisherComboBox.getData(publisherComboBox.getText());
 
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading image offers...", false, true, "", new Runnable() {
+        AzureTaskManager.getInstance().runInBackground("Loading image offers...", new Runnable() {
             @Override
             public void run() {
                 try {
@@ -387,7 +379,7 @@ public class SelectImageStep extends WizardPage {
         imageLabelList.removeAll();
         VirtualMachineOffer offer = (VirtualMachineOffer) offerComboBox.getData(offerComboBox.getText());
         if (offerComboBox.getItemCount() > 0) {
-            DefaultLoader.getIdeHelper().runInBackground(null, "Loading skus...", false, true, "", new Runnable() {
+            AzureTaskManager.getInstance().runInBackground("Loading skus...", new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -421,7 +413,7 @@ public class SelectImageStep extends WizardPage {
         setPageComplete(false);
         imageLabelList.removeAll();
         VirtualMachineSku sku = (VirtualMachineSku) skuComboBox.getData(skuComboBox.getText());
-        DefaultLoader.getIdeHelper().runInBackground(null, "Loading images...", false, true, "", new Runnable() {
+        AzureTaskManager.getInstance().runInBackground("Loading images...", new Runnable() {
             @Override
             public void run() {
                 final java.util.List<VirtualMachineImage> images = new ArrayList<VirtualMachineImage>();

@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.extern.java.Log;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.List;
@@ -58,9 +59,9 @@ public abstract class AzureDialog<T> extends DialogWrapper {
         this.setOKActionEnabled(infos.stream().noneMatch(
                 i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR || AzureValidationInfo.UNINITIALIZED.equals(i)));
         final List<ValidationInfo> resultList = infos.stream()
-                    .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
-                    .map(AzureDialog::toIntellijValidationInfo)
-                    .collect(Collectors.toList());
+                .filter(i -> i != AzureValidationInfo.OK && !AzureValidationInfo.UNINITIALIZED.equals(i))
+                .map(AzureDialog::toIntellijValidationInfo)
+                .collect(Collectors.toList());
         // this is in order to let ok action disable if only there is any uninitialized filed.
         if (infos.stream().anyMatch(AzureValidationInfo.UNINITIALIZED::equals)) {
             setErrorInfoAll(resultList);
@@ -71,11 +72,8 @@ public abstract class AzureDialog<T> extends DialogWrapper {
     //TODO: @wangmi move to some util class
     private static ValidationInfo toIntellijValidationInfo(final AzureValidationInfo info) {
         final AzureFormInput<?> input = info.getInput();
-        if (input instanceof AzureFormInputComponent) {
-            final JComponent component = ((AzureFormInputComponent<?>) input).getInputComponent();
-            return new ValidationInfo(info.getMessage(), component);
-        }
-        return new ValidationInfo(info.getMessage(), null);
+        final JComponent component = input instanceof AzureFormInputComponent ? ((AzureFormInputComponent<?>) input).getInputComponent() : null;
+        return new ValidationInfo(info.getType() == AzureValidationInfo.Type.PENDING ? StringUtils.EMPTY : info.getMessage(), component);
     }
 
     public abstract AzureForm<T> getForm();

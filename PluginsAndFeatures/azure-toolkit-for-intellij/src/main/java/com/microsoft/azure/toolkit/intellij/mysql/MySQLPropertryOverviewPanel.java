@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
-import com.microsoft.azure.toolkit.intellij.common.ui.TextFieldUtils;
+import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
 import lombok.Getter;
 
 import javax.swing.*;
