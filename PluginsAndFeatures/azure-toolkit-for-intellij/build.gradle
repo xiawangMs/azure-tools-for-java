@@ -239,8 +239,6 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
 
-    implementation group: 'io.netty', name: 'netty-resolver-dns-native-macos', version: '4.1.70.Final', classifier: 'osx-x86_64', ext: 'jar'
-
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
