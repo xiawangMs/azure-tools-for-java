@@ -90,7 +90,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 super.widgetSelected(e);
-                ResourceGroupCreationDialog dialog = new ResourceGroupCreationDialog(ResourceGroupComboBox.this.getShell());
+                ResourceGroupCreationDialog dialog = new ResourceGroupCreationDialog(ResourceGroupComboBox.this.getShell(), subscription);
                 if (dialog.open() == Window.OK) {
                     DraftResourceGroup resourceGroupDraft = dialog.getData();
                     draftItems.add(0, resourceGroupDraft);

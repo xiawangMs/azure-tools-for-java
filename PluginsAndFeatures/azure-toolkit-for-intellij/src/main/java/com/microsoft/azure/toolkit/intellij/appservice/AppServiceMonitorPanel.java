@@ -7,11 +7,11 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.intellij.appservice.insights.ApplicationInsightsComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.IntegerTextField;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
@@ -43,8 +43,8 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     private JPanel pnlApplicationLog;
     private TitledSeparator titleApplicationInsights;
     private TitledSeparator titleAppServiceLog;
-    private IntegerTextField txtQuota;
-    private IntegerTextField txtRetention;
+    private AzureIntegerInput txtQuota;
+    private AzureIntegerInput txtRetention;
     private LogLevelComboBox cbLogLevel;
     private JLabel lblApplicationLog;
 
@@ -146,11 +146,11 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
         cbLogLevel = new LogLevelComboBox();
         applicationInsightsComboBox = new ApplicationInsightsComboBox();
 
-        txtQuota = new IntegerTextField();
+        txtQuota = new AzureIntegerInput();
         txtQuota.setMinValue(25);
         txtQuota.setMaxValue(100);
 
-        txtRetention = new IntegerTextField();
+        txtRetention = new AzureIntegerInput();
         txtRetention.setMinValue(0);
         txtRetention.setMaxValue(99999);
         txtRetention.setRequired(false);

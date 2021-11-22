@@ -6,10 +6,10 @@ package com.microsoft.azure.toolkit.lib.function;
 
 import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.exception.ManagementException;
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsights;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightsEntity;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.FunctionDeployType;

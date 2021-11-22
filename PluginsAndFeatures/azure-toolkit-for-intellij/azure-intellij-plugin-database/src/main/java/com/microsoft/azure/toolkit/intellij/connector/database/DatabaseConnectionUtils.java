@@ -9,17 +9,12 @@ import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.mysql.cj.jdbc.ConnectionImpl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Collections;
 
 public class DatabaseConnectionUtils {
@@ -69,7 +64,8 @@ public class DatabaseConnectionUtils {
                     serverVersion = "unknown";
                 }
             } else {
-                serverVersion = ((ConnectionImpl) connection).getServerVersion().toString();
+                final DatabaseMetaData meta = connection.getMetaData();
+                serverVersion = meta == null ? "unknown" : String.format("%d.%d", meta.getDatabaseMajorVersion(), meta.getDatabaseMinorVersion());
             }
         } catch (final SQLException exception) {
             errorCode = exception.getErrorCode();
@@ -86,7 +82,7 @@ public class DatabaseConnectionUtils {
     }
 
     private static String getDriverClassName(JdbcUrl url) {
-        String jdbcUrl = url.toString();
+        final String jdbcUrl = url.toString();
         if (StringUtils.startsWith(jdbcUrl, SQL_SERVER_URL_PREFIX)) {
             return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         } else if (StringUtils.startsWith(jdbcUrl, POSTGRE_URL_PREFIX)) {

@@ -46,7 +46,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     private static final int GET_STATUS_TIMEOUT = 180;
     private static final String UPDATE_APP_WARNING = "It may take some moments for the configuration to be applied at server side!";
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
-            "you can check the app status from Azure Portal.";
+        "you can check the app status from Azure Portal.";
     private static final String NOTIFICATION_TITLE = "Deploy Spring Cloud App";
 
     private final SpringCloudDeploymentConfiguration config;
@@ -66,10 +66,18 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final ConsoleMessager messager = new ConsoleMessager(processHandler);
         final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         consoleView.attachToProcess(processHandler);
-        final Disposable subscribe = Mono.fromCallable(() -> this.execute(messager))
-                .doOnTerminate(processHandler::notifyComplete)
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe((res) -> messager.success("Deploy succeed!"), messager::error);
+        final Runnable execute = () -> {
+            try {
+                this.execute(messager);
+                messager.success("Deploy succeed!");
+            } catch (final Exception e) {
+                messager.error(e);
+            }
+        };
+        final Disposable subscribe = Mono.fromRunnable(execute)
+            .doOnTerminate(processHandler::notifyComplete)
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe();
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processTerminated(@NotNull ProcessEvent event) {

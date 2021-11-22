@@ -29,12 +29,13 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     }
 
     public RuntimeComboBox(Composite parent, List<Runtime> platformList) {
-        super(parent);
-        this.platformList = ListUtils.unmodifiableList(platformList);
+        super(parent, false);
+        setPlatformList(platformList);
     }
 
     public void setPlatformList(final List<Runtime> platformList) {
         this.platformList = ListUtils.unmodifiableList(platformList);
+        this.refreshItems();
     }
 
     @Override

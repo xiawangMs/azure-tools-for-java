@@ -4,7 +4,7 @@ plugins {
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
 }
 ext {
-    azureToolkitVersion = "0.14.0-SNAPSHOT"
+    azureToolkitVersion = "0.14.0"
 }
 group 'com.microsoft.azure.toolkit'
 apply plugin: 'java'
@@ -75,7 +75,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     ext {
-        azureToolkitVersion = "0.14.0-SNAPSHOT"
+        azureToolkitVersion = "0.14.0"
     }
 
     sourceCompatibility = javaVersion

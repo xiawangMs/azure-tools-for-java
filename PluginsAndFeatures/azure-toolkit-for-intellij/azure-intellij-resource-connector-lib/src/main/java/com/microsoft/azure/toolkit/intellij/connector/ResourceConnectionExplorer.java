@@ -58,21 +58,13 @@ public class ResourceConnectionExplorer extends Tree {
         public ModuleNode(@Nonnull Module module) {
             super(module);
             final MessageBusConnection connection = module.getProject().getMessageBus().connect();
-            connection.subscribe(CONNECTION_CHANGED, conn -> {
+            connection.subscribe(CONNECTION_CHANGED, (p, conn, action) -> {
                 final Resource<?> consumer = conn.getConsumer();
                 if ((consumer instanceof ModuleResource) && ((ModuleResource) consumer).getModuleName().equals(module.getName())) {
                     this.view().refreshChildren();
                 }
             });
             connection.subscribe(CONNECTIONS_REFRESHED, () -> this.view().refreshChildren());
-        }
-    }
-
-    public static void open(final Project project) {
-        final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
-        assert toolWindow != null;
-        if (!toolWindow.isVisible()) {
-            toolWindow.show();
         }
     }
 
@@ -87,7 +79,6 @@ public class ResourceConnectionExplorer extends Tree {
             actionToolbar.setForceMinimumSize(true);
             this.setContent(this.tree);
             this.setToolbar(actionToolbar);
-            project.getMessageBus().connect().subscribe(CONNECTION_CHANGED, c -> ResourceConnectionExplorer.open(project));
         }
 
         private ActionToolbarImpl initToolbar() {
@@ -116,6 +107,17 @@ public class ResourceConnectionExplorer extends Tree {
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final Content content = contentFactory.createContent(myToolWindow, "", false);
             toolWindow.getContentManager().addContent(content);
+        }
+    }
+
+    public static class ToolWindowOpener implements ConnectionTopics.ConnectionChanged {
+        @Override
+        public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
+            final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowFactory.ID);
+            assert toolWindow != null;
+            if (!toolWindow.isVisible()) {
+                toolWindow.show();
+            }
         }
     }
 }

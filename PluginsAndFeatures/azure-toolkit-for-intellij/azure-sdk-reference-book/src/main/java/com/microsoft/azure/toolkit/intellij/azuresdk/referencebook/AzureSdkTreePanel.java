@@ -104,14 +104,14 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
 
     public void refresh(boolean... force) {
         try {
-            if(ArrayUtils.isNotEmpty(force) && force[0]){
+            if (ArrayUtils.isNotEmpty(force) && force[0]) {
                 AzureSdkLibraryService.refresh();
             }
             this.services = AzureSdkLibraryService.loadAzureSdkServices();
             this.categories = AzureSdkCategoryService.loadAzureSDKCategories();
             this.fillDescriptionFromCategoryIfMissing(this.categories, this.services);
             this.filter.debounce();
-            Optional.ofNullable(this.lastNodePath).ifPresent(p -> TreeUtil.selectPath(this.tree, p));
+            AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.lastNodePath).ifPresent(p -> TreeUtil.selectPath(this.tree, p)));
         } catch (final IOException e) {
             //TODO: messager.warning(...)
             e.printStackTrace();

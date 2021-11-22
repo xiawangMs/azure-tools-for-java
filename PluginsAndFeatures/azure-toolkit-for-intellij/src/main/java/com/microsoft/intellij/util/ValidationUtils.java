@@ -13,11 +13,8 @@ import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -29,15 +26,12 @@ public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
     private static final String GROUP_ARTIFACT_ID_REGEX = "[0-9a-zA-Z]([\\.a-zA-Z0-9\\-_])*";
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
-    private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
+    private static final String APP_SERVICE_NAME_REGEX = "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,58}[a-zA-Z0-9]";
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
     // refer: https://dev.azure.com/msazure/AzureDMSS/_git/AzureDMSS-PortalExtension?path=%2Fsrc%2FSpringCloudPortalExt%2FClient%2FCreateApplication%2F
     // CreateApplicationBlade.ts&version=GBdev&line=463&lineEnd=463&lineStartColumn=25&lineEndColumn=55&lineStyle=plain&_a=contents
     private static final String SPRING_CLOUD_APP_NAME_PATTERN = "^[a-z][a-z0-9-]{2,30}[a-z0-9]$";
     private static final String APP_INSIGHTS_NAME_INVALID_CHARACTERS = "[*;/?:@&=+$,<>#%\\\"\\{}|^'`\\\\\\[\\]]";
-
-    private static Map<Pair<String, String>, String> appServiceNameValidationCache = new HashMap<>();
-    private static Map<String, String> resourceGroupValidationCache = new HashMap<>();
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -48,7 +42,7 @@ public class ValidationUtils {
     }
 
     public static boolean isValidAppServiceName(String name) {
-        return name != null && name.matches(AZURE_FUNCTION_NAME_REGEX);
+        return name != null && name.matches(APP_SERVICE_NAME_REGEX);
     }
 
     public static boolean isValidSpringCloudAppName(String name) {
@@ -61,44 +55,31 @@ public class ValidationUtils {
     }
 
     public static void validateAppServiceName(String subscriptionId, String appServiceName) {
-        final Pair<String, String> cacheKey = Pair.of(subscriptionId, appServiceName);
-        if (appServiceNameValidationCache.containsKey(cacheKey)) {
-            throwCachedValidationResult(appServiceNameValidationCache.get(cacheKey));
-            return;
-        }
         if (StringUtils.isEmpty(subscriptionId)) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.empty"));
+            throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
         }
         if (!isValidAppServiceName(appServiceName)) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
+            throw new IllegalArgumentException(message("appService.subscription.validate.invalidName"));
         }
         final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).checkNameAvailability(subscriptionId, appServiceName);
         if (!result.isAvailable()) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, result.getUnavailabilityMessage());
+            throw new IllegalArgumentException(result.getUnavailabilityMessage());
         }
-        appServiceNameValidationCache.put(cacheKey, null);
     }
 
     public static void validateResourceGroupName(String subscriptionId, String resourceGroup) {
-        if (resourceGroupValidationCache.containsKey(subscriptionId)) {
-            throwCachedValidationResult(appServiceNameValidationCache.get(subscriptionId));
-            return;
-        }
         if (StringUtils.isEmpty(subscriptionId)) {
-            cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.subscription.validate.empty"));
+            throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
         }
         if (StringUtils.isEmpty(resourceGroup)) {
-            cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.empty"));
+            throw new IllegalArgumentException(message("appService.resourceGroup.validate.empty"));
         }
         try {
             final ResourceGroup rg = Azure.az(AzureGroup.class).get(subscriptionId, resourceGroup);
-            if (rg != null) {
-                cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.exist"));
-            }
+            throw new IllegalArgumentException(message("appService.resourceGroup.validate.exist"));
         } catch (ManagementException e) {
             // swallow exception for get resources
         }
-        resourceGroupValidationCache.put(subscriptionId, null);
     }
 
     public static void validateAppServicePlanName(String appServicePlan) {
@@ -140,17 +121,6 @@ public class ValidationUtils {
             throw new IllegalArgumentException(message("springcloud.app.name.validate.invalid"));
         } else if (Objects.nonNull(cluster) && cluster.app(name).exists()) {
             throw new IllegalArgumentException(message("springcloud.app.name.validate.exist", name));
-        }
-    }
-
-    private static void cacheAndThrow(Map exceptionCache, Object key, String errorMessage) {
-        exceptionCache.put(key, errorMessage);
-        throw new IllegalArgumentException(errorMessage);
-    }
-
-    private static void throwCachedValidationResult(String errorMessage) {
-        if (StringUtils.isNotEmpty(errorMessage)) {
-            throw new IllegalArgumentException(errorMessage);
         }
     }
 }

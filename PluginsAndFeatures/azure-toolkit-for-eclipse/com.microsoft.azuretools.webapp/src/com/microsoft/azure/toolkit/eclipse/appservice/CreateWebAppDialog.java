@@ -79,6 +79,7 @@ public class CreateWebAppDialog extends AzureDialog<AppServiceConfig> implements
         SubscriptionComboBox subscriptionComboBox = subsAndResourceGroupPanel.getSubscriptionComboBox();
         subscriptionComboBox.addValueChangedListener(event -> {
             Subscription subs = subscriptionComboBox.getValue();
+            instanceDetailPanel.setSubscription(subs);
             instanceDetailPanel.getRegionComboBox().setSubscription(subs);
             appServicePlanPanel.getServicePlanCombobox().setSubscription(subs);
         });

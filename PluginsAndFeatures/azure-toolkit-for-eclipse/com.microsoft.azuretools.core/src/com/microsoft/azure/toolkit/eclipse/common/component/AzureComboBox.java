@@ -223,7 +223,7 @@ public class AzureComboBox<T> extends Composite implements AzureFormInputControl
     }
 
     protected synchronized void setItems(final List<? extends T> items) {
-        AzureTaskManager.getInstance().runAndWait(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (this.isDisposed()) {
                 return;
             }

@@ -29,6 +29,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.RunProcessHandler;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +50,7 @@ import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class WebAppRunState extends AzureRunProfileState<IAppService> {
+    private File artifact;
     private WebAppConfiguration webAppConfiguration;
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
@@ -65,14 +67,13 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
     @Override
     @AzureOperation(name = "webapp.deploy_artifact", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
     public IAppService executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
-        File file = new File(getTargetPath());
-        if (!file.exists()) {
-            throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", file.getAbsolutePath()));
+        artifact = new File(getTargetPath());
+        if (!artifact.exists()) {
+            throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", artifact.getAbsolutePath()));
         }
-        webAppConfiguration.setTargetName(file.getName());
         final IWebAppBase deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
         updateApplicationSettings(deployTarget, processHandler);
-        AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, file, webAppSettingModel.isDeployToRoot(), processHandler);
+        AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, artifact, webAppSettingModel.isDeployToRoot(), processHandler);
         return deployTarget;
     }
 
@@ -118,9 +119,8 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, result));
         }
         updateConfigurationDataModel(result);
-        int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
-        final String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
-        final String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
+        final String fileName = FileNameUtils.getBaseName(artifact.getName());
+        final String fileType = FileNameUtils.getExtension(artifact.getName());
         final String url = getUrl(result, fileName, fileType);
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.setText("URL: " + url);

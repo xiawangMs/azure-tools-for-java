@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.14.0-SNAPSHOT"
+    azureToolkitVersion = "0.14.0"
 }
 
 compileKotlin {
@@ -82,7 +82,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     ext {
-        azureToolkitVersion = "0.14.0-SNAPSHOT"
+        azureToolkitVersion = "0.14.0"
     }
 
     sourceCompatibility = javaVersion
@@ -202,21 +202,22 @@ dependencies {
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.59.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.59.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.59.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.59.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.59.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.59.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
+    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib:' + azureToolkitVersion
 
     compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
 
@@ -237,6 +238,8 @@ dependencies {
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
+
+    implementation group: 'io.netty', name: 'netty-resolver-dns-native-macos', version: '4.1.70.Final', classifier: 'osx-x86_64', ext: 'jar'
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compileOnly 'org.projectlombok:lombok'

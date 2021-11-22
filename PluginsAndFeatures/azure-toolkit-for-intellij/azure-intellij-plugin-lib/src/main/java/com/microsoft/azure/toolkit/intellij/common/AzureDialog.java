@@ -8,19 +8,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.extern.java.Log;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.SUCCESS;
-import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.WARNING;
 
 @Log
 public abstract class AzureDialog<T> extends DialogWrapper {
@@ -33,7 +29,7 @@ public abstract class AzureDialog<T> extends DialogWrapper {
     }
 
     public AzureDialog() {
-        super(null);
+        this(null);
     }
 
     @Override
@@ -57,21 +53,11 @@ public abstract class AzureDialog<T> extends DialogWrapper {
     @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().getAllValidationInfos(true);
-        this.setOKActionEnabled(infos.stream().allMatch(AzureValidationInfo::isValid));
+        // this.setOKActionEnabled(infos.stream().allMatch(AzureValidationInfo::isValid));
         return infos.stream()
             .filter(i -> i.getType() != SUCCESS)
-            .map(AzureDialog::toIntellijValidationInfo)
+            .map(AzureFormInputComponent::toIntellijValidationInfo)
             .collect(Collectors.toList());
-    }
-
-    private static ValidationInfo toIntellijValidationInfo(final AzureValidationInfo info) {
-        final AzureFormInput<?> input = info.getInput();
-        final JComponent component = input instanceof AzureFormInputComponent ? ((AzureFormInputComponent<?>) input).getInputComponent() : null;
-        final ValidationInfo v = new ValidationInfo(Optional.ofNullable(info.getMessage()).orElse("Unknown error"), component);
-        if (info.getType() == WARNING) {
-            v.asWarning();
-        }
-        return v;
     }
 
     public abstract AzureForm<T> getForm();

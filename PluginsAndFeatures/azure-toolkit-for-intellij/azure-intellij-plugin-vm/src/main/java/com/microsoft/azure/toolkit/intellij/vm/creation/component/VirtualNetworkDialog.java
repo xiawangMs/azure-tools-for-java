@@ -24,6 +24,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements AzureForm<DraftNetwork> {
+    private static final String NETWORK_NAME_RULES = "The name must begin with a letter or number, end with a letter, number or underscore, " +
+            "and may contain only letters, numbers, underscores, periods, or hyphens.";
+    private static final String NETWORK_NAME_PATTERN = "[a-zA-Z0-9][a-zA-Z0-9_\\.-]{0,62}[a-zA-Z0-9_]";
+    private static final String SUBNET_NAME_PATTERN = "[a-zA-Z0-9][a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_]";
+
     private JPanel contentPane;
     private AzureTextInput txtName;
     private JLabel lblName;
@@ -92,12 +97,14 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
         // todo: add name validator
         txtName = new AzureTextInput();
         txtName.setRequired(true);
+        txtName.addValidator(() -> validateVirtualNetworkName());
         txtSubnetName = new AzureTextInput();
         txtSubnetName.setRequired(true);
+        txtSubnetName.addValidator(() -> validateSubnetName());
 
         txtAddressSpace = new AzureTextInput();
         txtAddressSpace.setRequired(true);
-        txtAddressSpace.setValidator(() -> validateSubnet(txtAddressSpace.getValue()));
+        txtAddressSpace.addValidator(() -> validateSubnet(txtAddressSpace.getValue(), txtAddressSpace));
         txtAddressSpace.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
@@ -107,7 +114,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
 
         txtSubnetAddressRange = new AzureTextInput();
         txtSubnetAddressRange.setRequired(true);
-        txtSubnetAddressRange.setValidator(() -> validateSubnet(txtSubnetAddressRange.getValue()));
+        txtSubnetAddressRange.addValidator(() -> validateSubnet(txtSubnetAddressRange.getValue(), txtSubnetAddressRange));
         txtSubnetAddressRange.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
@@ -127,12 +134,32 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
         }
     }
 
-    private AzureValidationInfo validateSubnet(final String cidrNotation) {
+    private AzureValidationInfo validateVirtualNetworkName() {
+        final String virtualNetworkName = txtName.getValue();
+        if (StringUtils.isEmpty(virtualNetworkName) || virtualNetworkName.length() < 2 || virtualNetworkName.length() > 64) {
+            return AzureValidationInfo.error("The name must be between 2 and 64 characters.", txtName);
+        } else if (!virtualNetworkName.matches(NETWORK_NAME_PATTERN)) {
+            return AzureValidationInfo.error(NETWORK_NAME_RULES, txtName);
+        }
+        return AzureValidationInfo.ok(txtName);
+    }
+
+    private AzureValidationInfo validateSubnetName() {
+        final String subNetName = txtSubnetName.getValue();
+        if (StringUtils.isEmpty(subNetName) || subNetName.length() > 80) {
+            return AzureValidationInfo.error("The name must be between 1 and 80 characters.", txtSubnetName);
+        } else if (!subNetName.matches(SUBNET_NAME_PATTERN)) {
+            return AzureValidationInfo.error(NETWORK_NAME_RULES, txtSubnetName);
+        }
+        return AzureValidationInfo.success(txtSubnetName);
+    }
+
+    private AzureValidationInfo validateSubnet(final String cidrNotation, final AzureFormInput<?> input) {
         try {
             new SubnetUtils(cidrNotation);
-            return AzureValidationInfo.success(this);
+            return AzureValidationInfo.success(input);
         } catch (final IllegalArgumentException iae) {
-            return AzureValidationInfo.builder().type(AzureValidationInfo.Type.ERROR).message(iae.getMessage()).build();
+            return AzureValidationInfo.error(iae.getMessage(), input);
         }
     }
 }

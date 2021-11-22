@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azure</groupId>
     <artifactId>azure-toolkit-ide-libs</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>0.14.0</version>
     <packaging>pom</packaging>
     <name>Libs for Azure Toolkit for IDEs</name>
     <description>Wrapped libs of Microsoft Azure Toolkits for IDEs</description>
@@ -47,7 +47,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <azure.toolkit-lib.version>0.14.0-SNAPSHOT</azure.toolkit-lib.version>
+        <azure.toolkit-lib.version>0.14.0</azure.toolkit-lib.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -61,6 +61,11 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-ide-common-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

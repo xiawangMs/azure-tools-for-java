@@ -7,14 +7,14 @@ package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.insights.ApplicationInsightsComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;

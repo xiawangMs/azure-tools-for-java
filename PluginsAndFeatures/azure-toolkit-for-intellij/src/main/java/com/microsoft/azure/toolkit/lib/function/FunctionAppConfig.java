@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.lib.function;
 
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;

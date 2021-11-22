@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;

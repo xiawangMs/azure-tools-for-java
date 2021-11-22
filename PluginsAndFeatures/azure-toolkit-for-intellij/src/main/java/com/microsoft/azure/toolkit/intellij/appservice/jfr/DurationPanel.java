@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.appservice.jfr;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.IntegerTextField;
+import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 import javax.swing.*;
@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class DurationPanel extends JPanel implements AzureFormPanel<Integer> {
     private JSlider slider1;
-    private IntegerTextField textField1;
+    private AzureIntegerInput textField1;
     private JPanel contentPanel;
 
     public DurationPanel(int minValue, int maxValue, int defaultValue) {
@@ -74,6 +74,6 @@ public class DurationPanel extends JPanel implements AzureFormPanel<Integer> {
     }
 
     private void createUIComponents() {
-        this.textField1 = new IntegerTextField();
+        this.textField1 = new AzureIntegerInput();
     }
 }

@@ -125,6 +125,11 @@ public class DatabaseResource implements Resource<Database> {
         }
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getDefinition().title, this.getName());
+    }
+
     @Getter
     @RequiredArgsConstructor
     public enum Definition implements SpringSupported<Database> {

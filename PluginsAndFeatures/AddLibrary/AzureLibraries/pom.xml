@@ -22,103 +22,104 @@
   ~  */
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.59.0-SNAPSHOT</version>
-    </parent>
-    <groupId>com.microsoft.azuretools</groupId>
-    <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
-    <version>3.29.0-SNAPSHOT</version>
-    <packaging>bundle</packaging>
-    <name>Package for Microsoft Azure Libraries for Java Plugin</name>
-    <organization><name>Microsoft Corp.</name></organization>
+    <version>3.59.0</version>
+  </parent>
+  <groupId>com.microsoft.azuretools</groupId>
+  <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
+  <version>3.29.0-SNAPSHOT</version>
+  <packaging>bundle</packaging>
+  <name>Package for Microsoft Azure Libraries for Java Plugin</name>
+  <organization>
+    <name>Microsoft Corp.</name>
+  </organization>
 
-    <properties>
-        <azuretool.version>3.59.0-SNAPSHOT</azuretool.version>
-        <azuretool.sdk.version>3.29.0.qualifier</azuretool.sdk.version>
-    </properties>
-    <dependencies>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>azuretools-core</artifactId>
-            <version>${azuretool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>azure-explorer-common</artifactId>
-            <version>${azuretool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>hdinsight-node-common</artifactId>
-            <version>${azuretool.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.2</version>
-        </dependency>
-    </dependencies>
+  <properties>
+    <azuretool.version>3.59.0</azuretool.version>
+    <azuretool.sdk.version>3.29.0.qualifier</azuretool.sdk.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.microsoft.azuretools</groupId>
+      <artifactId>azuretools-core</artifactId>
+      <version>${azuretool.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.microsoft.azuretools</groupId>
+      <artifactId>azure-explorer-common</artifactId>
+      <version>${azuretool.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.microsoft.azuretools</groupId>
+      <artifactId>hdinsight-node-common</artifactId>
+      <version>${azuretool.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+  </dependencies>
 
-    <build>
+  <build>
     <plugins>
-        <plugin>
-            <groupId>org.commonjava.maven.plugins</groupId>
-            <artifactId>directory-maven-plugin</artifactId>
-            <version>0.3.1</version>
-            <executions>
-                <execution>
-                    <id>directories</id>
-                    <goals>
-                        <goal>directory-of</goal>
-                    </goals>
-                    <phase>initialize</phase>
-                    <configuration>
-                        <property>azureLibProject.baseDir</property>
-                        <project>
-                            <groupId>com.microsoft.azuretools</groupId>
-                            <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
-                        </project>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
+      <plugin>
+        <groupId>org.commonjava.maven.plugins</groupId>
+        <artifactId>directory-maven-plugin</artifactId>
+        <version>0.3.1</version>
+        <executions>
+          <execution>
+            <id>directories</id>
+            <goals>
+              <goal>directory-of</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <property>azureLibProject.baseDir</property>
+              <project>
+                <groupId>com.microsoft.azuretools</groupId>
+                <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
+              </project>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <version>4.1.0</version>
         <extensions>true</extensions>
         <executions>
-            <execution>
+          <execution>
             <id>bundle-manifest</id>
             <phase>process-classes</phase>
             <goals>
-                <goal>manifest</goal>
+              <goal>manifest</goal>
             </goals>
-            </execution>
+          </execution>
         </executions>
         <configuration>
-          <excludeDependencies>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeDependencies>
+          <manifestLocation>${project.basedir}/com.microsoft.azuretools.sdk/META-INF/</manifestLocation>
           <instructions>
             <Bundle-SymbolicName>com.microsoft.azuretools.sdk;singleton:=true</Bundle-SymbolicName>
             <Bundle-Version>${azuretool.sdk.version}</Bundle-Version>
             <Embed-Dependency>*</Embed-Dependency>
             <Embed-Transitive>true</Embed-Transitive>
-            <Bundle-ClassPath>.;dependencies;{maven-dependencies}</Bundle-ClassPath>
+            <Embed-Directory>dependencies</Embed-Directory>
+            <Bundle-ClassPath>.;dependencies/azuretools-sdk-lib.jar</Bundle-ClassPath>
             <!-- It is a workaround to speed up eclipse plugin installation -->
             <!-- tricky way to clear default value of `version` and `uses:` -->
             <Export-Package>*;version=0.0.0</Export-Package>
             <Import-Package>!*</Import-Package>
-            <Embed-Directory>dependencies</Embed-Directory>
             <Eclipse-BundleShape>dir</Eclipse-BundleShape>
             <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
             <_nouses>true</_nouses>
@@ -127,56 +128,60 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.8</version>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                  <configuration>
-                    <target>
-                      <copy file="${project.build.outputDirectory}/META-INF/MANIFEST.MF" tofile="${project.basedir}/com.microsoft.azuretools.sdk/META-INF/MANIFEST.MF" overwrite="true" />
-                    </target>
-                  </configuration>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-         </plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+          <!-- Run shade goal on package phase -->
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <filters>
+                <filter>
+                  <artifact>com.microsoft.azuretools:com.microsoft.azuretools.sdk.lib</artifact>
+                  <excludes>
+                    <exclude>dependencies/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+              <outputFile>${project.basedir}/com.microsoft.azuretools.sdk/dependencies/azuretools-sdk-lib.jar</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.1</version>
         <executions>
-            <execution>
-                <id>copy-dependencies</id>
-                <phase>package</phase>
-                <goals>
-                    <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                    <outputDirectory>./com.microsoft.azuretools.sdk/dependencies</outputDirectory>
-                    <overWriteReleases>true</overWriteReleases>
-                    <overWriteSnapshots>true</overWriteSnapshots>
-                    <overWriteIfNewer>true</overWriteIfNewer>
-                    <excludeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeArtifactIds>
-                </configuration>
-            </execution>
-            <execution>
-                <id>copy-eclipse-resources</id>
-                <phase>package</phase>
-                <goals>
-                    <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                    <outputDirectory>${project.basedir}/../../azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources</outputDirectory>
-                    <overWriteReleases>true</overWriteReleases>
-                    <overWriteSnapshots>true</overWriteSnapshots>
-                    <overWriteIfNewer>true</overWriteIfNewer>
-                    <stripVersion>true</stripVersion>
-                    <includeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</includeArtifactIds>
-                </configuration>
-            </execution>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/com.microsoft.azuretools.sdk/dependencies</outputDirectory>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <includeScope>provided</includeScope> <!-- provided scope dependencies will not be package in shade jar -->
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

@@ -6,11 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

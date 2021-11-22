@@ -11,6 +11,8 @@ import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -22,9 +24,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> implements AzureForm<DraftServicePlan> {
+    private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
     private AzureTextInput text;
     private PricingTierCombobox pricingTierCombobox;
     private DraftServicePlan data;
+    private List<PricingTier> pricingTiers = null;
 
     public ServicePlanCreationDialog(Shell parentShell) {
         super(parentShell);
@@ -54,6 +58,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
 
         text = new AzureTextInput(container, SWT.BORDER);
         text.setRequired(true);
+        text.addValidator(() -> validateAppServicePlanName());
         GridData textGrid = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         textGrid.widthHint = 257;
         text.setLabeledBy(lblName);
@@ -76,8 +81,6 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
         }
 
     }
-
-    private List<PricingTier> pricingTiers = null;
 
     public DraftServicePlan getData() {
         return data;
@@ -116,5 +119,14 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan> imp
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(text, pricingTierCombobox);
+    }
+
+    private AzureValidationInfo validateAppServicePlanName() {
+        final String appServicePlan = text.getValue();
+        if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
+            return AzureValidationInfo.error(AzureMessageBundle.message("appService.servicePlan.validate.invalidName",
+                    APP_SERVICE_PLAN_NAME_PATTERN).toString(), text);
+        }
+        return AzureValidationInfo.success(text);
     }
 }

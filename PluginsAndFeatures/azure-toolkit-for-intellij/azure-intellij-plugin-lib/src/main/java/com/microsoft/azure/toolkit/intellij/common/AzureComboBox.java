@@ -53,8 +53,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
     private AzureComboBoxEditor inputEditor;
-    private Object value;
     private boolean valueNotSet = true;
+    private boolean isRefreshing = false;
+    protected Object value;
     protected boolean enabled = true;
     @Getter
     @Setter
@@ -69,7 +70,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         super();
         this.init();
         this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
-        this.valueDebouncer = new TailingDebouncer(() -> this.fireValueChangedEvent(this.getValue()), DEBOUNCE_DELAY);
+        this.valueDebouncer = new TailingDebouncer(this::fireValueChangedEvent, DEBOUNCE_DELAY);
         if (refresh) {
             this.refreshItems();
         }
@@ -218,10 +219,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     protected void setLoading(final boolean loading) {
         SwingUtilities.invokeLater(() -> {
             if (loading) {
-                super.setEnabled(false);
                 this.toggleLoadingSpinner(true);
             } else {
-                super.setEnabled(this.enabled);
                 this.toggleLoadingSpinner(false);
             }
             this.repaint();
@@ -229,6 +228,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     private void toggleLoadingSpinner(boolean b) {
+        this.isRefreshing = b;
         this.setEditor(b ? this.loadingSpinner : this.inputEditor);
     }
 
@@ -240,7 +240,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public boolean isEnabled() {
-        return this.enabled || super.isEnabled();
+        return !isRefreshing && (this.enabled || super.isEnabled());
     }
 
     protected String getItemText(Object item) {

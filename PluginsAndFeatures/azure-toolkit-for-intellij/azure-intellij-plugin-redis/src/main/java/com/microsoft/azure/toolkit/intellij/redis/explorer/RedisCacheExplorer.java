@@ -197,6 +197,9 @@ public class RedisCacheExplorer extends BaseEditor {
     }
 
     public void showContent(Pair<String, ArrayList<String[]>> val) {
+        if (Objects.isNull(val)) {
+            return;
+        }
         final String type = val.getKey();
         final ArrayList<String[]> value = val.getValue();
         lblTypeValue.setText(type);

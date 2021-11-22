@@ -7,8 +7,10 @@ package com.microsoft.azure.toolkit.eclipse.springcloud;
 
 import com.microsoft.azure.toolkit.eclipse.springcloud.creation.CreateSpringCloudAppAction;
 import com.microsoft.azure.toolkit.eclipse.springcloud.deployment.DeploySpringCloudAppAction;
+import com.microsoft.azure.toolkit.eclipse.springcloud.streaminglog.SpringCloudLogStreamingHandler;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -22,6 +24,7 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
     public void registerHandlers(AzureActionManager am) {
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
+        this.registerLogStreamingActionHandler(am);
     }
 
     private void registerCreateAppActionHandler(AzureActionManager am) {
@@ -34,6 +37,12 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
         final Predicate<IAzureBaseResource<?, ?>> condition = (r) -> r instanceof SpringCloudApp;
         final Consumer<IAzureBaseResource<?, ?>> handler = (c) -> DeploySpringCloudAppAction.deployToApp((SpringCloudApp) c);
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, condition, handler);
+    }
+
+    private void registerLogStreamingActionHandler(AzureActionManager am) {
+        final Predicate<SpringCloudApp> condition = (r) -> r instanceof SpringCloudApp;
+        final Consumer<SpringCloudApp> handler = (c) -> SpringCloudLogStreamingHandler.startLogStreaming(c);
+        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
     }
 
     public int getOrder() {

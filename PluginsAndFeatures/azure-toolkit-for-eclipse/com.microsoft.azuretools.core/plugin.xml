@@ -1,146 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="com.microsoft.azure.toolkit.actions" name="actions" schema="schema/com.microsoft.azure.toolkit.actions.exsd"/>
+    <extension-point id="com.microsoft.azure.toolkit.actions" name="actions" schema="schema/com.microsoft.azure.toolkit.actions.exsd" />
     <extension point="org.eclipse.help.contexts">
         <contexts file="contexts.xml" />
     </extension>
     <extension point="org.eclipse.ui.startup">
-        <startup class="com.microsoft.azuretools.core.ui.startup.WACPStartUp"/>
+        <startup class="com.microsoft.azuretools.core.ui.startup.WACPStartUp" />
     </extension>
     <!-- Azure preference page -->
-    <extension point = "org.eclipse.ui.preferencePages">
-        <page
-            id="com.persistent.ui.preferencepage.windowsazure"
-            class="com.microsoft.azuretools.core.ui.WindowsAzurePreferencePage"
-            name="Azure">
-        </page>
+    <extension point="org.eclipse.ui.preferencePages">
+        <page id="com.persistent.ui.preferencepage.windowsazure" class="com.microsoft.azuretools.core.ui.WindowsAzurePreferencePage" name="Azure"></page>
     </extension>
 
     <!-- Views -->
     <extension point="org.eclipse.ui.views">
-        <category
-            id="com.microsoft.azuretools"
-            name="Azure">
-        </category>
-        <view
-            category="com.microsoft.azuretools"
-            class="com.microsoft.azuretools.core.ui.views.WindowsAzureActivityLogView"
-            icon="icons/RoleFolder.gif"
-            id="com.microsoft.azuretools.core.ui.views.WindowsAzureActivityLogView"
-            name="Azure Activity Log">
-        </view>
+        <category id="com.microsoft.azuretools" name="Azure"></category>
+        <view category="com.microsoft.azuretools" class="com.microsoft.azuretools.core.ui.views.WindowsAzureActivityLogView" icon="icons/RoleFolder.gif" id="com.microsoft.azuretools.core.ui.views.WindowsAzureActivityLogView" name="Azure Activity Log"></view>
     </extension>
 
     <!-- Toolbar Dropdown Menu -->
     <extension point="org.eclipse.ui.commands">
-        <category
-            id="com.microsoft.ui.dropdown.category"
-            name="Publish DropDown">
-        </category>
-        <command
-            categoryId="com.microsoft.ui.dropdown.category"
-            id="com.microsoft.ui.dropdown.command"
-            name="Publish">
-            <commandParameter
-                id="com.microsoft.ui.dropdown.msg"
-                name="DropDown Options"
-                optional="true" />
+        <category id="com.microsoft.ui.dropdown.category" name="Publish DropDown"></category>
+        <command categoryId="com.microsoft.ui.dropdown.category" id="com.microsoft.ui.dropdown.command" name="Publish">
+            <commandParameter id="com.microsoft.ui.dropdown.msg" name="DropDown Options" optional="true" />
         </command>
     </extension>
 
     <!-- Icons for dropdown -->
     <extension point="org.eclipse.ui.commandImages">
-        <image
-            commandId="com.microsoft.ui.dropdown.command"
-            icon="icons/Publish_16.png"/>
+        <image commandId="com.microsoft.ui.dropdown.command" icon="icons/Publish_16.png" />
     </extension>
 
     <!-- Handlers for dropdown -->
     <extension point="org.eclipse.ui.handlers">
-        <handler
-            commandId="com.microsoft.ui.dropdown.command"
-            class="com.microsoft.azuretools.core.ui.commoncontrols.DropDownHandler"/>
+        <handler commandId="com.microsoft.ui.dropdown.command" class="com.microsoft.azuretools.core.ui.commoncontrols.DropDownHandler" />
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="com.persistent.ui.toolbar">
-                <command
-                    commandId="com.microsoft.ui.dropdown.command"
-                    id="com.microsoft.ui.dropdown.toolbar.command"
-                    style="pulldown"
-                    tooltip="Publish">
-                </command>
-                <command
-                    commandId="com.microsoft.azuretools.core.ui.WANewCertificate"
-                    icon="icons/small/newCert.png"
-                    label="New Self Signed Certificate"
-                    tooltip="New Self Signed Certificate"
-                    style="push">
-                </command>
-                <command
-                    commandId="com.microsoft.azuretools.core.ui.AzureSamplesCmd"
-                    icon="icons/small/CodeSamples_16.png"
-                    label="Azure Code Samples"
-                    tooltip="Azure Code Samples"
-                    style="push">
-                </command>
+                <command commandId="com.microsoft.ui.dropdown.command" id="com.microsoft.ui.dropdown.toolbar.command" style="pulldown" tooltip="Publish"></command>
+                <command commandId="com.microsoft.azuretools.core.ui.WANewCertificate" icon="icons/small/newCert.png" label="New Self Signed Certificate" tooltip="New Self Signed Certificate" style="push"></command>
+                <command commandId="com.microsoft.azuretools.core.ui.AzureSamplesCmd" icon="icons/small/CodeSamples_16.png" label="Azure Code Samples" tooltip="Azure Code Samples" style="push"></command>
             </toolbar>
         </menuContribution>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category
-            name="Azure"
-            id="com.microsoft.azuretools.core.category.Azure">
-        </category>
-        <command
-            name="Sign In..."
-            categoryId="com.microsoft.azuretools.core.category.Azure"
-            id="com.microsoft.azuretools.core.commands.SignIn"
-            icon="icons/SignInLight_16.png">
-        </command>
-        <command
-            categoryId="com.microsoft.azuretools.core.category.Azure"
-            icon="icons/SignOutLight_16.png"
-            id="com.microsoft.azuretools.core.commands.SignOut"
-            name="Sign Out...">
-        </command>
-        <command
-            name="Select Subscriptions..."
-            categoryId="com.microsoft.azuretools.core.category.Azure"
-            id="com.microsoft.azuretools.core.commands.SelectSubscriptions"
-            icon="icons/ConnectAccountsLight_16.png">
-        </command>
+        <category name="Azure" id="com.microsoft.azuretools.core.category.Azure"></category>
+        <command name="Sign In..." categoryId="com.microsoft.azuretools.core.category.Azure" id="com.microsoft.azuretools.core.commands.SignIn" icon="icons/SignInLight_16.png"></command>
+        <command categoryId="com.microsoft.azuretools.core.category.Azure" icon="icons/SignOutLight_16.png" id="com.microsoft.azuretools.core.commands.SignOut" name="Sign Out..."></command>
+        <command name="Select Subscriptions..." categoryId="com.microsoft.azuretools.core.category.Azure" id="com.microsoft.azuretools.core.commands.SelectSubscriptions" icon="icons/ConnectAccountsLight_16.png"></command>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler
-            commandId="com.microsoft.azuretools.core.commands.SignIn"
-            class="com.microsoft.azuretools.core.handlers.SignInCommandHandler">
-        </handler>
-        <handler
-            commandId="com.microsoft.azuretools.core.commands.SignOut"
-            class="com.microsoft.azuretools.core.handlers.SignOutCommandHandler">
-        </handler>
-        <handler
-            commandId="com.microsoft.azuretools.core.commands.SelectSubscriptions"
-            class="com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler">
+        <handler commandId="com.microsoft.azuretools.core.commands.SignIn" class="com.microsoft.azuretools.core.handlers.SignInCommandHandler"></handler>
+        <handler commandId="com.microsoft.azuretools.core.commands.SignOut" class="com.microsoft.azuretools.core.handlers.SignOutCommandHandler"></handler>
+        <handler commandId="com.microsoft.azuretools.core.commands.SelectSubscriptions" class="com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler">
             <enabledWhen>
-                <reference definitionId="when.is.signed.in"/>
+                <reference definitionId="when.is.signed.in" />
             </enabledWhen>
         </handler>
-        <handler
-            class="com.microsoft.azuretools.core.ui.WANewCertificate"
-            commandId="com.microsoft.azuretools.core.ui.WANewCertificate">
-        </handler>
-        <handler
-            class="com.microsoft.azuretools.core.ui.AzureSamples"
-            commandId="com.microsoft.azuretools.core.ui.AzureSamplesCmd">
-      </handler>
+        <handler class="com.microsoft.azuretools.core.ui.WANewCertificate" commandId="com.microsoft.azuretools.core.ui.WANewCertificate"></handler>
+        <handler class="com.microsoft.azuretools.core.ui.AzureSamples" commandId="com.microsoft.azuretools.core.ui.AzureSamplesCmd"></handler>
     </extension>
-<!--
+    <!--
     <extension point="org.eclipse.ui.bindings">
         <key
             commandId="AzureManagePlugin.commands.azureCommand"
@@ -151,152 +76,104 @@
     </extension>
 -->
     <extension point="org.eclipse.ui.menus">
-        <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-            <menu
-                label="Tools"
-                mnemonic="t"
-                id="com.microsoft.azuretools.core.menus.Tools"/>
+        <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu label="Tools" mnemonic="t" id="com.microsoft.azuretools.core.menus.Tools" />
         </menuContribution>
-        <menuContribution
-            locationURI="menu:com.microsoft.azuretools.core.menus.Tools">
-            <menu
-                label="Azure"
-                mnemonic="A"
-                icon="icons/small/windowsAzure.png"
-                id="com.microsoft.azuretools.core.menus.Azure">
-                <command
-                    commandId="com.microsoft.azuretools.core.commands.SelectSubscriptions"
-                    mnemonic="S"
-                    id="com.microsoft.azuretools.core.menus.SelectSubsriptions">
-                </command>
-                <separator
-                    visible="true"
-                    name="signIn"/>
-                <command
-                    commandId="com.microsoft.azuretools.core.commands.SignIn"
-                    mnemonic="S"
-                    id="com.microsoft.azuretools.core.menus.SignIn">
+        <menuContribution locationURI="menu:com.microsoft.azuretools.core.menus.Tools">
+            <menu label="Azure" mnemonic="A" icon="icons/small/windowsAzure.png" id="com.microsoft.azuretools.core.menus.Azure">
+                <command commandId="com.microsoft.azuretools.core.commands.SelectSubscriptions" mnemonic="S" id="com.microsoft.azuretools.core.menus.SelectSubsriptions"></command>
+                <separator visible="true" name="signIn" />
+                <command commandId="com.microsoft.azuretools.core.commands.SignIn" mnemonic="S" id="com.microsoft.azuretools.core.menus.SignIn">
                     <visibleWhen>
                         <not>
-                            <reference definitionId="when.is.signed.in"/>
+                            <reference definitionId="when.is.signed.in" />
                         </not>
                     </visibleWhen>
                 </command>
-                <command
-                    commandId="com.microsoft.azuretools.core.commands.SignOut"
-                    mnemonic="S"
-                    id="com.microsoft.azuretools.core.menus.SignOut">
+                <command commandId="com.microsoft.azuretools.core.commands.SignOut" mnemonic="S" id="com.microsoft.azuretools.core.menus.SignOut">
                     <visibleWhen>
-                        <reference definitionId="when.is.signed.in"/>
+                        <reference definitionId="when.is.signed.in" />
                     </visibleWhen>
                 </command>
             </menu>
         </menuContribution>
         <!-- Project Context Menu -->
-        <menuContribution
-            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <menu
-                label="Azure" 
-                icon="icons/small/windowsAzure.png"
-                id="com.microsoft.azuretools.webprojmenu">
-                <separator
-                    visible="true"
-                    name="signIn"/>
-                <command
-                    icon="icons/SignInLight_16.png"
-                    commandId="com.microsoft.azuretools.core.commands.SignIn">
+        <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <menu label="Azure" icon="icons/small/windowsAzure.png" id="com.microsoft.azuretools.webprojmenu">
+                <separator visible="true" name="signIn" />
+                <command icon="icons/SignInLight_16.png" commandId="com.microsoft.azuretools.core.commands.SignIn">
                     <visibleWhen checkEnabled="false">
                         <not>
-                            <reference definitionId="when.is.signed.in"/>
+                            <reference definitionId="when.is.signed.in" />
                         </not>
                     </visibleWhen>
                 </command>
-                <command
-                    icon="icons/SignOutLight_16.png"
-                    commandId="com.microsoft.azuretools.core.commands.SignOut">
+                <command icon="icons/SignOutLight_16.png" commandId="com.microsoft.azuretools.core.commands.SignOut">
                     <visibleWhen checkEnabled="false">
-                        <reference definitionId="when.is.signed.in"/>
+                        <reference definitionId="when.is.signed.in" />
                     </visibleWhen>
                 </command>
-                <separator
-                    visible="true"
-                    name="signOut"/>
+                <separator visible="true" name="signOut" />
             </menu>
         </menuContribution>
     </extension>
 
     <!-- Property Tester -->
     <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester
-            class="com.microsoft.azuretools.core.testers.AuthPropertyTester"
-            id="com.microsoft.azuretools.core.testers.propertyTester"
-            namespace="com.microsoft.azuretools.core.testers"
-            properties="isSignedIn"
-            type="java.lang.Object">
-        </propertyTester>
+        <propertyTester class="com.microsoft.azuretools.core.testers.AuthPropertyTester" id="com.microsoft.azuretools.core.testers.propertyTester" namespace="com.microsoft.azuretools.core.testers" properties="isSignedIn" type="java.lang.Object"></propertyTester>
     </extension>
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="when.is.signed.in">
-            <test
-                property="com.microsoft.azuretools.core.testers.isSignedIn"
-                forcePluginActivation="true">
-            </test>
+            <test property="com.microsoft.azuretools.core.testers.isSignedIn" forcePluginActivation="true"></test>
         </definition>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester
-            id="com.microsoft.ui.webapp.property.testWebProj"
-            type="org.eclipse.core.resources.IProject"
-            namespace="com.microsoft.ui.webapp.property"
-            properties="isWebProj"
-            class="com.microsoft.azuretools.core.utils.WAPropertyTester">
-        </propertyTester>
+        <propertyTester id="com.microsoft.ui.webapp.property.testWebProj" type="org.eclipse.core.resources.IProject" namespace="com.microsoft.ui.webapp.property" properties="isWebProj" class="com.microsoft.azuretools.core.utils.WAPropertyTester"></propertyTester>
     </extension>
     <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester
-            id="com.microsoft.ui.webapp.property.testSupportedProj"
-            type="org.eclipse.core.resources.IProject"
-            namespace="com.microsoft.ui.webapp.property"
-            properties="isSupportedProj"
-            class="com.microsoft.azuretools.core.utils.ProjectTypeTester">
-        </propertyTester>
+        <propertyTester id="com.microsoft.ui.webapp.property.testSupportedProj" type="org.eclipse.core.resources.IProject" namespace="com.microsoft.ui.webapp.property" properties="isSupportedProj" class="com.microsoft.azuretools.core.utils.ProjectTypeTester"></propertyTester>
     </extension>
-    <extension
-          point="com.microsoft.azure.toolkit.actions">
-       <actionContributor
-             implementation="com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor">
-       </actionContributor>
-       <actionContributor
-             implementation="com.microsoft.azure.toolkit.eclipse.common.action.EclipseActionsContributor">
-       </actionContributor>
+    <extension point="com.microsoft.azure.toolkit.actions">
+        <actionContributor implementation="com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor"></actionContributor>
+        <actionContributor implementation="com.microsoft.azure.toolkit.eclipse.common.action.EclipseActionsContributor"></actionContributor>
     </extension>
     <extension point="org.eclipse.ui.console.consolePageParticipants">
-    <consolePageParticipant
-        class="com.microsoft.azure.toolkit.eclipse.common.console.AzureJobConsoleParticipant"
-        id="com.microsoft.azure.toolkit.eclipse.common.console.azureJobConsoleParticipant">
-      <enablement>
-        <test
-            property="org.eclipse.ui.console.consoleTypeTest"
-            value="com.microsoft.azure.toolkit.eclipse.job.consoleType">
-        </test>
-      </enablement>
-    </consolePageParticipant>
+        <consolePageParticipant class="com.microsoft.azure.toolkit.eclipse.common.console.AzureJobConsoleParticipant" id="com.microsoft.azure.toolkit.eclipse.common.console.azureJobConsoleParticipant">
+            <enablement>
+                <test property="org.eclipse.ui.console.consoleTypeTest" value="com.microsoft.azure.toolkit.eclipse.job.consoleType"></test>
+            </enablement>
+        </consolePageParticipant>
+    </extension>
 
-     <extension
-    point="org.eclipse.ui.console.consolePatternMatchListeners">
-    <consolePatternMatchListener
-        class="com.microsoft.azure.toolkit.eclipse.common.console.AzureHyperlinkTracker"
-        id="com.microsoft.azure.toolkit.eclipse.common.console.consoleAzureHyperlinkTracker"
-        regex="https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&amp;//=]*)">
-      <enablement>
-        <test
-            property="org.eclipse.ui.console.consoleTypeTest"
-            value="com.microsoft.azure.toolkit.eclipse.job.consoleType">
-        </test>
-      </enablement>
-    </consolePatternMatchListener>
-  </extension>
-  </extension>
+    <extension point="org.eclipse.ui.console.consolePatternMatchListeners">
+        <consolePatternMatchListener class="com.microsoft.azure.toolkit.eclipse.common.console.AzureHyperlinkTracker" id="com.microsoft.azure.toolkit.eclipse.common.console.consoleAzureHyperlinkTracker" regex="https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&amp;//=]*)">
+            <enablement>
+                <or>
+                    <test property="org.eclipse.ui.console.consoleTypeTest" value="com.microsoft.azure.toolkit.eclipse.job.consoleType"></test>
+                </or>
+            </enablement>
+        </consolePatternMatchListener>
+        <consolePatternMatchListener class="org.eclipse.jdt.internal.debug.ui.console.JavaConsoleTracker" regex="\(\w*${java_extensions_regex}\S*\)" qualifier="${java_extensions_regex}" id="org.eclipse.jdt.debug.ui.JavaConsoleTracker">
+            <enablement>
+                <or>
+                    <test property="org.eclipse.ui.console.consoleTypeTest" value="com.microsoft.azure.toolkit.eclipse.job.consoleType"></test>
+                </or>
+            </enablement>
+        </consolePatternMatchListener>
+        <consolePatternMatchListener class="org.eclipse.jdt.internal.debug.ui.console.JavaNativeConsoleTracker" regex="\(Native Method\)" qualifier="Native Method" id="org.eclipse.jdt.debug.ui.JavaNativeConsoleTracker">
+            <enablement>
+                <or>
+                    <test property="org.eclipse.ui.console.consoleTypeTest" value="com.microsoft.azure.toolkit.eclipse.job.consoleType"></test>
+                </or>
+            </enablement>
+        </consolePatternMatchListener>
+        <consolePatternMatchListener class="org.eclipse.jdt.internal.debug.ui.console.JavaExceptionConsoleTracker" regex="([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*Exception[\s|:]" qualifier="Exception[\s|:]" id="org.eclipse.jdt.debug.ui.JavaExceptionConsoleTracker">
+            <enablement>
+                <or>
+                    <test property="org.eclipse.ui.console.consoleTypeTest" value="com.microsoft.azure.toolkit.eclipse.job.consoleType"></test>
+                </or>
+            </enablement>
+        </consolePatternMatchListener>
+    </extension>
 </plugin>

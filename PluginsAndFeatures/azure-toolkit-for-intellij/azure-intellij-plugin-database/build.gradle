@@ -15,13 +15,13 @@ dependencies {
     compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
 
     // TODO(andxu): remove the legacy dependencies
-    compile 'com.microsoft.azuretools:azuretools-core:3.59.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.59.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.59.0-SNAPSHOT', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.59.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"

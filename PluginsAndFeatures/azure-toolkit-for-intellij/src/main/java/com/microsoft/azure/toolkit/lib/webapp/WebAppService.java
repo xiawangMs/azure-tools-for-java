@@ -5,8 +5,9 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;

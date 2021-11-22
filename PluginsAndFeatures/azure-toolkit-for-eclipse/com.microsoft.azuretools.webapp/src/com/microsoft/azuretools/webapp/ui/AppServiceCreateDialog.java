@@ -1121,7 +1121,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private void recordUserSettings() {
         try {
             CommonUtils.setPreference(CommonUtils.SUBSCRIPTION, getSelectedItem(comboSubscription));
-            CommonUtils.setPreference(CommonUtils.RUNTIME_OS, model.getOS().toString());
+            CommonUtils.setPreference(CommonUtils.RUNTIME_OS, model.getOperatingSystem());
             CommonUtils.setPreference(CommonUtils.RUNTIME_LINUX, getSelectedItem(comboLinuxRuntime));
             CommonUtils.setPreference(CommonUtils.RUNTIME_JAVAVERSION, getSelectedItem(cbJavaVersion));
             CommonUtils.setPreference(CommonUtils.RUNTIME_WEBCONTAINER, getSelectedItem(comboWebContainer));

@@ -112,14 +112,14 @@ public class CreateWebAppInstanceDetailComposite extends Composite {
         return Arrays.asList(text, cbRuntime, cbRegion);
     }
 
-    public AzureValidationInfo validateAppName() {
+    private AzureValidationInfo validateAppName() {
         if (subscription == null) {
             return AzureValidationInfo.success(text);
         }
-        CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class)
+        final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class)
                 .checkNameAvailability(subscription.getId(), text.getValue());
         return result.isAvailable() ? AzureValidationInfo.success(text)
-                : AzureValidationInfo.error(result.getUnavailabilityReason(), text);
+                : AzureValidationInfo.error(result.getUnavailabilityMessage(), text);
     }
 
     @Override

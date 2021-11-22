@@ -6,9 +6,9 @@ package com.microsoft.azure.toolkit.intellij.appservice.insights;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.CreateApplicationInsightsDialog;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -61,7 +61,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
             subscription == null ? Collections.emptyList() :
                 AzureSDKManager.getInsightsResources(subscription.getId())
                     .stream()
-                    .map(ApplicationInsightsConfig::new)
+                    .map(instance -> new ApplicationInsightsConfig(instance.name(), instance.instrumentationKey()))
                     .collect(Collectors.toList());
         return ListUtils.union(newItems, existingItems);
     }

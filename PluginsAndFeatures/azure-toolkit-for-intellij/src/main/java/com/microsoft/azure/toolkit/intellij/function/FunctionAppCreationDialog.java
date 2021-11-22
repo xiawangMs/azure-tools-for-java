@@ -6,11 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;

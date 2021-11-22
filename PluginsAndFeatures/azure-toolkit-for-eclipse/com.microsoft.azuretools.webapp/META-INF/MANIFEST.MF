@@ -49,4 +49,4 @@ Export-Package: com.microsoft.azuretools.webapp,
  com.microsoft.azuretools.webapp.handlers,
  com.microsoft.azuretools.webapp.ui
 Bundle-ClassPath: .,
- target/lib/azure-toolkit-ide-appservice-lib-0.14.0-SNAPSHOT.jar
+ target/lib/azure-toolkit-ide-appservice-lib-0.14.0.jar

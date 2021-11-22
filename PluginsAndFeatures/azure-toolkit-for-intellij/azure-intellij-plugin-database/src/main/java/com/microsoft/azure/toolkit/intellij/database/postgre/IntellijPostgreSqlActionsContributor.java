@@ -10,12 +10,14 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
+import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlDatabaseResource;
+import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.postgre.creation.CreatePostgreSqlAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
@@ -36,10 +38,14 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreatePostgreSqlAction.create((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        //TODO(andxu): add service link
         am.<IAzureResource<?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof PostgreSqlServer,
-                (r, e) -> AzureTaskManager.getInstance().runLater(() -> {
-                    AzureMessager.getMessager().info("Connect to PostgreSQL is not supported yet.", "Function not supported");
+                (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
+                    final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
+                    PostgreSqlServerEntity entity = ((PostgreSqlServer) o).entity();
+                    dialog.setResource(new PostgreSqlDatabaseResource(((PostgreSqlServer) o).databasesV2().get(0),
+                            entity.getAdministratorLoginName() + "@" + entity.getName(),
+                            PostgreSqlResourceDefinition.INSTANCE));
+                    dialog.show();
                 }));
 
         final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (PostgreSqlServer) c);

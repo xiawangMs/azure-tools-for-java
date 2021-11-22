@@ -31,7 +31,9 @@ public class WebAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployments";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployments.slot";
 
-    public static final Action.Id<IAppService> OPEN_IN_BROWSER = Action.Id.of("actions.webapp.open_in_browser");
+    public static final Action.Id<IAppService<?>> OPEN_IN_BROWSER = Action.Id.of("actions.webapp.open_in_browser");
+    public static final Action.Id<IAppService<?>> START_STREAM_LOG = Action.Id.of("actions.webapp.stream_log.start");
+    public static final Action.Id<IAppService<?>> STOP_STREAM_LOG = Action.Id.of("actions.webapp.stream_log.stop");
     public static final Action.Id<IWebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployments.refresh");
     public static final Action.Id<IWebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("action.webapp.slot.swap");
 
@@ -53,7 +55,10 @@ public class WebAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.START,
                 ResourceCommonActionsContributor.STOP,
                 ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.DELETE,
+                "___",
+                WebAppActionsContributor.START_STREAM_LOG,
+                WebAppActionsContributor.STOP_STREAM_LOG
                 // todo: add profile actions like log streaming
         );
         am.registerGroup(WEBAPP_ACTIONS, webAppActionGroup);
@@ -68,7 +73,10 @@ public class WebAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.START,
                 ResourceCommonActionsContributor.STOP,
                 ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.DELETE,
+                "___",
+                WebAppActionsContributor.START_STREAM_LOG,
+                WebAppActionsContributor.STOP_STREAM_LOG
         );
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, deploymentSlotActionGroup);
 
@@ -90,12 +98,22 @@ public class WebAppActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof IWebAppDeploymentSlot && StringUtils.equals(((IWebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
 
-        final Consumer<IAppService> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
+        final Consumer<IAppService<?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
                 .handle("https://" + appService.hostName());
         final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", "/icons/action/refresh.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("webapp.open_browser")).orElse(null))
                 .enabled(s -> s instanceof IAppService);
         am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));
+
+        final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", "/icons/action/log.svg")
+                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|app.start_stream_log", ((IAppService) r).name())).orElse(null))
+                .enabled(s -> s instanceof IAppService);
+        am.registerAction(START_STREAM_LOG, new Action<>(startStreamLogView));
+
+        final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", "/icons/action/log.svg")
+                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|app.stop_stream_log", ((IAppService) r).name())).orElse(null))
+                .enabled(s -> s instanceof IAppService);
+        am.registerAction(STOP_STREAM_LOG, new Action<>(stopStreamLogView));
     }
 
     @Override

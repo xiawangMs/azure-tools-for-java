@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import lombok.Getter;
