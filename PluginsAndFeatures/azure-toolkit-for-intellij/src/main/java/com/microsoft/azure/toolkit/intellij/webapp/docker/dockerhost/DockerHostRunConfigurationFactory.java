@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConf
 
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -27,6 +28,11 @@ public class DockerHostRunConfigurationFactory extends ConfigurationFactory {
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
         return new DockerHostRunConfiguration(project, this, String.format("%s: %s", FACTORY_NAME, project.getName()));
+    }
+
+    @Override
+    public @NotNull @NonNls String getId() {
+        return FACTORY_NAME;
     }
 
     @Override
