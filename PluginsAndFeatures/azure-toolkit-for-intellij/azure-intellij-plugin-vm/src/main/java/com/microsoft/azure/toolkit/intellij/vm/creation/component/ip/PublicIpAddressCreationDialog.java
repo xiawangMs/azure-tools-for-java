@@ -27,7 +27,7 @@ import java.util.List;
 
 public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddress>
         implements AzureForm<DraftPublicIpAddress> {
-    private static final String IP_NAME_PATTERN = "[a-zA-Z0-9][a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_]";
+    private static final String IP_NAME_PATTERN = "[a-zA-Z0-9]([a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_])?";
 
     private Subscription subscription;
     private ResourceGroup resourceGroup;

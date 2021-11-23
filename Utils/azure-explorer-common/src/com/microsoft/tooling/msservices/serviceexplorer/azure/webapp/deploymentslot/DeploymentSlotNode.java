@@ -134,7 +134,7 @@ public class DeploymentSlotNode extends WebAppBaseNode {
 
     @AzureOperation(name = "webapp|deployment.open_browser", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + slot.hostName());
+        DefaultLoader.getUIHelper().openInBrowser("https://" + slot.hostName());
     }
 
     @AzureOperation(name = "webapp|deployment.show_properties", params = {"this.slot.name()", "this.webApp.name()"}, type = AzureOperation.Type.ACTION)

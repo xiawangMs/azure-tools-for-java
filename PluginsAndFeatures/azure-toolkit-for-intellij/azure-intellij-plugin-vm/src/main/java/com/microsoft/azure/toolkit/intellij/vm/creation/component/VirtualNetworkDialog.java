@@ -27,7 +27,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
     private static final String NETWORK_NAME_RULES = "The name must begin with a letter or number, end with a letter, number or underscore, " +
             "and may contain only letters, numbers, underscores, periods, or hyphens.";
     private static final String NETWORK_NAME_PATTERN = "[a-zA-Z0-9][a-zA-Z0-9_\\.-]{0,62}[a-zA-Z0-9_]";
-    private static final String SUBNET_NAME_PATTERN = "[a-zA-Z0-9][a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_]";
+    private static final String SUBNET_NAME_PATTERN = "[a-zA-Z0-9]([a-zA-Z0-9_\\.-]{0,78}[a-zA-Z0-9_])?";
 
     private JPanel contentPane;
     private AzureTextInput txtName;

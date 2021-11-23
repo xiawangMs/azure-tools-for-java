@@ -58,8 +58,14 @@ public class ValidationUtils {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
         }
+        if (StringUtils.isEmpty(appServiceName)) {
+            throw new IllegalArgumentException(message("appService.name.validate.empty"));
+        }
+        if (appServiceName.length() < 2 || appServiceName.length() > 60) {
+            throw new IllegalArgumentException(message("appService.name.validate.length"));
+        }
         if (!isValidAppServiceName(appServiceName)) {
-            throw new IllegalArgumentException(message("appService.subscription.validate.invalidName"));
+            throw new IllegalArgumentException(message("appService.name.validate.invalidName"));
         }
         final CheckNameAvailabilityResultEntity result = Azure.az(AzureAppService.class).checkNameAvailability(subscriptionId, appServiceName);
         if (!result.isAvailable()) {

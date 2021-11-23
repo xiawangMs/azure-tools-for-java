@@ -311,8 +311,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         if (url == null) {
             lnkUrl.setHyperlinkText(TXT_NA);
         } else {
-            lnkUrl.setHyperlinkText("http://" + url);
-            lnkUrl.setHyperlinkTarget("http://" + url);
+            lnkUrl.setHyperlinkText("https://" + url);
+            lnkUrl.setHyperlinkTarget("https://" + url);
         }
         txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING));

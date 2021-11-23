@@ -146,7 +146,7 @@ public class WebAppNode extends WebAppBaseNode {
 
     @AzureOperation(name = "webapp.open_browser", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + this.webApp.hostName());
+        DefaultLoader.getUIHelper().openInBrowser("https://" + this.webApp.hostName());
     }
 
     @AzureOperation(name = "webapp.show_properties", params = {"this.webApp.name()"}, type = AzureOperation.Type.ACTION)

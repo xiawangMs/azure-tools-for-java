@@ -28,10 +28,14 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
     @Override
     public Integer getValue() {
         final String text = getText();
-        if (StringUtils.isBlank(text) || !StringUtils.isNumeric(text)) {
+        if (StringUtils.isBlank(text)) {
+            return getDefaultValue();
+        }
+        try {
+            return Integer.parseInt(text);
+        } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
         }
-        return Integer.valueOf(getText());
     }
 
     @Override
@@ -41,6 +45,9 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
 
     @Nonnull
     public AzureValidationInfo doValidate(Integer value) {
+        if (Objects.isNull(value)) {
+            return AzureValidationInfo.none(this);
+        }
         if (Objects.nonNull(minValue) && Objects.nonNull(maxValue) && (value < minValue || value > maxValue)) {
             return AzureValidationInfo.error(String.format("Value should be in range [%d, %d]", minValue, maxValue), this);
         } else if (Objects.nonNull(minValue) && value < minValue) {
