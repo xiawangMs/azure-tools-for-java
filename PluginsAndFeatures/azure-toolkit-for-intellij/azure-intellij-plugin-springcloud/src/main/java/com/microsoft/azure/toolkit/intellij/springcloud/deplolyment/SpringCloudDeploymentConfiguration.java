@@ -163,7 +163,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         protected void applyEditorTo(@NotNull SpringCloudDeploymentConfiguration config) throws ConfigurationException {
             final List<AzureValidationInfo> infos = this.panel.getAllValidationInfos(true);
             final AzureValidationInfo error = infos.stream()
-                    .filter(i -> i.getType() == AzureValidationInfo.Type.ERROR)
+                    .filter(i -> !i.isValid())
                     .findAny().orElse(null);
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());

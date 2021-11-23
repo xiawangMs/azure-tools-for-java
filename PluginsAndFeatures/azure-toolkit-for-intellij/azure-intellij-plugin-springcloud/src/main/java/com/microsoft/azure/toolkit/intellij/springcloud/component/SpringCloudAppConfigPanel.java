@@ -14,6 +14,7 @@ import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -134,7 +135,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
                     this.txtEndpoint.setIcon(null);
                     this.txtEndpoint.setText("---");
                 }
-            });
+            }, AzureTask.Modality.ANY);
         });
         final SpringCloudSku sku = app.getCluster().entity().getSku();
         final boolean basic = sku.getTier().toLowerCase().startsWith("b");
@@ -158,7 +159,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
                     .map(SpringCloudDeployment::entity)
                     .orElse(new SpringCloudDeploymentEntity("default", app.entity()));
             final List<SpringCloudDeploymentInstanceEntity> instances = deploymentEntity.getInstances();
-            AzureTaskManager.getInstance().runLater(() -> this.numInstance.setRealMin(Math.min(instances.size(), 1)));
+            AzureTaskManager.getInstance().runLater(() -> this.numInstance.setRealMin(Math.min(instances.size(), 1)), AzureTask.Modality.ANY);
         });
     }
 
@@ -219,6 +220,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     private void toggleStorage(Boolean e) {
+        if (Objects.isNull(this.originalConfig)) { // prevent action before data is loaded.
+            return;
+        }
         final boolean enabled = BooleanUtils.isTrue(e);
         this.toggleStorage.setActionCommand(enabled ? "disable" : "enable");
         this.toggleStorage.setText(enabled ? "Disable" : "Enable");
@@ -230,6 +234,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     private void toggleEndpoint(Boolean e) {
+        if (Objects.isNull(this.originalConfig)) { // prevent action before data is loaded.
+            return;
+        }
         final boolean enabled = BooleanUtils.isTrue(e);
         this.toggleEndpoint.setActionCommand(enabled ? "disable" : "enable");
         this.toggleEndpoint.setText(enabled ? "Disable" : "Enable");

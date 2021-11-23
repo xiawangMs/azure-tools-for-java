@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -37,7 +38,7 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     }
 
     protected void onAppChanged(SpringCloudApp app) {
-        AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(app));
+        AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(app), AzureTask.Modality.ANY);
         super.onAppChanged(app);
     }
 

@@ -88,14 +88,14 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
 
     private void onSubscriptionChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Subscription subscription = (Subscription) e.getItem();
+            final Subscription subscription = this.selectorSubscription.getValue();
             this.selectorCluster.setSubscription(subscription);
         }
     }
 
     private void onClusterChanger(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final SpringCloudCluster cluster = (SpringCloudCluster) e.getItem();
+            final SpringCloudCluster cluster = this.selectorCluster.getValue();
             this.selectorApp.setCluster(cluster);
         }
     }

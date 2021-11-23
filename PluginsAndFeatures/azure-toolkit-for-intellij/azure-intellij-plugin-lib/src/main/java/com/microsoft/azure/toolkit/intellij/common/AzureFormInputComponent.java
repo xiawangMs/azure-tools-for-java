@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.Disposer;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.accessibility.AccessibleRelation;
@@ -56,7 +57,7 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposabl
             return new ComponentValidator(AzureFormInputComponent.this).installOn(input);
         });
         if (v != null) {
-            AzureTaskManager.getInstance().runLater(() -> v.updateInfo(info));
+            AzureTaskManager.getInstance().runLater(() -> v.updateInfo(info), AzureTask.Modality.ANY);
         }
     }
 
