@@ -25,27 +25,42 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.58.0</h3>
+        <h3>3.59.0</h3>
         <h4>Added</h4>
         <ul>
-            <li>Add support for Azure AD (Preview)
-                <ul>
-                    <li>Register Azure AD application</li>
-                    <li>View Azure AD application templates</li>
-                </ul>
-            </li>
-            <li>Support connect to Azure Redis for spring boot project</li>
-        </ul>
+          <li>Add Support for **Azure Database for PostgreSQL**, so that user can create/manage/consume PostgreSQL directly in IntelliJ.
+            <ul>
+              <li>create/manage PostgreSQL server instances</li>
+              <li>connect PostgreSQL with Intellij's DB Tools</li>
+              <li>consume PostgreSQL from local project/Azure WebApp via Resource Connector feature. </li>
+            </ul>
+          </li>
+          <li>Add `Add SSH Configuration` on **Azure Virtual Machine** instance nodes, so that user can add Azure VM to SSH Configurations by one click. </li>
+          <li>Add dependency support for Azure SDK libs, so that our plugin will be suggested if Azure SDK is used but the plugin is not installed. </li>
+          <li>Add support for 2021.3</li>
+        <ul>
+
         <h4>Changed</h4>
         <ul>
-            <li>Remove outdated spring cloud dependency management</li>
-        </ul>
+          <li>BeforeRunTask for Azure Resource Connector will show which resources are connected to the run configuration.</li>
+        <ul>
+
         <h4>Fixed</h4>
         <ul>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5923">#5923</a> Fix bug: ADLA accounts can't be listed in Spark on Cosmos subscription issue</li>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5968">#5968</a> Fix bug: HDInsight project wizard accessibility issue</li>
-            <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/5996">#5996</a> Fix bug: Config not applied when starting livy interactive console</li>
-        </ul>
+          <li>CVE issues</li>
+          <li>progress indicator shows `<unknown>.<unknow>` on menu actions.</li>
+          <li>URL starts with 'http' instead of 'https' in Web App properties window and Open in Browser option</li>
+          <li>Pops up com.azure.core.management.exception.ManagementException while deploying spring cloud with a creating service</li>
+          <li>Local run the project for connector, often pops up the error "java.util.ConcurrentModificationException"</li>
+          <li>No validation for invalid values with VNet and Public IP in Create VM dialog</li>
+          <li>Pops up NPE error with invalid values for Quota and Retention Period in Create Web App dialog</li>
+          <li>Web App name and Function name can't pass if it starts with numbers</li>
+          <li>Unclear validation info for invalid values in Create new Application Insights dialog</li>
+          <li>BeforeRunTask `Azure Resource Connector` will not be added to self-defined run configuration</li>
+          <li>Reopen projects for connector, often pops up the error "java.lang.ClassCastException"</li>
+          <li>Pops up NPE when searching with GET and showing hash typed key value with Redis</li>
+          <li>Creating Web App can be successfully submitted even with an existing name</li>
+        <ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>

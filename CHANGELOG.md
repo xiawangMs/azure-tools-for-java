@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.59.0](#3590)
   - [3.58.0](#3580)
   - [3.57.1](#3571)
   - [3.57.0](#3570)
@@ -73,6 +74,34 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.59.0
+### Added
+- Add Support for **Azure Database for PostgreSQL**, so that user can create/manage/consume PostgreSQL directly in IntelliJ.
+  - create/manage PostgreSQL server instances
+  - connect PostgreSQL with Intellij's DB Tools
+  - consume PostgreSQL from local project/Azure WebApp via Resource Connector feature. 
+- Add `Add SSH Configuration` on **Azure Virtual Machine** instance nodes, so that user can add Azure VM to SSH Configurations by one click. 
+- Add dependency support for Azure SDK libs, so that our plugin will be suggested if Azure SDK is used but the plugin is not installed. 
+- Add support for 2021.3
+
+### Changed
+- BeforeRunTask for Azure Resource Connector will show which resources are connected to the run configuration.
+
+### Fixed
+- CVE issues.
+- progress indicator shows `<unknown>.<unknow>` on menu actions.
+- URL starts with 'http' instead of 'https' in Web App properties window and Open in Browser option
+- Pops up com.azure.core.management.exception.ManagementException while deploying spring cloud with a creating service
+- Local run the project for connector, often pops up the error "java.util.ConcurrentModificationException"
+- No validation for invalid values with VNet and Public IP in Create VM dialog
+- Pops up NPE error with invalid values for Quota and Retention Period in Create Web App dialog
+- Web App name and Function name can't pass if it starts with numbers
+- Unclear validation info for invalid values in Create new Application Insights dialog
+- BeforeRunTask `Azure Resource Connector` will not be added to self-defined run configuration
+- Reopen projects for connector, often pops up the error "java.lang.ClassCastException"
+- Pops up NPE when searching with GET and showing hash typed key value with Redis
+- Creating Web App can be successfully submitted even with an existing name
 
 ## 3.58.0
 ### Added
