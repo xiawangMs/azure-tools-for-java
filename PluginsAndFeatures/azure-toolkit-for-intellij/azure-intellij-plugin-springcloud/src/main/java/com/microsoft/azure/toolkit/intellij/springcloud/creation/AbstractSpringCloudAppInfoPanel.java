@@ -10,37 +10,41 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentDraft;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
+public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements AzureFormPanel<SpringCloudAppDraft> {
     private static final String SPRING_CLOUD_APP_NAME_PATTERN = "^[a-z][a-z0-9-]{2,30}[a-z0-9]$";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
     @Nullable
     private final SpringCloudCluster cluster;
     private final String defaultAppName;
-    private SpringCloudAppConfig originalConfig;
+    private SpringCloudAppDraft value;
 
     public AbstractSpringCloudAppInfoPanel(@Nullable final SpringCloudCluster cluster) {
         super();
@@ -85,47 +89,36 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
             final SpringCloudCluster c = this.getSelectorCluster().getValue();
             final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
             if (Objects.nonNull(c)) {
-                final SpringCloudApp app = c.apps().updateOrCreate(appName, c.getResourceGroup());
-                this.onAppChanged(app);
+                final SpringCloudAppDraft appDraft = c.apps().updateOrCreate(appName, c.getResourceGroup());
+                final SpringCloudDeploymentDraft deploymentDraft = appDraft.updateOrCreateActiveDeployment();
+                this.onAppChanged(appDraft);
             }
         }
     }
 
-    protected void onAppChanged(SpringCloudApp app) {
-        if (Objects.isNull(this.originalConfig)) {
-            AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                this.originalConfig = SpringCloudAppConfig.fromApp(app);
-                AzureTaskManager.getInstance().runLater(() -> this.setValue(this.originalConfig), AzureTask.Modality.ANY);
-            });
-        }
+    protected void onAppChanged(SpringCloudAppDraft appDraft) {
+        AzureTaskManager.getInstance().runLater(() -> this.setValue(appDraft), AzureTask.Modality.ANY);
     }
 
-    protected SpringCloudAppConfig getValue(SpringCloudAppConfig config) {
-        config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
-        config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(AzResource::getName).orElse(null));
-        config.setAppName(this.getTextName().getValue());
-        return config;
+    protected SpringCloudAppDraft getValue(@Nonnull SpringCloudAppDraft draft) {
+        draft.setName(this.getTextName().getValue());
+        return draft;
     }
 
     @Override
-    public SpringCloudAppConfig getValue() {
-        final SpringCloudAppConfig config = Optional.ofNullable(this.originalConfig)
-                .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
-        return getValue(config);
+    public SpringCloudAppDraft getValue() {
+        return this.getValue(this.value);
     }
 
     @Override
-    public synchronized void setValue(final SpringCloudAppConfig config) {
-        final Integer count = config.getDeployment().getInstanceCount();
-        config.getDeployment().setInstanceCount(Objects.isNull(count) || count == 0 ? 1 : count);
-        this.originalConfig = config;
-        this.getTextName().setValue(config.getAppName());
-        if (Objects.nonNull(config.getClusterName())) {
-            this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), AzResource::getName));
-        }
-        if (Objects.nonNull(config.getSubscriptionId())) {
-            this.getSelectorSubscription().setValue(new ItemReference<>(config.getSubscriptionId(), Subscription::getId));
-        }
+    public synchronized void setValue(final SpringCloudAppDraft app) {
+        this.value = app;
+        final SpringCloudDeploymentDraft deploymentDraft = app.updateOrCreateActiveDeployment();
+        final Integer count = deploymentDraft.getInstanceNum();
+        deploymentDraft.setInstanceNum(Objects.isNull(count) || count == 0 ? 1 : count);
+        this.getTextName().setValue(app.getName());
+        this.getSelectorCluster().setValue(new ItemReference<>(app.getParent().getName(), AzResource::getName));
+        this.getSelectorSubscription().setValue(new ItemReference<>(app.getSubscriptionId(), Subscription::getId));
     }
 
     @Override
@@ -151,4 +144,13 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
     protected abstract AzureTextInput getTextName();
 
     protected abstract JPanel getContentPanel();
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return Arrays.asList(
+            this.getSelectorSubscription(),
+            this.getSelectorCluster(),
+            this.getTextName()
+        );
+    }
 }

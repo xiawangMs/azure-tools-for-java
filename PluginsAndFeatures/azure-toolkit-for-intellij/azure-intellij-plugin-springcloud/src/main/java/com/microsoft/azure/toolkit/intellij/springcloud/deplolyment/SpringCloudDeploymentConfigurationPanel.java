@@ -17,17 +17,15 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentDraft;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,7 +41,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SpringCloudDeploymentConfigurationPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
+public class SpringCloudDeploymentConfigurationPanel extends JPanel implements AzureFormPanel<SpringCloudAppDraft> {
     private final Project project;
     @Setter
     private SpringCloudDeploymentConfiguration configuration;
@@ -102,60 +100,35 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     @Override
-    public synchronized void setValue(SpringCloudAppConfig appConfig) {
+    public synchronized void setValue(@Nonnull SpringCloudAppDraft appDraft) {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final String resourceGroup = appConfig.getResourceGroup();
-            final SpringCloudCluster cluster = Optional.of(Azure.az(AzureSpringCloud.class))
-                .map(az -> az.clusters(appConfig.getSubscriptionId()))
-                .map(cs -> cs.get(appConfig.getClusterName(), appConfig.getResourceGroup()))
-                .orElse(null);
-            final SpringCloudApp app = Optional.ofNullable(cluster)
-                .map(c -> c.apps().get(appConfig.getAppName(), resourceGroup))
-                .orElse(null);
-            if (Objects.nonNull(cluster) && Objects.isNull(app)) {
-                final SpringCloudAppDraft draft = cluster.apps().create(appConfig.getAppName(), appConfig.getResourceGroup());
-                draft.setConfig(appConfig);
-                this.selectorApp.addLocalItem(draft);
+            final SpringCloudDeployment deployment = appDraft.getActiveDeployment();
+            if (!appDraft.exists()) {
+                this.selectorApp.addLocalItem(appDraft);
+            }
+            if (deployment instanceof SpringCloudDeploymentDraft) {
+                final SpringCloudDeploymentDraft deploymentDraft = (SpringCloudDeploymentDraft) deployment;
+                final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
+                Optional.ofNullable(deploymentDraft.getArtifact()).map(a -> ((WrappedAzureArtifact) a))
+                    .ifPresent((a -> this.selectorArtifact.setArtifact(a.getArtifact())));
             }
         });
-        final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-        Optional.ofNullable(deploymentConfig).map(SpringCloudDeploymentConfig::getArtifact).map(a -> ((WrappedAzureArtifact) a))
-            .ifPresent((a -> this.selectorArtifact.setArtifact(a.getArtifact())));
-        Optional.ofNullable(appConfig.getSubscriptionId())
-            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
-        Optional.ofNullable(appConfig.getClusterName())
-            .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
-        Optional.ofNullable(appConfig.getAppName())
-            .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
+        this.selectorSubscription.setValue(new ItemReference<>(appDraft.getSubscriptionId(), Subscription::getId));
+        this.selectorCluster.setValue(new ItemReference<>(appDraft.getParent().getName(), SpringCloudCluster::name));
+        this.selectorApp.setValue(new ItemReference<>(appDraft.getName(), SpringCloudApp::name));
     }
 
     @Nullable
     @Override
-    public SpringCloudAppConfig getValue() {
-        SpringCloudAppConfig appConfig = Optional.ofNullable(this.selectorApp.getValue())
-            .filter(a -> a instanceof SpringCloudAppDraft)
-            .map(a -> ((SpringCloudAppDraft) a).getConfig())
-            .orElse(null);
-        if (Objects.isNull(appConfig)) {
-            appConfig = SpringCloudAppConfig.builder()
-                .deployment(SpringCloudDeploymentConfig.builder().build())
-                .build();
-        }
-        this.getValue(appConfig);
-        return appConfig;
-    }
-
-    public SpringCloudAppConfig getValue(SpringCloudAppConfig appConfig) {
-        final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        appConfig.setSubscriptionId(Optional.ofNullable(this.selectorSubscription.getValue()).map(Subscription::getId).orElse(null));
-        appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(AzResource::name).orElse(null));
-        appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(AzResource::name).orElse(null));
+    public SpringCloudAppDraft getValue() {
+        final SpringCloudApp app = this.selectorApp.getValue();
+        final SpringCloudAppDraft appDraft = app instanceof AzResource.Draft ? (SpringCloudAppDraft) app : (SpringCloudAppDraft) app.update();
+        final SpringCloudDeploymentDraft deploymentDraft = appDraft.updateOrCreateActiveDeployment();
         final AzureArtifact artifact = this.selectorArtifact.getValue();
         if (Objects.nonNull(artifact)) {
-            deploymentConfig.setArtifact(new WrappedAzureArtifact(this.selectorArtifact.getValue(), this.project));
+            deploymentDraft.setArtifact(new WrappedAzureArtifact(this.selectorArtifact.getValue(), this.project));
         }
-        return appConfig;
+        return appDraft;
     }
 
     @Override

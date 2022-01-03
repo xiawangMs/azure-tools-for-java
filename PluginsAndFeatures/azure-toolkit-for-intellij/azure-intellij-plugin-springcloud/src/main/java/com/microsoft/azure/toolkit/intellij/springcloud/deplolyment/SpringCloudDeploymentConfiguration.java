@@ -25,9 +25,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentDraft;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom.Element;
@@ -49,30 +48,36 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
     @Getter
-    private SpringCloudAppConfig appConfig;
-    @Getter
     @Setter
-    private SpringCloudApp app;
+    private SpringCloudAppDraft app;
+    private String appId;
+    private SpringCloudAppDraft.Config appConfig;
+    private String deploymentId;
+    private SpringCloudDeploymentDraft.Config deploymentConfig;
+    private String artifactId;
 
     public SpringCloudDeploymentConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        this.appConfig = SpringCloudAppConfig.builder()
-                .deployment(SpringCloudDeploymentConfig.builder().build())
-                .build();
     }
 
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
-        final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.getProject());
-        this.appConfig = Optional.ofNullable(element.getChild("SpringCloudAppConfig"))
-                .map(e -> XmlSerializer.deserialize(e, SpringCloudAppConfig.class))
-                .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
-        Optional.ofNullable(element.getChild("Artifact"))
-                .map(e -> e.getAttributeValue("identifier"))
-                .map(manager::getAzureArtifactById)
-                .map(a -> new WrappedAzureArtifact(a, this.getProject()))
-                .ifPresent(a -> this.appConfig.getDeployment().setArtifact(a));
+        final Element appDraftEle = element.getChild("appDraft");
+        final Element appConfigEle = appDraftEle.getChild("config");
+        final Element deploymentDraftEle = appDraftEle.getChild("deploymentDraft");
+        final Element deploymentConfigEle = deploymentDraftEle.getChild("config");
+        final Element artifactEle = deploymentDraftEle.getChild("artifact");
+        this.appId = appDraftEle.getAttributeValue("id");
+        this.appConfig = Optional.ofNullable(appConfigEle)
+            .map(e -> XmlSerializer.deserialize(e, SpringCloudAppDraft.Config.class))
+            .orElse(new SpringCloudAppDraft.Config());
+        this.deploymentId = deploymentDraftEle.getAttributeValue("id");
+        this.deploymentConfig = Optional.ofNullable(deploymentConfigEle)
+            .map(e -> XmlSerializer.deserialize(e, SpringCloudDeploymentDraft.Config.class))
+            .orElse(new SpringCloudDeploymentDraft.Config());
+        this.artifactId = Optional.ofNullable(artifactEle)
+            .map(e -> e.getAttributeValue("identifier")).orElse(null);
     }
 
     @Override
@@ -153,9 +158,9 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             this.panel.setConfiguration(config);
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 if (Objects.nonNull(config.app)) {
-                    config.appConfig = SpringCloudAppConfig.fromApp(config.app);
+                    config.app.updateOrCreateActiveDeployment();
                 }
-                AzureTaskManager.getInstance().runLater(() -> this.panel.setValue(config.appConfig), AzureTask.Modality.ANY);
+                AzureTaskManager.getInstance().runLater(() -> this.panel.setValue(config.app), AzureTask.Modality.ANY);
             });
         }
 
@@ -168,7 +173,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());
             }
-            config.appConfig = this.panel.getValue();
+            config.app = this.panel.getValue();
         }
 
         @Override

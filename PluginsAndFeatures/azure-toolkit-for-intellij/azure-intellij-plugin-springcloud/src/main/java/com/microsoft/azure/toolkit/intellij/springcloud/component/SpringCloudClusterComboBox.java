@@ -27,7 +27,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
         if (Objects.isNull(item)) {
             return AzureComboBox.EMPTY_ITEM;
         }
-        return ((SpringCloudCluster) item).name();
+        return ((SpringCloudCluster) item).getName();
     }
 
     public void setSubscription(Subscription subscription) {

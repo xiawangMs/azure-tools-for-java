@@ -17,8 +17,9 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 
 import javax.annotation.Nonnull;
@@ -44,14 +45,12 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     @Nonnull
     private final Project project;
     @Nonnull
-    private final SpringCloudApp app;
-    @Nonnull
-    private SpringCloudAppConfig originalConfig;
+    private final SpringCloudAppDraft value;
 
-    public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudApp app, @Nonnull final VirtualFile virtualFile) {
+    public SpringCloudAppPropertiesEditor(@Nonnull Project project, @Nonnull SpringCloudAppDraft value, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
         this.project = project;
-        this.app = app;
+        this.value = value;
         this.rerender();
         this.initListeners();
     }
@@ -60,96 +59,84 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         AzureTaskManager.getInstance().runLater(() -> {
             this.reset.setVisible(false);
             this.saveButton.setEnabled(false);
-            this.lblSubscription.setText(this.app.subscription().getName());
-            this.lblCluster.setText(this.app.getParent().getName());
-            this.lblApp.setText(this.app.getName());
-            AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.app));
+            this.lblSubscription.setText(this.value.getSubscription().getName());
+            this.lblCluster.setText(this.value.getParent().getName());
+            this.lblApp.setText(this.value.getName());
             AzureTaskManager.getInstance().runOnPooledThread((() -> {
-                final SpringCloudDeployment deployment = this.app.getActiveDeployment();
+                final SpringCloudDeployment deployment = this.value.getActiveDeployment();
                 AzureTaskManager.getInstance().runLater(() -> this.resetToolbar(deployment));
             }));
-            AzureTaskManager.getInstance().runOnPooledThread((() -> {
-                this.originalConfig = SpringCloudAppConfig.fromApp(this.app);
-                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setValue(this.originalConfig));
-            }));
-            this.panelInstances.setApp(this.app);
+            AzureTaskManager.getInstance().runLater(() -> this.formConfig.setValue(this.value));
+            this.panelInstances.setApp(this.value);
         });
     }
 
     private void initListeners() {
         this.reset.addActionListener(e -> this.formConfig.reset());
         this.refreshButton.addActionListener(e -> refresh());
-        final String deleteTitle = String.format("Deleting app(%s)", this.app.name());
+        final String deleteTitle = String.format("Deleting app(%s)", this.value.getName());
         this.deleteButton.addActionListener(e -> {
-            final String message = String.format("Are you sure to delete Spring Cloud App(%s)", this.app.name());
+            final String message = String.format("Are you sure to delete Spring Cloud App(%s)", this.value.getName());
             if (AzureMessager.getMessager().confirm(message, "Delete Spring Cloud App")) {
                 AzureTaskManager.getInstance().runInModal(deleteTitle, () -> {
                     this.setEnabled(false);
-                    IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
-                    this.app.delete();
+                    IntellijShowPropertiesViewAction.closePropertiesView(this.value, this.project);
+                    this.value.delete();
                 });
             }
         });
-        final String startTitle = String.format("Starting app(%s)", this.app.name());
+        final String startTitle = String.format("Starting app(%s)", this.value.getName());
         this.startButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(startTitle, () -> {
             this.setEnabled(false);
-            this.app.start();
+            this.value.start();
             this.refresh();
         }));
-        final String stopTitle = String.format("Stopping app(%s)", this.app.name());
+        final String stopTitle = String.format("Stopping app(%s)", this.value.getName());
         this.stopButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(stopTitle, () -> {
             this.setEnabled(false);
-            this.app.stop();
+            this.value.stop();
             this.refresh();
         }));
-        final String restartTitle = String.format("Restarting app(%s)", this.app.name());
+        final String restartTitle = String.format("Restarting app(%s)", this.value.getName());
         this.restartButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(restartTitle, () -> {
             this.setEnabled(false);
-            this.app.restart();
+            this.value.restart();
             this.refresh();
         }));
-        final String saveTitle = String.format("Saving updates of app(%s)", this.app.name());
+        final String saveTitle = String.format("Saving updates of app(%s)", this.value.getName());
         this.saveButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(saveTitle, () -> {
             this.setEnabled(false);
             this.reset.setVisible(false);
-            new DeploySpringCloudAppTask(getConfig()).execute();
+            final SpringCloudDeploymentDraft draft = (SpringCloudDeploymentDraft) Objects.requireNonNull(this.formConfig.getValue().getActiveDeployment());
+            new DeploySpringCloudAppTask(draft).execute();
             this.refresh();
         }));
         this.formConfig.setDataChangedListener((data) -> {
-            final boolean changedFromOrigin = !Objects.equals(this.getConfig(), this.originalConfig);
-            this.reset.setVisible(changedFromOrigin);
-            this.saveButton.setEnabled(changedFromOrigin);
+            final boolean modified = this.formConfig.idModified();
+            this.reset.setVisible(modified);
+            this.saveButton.setEnabled(modified);
         });
         AzureEventBus.after("springcloud.remove_app.app", (SpringCloudApp app) -> {
-            if (this.app.name().equals(app.name())) {
-                AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.app.name()), "");
-                IntellijShowPropertiesViewAction.closePropertiesView(this.app, this.project);
+            if (this.value.getName().equals(app.getName())) {
+                AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.value.getName()), "");
+                IntellijShowPropertiesViewAction.closePropertiesView(this.value, this.project);
             }
         });
         AzureEventBus.after("springcloud.update_app.app", (SpringCloudApp app) -> {
-            if (this.app.name().equals(app.name())) {
+            if (this.value.getName().equals(app.getName())) {
                 this.refresh();
             }
         });
-    }
-
-    @Nonnull
-    private SpringCloudAppConfig getConfig() {
-        final SpringCloudAppConfig config = this.formConfig.getValue();
-        config.setSubscriptionId(this.app.subscriptionId());
-        config.setClusterName(this.app.getParent().name());
-        config.setAppName(this.app.name());
-        return config;
     }
 
     private void refresh() {
         this.reset.setVisible(false);
         this.saveButton.setEnabled(false);
         AzureTaskManager.getInstance().runLater(() -> {
-            final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
+            final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.value).getName());
             AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-                this.app.refresh();
-                final SpringCloudDeployment deployment = this.app.getActiveDeployment();
+                this.value.refresh();
+                final SpringCloudDeployment deployment = this.value.getActiveDeployment();
                 if (Objects.nonNull(deployment)) {
                     deployment.refresh();
                 }
@@ -170,7 +157,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
 
     private void resetToolbar(@Nullable SpringCloudDeployment deployment) {
         if (Objects.isNull(deployment)) {
-            AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.name()), null);
+            AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.value.getName()), null);
             this.setEnabled(false);
             return;
         }
@@ -208,7 +195,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     @Nonnull
     @Override
     public String getName() {
-        return this.app.name();
+        return this.value.getName();
     }
 
     @Override

@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.SpringCloudAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,9 +32,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         }
         final SpringCloudApp app = (SpringCloudApp) item;
         if (!app.exists()) {
-            return "(New) " + app.name();
+            return "(New) " + app.getName();
         }
-        return app.name();
+        return app.getName();
     }
 
     public void setCluster(SpringCloudCluster cluster) {
@@ -57,11 +56,11 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
             params = {"this.cluster.name()"},
             type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends SpringCloudApp> loadItems() throws Exception {
+    protected List<? extends SpringCloudApp> loadItems() {
         final List<SpringCloudApp> apps = new ArrayList<>();
         if (Objects.nonNull(this.cluster)) {
             if (!this.localItems.isEmpty()) {
-                apps.add(this.localItems.get(this.cluster.name()));
+                apps.add(this.localItems.get(this.cluster.getName()));
             }
             apps.addAll(cluster.apps().list());
         }
@@ -77,20 +76,18 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
 
     private void showAppCreationPopup() {
         final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(this.cluster);
-        dialog.setOkActionListener((config) -> {
-            final SpringCloudAppDraft app = cluster.apps().create(config.getAppName(), cluster.getResourceGroup());
-            app.setConfig(config);
-            this.addLocalItem(app);
+        dialog.setOkActionListener((draft) -> {
+            this.addLocalItem(draft);
             dialog.close();
-            this.setValue(app);
+            this.setValue(draft);
         });
         dialog.show();
     }
 
     public void addLocalItem(SpringCloudApp app) {
-        final SpringCloudApp cached = this.localItems.get(app.getParent().name());
-        if (Objects.isNull(cached) || !Objects.equals(app.name(), cached.name())) {
-            this.localItems.put(app.getParent().name(), app);
+        final SpringCloudApp cached = this.localItems.get(app.getParent().getName());
+        if (Objects.isNull(cached) || !Objects.equals(app.getName(), cached.getName())) {
+            this.localItems.put(app.getParent().getName(), app);
             final List<SpringCloudApp> items = this.getItems();
             items.add(0, app);
             this.setItems(items);

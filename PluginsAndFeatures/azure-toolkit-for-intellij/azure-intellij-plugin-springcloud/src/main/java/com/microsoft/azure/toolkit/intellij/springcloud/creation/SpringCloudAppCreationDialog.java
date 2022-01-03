@@ -8,13 +8,13 @@ package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
 
-public class SpringCloudAppCreationDialog extends ConfigDialog<SpringCloudAppConfig> {
+public class SpringCloudAppCreationDialog extends ConfigDialog<SpringCloudAppDraft> {
     private final SpringCloudCluster cluster;
     private JPanel panel;
     private SpringCloudAppInfoBasicPanel basicForm;
@@ -32,12 +32,12 @@ public class SpringCloudAppCreationDialog extends ConfigDialog<SpringCloudAppCon
     }
 
     @Override
-    protected AzureFormPanel<SpringCloudAppConfig> getAdvancedFormPanel() {
+    protected AzureFormPanel<SpringCloudAppDraft> getAdvancedFormPanel() {
         return advancedForm;
     }
 
     @Override
-    protected AzureFormPanel<SpringCloudAppConfig> getBasicFormPanel() {
+    protected AzureFormPanel<SpringCloudAppDraft> getBasicFormPanel() {
         return basicForm;
     }
 

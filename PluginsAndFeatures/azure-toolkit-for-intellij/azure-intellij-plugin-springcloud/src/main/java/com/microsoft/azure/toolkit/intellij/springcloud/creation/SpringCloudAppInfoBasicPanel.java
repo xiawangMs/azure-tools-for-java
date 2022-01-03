@@ -8,15 +8,12 @@ package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import lombok.AccessLevel;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.List;
 
 @Getter(AccessLevel.PROTECTED)
 public class SpringCloudAppInfoBasicPanel extends AbstractSpringCloudAppInfoPanel {
@@ -29,14 +26,5 @@ public class SpringCloudAppInfoBasicPanel extends AbstractSpringCloudAppInfoPane
         super(cluster);
         $$$setupUI$$$();
         this.init();
-    }
-
-    @Override
-    public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(
-                this.getSelectorSubscription(),
-                this.getSelectorCluster(),
-                this.getTextName()
-        );
     }
 }

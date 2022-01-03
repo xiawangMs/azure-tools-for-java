@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
@@ -37,7 +38,8 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
         final BiPredicate<IAzureBaseResource<?, ?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
-        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> handler = (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getProject());
+        final BiConsumer<IAzureBaseResource<?, ?>, AnActionEvent> handler =
+            (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getData(LangDataKeys.MODULE), e.getProject());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, condition, handler);
     }
 
