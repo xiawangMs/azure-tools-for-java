@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.60.0</version>
+  <version>3.60.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,35 +25,11 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.60.0</h3>
-        <h4>Added</h4>
-        <ul>
-          <li>Add dependency support for Azure Functions related libs, so that our plugin can be recommended.</li>
-          <li>Add actions on some error notifications, so that user knows what to do next.</li>
-          <li>Add account registration link in "Sign in" dialog.</li>
-        <ul>
-
-        <h4>Changed</h4>
-        <ul>
-          <li>Performance of restoring-sign-in is improved.</li>
-        <ul>
-
+        <h3>3.60.1</h3>
         <h4>Fixed</h4>
         <ul>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6120">#6120</a>: AzureOperationException: list all function modules in project.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6090">#6090</a>: Uncaught Exception java.nio.file.InvalidPathException: Illegal char <:> at index 16: Active code page: 1252.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5038">#5038</a>: Dependent Module Jars Are Not Added When Debugging With IDEA.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5035">#5035</a>: Resources Are Not Added To Jar When Debugging With IDEA.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6026">#6026</a>: Uncaught Exception java.lang.NullPointerException.</li>
-          <li>Azure Explorer: some nodes are not sorted in natural order.</li>
-          <li>Azure Explorer: keeps showing "signing in..." for a long time after restarting IntelliJ.</li>
-          <li>Virtual Machine: Validation info about name of resource group and virtual machine doesn't contain letters length.</li>
-          <li>Storage Account: "open in portal" and "open storage explorer" link to a same page.</li>
-          <li>Spring Cloud: there is No default value for CPU and Memory if click more settings quickly in "Create Spring Cloud App" dialog.</li>
-          <li>MySQL/SqlServer/PostgreSQL: Test connection result text box has white background color in IntelliJ Light theme.</li>
-          <li>Postgre SQL: No icon in properties view tab title.</li>
-          <li>Some message/icon related bugs.</li>
-          <li>CVE issues</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6294">#6294</a>: Uncaught Exception cannot create configurable component java.lang.NullPointerException.</li>
+          <li>Signin status will not keep after restarting if user signed in with Service Principal.</li>
         <ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

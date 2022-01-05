@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.60.1](#3601)
   - [3.60.0](#3600)
   - [3.59.0](#3590)
   - [3.58.0](#3580)
@@ -75,6 +76,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.60.1
+### Fixed
+- [#6294](https://github.com/microsoft/azure-tools-for-java/issues/6294): Uncaught Exception cannot create configurable component java.lang.NullPointerException
+- Signin status will not keep after restarting if user signed in with Service Principal
 
 ## 3.60.0
 ### Added
