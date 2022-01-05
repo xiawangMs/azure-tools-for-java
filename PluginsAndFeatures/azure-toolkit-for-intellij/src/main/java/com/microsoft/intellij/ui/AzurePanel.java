@@ -15,6 +15,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
@@ -71,7 +72,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         azureEnvironmentComboBox.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(@NotNull JList list, AzureEnvironment value, int index, boolean selected, boolean hasFocus) {
-                    setText(azureEnvironmentDisplayString(value));
+                setText(azureEnvironmentDisplayString(value));
             }
         });
         azureEnvDesc.setForeground(UIUtil.getContextHelpForeground());
@@ -92,7 +93,12 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             //ignore
             funcCoreToolsPath.setValue(config.getFunctionCoreToolsPath());
         }
-        savePasswordComboBox.setValue(new AzureComboBox.ItemReference<>(config.getDatabasePasswordSaveType().toLowerCase(), e -> e.name().toLowerCase()));
+        final String passwordSaveType = config.getDatabasePasswordSaveType();
+        if (Objects.nonNull(passwordSaveType)) {
+            savePasswordComboBox.setValue(new AzureComboBox.ItemReference<>(passwordSaveType, e -> e.name().toLowerCase()));
+        } else {
+            savePasswordComboBox.setValue(Password.SaveType.UNTIL_RESTART);
+        }
         allowTelemetryCheckBox.setSelected(config.getTelemetryEnabled());
 
         azureEnvironmentComboBox.setSelectedItem(ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()),
