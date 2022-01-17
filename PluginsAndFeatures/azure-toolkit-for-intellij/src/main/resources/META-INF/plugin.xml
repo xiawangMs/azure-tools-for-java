@@ -161,13 +161,6 @@
     <configurationType implementation="com.microsoft.azure.toolkit.intellij.docker.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
-    <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
-    <lang.syntaxHighlighterFactory language="arm"
-      implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
-    <lang.parserDefinition language="arm"
-                           implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
-    <completion.contributor language="JSON" order="first"
-      implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
     <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
     <facetType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.facet.FunctionsFacetType"/>
     <moduleBuilder builderClass="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionsModuleBuilder"/>

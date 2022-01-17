@@ -10,6 +10,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorProvider;
+import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -128,7 +129,7 @@ public class ResourceTemplateView extends BaseEditor {
 
     private FileEditor createEditor(String template) {
         return PsiAwareTextEditorProvider.getInstance()
-                .createEditor(project, new LightVirtualFile(node.getName() + ".json", ARMLanguage.INSTANCE, template));
+                .createEditor(project, new LightVirtualFile(node.getName() + ".json", FileTypeManagerEx.getInstance().getFileTypeByExtension("json"), template));
     }
 
     private void updateDeployment() {
