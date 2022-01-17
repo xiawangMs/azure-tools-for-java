@@ -30,6 +30,7 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,7 +44,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     private static final String PROGRESS_MESSAGE_PATTERN = "%s %s (%s)...";
     private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s: %s. Are you sure you want to continue?";
 
-    protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
+    protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions = new HashMap<>();
 
     protected String id;
     protected String name;

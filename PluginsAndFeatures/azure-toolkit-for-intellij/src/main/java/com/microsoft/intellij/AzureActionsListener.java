@@ -9,11 +9,15 @@ import com.azure.core.implementation.http.HttpClientProviders;
 import com.azure.core.management.AzureEnvironment;
 import com.google.gson.Gson;
 import com.intellij.ide.AppLifecycleListener;
+import com.intellij.ide.plugins.DynamicPluginListener;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.exception.ExceptionUtils;
+import com.microsoft.applicationinsights.internal.channel.common.ApacheSenderFactory;
+import com.microsoft.applicationinsights.internal.shutdown.SDKShutdownActivity;
 import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
@@ -25,7 +29,6 @@ import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -40,13 +43,13 @@ import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
-import com.microsoft.intellij.secure.IntelliJSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
+import com.microsoft.intellij.secure.IntelliJSecureStore;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
+import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.intellij.util.NetworkDiagnose;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
@@ -60,6 +63,7 @@ import reactor.core.publisher.Hooks;
 import reactor.core.scheduler.Schedulers;
 import rx.internal.util.PlatformDependent;
 
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -80,7 +84,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
 @Slf4j
-public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
+public class AzureActionsListener implements AppLifecycleListener, PluginComponent, DynamicPluginListener {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsListener.class);
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
@@ -94,9 +98,10 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         // fix the class load problem for intellij plugin
         final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
+            final ClassLoader pluginClassLoader = AzureActionsListener.class.getClassLoader();
+            Thread.currentThread().setContextClassLoader(pluginClassLoader);
+            Azure.az().setClassLoader(pluginClassLoader);
             HttpClientProviders.createInstance();
-            Azure.az(AzureAccount.class);
             Hooks.onErrorDropped(ex -> {
                 Throwable cause = findExceptionInExceptionChain(ex, Arrays.asList(InterruptedException.class, UnknownHostException.class));
                 if (cause instanceof InterruptedException) {
@@ -121,6 +126,34 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+        AppLifecycleListener.super.appFrameCreated(commandLineArgs);
+        initAzureToolkit();
+    }
+
+    @Override
+    public void pluginLoaded(@Nonnull IdeaPluginDescriptor pluginDescriptor) {
+        DynamicPluginListener.super.pluginLoaded(pluginDescriptor);
+        initAzureToolkit();
+    }
+
+    @Override
+    public void pluginUnloaded(@Nonnull IdeaPluginDescriptor pluginDescriptor, boolean isUpdate) {
+        DynamicPluginListener.super.beforePluginUnload(pluginDescriptor, isUpdate);
+        ApacheSenderFactory.INSTANCE.create().close();
+        SDKShutdownActivity.INSTANCE.stopAll(); // shutdown application insights
+    }
+
+    @Override
+    public PluginSettings getSettings() {
+        return settings;
+    }
+
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
+    }
+
+    private void initAzureToolkit() {
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
@@ -163,8 +196,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
                     + " Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize)"
                     + ".\nTo fix this issue, try disabling the Android Support plugin or installing the "
                     + "Android SDK", "Azure Toolkit for IntelliJ");
-            // DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored
-            //         .getMessage(), ignored, "Error Android", true, false);
         }
     }
 
@@ -197,16 +228,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             e.printStackTrace();
             LOG.error("initLoggerFileHandler()", e);
         }
-    }
-
-    @Override
-    public PluginSettings getSettings() {
-        return settings;
-    }
-
-    @Override
-    public String getPluginId() {
-        return PLUGIN_ID;
     }
 
     private void loadPluginSettings() throws IOException {
