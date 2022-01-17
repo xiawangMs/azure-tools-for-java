@@ -11,8 +11,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.extensions.ExtensionPointListener;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.extensions.PluginDescriptor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -49,6 +51,19 @@ public class IntellijAzureActionManager extends AzureActionManager {
         contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerActions(am));
         contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerHandlers(am));
         contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerGroups(am));
+        actionsExtensionPoint.addExtensionPointListener(new ExtensionPointListener<IActionsContributor>() {
+            @Override
+            public void extensionAdded(@NotNull IActionsContributor extension, @NotNull PluginDescriptor pluginDescriptor) {
+                extension.registerActions(am);
+                extension.registerHandlers(am);
+                extension.registerGroups(am);
+            }
+
+            @Override
+            public void extensionRemoved(@NotNull IActionsContributor extension, @NotNull PluginDescriptor pluginDescriptor) {
+                // clean up actions in dynamic plugin listener
+            }
+        }, null);
     }
 
     @Override

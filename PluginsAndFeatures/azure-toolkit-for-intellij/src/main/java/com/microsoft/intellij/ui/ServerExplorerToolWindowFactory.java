@@ -12,6 +12,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.extensions.ExtensionPointListener;
+import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -27,6 +29,7 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -78,6 +81,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -114,6 +118,19 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
                 .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.forEach(azureRoot::add);
+        AzureExplorer.explorerExtensionPoint.addExtensionPointListener(new ExtensionPointListener<IExplorerContributor>() {
+            @Override
+            public void extensionAdded(@NotNull IExplorerContributor extension, @NotNull PluginDescriptor pluginDescriptor) {
+                Optional.ofNullable(extension.getModuleNode())
+                        .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree))
+                        .ifPresent(azureRoot::add);
+            }
+
+            @Override
+            public void extensionRemoved(@NotNull IExplorerContributor extension, @NotNull PluginDescriptor pluginDescriptor) {
+                // todo: @hanli
+            }
+        }, project);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installExpandListener(tree);
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
@@ -493,7 +510,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                         AuthMethodManager.getInstance().removeSignOutEventListener(forceRefreshTitleActions);
                     }
                 });
-
                 forceRefreshTitleActions.run();
             } catch (Exception e) {
                 AzurePlugin.log(e.getMessage(), e);

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
-    private static final ExtensionPointName<IExplorerContributor> explorerExtensionPoint =
+    public static final ExtensionPointName<IExplorerContributor> explorerExtensionPoint =
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.azureExplorerContributor");
     public static final String ICON = "/icons/Common/Azure.svg";
 
