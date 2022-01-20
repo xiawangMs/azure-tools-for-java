@@ -1,12 +1,16 @@
 <!-- Version: 3.58.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.60.2
+### Changed
+- upgrade log4j to the latest v2.17.1
+
 ## 3.60.1
 ### Fixed
 - [#6294](https://github.com/microsoft/azure-tools-for-java/issues/6294): Uncaught Exception cannot create configurable component java.lang.NullPointerException
 - Signin status will not keep after restarting if user signed in with Service Principal
 
-## 3.60.0
+## 3.60.1
 ### Added
 - Add dependency support for Azure Functions related libs, so that our plugin can be recommended.
 - Add actions on some error notifications, so that user knows what to do next.
