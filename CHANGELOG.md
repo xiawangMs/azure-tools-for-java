@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.60.2](#3601)
   - [3.60.1](#3601)
   - [3.60.0](#3600)
   - [3.59.0](#3590)
@@ -76,6 +77,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.60.2
+### Changed
+- Upgrade log4j to the latest 2.17.1
 
 ## 3.60.1
 ### Fixed

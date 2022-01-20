@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.60.1</version>
+  <version>3.60.2</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,11 +25,10 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.60.1</h3>
-        <h4>Fixed</h4>
+        <h3>3.60.2</h3>
+        <h4>Changed</h4>
         <ul>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6294">#6294</a>: Uncaught Exception cannot create configurable component java.lang.NullPointerException.</li>
-          <li>Signin status will not keep after restarting if user signed in with Service Principal.</li>
+          <li>upgrade log4j to the latest 2.17.1</li>
         <ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
