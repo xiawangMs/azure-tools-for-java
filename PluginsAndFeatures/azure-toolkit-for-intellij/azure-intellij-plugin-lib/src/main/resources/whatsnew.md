@@ -1,6 +1,12 @@
 <!-- Version: 3.58.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.61.1
+
+### Fixed
+- [#6364](https://github.com/microsoft/azure-tools-for-java/issues/6364): [IntelliJ][ReportedByUser] Uncaught Exception com.intellij.ide.ui.UITheme$1@5b3f3ba0 
+  cannot patch icon path java.lang.StringIndexOutOfBoundsException: String index out of range: 0
+
 ## 3.61.0
 ### Added
 - Add a placeholder tree node in Azure Explorer for resource that is being created.

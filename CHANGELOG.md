@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.61.1](#3611)
   - [3.61.0](#3610)
   - [3.60.2](#3602)
   - [3.60.1](#3601)
@@ -78,6 +79,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.61.1
+
+### Fixed
+- [#6364](https://github.com/microsoft/azure-tools-for-java/issues/6364): [IntelliJ][ReportedByUser] Uncaught Exception com.intellij.ide.ui.UITheme$1@5b3f3ba0 
+  cannot patch icon path java.lang.StringIndexOutOfBoundsException: String index out of range: 0
 
 ## 3.61.0
 ### Added

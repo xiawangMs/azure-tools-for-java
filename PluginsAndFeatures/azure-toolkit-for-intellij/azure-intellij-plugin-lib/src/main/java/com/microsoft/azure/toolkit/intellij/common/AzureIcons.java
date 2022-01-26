@@ -94,7 +94,7 @@ public class AzureIcons {
         try {
             final Icon result = IconLoader.getIcon(iconPathOrName, clazz);
             return result.getIconHeight() > 1 ? result : null; // IconLoader may return dot for non-existing icon
-        } catch (final IllegalStateException ise) {
+        } catch (final RuntimeException ise) {
             return null;
         }
     }

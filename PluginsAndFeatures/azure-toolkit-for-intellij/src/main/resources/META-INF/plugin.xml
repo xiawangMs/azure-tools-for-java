@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.61.0</version>
+  <version>3.61.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,30 +25,11 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.61.0</h3>
-        <h4>Added</h4>
-        <ul>
-          <li>Add a placeholder tree node in Azure Explorer for resource that is being created.</li>
-          <li>Show the status of resources explicitly on Azure Explorer node(right after the name).</li>
-        <ul>
-
-        <h4>Changed</h4>
-        <ul>
-          <li>Details of items in combo box are now loaded lazily, so that user needn't to wait too long.
-               for the items to be ready to be selected when deploy a WebApp/Function App.</li>
-          <li>Nodes in Azure Explorer are now ordered alphabetically.</li>
-        <ul>
-
+        <h3>3.61.1</h3>
         <h4>Fixed</h4>
         <ul>
-          <li>NPE when connecting storage account/redis cache if there is no such resources in the selected subscription.</li>
-          <li>No default Offer/Sku/Image are selected in "Select VM Image" dialog.</li>
-          <li>Validation passed in Create VM dialog even Maximum price per hour is empty.</li>
-          <li>Some modified values will be changed to default when switch back to "More settings" in "Create App Service" dialog.</li>
-          <li>Validation message is not right when selected subscription has no spring cloud service.</li>
-          <li>Tooltips on nodes in azure explorer are not correct.</li>
-          <li>Error occurs when run or deploy after docker support is added.</li>
-          <li>Icon of action "Open by Database Tools" for PostgreSQL is missing.</li>
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6364">#6364</a>: [IntelliJ][ReportedByUser] Uncaught Exception
+          com.intellij.ide.ui.UITheme$1@5b3f3ba0 cannot patch icon path java.lang.StringIndexOutOfBoundsException: String index out of range: 0</li>
         <ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
