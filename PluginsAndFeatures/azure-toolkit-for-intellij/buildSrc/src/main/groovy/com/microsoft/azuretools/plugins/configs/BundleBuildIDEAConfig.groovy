@@ -63,8 +63,8 @@ class BundleBuildIDEAConfig implements JdkUrlConfigurable {
         bundleBuildDir = new File(project.buildDir, "bundle").toString()
         downloadedOptsDir = new File(project.buildDir, "bundle-opts").toString()
         optDir = new File(project.buildDir, "bundle/opt").toString()
-        bundleResourceDir = project.file("resources/bundle").toString()
-        bundleTemplateDir = project.file("resources/bundle/template").toString()
+        bundleResourceDir = project.file("src/main/resources/bundle").toString()
+        bundleTemplateDir = project.file("src/main/resources/bundle/template").toString()
     }
 
     String[] getDownloadUrls() {

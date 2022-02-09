@@ -135,7 +135,7 @@ sourceSets {
         kotlin.srcDirs 'src/main/kotlin'
         resources {
             srcDir 'src/main/resources'
-            exclude 'bundle/**'
+            exclude 'src/main/resources/bundle/**'
         }
     }
     test {
