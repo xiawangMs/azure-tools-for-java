@@ -64,7 +64,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         final List<String> exePostfix = Arrays.asList("exe|bat|cmd|sh|bin|run".split("\\|"));
         this.fileFilter = file -> Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive()) &&
             (file.getExtension() == null || exePostfix.contains(file.isCaseSensitive() ? file.getExtension() : StringUtils.lowerCase(file.getExtension())));
-        AzureTaskManager.getInstance().runOnPooledThread(this::reset);
+        AzureTaskManager.getInstance().runOnPooledThread(()-> AzureTaskManager.getInstance().runLater(this::reset));
         if (includeSettings) {
             this.setRenderer(SimpleListCellRenderer.create((label, value, index) -> {
                 label.setText(value);
