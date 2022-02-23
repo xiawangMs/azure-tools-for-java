@@ -163,10 +163,6 @@
             <version>${azure.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>com.squareup.retrofit2</groupId>
                     <artifactId>retrofit</artifactId>
                 </exclusion>
@@ -176,10 +172,6 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
             <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml</groupId>
                     <artifactId>jackson.core</artifactId>

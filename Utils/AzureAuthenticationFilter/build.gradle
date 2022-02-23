@@ -26,7 +26,7 @@ install {
 }
 
 dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.18'
+    compile 'org.slf4j:slf4j-api:1.7.32'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
     compile 'javax:javaee-api:6.0'
     compile 'commons-codec:commons-codec:1.10'
