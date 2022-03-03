@@ -3,7 +3,7 @@ intellij {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.17.0'
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.17.0'
-    compile 'com.microsoft.azure:azure-toolkit-ide-arm-lib:0.17.0'
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.17.1'
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.17.1'
+    compile 'com.microsoft.azure:azure-toolkit-ide-arm-lib:0.17.1'
 }
