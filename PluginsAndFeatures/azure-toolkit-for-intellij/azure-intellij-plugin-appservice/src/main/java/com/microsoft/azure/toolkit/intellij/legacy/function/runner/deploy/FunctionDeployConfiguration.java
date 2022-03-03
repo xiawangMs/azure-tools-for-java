@@ -19,13 +19,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
+import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -168,10 +168,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public void readExternal(Element element) throws InvalidDataException {
         this.functionDeployModel = Optional.ofNullable(element.getChild("FunctionDeployModel"))
                 .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.class))
-                .orElseGet(() -> Optional.of(element)
-                        .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.DeprecatedDeployModel.class))
-                        .map(FunctionDeployModel::new)
-                        .orElse(new FunctionDeployModel()));
+                .orElseGet(FunctionDeployModel::new);
     }
 
     @Override
