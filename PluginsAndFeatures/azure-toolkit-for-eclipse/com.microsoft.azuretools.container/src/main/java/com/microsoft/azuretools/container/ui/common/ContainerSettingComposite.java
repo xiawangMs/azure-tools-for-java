@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
-import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingPresenter;
@@ -31,7 +31,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
 
     private final ContainerSettingPresenter<ContainerSettingComposite> presenter;
     private final String projectBasePath;
-    private List<Registry> registryCache;
+    private List<ContainerRegistry> registryCache;
 
     private static final String LABEL_STARTUP_FILE = "Startup File";
     private static final String LABEL_TAG_PREFIX = "<Server URL>/";
@@ -122,7 +122,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
                 }
                 if (registryCache != null && index >= 1 && index < registryCache.size()) {
                     disableWidgets();
-                    Registry registry = registryCache.get(index);
+                    ContainerRegistry registry = registryCache.get(index);
                     presenter.onGetRegistryCredential(registry);
                 }
             }
@@ -161,12 +161,12 @@ public final class ContainerSettingComposite extends Composite implements Contai
     }
 
     @Override
-    public void listRegistries(@NotNull List<Registry> registryList) {
+    public void listRegistries(@NotNull List<ContainerRegistry> registryList) {
         cbContainerRegistry.removeAll();
         registryCache.clear();
         cbContainerRegistry.add(SELECT_REGISTRY);
         registryCache.add(null);
-        for (Registry registry : registryList) {
+        for (ContainerRegistry registry : registryList) {
             cbContainerRegistry.add(registry.name());
         }
         cbContainerRegistry.select(0);

@@ -19,12 +19,12 @@ import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
-import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.toolkit.intellij.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -463,14 +463,14 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
                     throw new Exception(REPO_TAG_NOT_AVAILABLE);
                 }
-                final Registry registry = ContainerRegistryMvpModel.getInstance()
+                final ContainerRegistry registry = ContainerRegistryMvpModel.getInstance()
                                                                    .getContainerRegistry(subscriptionId, registryId);
                 final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
                                                                                      .createImageSettingWithRegistry(registry);
                 final String image = String.format("%s:%s", currentRepo, currentTag);
-                final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
+                final String fullImageTagName = String.format("%s/%s", registry.getLoginServerUrl(), image);
                 DockerClient docker = DefaultDockerClient.fromEnv().build();
-                DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
+                DockerUtil.pullImage(docker, registry.getLoginServerUrl(), setting.getUsername(),
                                      setting.getPassword(), fullImageTagName);
                 String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
                 UIUtils.showNotification(statusBar, message, MessageType.INFO);

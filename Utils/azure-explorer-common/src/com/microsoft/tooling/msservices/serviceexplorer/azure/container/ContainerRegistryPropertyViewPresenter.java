@@ -5,16 +5,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
 import com.google.gson.Gson;
-import com.microsoft.azure.management.containerregistry.AccessKeyType;
-import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.management.containerregistry.RegistryCredentials;
-import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -26,9 +19,13 @@ import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSettin
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-
 import okhttp3.HttpUrl;
 import rx.Observable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
 
 public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryPropertyMvpView>
         extends MvpPresenter<V> {
@@ -121,12 +118,12 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         }
         resetTagStack();
         Observable.fromCallable(() -> {
-            Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+            ContainerRegistry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
             PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
                     .createImageSettingWithRegistry(registry);
             Map<String, String> query = buildQueryMap(isNextPage, repoStack, nextRepo);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listRepositories(registry
-                    .loginServerUrl(), setting.getUsername(), setting.getPassword(), query);
+                    .getLoginServerUrl(), setting.getUsername(), setting.getPassword(), query);
             updatePaginationInfo(isNextPage, Type.REPO, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Catalog catalog = gson.fromJson(responseMap.get(BODY), Catalog.class);
@@ -150,12 +147,12 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         }
         resetTagStack();
         Observable.fromCallable(() -> {
-            Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+            ContainerRegistry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
             PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
                     .createImageSettingWithRegistry(registry);
             Map<String, String> query = buildQueryMap(isNextPage, tagStack, nextTag);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listTags(registry
-                    .loginServerUrl(), setting.getUsername(), setting.getPassword(), repo, query);
+                    .getLoginServerUrl(), setting.getUsername(), setting.getPassword(), repo, query);
             updatePaginationInfo(isNextPage, Type.TAG, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Tag tag = gson.fromJson(responseMap.get(BODY), Tag.class);
@@ -198,20 +195,19 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         nextTag = "";
     }
 
-    private ContainerRegistryProperty getProperty(Registry registry, String sid) {
+    private ContainerRegistryProperty getProperty(ContainerRegistry registry, String sid) {
         String userName = "";
         String password = "";
         String password2 = "";
-        if (registry.adminUserEnabled()) {
-            RegistryCredentials credentials = registry.getCredentials();
-            userName = credentials.username();
-            Map<AccessKeyType, String> passwords = credentials.accessKeys();
-            password = passwords.get(AccessKeyType.PRIMARY) == null ? "" : passwords.get(AccessKeyType.PRIMARY);
-            password2 = passwords.get(AccessKeyType.SECONDARY) == null ? "" : passwords.get(AccessKeyType.SECONDARY);
+        if (registry.isAdminUserEnabled()) {
+            userName = registry.getUserName();
+            password = registry.getPrimaryCredential();
+            password2 = registry.getSecondaryCredential();
         }
-        return new ContainerRegistryProperty(registry.id(), registry.name(), registry.type(),
-                registry.resourceGroupName(), registry.regionName(), sid, registry.loginServerUrl(),
-                registry.adminUserEnabled(), userName, password, password2);
+        final String region = Optional.ofNullable(registry.getRegion()).map(Region::getLabel).orElse(null);
+        return new ContainerRegistryProperty(registry.getId(), registry.getName(), registry.getType(),
+                registry.getResourceGroupName(), region, sid, registry.getLoginServerUrl(),
+                registry.isAdminUserEnabled(), userName, password, password2);
     }
 
     private boolean isSubscriptionIdAndResourceIdInValid(String sid, String id) {

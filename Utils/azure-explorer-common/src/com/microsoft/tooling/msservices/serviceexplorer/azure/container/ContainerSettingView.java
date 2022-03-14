@@ -5,7 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
@@ -16,7 +16,7 @@ public interface ContainerSettingView extends MvpView {
 
     void onListRegistries();
 
-    void listRegistries(@NotNull final List<Registry> registries);
+    void listRegistries(@NotNull final List<ContainerRegistry> registries);
 
     void fillCredential(@NotNull final PrivateRegistryImageSetting setting);
 

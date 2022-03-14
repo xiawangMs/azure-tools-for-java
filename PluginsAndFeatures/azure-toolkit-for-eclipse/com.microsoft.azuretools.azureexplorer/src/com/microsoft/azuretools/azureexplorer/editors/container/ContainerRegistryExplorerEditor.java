@@ -63,7 +63,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
-import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -728,17 +728,17 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                             jobDescription);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 5,
                             "Getting Registry...");
-                    final Registry registry = ContainerRegistryMvpModel.getInstance()
+                    final ContainerRegistry registry = ContainerRegistryMvpModel.getInstance()
                             .getContainerRegistry(subscriptionId, registryId);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 5,
                             "Getting Credential...");
                     final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
                             .createImageSettingWithRegistry(registry);
-                    final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
+                    final String fullImageTagName = String.format("%s/%s", registry.getLoginServerUrl(), image);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 10,
                             "Pulling image...");
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
+                    DockerUtil.pullImage(docker, registry.getLoginServerUrl(), setting.getUsername(),
                             setting.getPassword(), fullImageTagName);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, 100, "Finish.");
                     sendTelemetry(true, subscriptionId, null);

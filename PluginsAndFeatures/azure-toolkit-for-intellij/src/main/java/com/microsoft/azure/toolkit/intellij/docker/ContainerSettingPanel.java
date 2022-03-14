@@ -12,21 +12,14 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
-
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingView;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
@@ -61,7 +54,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         presenter.onAttachView(this);
 
         dockerFilePathTextField.addActionListener(e -> {
-            String path = dockerFilePathTextField.getText();
+            final String path = dockerFilePathTextField.getText();
             final VirtualFile file = FileChooser.chooseFile(
                     new FileChooserDescriptor(
                             true /*chooseFiles*/,
@@ -85,21 +78,21 @@ public class ContainerSettingPanel implements ContainerSettingView {
                     enableWidgets();
                     return;
                 }
-                if (e.getItem() instanceof Registry) {
-                    Registry registry = (Registry) e.getItem();
+                if (e.getItem() instanceof ContainerRegistry) {
+                    final ContainerRegistry registry = (ContainerRegistry) e.getItem();
                     disableWidgets();
                     presenter.onGetRegistryCredential(registry);
                 }
             }
         });
 
-        cbContainerRegistry.setRenderer(new ListCellRendererWrapper<Object>() {
+        cbContainerRegistry.setRenderer(new ListCellRendererWrapper<>() {
             @Override
             public void customize(JList list, Object object, int
                     index, boolean isSelected, boolean cellHasFocus) {
                 if (object != null) {
-                    if (object instanceof Registry) {
-                        setText(((Registry) object).name());
+                    if (object instanceof ContainerRegistry) {
+                        setText(((ContainerRegistry) object).getName());
                     } else {
                         setText(object.toString());
                     }
@@ -187,11 +180,11 @@ public class ContainerSettingPanel implements ContainerSettingView {
     }
 
     @Override
-    public void listRegistries(@NotNull final List<Registry> registries) {
-        DefaultComboBoxModel<Object> model = (DefaultComboBoxModel<Object>) cbContainerRegistry.getModel();
+    public void listRegistries(@NotNull final List<ContainerRegistry> registries) {
+        final DefaultComboBoxModel<Object> model = (DefaultComboBoxModel<Object>) cbContainerRegistry.getModel();
         model.removeAllElements();
         model.addElement(SELECT_REGISTRY);
-        for (Registry registry : registries) {
+        for (final ContainerRegistry registry : registries) {
             model.addElement(registry);
         }
     }
