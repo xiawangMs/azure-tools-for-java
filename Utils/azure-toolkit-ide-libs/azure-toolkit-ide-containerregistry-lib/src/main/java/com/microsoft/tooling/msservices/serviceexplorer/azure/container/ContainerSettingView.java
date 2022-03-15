@@ -6,19 +6,19 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 public interface ContainerSettingView extends MvpView {
 
     void onListRegistries();
 
-    void listRegistries(@NotNull final List<ContainerRegistry> registries);
+    void listRegistries(@Nonnull final List<ContainerRegistry> registries);
 
-    void fillCredential(@NotNull final PrivateRegistryImageSetting setting);
+    void fillCredential(@Nonnull final PrivateRegistryImageSetting setting);
 
     void disposeEditor();
 

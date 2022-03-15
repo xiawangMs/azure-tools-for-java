@@ -5,15 +5,14 @@
 
 package com.microsoft.azuretools.core.mvp.model.container;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-
 import okhttp3.Credentials;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +44,8 @@ public class ContainerExplorerMvpModel {
     /**
      * list repositories under the given private registry.
      */
-    public Map<String, String> listRepositories(@NotNull String serverUrl, @NotNull String username,
-                                                @NotNull String password, @Nullable Map<String, String> query)
+    public Map<String, String> listRepositories(@Nonnull String serverUrl, @Nonnull String username,
+                                                @Nonnull String password, @Nullable Map<String, String> query)
             throws Exception {
         OkHttpClient client = createRestClient(username, password);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
@@ -64,8 +63,8 @@ public class ContainerExplorerMvpModel {
     /**
      * list tags under the given repository.
      */
-    public Map<String, String> listTags(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
-                                        @NotNull String repo, @Nullable Map<String, String> query) throws Exception {
+    public Map<String, String> listTags(@Nonnull String serverUrl, @Nonnull String username, @Nonnull String password,
+                                        @Nonnull String repo, @Nullable Map<String, String> query) throws Exception {
         OkHttpClient client = createRestClient(username, password);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
                 .scheme(URL_PREFIX)
@@ -79,8 +78,8 @@ public class ContainerExplorerMvpModel {
         return getResponse(client, urlBuilder.build());
     }
 
-    @NotNull
-    private Map<String, String> getResponse(@NotNull OkHttpClient client, HttpUrl url) throws Exception {
+    @Nonnull
+    private Map<String, String> getResponse(@Nonnull OkHttpClient client, HttpUrl url) throws Exception {
         if (url == null) {
             throw new NullPointerException(INVALID_URL);
         }
@@ -97,8 +96,8 @@ public class ContainerExplorerMvpModel {
         }
     }
 
-    @NotNull
-    private OkHttpClient createRestClient(@NotNull String username, @NotNull String password) {
+    @Nonnull
+    private OkHttpClient createRestClient(@Nonnull String username, @Nonnull String password) {
         return sharedClient.newBuilder()
                 .authenticator((route, response) -> {
                     String credential = Credentials.basic(username, password);

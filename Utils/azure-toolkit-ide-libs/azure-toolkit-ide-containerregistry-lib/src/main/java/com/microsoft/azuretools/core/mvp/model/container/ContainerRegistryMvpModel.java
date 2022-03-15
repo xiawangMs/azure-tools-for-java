@@ -9,9 +9,9 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistryDraft;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,14 +43,14 @@ public class ContainerRegistryMvpModel {
     /**
      * Get Registry by subscription id.
      */
-    public List<ContainerRegistry> listRegistryBySubscriptionId(@NotNull String sid) {
+    public List<ContainerRegistry> listRegistryBySubscriptionId(@Nonnull String sid) {
         return az(AzureContainerRegistry.class).registry(sid).list();
     }
 
     /**
      * Get Registry Credential.
      */
-    public PrivateRegistryImageSetting createImageSettingWithRegistry(@NotNull final ContainerRegistry registry) throws AzureToolkitRuntimeException {
+    public PrivateRegistryImageSetting createImageSettingWithRegistry(@Nonnull final ContainerRegistry registry) throws AzureToolkitRuntimeException {
         if (!registry.isAdminUserEnabled()) {
             throw new AzureToolkitRuntimeException(ADMIN_USER_NOT_ENABLED);
         }
@@ -60,7 +60,7 @@ public class ContainerRegistryMvpModel {
     /**
      * Get ACR by Id.
      */
-    @NotNull
+    @Nonnull
     public ContainerRegistry getContainerRegistry(String sid, String id) {
         return az(AzureContainerRegistry.class).registry(sid).get(id);
     }

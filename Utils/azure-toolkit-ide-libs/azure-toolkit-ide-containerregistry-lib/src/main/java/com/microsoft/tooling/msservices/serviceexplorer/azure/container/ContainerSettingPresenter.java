@@ -5,12 +5,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
+
+import javax.annotation.Nonnull;
 
 public class ContainerSettingPresenter<V extends ContainerSettingView> extends MvpPresenter<V> {
 
@@ -22,7 +23,7 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
     public void onListRegistries() {
         Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().listContainerRegistries())
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(registries -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(registries -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -33,10 +34,10 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
     /**
      * Called when UI need to fill the user credential.
      */
-    public void onGetRegistryCredential(@NotNull ContainerRegistry registry) {
+    public void onGetRegistryCredential(@Nonnull ContainerRegistry registry) {
         Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().createImageSettingWithRegistry(registry))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(credential -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(credential -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -45,7 +46,7 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
     }
 
     private void errorHandler(String msg, Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (isViewDetached()) {
                 return;
             }

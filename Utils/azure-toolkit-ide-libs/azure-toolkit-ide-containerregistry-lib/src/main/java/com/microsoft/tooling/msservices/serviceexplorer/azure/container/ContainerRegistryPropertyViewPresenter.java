@@ -7,10 +7,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.google.gson.Gson;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerExplorerMvpModel;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.Catalog;
@@ -18,10 +16,12 @@ import com.microsoft.azuretools.core.mvp.model.container.pojo.Tag;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import okhttp3.HttpUrl;
+import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -66,7 +66,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         }
         Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(registry -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(registry -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -88,7 +88,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         }
         Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().setAdminUserEnabled(sid, id, b))
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(registry -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(registry -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -130,7 +130,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             return catalog.getRepositories();
         })
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(repos -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(repos -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -159,7 +159,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             return tag.getTags();
         })
                 .subscribeOn(getSchedulerProvider().io())
-                .subscribe(tags -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                .subscribe(tags -> AzureTaskManager.getInstance().runLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -211,18 +211,18 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     }
 
     private boolean isSubscriptionIdAndResourceIdInValid(String sid, String id) {
-        if (Utils.isEmptyString(sid)) {
+        if (StringUtils.isEmpty(sid)) {
             getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
             return true;
         }
-        if (Utils.isEmptyString(id)) {
+        if (StringUtils.isEmpty(id)) {
             getMvpView().onError(CANNOT_GET_REGISTRY_ID);
             return true;
         }
         return false;
     }
 
-    private Map<String, String> buildQueryMap(boolean isNextPage, @NotNull Stack<String> stack, @Nullable String next) {
+    private Map<String, String> buildQueryMap(boolean isNextPage, @Nonnull Stack<String> stack, @Nullable String next) {
         Map<String, String> query = new HashMap<>();
         query.put(KEY_PAGE_SIZE, PAGE_SIZE);
         if (isNextPage) {
@@ -237,7 +237,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         return query;
     }
 
-    private void updatePaginationInfo(boolean isNextPage, @NotNull Type type, @Nullable String linkHeader) {
+    private void updatePaginationInfo(boolean isNextPage, @Nonnull Type type, @Nullable String linkHeader) {
         if (isNextPage) {
             switch (type) {
                 case REPO:
@@ -282,7 +282,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     }
 
     @Nullable
-    private String parseLinkHeader(@NotNull String header) {
+    private String parseLinkHeader(@Nonnull String header) {
         int start = header.indexOf("<") + 1;
         int end = header.lastIndexOf(">");
         if (start <= 0 || end < 0 || end >= header.length() || start >= end) {
@@ -296,7 +296,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     }
 
     private void errorHandler(String msg, Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (isViewDetached()) {
                 return;
             }
