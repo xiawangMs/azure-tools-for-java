@@ -5,19 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.docker.webapponlinux.ui;
 
-import com.intellij.ui.SimpleListCellRenderer;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
-import com.microsoft.azure.toolkit.intellij.legacy.docker.ContainerSettingPanel;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.Constant;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
-import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import icons.MavenIcons;
-
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -25,35 +12,37 @@ import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.legacy.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.webapponlinux.WebAppOnLinuxDeployConfiguration;
-
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
-
+import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.ItemEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 
 public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfiguration> implements WebAppOnLinuxDeployView {
     private static final String NOT_APPLICABLE = "N/A";
@@ -68,6 +57,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private static final String TITLE_APP_SERVICE_PLAN = "App Service &Plan";
     private static final String TITLE_ACR = "Azure &Container Registry";
     private static final String TITLE_WEB_APP = "&Web App for Containers";
+    public static final String WEBAPP_CONTAINER_DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2").toString();
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private JTextField textAppName;
@@ -460,7 +450,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         defaultWebAppId = conf.getWebAppId();
         defaultLocationName = conf.getLocationName();
         defaultPricingTier = StringUtils.isEmpty(conf.getPricingSkuTier()) ?
-                Constant.WEBAPP_CONTAINER_DEFAULT_PRICING_TIER :
+                WEBAPP_CONTAINER_DEFAULT_PRICING_TIER :
                 new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
         defaultResourceGroup = conf.getResourceGroupName();
         defaultAppServicePlanId = conf.getAppServicePlanId();

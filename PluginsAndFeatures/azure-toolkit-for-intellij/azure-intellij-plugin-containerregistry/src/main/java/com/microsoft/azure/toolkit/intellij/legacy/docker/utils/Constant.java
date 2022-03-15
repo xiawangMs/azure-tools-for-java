@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.docker.utils;
 
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-
 public class Constant {
     public static final int TIMEOUT_STOP_CONTAINER = 5;
     public static final String CONSOLE_NAME = "AzureToolsConsole";
@@ -47,5 +45,4 @@ public class Constant {
     public static final String MESSAGE_DOCKER_HOST_INFO = "Current docker host: %s";
     public static final String MESSAGE_EXECUTE_DOCKER_RUN = "Executing Docker Run...";
     public static final String DOCKERFILE_ARTIFACT_PLACEHOLDER = "<artifact>";
-    public static final String WEBAPP_CONTAINER_DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2").toString();
 }

@@ -43,9 +43,9 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
         final ActionGroup accountActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
+                ContainerRegistryActionsContributor.PUSH_IMAGE,
                 "---",
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.SHOW_PROPERTIES
         );
         am.registerGroup(REGISTRY_ACTIONS, accountActionGroup);
     }

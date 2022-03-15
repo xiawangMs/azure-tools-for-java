@@ -5,6 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
@@ -28,7 +29,7 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
                         return;
                     }
                     getMvpView().listRegistries(registries);
-                }), e -> errorHandler(CANNOT_LIST_CONTAINER_REGISTRY, (Exception) e));
+                }, AzureTask.Modality.ANY), e -> errorHandler(CANNOT_LIST_CONTAINER_REGISTRY, (Exception) e));
     }
 
     /**
@@ -42,7 +43,7 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
                         return;
                     }
                     getMvpView().fillCredential(credential);
-                }), e -> errorHandler(e.getMessage(), (Exception) e));
+                }, AzureTask.Modality.ANY), e -> errorHandler(e.getMessage(), (Exception) e));
     }
 
     private void errorHandler(String msg, Exception e) {
