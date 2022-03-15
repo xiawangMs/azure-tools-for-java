@@ -23,7 +23,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
     public static final String SERVICE_ACTIONS = "actions.registry.service";
     public static final String REGISTRY_ACTIONS = "actions.registry.registry";
 
-    public static final Action.Id<ContainerRegistry> PUSH_IMAGE = Action.Id.of("action.storage.open_storage_explorer");
+    public static final Action.Id<ContainerRegistry> PUSH_IMAGE = Action.Id.of("action.acr.push_image");
 
     @Override
     public void registerActions(AzureActionManager am) {
