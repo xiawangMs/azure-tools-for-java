@@ -20,15 +20,10 @@ import java.util.function.BiPredicate;
 public class IntelliJContainerRegistryActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<ContainerRegistry, AnActionEvent> condition = (r, e) -> r instanceof ContainerRegistry;
-        final BiConsumer<ContainerRegistry, AnActionEvent> handler = (c, e) -> {
-        };
-        am.registerHandler(ContainerRegistryActionsContributor.PUSH_IMAGE, condition, handler);
-
-        final BiPredicate<AzResourceBase, AnActionEvent> showPropertyCondition = (r, e) -> r instanceof ContainerRegistry;
-        final BiConsumer<AzResourceBase, AnActionEvent> showPropertyHandler =
-            (c, e) -> OpenContainerRegistryPropertyViewAction.openContainerRegistryPropertyView((ContainerRegistry) c, e.getProject());
-        am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, showPropertyCondition, showPropertyHandler);
+        final BiPredicate<AzResourceBase, AnActionEvent> condition = (r, e) -> r instanceof ContainerRegistry;
+        final BiConsumer<AzResourceBase, AnActionEvent> handler = (c, e) ->
+                OpenContainerRegistryPropertyViewAction.openContainerRegistryPropertyView((ContainerRegistry) c, e.getProject());
+        am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, condition, handler);
     }
 
     @Override
