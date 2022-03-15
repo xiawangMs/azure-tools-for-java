@@ -71,7 +71,7 @@ public class ContainerRegistryMvpModel {
     public ContainerRegistry setAdminUserEnabled(String sid, String id, boolean enabled) {
         ContainerRegistry containerRegistry = getContainerRegistry(sid, id);
         ContainerRegistryDraft update = (ContainerRegistryDraft) containerRegistry.update();
-        update.setIsAdminUserEnabled(enabled);
+        update.setAdminUserEnabled(enabled);
         return update.commit();
     }
 }
