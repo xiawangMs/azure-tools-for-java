@@ -22,13 +22,13 @@ install {
 }
 
 dependencies {
-    compile 'org.springframework:spring-web:4.2.5.RELEASE'
-    compile 'org.springframework:spring-context-support:4.2.5.RELEASE'
-    compile 'org.springframework.session:spring-session-data-redis:1.1.1.RELEASE'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
-    compile 'commons-codec:commons-codec:1.10'
-    compile 'org.slf4j:slf4j-api:1.7.32'
-    compile 'com-microsoft-azure:azure-oidc:1.0.0'
+    api 'org.springframework:spring-web:4.2.5.RELEASE'
+    api 'org.springframework:spring-context-support:4.2.5.RELEASE'
+    api 'org.springframework.session:spring-session-data-redis:1.1.1.RELEASE'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
+    api 'commons-codec:commons-codec:1.10'
+    api 'org.slf4j:slf4j-api:1.7.32'
+    api 'com-microsoft-azure:azure-oidc:1.0.0'
     providedCompile 'javax:javaee-api:6.0'
 }
 

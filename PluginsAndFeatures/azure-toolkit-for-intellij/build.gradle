@@ -1,10 +1,10 @@
 plugins {
-    id "org.jetbrains.intellij" version "1.4.0"
-    id "org.jetbrains.kotlin.jvm" version "1.6.10"
+    id 'java-library'
+    id "org.jetbrains.intellij" version "1.5.2"
+    id "org.jetbrains.kotlin.jvm" version "1.6.0"
     id "de.undercouch.download" version "4.1.1"
     id "com.github.ben-manes.versions" version "0.39.0"
-    id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
-    id "com.github.spotbugs" version "4.7.1"
+    id "io.freefair.aspectj.post-compile-weaving" version "6.4.1"
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
@@ -36,6 +36,7 @@ processResources {
 
 group 'com.microsoft.azuretools'
 apply plugin: 'java'
+apply plugin: 'java-library'
 
 compileJava {
     sourceCompatibility = javaVersion
@@ -57,7 +58,7 @@ intellij {
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal', 'gradle-java']
-	downloadSources = Boolean.valueOf(sources)
+    downloadSources = Boolean.valueOf(sources)
 }
 
 
@@ -79,6 +80,7 @@ gradle.taskGraph.whenReady { graph ->
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
@@ -113,9 +115,19 @@ subprojects {
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
-        compile 'com.microsoft.azure:azure-toolkit-common-lib'
+        api 'com.microsoft.azure:azure-toolkit-common-lib'
         aspect 'com.microsoft.azure:azure-toolkit-common-lib'
         compileOnly 'org.jetbrains:annotations'
+    }
+
+    buildSearchableOptions.onlyIf { false }
+}
+
+allprojects {
+    apply plugin: 'java'
+
+    tasks.withType(Copy).all {
+        duplicatesStrategy 'INCLUDE'
     }
 }
 
@@ -144,15 +156,12 @@ repositories {
     mavenCentral()
 }
 
-configurations {
-    compile.exclude module:'slf4j-api'
-    compile.exclude module:'log4j'
-    compile.exclude module:'stax-api'
-    compile.exclude module:'groovy-xml'
-    compile.exclude module:'groovy-templates'
-    cucumberRuntime {
-        extendsFrom testImplementation
-    }
+configurations.all {
+    exclude module: 'slf4j-api'
+    exclude module: 'log4j'
+    exclude module: 'stax-api'
+    exclude module: 'groovy-xml'
+    exclude module: 'groovy-templates'
 }
 
 dependencyManagement {
@@ -163,74 +172,72 @@ dependencyManagement {
 }
 
 dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile project(':azure-sdk-reference-book')
-    compile project(':azure-intellij-resource-connector-lib')
-    compile project(':azure-intellij-resource-connector-aad')
-    compile project(':azure-intellij-plugin-vm')
-    compile project(':azure-intellij-plugin-springcloud')
-    compile project(':azure-intellij-plugin-storage')
-    compile project(':azure-intellij-plugin-redis')
-    compile project(':azure-intellij-plugin-service-explorer')
-    compile project(':azure-intellij-plugin-database')
-    compile project(':azure-intellij-plugin-appservice')
-    compile project(':azure-intellij-plugin-arm')
-    compile project(':azure-intellij-plugin-containerregistry')
-    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
-    compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
-    compile 'com.microsoft.azure:azure-toolkit-storage-lib'
-    compile 'com.microsoft.azure:azure-client-authentication'
+    api project(':azure-intellij-plugin-lib')
+    api project(':azure-sdk-reference-book')
+    api project(':azure-intellij-resource-connector-lib')
+    api project(':azure-intellij-resource-connector-aad')
+    api project(':azure-intellij-plugin-vm')
+    api project(':azure-intellij-plugin-springcloud')
+    api project(':azure-intellij-plugin-storage')
+    api project(':azure-intellij-plugin-redis')
+    api project(':azure-intellij-plugin-service-explorer')
+    api project(':azure-intellij-plugin-database')
+    api project(':azure-intellij-plugin-appservice')
+    api project(':azure-intellij-plugin-arm')
+    api project(':azure-intellij-plugin-containerregistry')
+    api 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
+    api 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
+    api 'com.microsoft.azure:azure-toolkit-storage-lib'
+    api 'com.microsoft.azure:azure-client-authentication'
     aspect "com.microsoft.azure:azure-toolkit-common-lib", {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
-    compile 'com.microsoft.azure:azure-client-runtime', {
+    api 'com.microsoft.azure:azure-client-runtime', {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
         exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
     }
-    compile 'commons-io:commons-io'
-    compile 'org.apache.commons:commons-lang3'
+    api 'commons-io:commons-io'
+    api 'org.apache.commons:commons-lang3'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    compile 'com.microsoft.azuretools:azuretools-core:3.63.0', {
+    api 'com.microsoft.azuretools:azuretools-core:3.63.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.63.0', {
+    api 'com.microsoft.azuretools:azure-explorer-common:3.63.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.63.0', {
+    api 'com.microsoft.azuretools:hdinsight-node-common:3.63.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
-    compile 'com.spotify:docker-client:8.16.0'
-    compile group: 'org.dom4j', name: 'dom4j', {
+    api 'com.spotify:docker-client:8.16.0'
+    api group: 'org.dom4j', name: 'dom4j', {
         exclude group: "javax.xml.stream", module: "stax-api"
         exclude group: "xpp3", module: "xpp3"
         exclude group: "pull-parser", module: "pull-parser"
         exclude group: "net.java.dev.msv", module: "xsdlib"
     }
-    compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
+    api group: 'jaxen', name: 'jaxen', version: '1.2.0'
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0")
 
     testImplementation 'io.cucumber:cucumber-java:7.0.0'
     testImplementation 'io.cucumber:cucumber-junit:7.0.0'
     testImplementation 'org.assertj:assertj-core:3.19.0'
-    testCompile 'junit:junit'
-    testCompile 'org.mockito:mockito-core'
+    testImplementation 'junit:junit'
+    testImplementation 'org.mockito:mockito-core'
 
-    testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
-    testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
-    testCompile 'javax.servlet:javax.servlet-api:4.0.1'
+    testImplementation 'org.powermock:powermock-module-junit4:1.7.0RC4'
+    testImplementation 'org.powermock:powermock-api-mockito2:1.7.0RC4'
+    testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
 
-    testCompile "org.jetbrains.kotlin:kotlin-stdlib"
-    testCompile "org.jetbrains.kotlin:kotlin-test"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit"
-
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib"
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
 }
 
 test {
@@ -240,42 +247,14 @@ test {
     }
 }
 
-task cucumberPackJar(type: Jar) {
-    appendix = 'pathing'
+buildSearchableOptions.onlyIf { false }
 
-    doFirst {
-        manifest {
-            attributes "Class-Path": configurations.cucumberRuntime.files.collect {
-                it.toURI().toString().replaceFirst(/file:\/+/, '/')
-            }.join(' ')
-        }
-    }
-}
-
-buildSearchableOptions.onlyIf {false}
-
-task cucumber() {
-    dependsOn assemble, testClasses, compileTestJava, cucumberPackJar
-    doLast {
-        javaexec {
-            main = "io.cucumber.core.cli.Main"
-            classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
-            args = [
-                '--plugin', 'progress',
-                '--glue', 'com.microsoft.azure.hdinsight.spark.common',
-                '-m',
-                'Test/resources']
-        }
-    }
-}
-
-test.dependsOn cucumber
 // buildPlugin.dependsOn test
 
 defaultTasks 'buildPlugin'
 
 wrapper() {
-    gradleVersion = '6.9'
+    gradleVersion = '7.4.1'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
@@ -286,24 +265,4 @@ wrapper() {
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
-}
-
-spotbugsMain {
-    reports {
-        html {
-            enabled = true
-            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
-            stylesheet = 'fancy-hist.xsl'
-        }
-    }
-    ignoreFailures = true
-    showStackTraces = true
-    showProgress = true
-    effort = 'max'
-    reportLevel = 'high'
-    maxHeapSize = '1g'
-    extraArgs = [ '-nested:false' ]
-    jvmArgs = [ '-Duser.language=en' ]
-    includeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-include.xml")
-    excludeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-exclude.xml")
 }

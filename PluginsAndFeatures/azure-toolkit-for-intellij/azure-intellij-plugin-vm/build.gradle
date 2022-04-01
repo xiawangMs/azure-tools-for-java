@@ -10,9 +10,9 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile project(':azure-intellij-plugin-storage')
-    compile 'com.microsoft.azure:azure-toolkit-compute-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-vm-lib:' + azureToolkitVersion
+    api project(':azure-intellij-plugin-lib')
+    api project(':azure-intellij-plugin-storage')
+    api 'com.microsoft.azure:azure-toolkit-compute-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-vm-lib:' + azureToolkitVersion
 }

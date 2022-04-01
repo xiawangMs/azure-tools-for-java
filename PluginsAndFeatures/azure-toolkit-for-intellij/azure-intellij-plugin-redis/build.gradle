@@ -2,11 +2,11 @@ intellij {
 }
 
 dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile project(':azure-intellij-resource-connector-lib')
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib'
-    compile 'com.microsoft.azure:azure-toolkit-redis-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-redis-lib:' + azureToolkitVersion
-    compile 'redis.clients:jedis:3.6.3'
+    api project(':azure-intellij-plugin-lib')
+    api project(':azure-intellij-resource-connector-lib')
+    api 'com.microsoft.azure:azure-toolkit-resource-lib'
+    api 'com.microsoft.azure:azure-toolkit-redis-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-redis-lib:' + azureToolkitVersion
+    api 'redis.clients:jedis:3.6.3'
 }

@@ -7,14 +7,14 @@ intellij {
 }
 
 dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile project(':azure-intellij-plugin-containerregistry')
-    compile 'com.spotify:docker-client:8.16.0'
-    compile 'com.microsoft.azure:azure-toolkit-appservice-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib'
-    compile 'com.jcraft:jsch:0.1.55'
-    compile 'org.codehaus.plexus:plexus-archiver:4.2.7'
-    compile 'org.codehaus.plexus:plexus-container-default:2.1.1'
-    compile 'com.neovisionaries:nv-websocket-client:2.14'
+    api project(':azure-intellij-plugin-lib')
+    api project(':azure-intellij-plugin-containerregistry')
+    api 'com.spotify:docker-client:8.16.0'
+    api 'com.microsoft.azure:azure-toolkit-appservice-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib'
+    api 'com.jcraft:jsch:0.1.55'
+    api 'org.codehaus.plexus:plexus-archiver:4.2.7'
+    api 'org.codehaus.plexus:plexus-container-default:2.1.1'
+    api 'com.neovisionaries:nv-websocket-client:2.14'
 }

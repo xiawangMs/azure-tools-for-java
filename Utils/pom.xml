@@ -33,7 +33,7 @@
     <properties>
         <azuretool.version>3.63.0</azuretool.version>
         <azure.version>1.41.2</azure.version>
-        <kotlin.version>1.4.20</kotlin.version>
+        <kotlin.version>1.6.10</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
         <findsecbugs.version>1.11.0</findsecbugs.version>
         <rx.version>1.3.8</rx.version>

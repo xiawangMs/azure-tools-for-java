@@ -2,8 +2,8 @@ intellij {
 }
 
 dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azure:azure-toolkit-resource-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    compile 'com.microsoft.azure:azure-toolkit-ide-arm-lib:' + azureToolkitVersion
+    api project(':azure-intellij-plugin-lib')
+    api 'com.microsoft.azure:azure-toolkit-resource-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    api 'com.microsoft.azure:azure-toolkit-ide-arm-lib:' + azureToolkitVersion
 }
