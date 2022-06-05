@@ -165,7 +165,6 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure</artifactId>
-            <version>${azure.version}</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
