@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.65.1](#3651)
   - [3.65.0](#3650)
   - [3.64.0](#3640)
   - [3.63.0](#3630)
@@ -83,6 +84,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.65.1
+### Fixed
+- Deploying artifact to an Azure Spring app will revert some settings of the app to the default.
 
 ## 3.65.0
 ### Added
