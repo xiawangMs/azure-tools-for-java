@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.65.0</version>
+  <version>3.65.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,34 +25,10 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.65.0</h3>
-        <h4>Added</h4>
-        <ul>
-          <li>New "Provide feedback" experience.</li>
-          <li>New Azure service support: Azure Application Insights
-            <ul>
-              <li>direct resource management in Azure Explorer.</li>
-              <li>resource connection from both local projects and Azure computing services.</li>
-            </ul>
-          </li>
-          <li>Enhanced Azure Spring Apps support:
-            <ul>
-              <li>0.5Gi memory and 0.5vCPU for all pricing tiers.</li>
-              <li>Enterprise tier.</li>
-            </ul>
-          </li>
-          <li>Double clicking on leaf resource nodes in Azure Explorer will open the resource's properties editor or its portal page if it has no properties editor.</li>
-        </ul>
-        <h4>Changed</h4>
-        <ul>
-          <li>The default titles (i.e. "Azure") of error notifications are removed to make notification more compact.</li>
-        </ul>
+        <h3>3.65.1</h3>
         <h4>Fixed</h4>
         <ul>
-          <li>Log/notification contains message related to deployment even if user is only creating a spring app.</li>
-          <li>Display of Azure Explorer get messed up sometimes after restarting IDE.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6634">#6634</a>: ArrayIndexOutOfBoundsException when initializing Azure Explorer.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6550">#6550</a>: Uncaught Exception com.intellij.diagnostic.PluginException: User data is not supported.</li>
+          <li>Deploying artifact to an Azure Spring app will revert some settings of the app to the default.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
