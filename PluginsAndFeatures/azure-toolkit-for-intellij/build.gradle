@@ -154,6 +154,7 @@ configurations {
     compile.exclude module:'stax-api'
     compile.exclude module:'groovy-xml'
     compile.exclude module:'groovy-templates'
+    compile.exclude module:'jna'
     cucumberRuntime {
         extendsFrom testImplementation
     }
