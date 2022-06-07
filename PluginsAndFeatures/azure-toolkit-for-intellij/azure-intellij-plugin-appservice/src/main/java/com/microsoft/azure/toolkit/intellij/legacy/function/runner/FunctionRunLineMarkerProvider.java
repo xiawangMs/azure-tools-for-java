@@ -24,7 +24,6 @@ public class FunctionRunLineMarkerProvider extends RunLineMarkerContributor {
     @Nullable
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.detect_function_method", type = AzureOperation.Type.ACTION)
     public Info getInfo(@NotNull PsiElement e) {
         if (isIdentifier(e)) {
             final PsiElement parentElement = e.getParent();
