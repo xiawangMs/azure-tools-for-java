@@ -138,24 +138,17 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     @Nullable
     @Override
     public SpringCloudAppConfig getValue() {
-        SpringCloudAppConfig appConfig = Optional.ofNullable(this.selectorApp.getValue())
-            .filter(a -> a instanceof SpringCloudAppDraft)
-            .map(a -> ((SpringCloudAppDraft) a).getConfig())
-            .orElse(null);
-        if (Objects.isNull(appConfig)) {
-            appConfig = SpringCloudAppConfig.builder()
-                .deployment(SpringCloudDeploymentConfig.builder().build())
-                .build();
-        }
-        this.getValue(appConfig);
-        return appConfig;
+        final SpringCloudApp app = Objects.requireNonNull(this.selectorApp.getValue(), "target app is not specified.");
+        final SpringCloudAppConfig config = app instanceof SpringCloudAppDraft ?
+            ((SpringCloudAppDraft) app).getConfig() : SpringCloudAppConfig.fromApp(app);
+        return this.getValue(config);
     }
 
     public SpringCloudAppConfig getValue(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         appConfig.setSubscriptionId(Optional.ofNullable(this.selectorSubscription.getValue()).map(Subscription::getId).orElse(null));
-        appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(AzResource::name).orElse(null));
-        appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(AzResource::name).orElse(null));
+        appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(AzResource::getName).orElse(null));
+        appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(AzResource::getName).orElse(null));
         final AzureArtifact artifact = this.selectorArtifact.getValue();
         if (Objects.nonNull(artifact)) {
             deploymentConfig.setArtifact(new WrappedAzureArtifact(this.selectorArtifact.getValue(), this.project));

@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.eclipse.springcloud.component.SpringCloudClus
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
@@ -104,24 +105,17 @@ public class SpringCloudDeploymentConfigurationPanel extends Composite implement
 
     @Nullable
     public SpringCloudAppConfig getValue() {
-        SpringCloudAppConfig appConfig = Optional.ofNullable(this.selectorApp.getValue())
-                .filter(a -> a instanceof SpringCloudAppDraft)
-                .map(a -> ((SpringCloudAppDraft) a).getConfig())
-                .orElse(null);
-        if (Objects.isNull(appConfig)) {
-            appConfig = SpringCloudAppConfig.builder()
-                .deployment(SpringCloudDeploymentConfig.builder().build())
-                .build();
-        }
-        this.getValue(appConfig);
-        return appConfig;
+        final SpringCloudApp app = Objects.requireNonNull(this.selectorApp.getValue(), "target app is not specified.");
+        final SpringCloudAppConfig config = app instanceof SpringCloudAppDraft ?
+            ((SpringCloudAppDraft) app).getConfig() : SpringCloudAppConfig.fromApp(app);
+        return this.getValue(config);
     }
 
     public SpringCloudAppConfig getValue(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        appConfig.setSubscriptionId(this.selectorSubscription.getValue().getId());
-        appConfig.setClusterName(this.selectorCluster.getValue().name());
-        appConfig.setAppName(this.selectorApp.getValue().name());
+        appConfig.setSubscriptionId(Optional.ofNullable(this.selectorSubscription.getValue()).map(Subscription::getId).orElse(null));
+        appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(AzResource::getName).orElse(null));
+        appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(AzResource::getName).orElse(null));
         final AzureArtifact artifact = this.selectorArtifact.getValue();
         deploymentConfig.setArtifact(new WrappedAzureArtifact(artifact));
         return appConfig;

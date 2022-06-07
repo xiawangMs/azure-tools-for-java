@@ -1,5 +1,9 @@
 <!-- Version: 3.65.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.65.1
+### Fixed
+- Deploying artifact to an Azure Spring app will revert some settings of the app to the default.
+
 ## 3.65.0
 ### Added
 - New "Provide feedback" experience.    
