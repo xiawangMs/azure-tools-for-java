@@ -4,6 +4,7 @@
 ## 3.65.2
 ### Fixed
 - [#6576](https://github.com/microsoft/azure-tools-for-java/issues/6576),[#6624](https://github.com/microsoft/azure-tools-for-java/issues/6624) : OAuth/Device Code authentication did not work in Mac M1.
+- [#6674](https://github.com/microsoft/azure-tools-for-java/issues/6674): Uncaught Exception com.intellij.ide.ui.UITheme cannot patch icon path java.lang.StringIndexOutOfBoundsException: String index out of range: 0
 
 ## 3.65.1
 ### Fixed
