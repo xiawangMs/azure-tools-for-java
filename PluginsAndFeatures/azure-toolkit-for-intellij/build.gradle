@@ -292,6 +292,17 @@ installIdea.dependsOn buildPlugin
 //installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
+    if (Boolean.valueOf(needPatchVersion)) {
+        String timestamp = (new Date()).format('yyyyMMddHHmmss')
+        if (pluginVersion.endsWith("SNAPSHOT")) {
+            def fixedPluginVersion = IntellijPluginModules.split("-")
+            version = "${fixedPluginVersion[0]}-${intellijDisplayVersion}-SNAPSHOT.${timestamp}"
+        } else {
+            version = "${pluginVersion}-${intellijDisplayVersion}-BETA.${timestamp}"
+        }
+    } else {
+        version = "${pluginVersion}-${intellijDisplayVersion}"
+    }
     sinceBuild = patchPluginXmlSinceBuild
 }
 
