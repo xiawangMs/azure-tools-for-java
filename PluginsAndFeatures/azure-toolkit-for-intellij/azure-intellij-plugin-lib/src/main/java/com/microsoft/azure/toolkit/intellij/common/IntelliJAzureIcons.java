@@ -105,10 +105,13 @@ public class IntelliJAzureIcons {
 
     @Nullable
     private static Icon loadIcon(String iconPathOrName, Class<?> clazz) {
+        if (StringUtils.isBlank(iconPathOrName)) {
+            return null;
+        }
         try {
             final Icon result = IconLoader.getIcon(iconPathOrName, clazz);
             return result.getIconHeight() > 1 ? result : null; // IconLoader may return dot for non-existing icon
-        } catch (final RuntimeException ise) {
+        } catch (final Throwable ise) {
             return null;
         }
     }
