@@ -112,8 +112,8 @@ task buildIntelliJ {
         def ijBuildArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) +
                 (skipTest.toBoolean() ? [] : [ 'test' ]) + [
                 'buildPlugin',
-                'spotbugsMain',
-                'bundleBuildIdeaZip',
+                // 'spotbugsMain',
+                // 'bundleBuildIdeaZip',
                 '-s',
                 "-Pintellij_version=IC-$IJ_VERSION_LATEST",
                 "-Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST"

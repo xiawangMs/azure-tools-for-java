@@ -97,7 +97,6 @@ public class IntellijAzureActionManager extends AzureActionManager {
             super();
             this.action = action;
             final IView.Label view = action.getView(null);
-            applyView(view, this.getTemplatePresentation());
         }
 
         @Nullable

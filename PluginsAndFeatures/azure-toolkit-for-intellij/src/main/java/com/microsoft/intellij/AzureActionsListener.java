@@ -90,7 +90,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     private PluginSettings settings;
 
-
     static {
         // fix the class load problem for intellij plugin
         final ClassLoader current = Thread.currentThread().getContextClassLoader();

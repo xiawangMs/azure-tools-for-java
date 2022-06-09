@@ -1,5 +1,4 @@
 plugins {
-    id "org.jetbrains.intellij"
 }
 
 intellij {

@@ -13,6 +13,7 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
 import com.intellij.util.Consumer;
+import com.intellij.util.messages.MessageBusConnection;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -50,19 +51,18 @@ public class SurveyPopUpDialog extends JDialog {
     private boolean isDisposed;
 
     private final Timer disposeTimer;
-    private final LafManagerListener themeListener;
     private final ICustomerSurvey survey;
+    private final MessageBusConnection connection;
     private final Consumer<? super CustomerSurveyResponse> listener;
 
-    public SurveyPopUpDialog(final Project project, @Nonnull final ICustomerSurvey customerSurvey,
+    public SurveyPopUpDialog(@Nonnull final Project project, @Nonnull final ICustomerSurvey customerSurvey,
                              @Nonnull final Consumer<? super CustomerSurveyResponse> listener) {
         super();
 
         this.listener = listener;
         this.survey = customerSurvey;
-        this.themeListener = lafManager -> renderUiByTheme();
         this.disposeTimer = new Timer(1000 * DISPOSE_TIME, (e) -> takeSurvey(CustomerSurveyResponse.PUT_OFF_AUTO));
-
+        this.connection = project.getMessageBus().connect();
         $$$setupUI$$$();
 
         this.setAlwaysOnTop(true);
@@ -98,18 +98,19 @@ public class SurveyPopUpDialog extends JDialog {
         contentPane.registerKeyboardAction(e -> takeSurvey(CustomerSurveyResponse.PUT_OFF), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
 
         // Add listener to intellij theme change
-        LafManager.getInstance().addLafManagerListener(this.themeListener);
-        renderUiByTheme();
+        renderUiByTheme(LafManager.getInstance());
+        connection.subscribe(LafManagerListener.TOPIC, manager -> renderUiByTheme(manager));
+
         this.pack();
         this.disposeTimer.restart();
     }
 
-    private void renderUiByTheme() {
+    private void renderUiByTheme(final LafManager manager) {
         // Use default ui setting for mac
         if (SystemUtils.IS_OS_MAC) {
             return;
         }
-        final UIManager.LookAndFeelInfo theme = LafManager.getInstance().getCurrentLookAndFeel();
+        final UIManager.LookAndFeelInfo theme = manager.getCurrentLookAndFeel();
         if (StringUtils.containsIgnoreCase(theme.getName(), "light")) {
             setPanelBackGroundColor(contentPane, JBColor.WHITE);
             final ButtonUI buttonUI = new MetalButtonUI();
@@ -212,7 +213,7 @@ public class SurveyPopUpDialog extends JDialog {
     private synchronized void close() {
         isDisposed = true;
         disposeTimer.stop();
-        LafManager.getInstance().removeLafManagerListener(this.themeListener);
+        connection.disconnect();
         dispose();
     }
 

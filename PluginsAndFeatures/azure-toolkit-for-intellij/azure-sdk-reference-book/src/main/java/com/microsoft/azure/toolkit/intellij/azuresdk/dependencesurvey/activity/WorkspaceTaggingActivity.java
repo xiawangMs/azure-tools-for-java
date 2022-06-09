@@ -13,7 +13,7 @@ import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurvey;
 import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurveyManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -50,7 +50,7 @@ public class WorkspaceTaggingActivity {
         });
     }
 
-    private static void showCustomerSurvey(final Project project, final Set<String> workspaceTags) {
+    private static void showCustomerSurvey(final @NotNull Project project, final Set<String> workspaceTags) {
         if (workspaceTags.containsAll(Arrays.asList(CLIENT, MGMT))) {
             CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_SDK);
         }

@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -54,7 +55,7 @@ public class CustomerSurveyManager {
         this.customerSurveyConfiguration = customerSurveyConfiguration;
     }
 
-    public synchronized void takeSurvey(final Project project, final ICustomerSurvey survey) {
+    public synchronized void takeSurvey(@Nonnull final Project project, final ICustomerSurvey survey) {
         if (project.isDisposed() || !customerSurveyConfiguration.isAcceptSurvey()) {
             return;
         }
@@ -72,7 +73,7 @@ public class CustomerSurveyManager {
         }
     }
 
-    private void showSurveyPopup(final Project project, final ICustomerSurvey survey) {
+    private void showSurveyPopup(final @Nonnull Project project, final ICustomerSurvey survey) {
         final SurveyPopUpDialog popUpDialog = new SurveyPopUpDialog(project, survey, response -> {
             try {
                 if (response == CustomerSurveyResponse.ACCEPT) {

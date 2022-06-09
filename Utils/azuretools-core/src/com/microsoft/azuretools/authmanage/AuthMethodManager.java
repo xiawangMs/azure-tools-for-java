@@ -27,22 +27,31 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
 @Slf4j
 public class AuthMethodManager {
@@ -56,24 +65,22 @@ public class AuthMethodManager {
 
     static {
         // fix the class load problem for intellij plugin
-        disableLogLevelFor("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
+        disableLog("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
                 "com.microsoft.aad.msal4j.ConfidentialClientApplication");
     }
 
-    private static void disableLogLevelFor(String...classes) {
-        try {
-            final Class<?> loggerClz = Class.forName("org.apache.log4j.Logger");
-            final Class<?> loggerLevelClz = Class.forName("org.apache.log4j.Level");
-            final Object offLevel = FieldUtils.readDeclaredStaticField(loggerLevelClz, "OFF");
-            final Method getLoggerMethod = ClassUtils.getPublicMethod(loggerClz, "getLogger", String.class);
-            if (getLoggerMethod != null) {
-                for (final String className : classes) {
-                    final Object logger2 = getLoggerMethod.invoke(loggerClz, className);
-                    FieldUtils.writeField(logger2, "level", offLevel, true);
+    private static void disableLog(String... classes) {
+        for (String className : classes) {
+            try {
+                final Logger logger = LoggerFactory.getLogger(className);
+                final Field innerLoggerField = FieldUtils.getDeclaredField(logger.getClass(), "logger", true);
+                final Object innerLogger = innerLoggerField.get(logger);
+                if (innerLogger instanceof java.util.logging.Logger) {
+                    ((java.util.logging.Logger) innerLogger).setLevel(Level.OFF);
                 }
+            } catch (Throwable e) {
+                // swallow exceptions here
             }
-        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            // ignore
         }
     }
 

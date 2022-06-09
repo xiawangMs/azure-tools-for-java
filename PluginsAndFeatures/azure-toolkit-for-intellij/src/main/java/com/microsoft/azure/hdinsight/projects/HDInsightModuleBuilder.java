@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.hdinsight.projects;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
-
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -36,10 +34,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
 
 public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleBuilderListener {
     private HDInsightProjectTemplate selectedTemplate;
@@ -53,6 +54,11 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
         this.selectedExternalSystem = HDInsightExternalSystem.MAVEN;
         initTemplates();
         this.addListener(this);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
     }
 
     @Override
@@ -120,7 +126,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     @Override
     public void moduleCreated(@NotNull Module module) {
         Artifact artifact = createDefaultArtifact(module);
-        switch(this.selectedExternalSystem) {
+        switch (this.selectedExternalSystem) {
             case MAVEN:
                 new MavenProjectGenerator(module, this.selectedTemplate.getTemplateType(), sparkVersion)
                         .generate()

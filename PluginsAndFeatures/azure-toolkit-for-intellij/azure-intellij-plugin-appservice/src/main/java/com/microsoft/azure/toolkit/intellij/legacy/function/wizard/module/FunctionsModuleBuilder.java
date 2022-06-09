@@ -196,4 +196,9 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
         new File(path).mkdirs();
         return LocalFileSystem.getInstance().refreshAndFindFileByPath(path);
     }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
 }

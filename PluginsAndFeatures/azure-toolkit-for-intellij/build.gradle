@@ -1,11 +1,9 @@
 plugins {
-    id "org.jetbrains.intellij" version "1.1.4"
-    id "org.jetbrains.kotlin.jvm" version "1.4.20"
-    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id "org.jetbrains.intellij" version "1.5.2"
+    id "org.jetbrains.kotlin.jvm" version "1.6.10"
     id "de.undercouch.download" version "4.1.1"
     id "com.github.ben-manes.versions" version "0.39.0"
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
-    id "com.github.spotbugs" version "4.7.1"
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
@@ -27,8 +25,8 @@ compileTestKotlin {
     }
 }
 
-import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
-import org.apache.tools.ant.filters.ReplaceTokens
+//import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
+import org.apache.tools.ant.filters.*
 
 processResources {
     filesMatching('**/ApplicationInsights.xml') {
@@ -121,6 +119,8 @@ subprojects {
         aspect 'com.microsoft.azure:azure-toolkit-common-lib'
         compileOnly 'org.jetbrains:annotations'
     }
+
+    buildSearchableOptions.onlyIf {false}
 }
 
 sourceSets {
@@ -257,8 +257,6 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-stdlib"
     testCompile "org.jetbrains.kotlin:kotlin-test"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit"
-
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }
 
 test {
@@ -307,9 +305,9 @@ wrapper() {
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
-apply plugin: BundleBuildIDEAPlugin
+//apply plugin: BundleBuildIDEAPlugin
 
-installIdea.dependsOn buildPlugin
+//installIdea.dependsOn buildPlugin
 //installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
@@ -325,24 +323,4 @@ patchPluginXml {
         version = "${pluginVersion}-${intellijDisplayVersion}"
     }
     sinceBuild = patchPluginXmlSinceBuild
-}
-
-spotbugsMain {
-    reports {
-        html {
-            enabled = true
-            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
-            stylesheet = 'fancy-hist.xsl'
-        }
-    }
-    ignoreFailures = true
-    showStackTraces = true
-    showProgress = true
-    effort = 'max'
-    reportLevel = 'high'
-    maxHeapSize = '1g'
-    extraArgs = [ '-nested:false' ]
-    jvmArgs = [ '-Duser.language=en' ]
-    includeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-include.xml")
-    excludeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-exclude.xml")
 }
