@@ -290,5 +290,16 @@ wrapper() {
 //installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
+    if (Boolean.valueOf(needPatchVersion) || pluginVersion.endsWith("SNAPSHOT")) {
+        String timestamp = (new Date()).format('yyyyMMddHHmmss')
+        if (pluginVersion.endsWith("SNAPSHOT")) {
+            def fixedPluginVersion = pluginVersion.split("-")
+            version = "${fixedPluginVersion[0]}-${intellijDisplayVersion}-SNAPSHOT.${timestamp}"
+        } else {
+            version = "${pluginVersion}-${intellijDisplayVersion}-BETA.${timestamp}"
+        }
+    } else {
+        version = "${pluginVersion}-${intellijDisplayVersion}"
+    }
     sinceBuild = patchPluginXmlSinceBuild
 }
