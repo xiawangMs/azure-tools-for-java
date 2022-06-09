@@ -49,7 +49,7 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunInBackground(Runnable runnable, AzureTask<?> task) {
-        final String title = String.format("Azure: %s...", Objects.requireNonNull(task.getTitle()));
+        final String title = String.format("Azure: %s...", Objects.requireNonNull(task.getDescription()));
         Job.create(title, (monitor) -> {
             monitor.beginTask(title, IProgressMonitor.UNKNOWN);
             try {
@@ -73,7 +73,7 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
     }
 
     protected void doRunInUnBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
-        final String title = String.format("Azure: %s...", Objects.requireNonNull(task.getTitle()));
+        final String title = String.format("Azure: %s...", Objects.requireNonNull(task.getDescription()));
         try {
             new ProgressMonitorDialog(new Shell()).run(true, task.isCancellable(), monitor -> {
                 monitor.beginTask(title, IProgressMonitor.UNKNOWN);
@@ -86,7 +86,7 @@ public class EclipseAzureTaskManager extends AzureTaskManager {
                 }
             });
         } catch (InvocationTargetException | InterruptedException e) {
-            String msg = String.format("failed to execute task (%s)", task.getTitle());
+            String msg = String.format("failed to execute task (%s)", task.getDescription());
             throw new AzureToolkitRuntimeException(msg, e);
         }
     }

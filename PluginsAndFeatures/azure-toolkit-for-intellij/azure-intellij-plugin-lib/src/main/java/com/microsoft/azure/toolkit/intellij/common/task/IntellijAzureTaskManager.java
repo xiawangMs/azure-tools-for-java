@@ -50,7 +50,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunInBackground(final Runnable runnable, final AzureTask<?> task) {
-        final String title = String.format("Azure: %s...", Objects.requireNonNull(task.getTitle()).toString());
+        final String title = String.format("Azure: %s...", Objects.requireNonNull(task.getDescription()).toString());
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), title, task.isCancellable()) {
             @Override
             public void run(@Nonnull final ProgressIndicator progressIndicator) {
@@ -71,7 +71,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     }
 
     protected void doRunInUnBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
-        final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), Objects.requireNonNull(task.getTitle()).toString(), task.isCancellable()) {
+        final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), Objects.requireNonNull(task.getDescription()).toString(), task.isCancellable()) {
             @Override
             public void run(@Nonnull final ProgressIndicator progressIndicator) {
                 task.setMonitor(new IntellijTaskMonitor(progressIndicator));
@@ -86,7 +86,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final PerformInBackgroundOption foreground = PerformInBackgroundOption.DEAF;
         // refer https://jetbrains.org/intellij/sdk/docs/basics/disposers.html
         // refer https://github.com/JetBrains/intellij-community/commit/d7ac4e133fec7e4c1e63f4c1d7dda65e25258b81 ide.background.tasks has been removed
-        final String title = StringUtils.capitalize(Objects.requireNonNull(task.getTitle()).toString());
+        final String title = StringUtils.capitalize(Objects.requireNonNull(task.getDescription()).toString());
         final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), title, task.isCancellable(), foreground) {
             @Override
             public void run(@Nonnull final ProgressIndicator progressIndicator) {
