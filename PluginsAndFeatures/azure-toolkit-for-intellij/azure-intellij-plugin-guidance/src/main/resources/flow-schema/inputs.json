@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "description": "input webapp name",
+      "properties": {
+        "name": {
+          "const": "input.webapp.name",
+          "description": "use this component to ask user to provide webapp name."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "subscriptionId": {
+              "type": "string",
+              "description": "id of the subscription where this webapp will be created."
+            },
+            "resourceGroupName": {
+              "type": "string",
+              "description": "name of the resource group this webapp will be created."
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "webappName": {
+              "type": "string",
+              "description": "user provided webapp name."
+            }
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "input webapp name",
+      "properties": {
+        "name": {
+          "const": "input.appservice.name",
+          "description": "use this component to ask user to provide webapp name."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "default webapp name."
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "appServiceName": {
+              "type": "string",
+              "description": "user input webapp name."
+            }
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "input webapp name",
+      "properties": {
+        "name": {
+          "const": "input.common.file-chooser",
+          "description": "use this component to ask user to provide webapp name."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "default webapp name."
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "appServiceName": {
+              "type": "string",
+              "description": "user input webapp name."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

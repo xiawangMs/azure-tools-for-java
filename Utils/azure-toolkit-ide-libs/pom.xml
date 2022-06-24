@@ -116,11 +116,6 @@
                 <artifactId>azure-toolkit-applicationinsights-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure.functions</groupId>
-                <artifactId>azure-functions-java-library</artifactId>
-                <version>1.4.2</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

@@ -2,6 +2,7 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.applicationinsights.connection.ApplicationInsightsResourceDefinition"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.applicationinsights.ApplicationInsightsNodeProvider"/>
+        <guidanceTaskProvider implementation="com.microsoft.azure.toolkit.intellij.applicationinsights.ApplicationInsightsTaskProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.applicationinsights.ApplicationInsightsActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.applicationinsights.IntelliJApplicationInsightsActionsContributor"/>
     </extensions>

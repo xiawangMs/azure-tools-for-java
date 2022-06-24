@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
@@ -103,6 +104,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
+        @EqualsAndHashCode.Include
         // NOTE: equivalent nodes in same tree will cause rendering problems.
         public javax.swing.tree.TreeNode getParent() {
             return super.getParent();
@@ -126,20 +128,16 @@ public class Tree extends SimpleTree implements DataProvider {
 
         @Override
         public void refreshView() {
-            synchronized (this.tree) {
-                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
-                    model.nodeChanged(this);
-                }
+            final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+            if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
+                model.nodeChanged(this);
             }
         }
 
         private void refreshChildrenView() {
-            synchronized (this.tree) {
-                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
-                    model.nodeStructureChanged(this);
-                }
+            final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+            if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
+                model.nodeStructureChanged(this);
             }
         }
 
@@ -202,22 +200,24 @@ public class Tree extends SimpleTree implements DataProvider {
                     node.dispose();
                 }
             }
-            this.remove(0);
+            if (this.getChildCount() > 0) {
+                this.remove(0);
+            }
             this.refreshChildrenView();
-            Optional.ofNullable(toSelect).ifPresent(p -> TreeUtil.selectPath(this.tree, p, false));
+            Optional.ofNullable(toSelect)
+                .filter(s -> ((DefaultMutableTreeNode) s.getPathComponent(1)).getUserObject() instanceof AzureResources) //  is node in app-centric view.
+                .ifPresent(p -> TreeUtil.selectPath(this.tree, p, false));
             this.loaded = true;
         }
 
-        public void clearChildren() {
-            synchronized (this.tree) {
-                this.removeAllChildren();
-                this.loaded = null;
-                if (this.getAllowsChildren()) {
-                    this.add(new LoadingNode());
-                    this.tree.collapsePath(new TreePath(this.getPath()));
-                }
-                this.refreshChildrenView();
+        public synchronized void clearChildren() {
+            this.removeAllChildren();
+            this.loaded = null;
+            if (this.getAllowsChildren()) {
+                this.add(new LoadingNode());
+                this.tree.collapsePath(new TreePath(this.getPath()));
             }
+            this.refreshChildrenView();
         }
 
         @Override

@@ -72,6 +72,7 @@ public class AzureModule extends AzureRefreshableNode {
         containerRegistryModule = new ContainerRegistryModule(this);
 
         this.accountListener = new AzureEventBus.EventListener(e -> handleSubscriptionChange());
+        AzureEventBus.on("account.login.account", accountListener);
         AzureEventBus.on("account.subscription_changed.account", accountListener);
         AzureEventBus.on("account.logout.account", accountListener);
         AzureEventBus.on("account.restore_sign_in", accountListener);

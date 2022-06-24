@@ -15,7 +15,6 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.PagedList;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHub;
 import com.microsoft.azure.management.eventhub.EventHubConsumerGroup;
@@ -36,11 +35,19 @@ import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.ADMIN;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.ANONYMOUS;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.FUNCTION;
 
 public class CreateFunctionForm extends DialogWrapper implements TelemetryProperties {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
@@ -57,7 +64,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private boolean isSignedIn;
     private JComboBox<String> cbTriggerType;
     private JTextField txtFunctionName;
-    private JComboBox<AuthorizationLevel> cbAuthLevel;
+    private JComboBox<String> cbAuthLevel;
     private JTextField txtPackageName;
     private JTextField txtCron;
     private JComboBox cbEventHubNamespace;
@@ -296,7 +303,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     }
 
     private void fillAuthLevel() {
-        Arrays.stream(AuthorizationLevel.values()).forEach(authLevel -> cbAuthLevel.addItem(authLevel));
+        Arrays.asList(ANONYMOUS, FUNCTION, ADMIN).forEach(authLevel -> cbAuthLevel.addItem(authLevel));
     }
 
     private List<EventHub> getEventHubByNamespaces(EventHubNamespace eventHubNamespace) {

@@ -1,0 +1,143 @@
+{
+  "$schema": "../flow-schema/Sequence.json",
+  "name": "hello-webapp",
+  "title": "Deploy Your First Web App to Azure",
+  "description": "This tutorial shows how to use the IntelliJ toolkit to deploy a spring boot project to Azure and connect the app service with Application Insights.",
+  "repository": "https://github.com/spring-guides/gs-spring-boot.git",
+  "context": {
+    "repository": "https://github.com/spring-guides/gs-spring-boot.git",
+    "branch": "main",
+    "repository_path": "complete"
+  },
+  "phases": [
+    {
+      "title": "Clone",
+      "description": "Clone demo project to your local machine",
+      "steps": [
+        {
+          "title": "Clone",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.common.file-chooser",
+              "paramMapping": {
+                "value": "defaultLocation"
+              }
+            }
+          ],
+          "task": {
+            "name": "task.clone",
+            "resultMapping": {
+              "defaultGitDirectory": "defaultLocation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Sign-in",
+      "description": "Sign in with your Azure account",
+      "steps": [
+        {
+          "title": "Sign-in",
+          "description": null,
+          "task": {
+            "name": "task.signin"
+          }
+        },
+        {
+          "title": "Select Subscription",
+          "description": null,
+          "task": {
+            "name": "task.select_subscription"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Prepare",
+      "description": "Create resources and related resource connection for deployment",
+      "steps": [
+        {
+          "title": "Create web app",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.appservice.name",
+              "paramMapping": {
+                "value": "defaultWebAppName"
+              },
+              "resultMapping": {
+                "appServiceName": "newWebAppName"
+              }
+            }
+          ],
+          "task": {
+            "name": "task.webapp.create",
+            "paramMapping": {
+              "webAppName": "newWebAppName"
+            },
+            "resultMapping": {
+              "resourceGroup" : "guidanceResourceGroup"
+            }
+          }
+        },
+        {
+          "title": "Create application insight app",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.create",
+            "paramMapping": {
+              "resourceGroup" : "guidanceResourceGroup"
+            },
+            "resultMapping": {
+              "defaultApplicationInsightsName": "applicationInsightsName",
+              "resourceId" : "applicationInsightsId"
+            }
+          }
+        },
+        {
+          "title": "Create resource connection between your project and application insight ${context.applicationInsightName}",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.create_connector"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build & Deploy",
+      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Web App ${context.newWebAppName}",
+      "steps": [
+        {
+          "title": "Deploy",
+          "description": "Deploy to Azure Web App ${context.webapp.name}",
+          "task": {
+            "name": "task.webapp.deploy"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Done",
+      "type": "summary",
+      "description": "Your project has been deployed to Azure Web App, see your app in Azure Explorer now!",
+      "steps": [
+        {
+          "title": "open your web app in browser",
+          "description": null,
+          "task": {
+            "name": "task.webapp.open_in_browser"
+          }
+        },
+        {
+          "title": "open live metrics of your web app",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.live_metrics"
+          }
+        }
+      ]
+    }
+  ]
+}

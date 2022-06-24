@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: Verdana, sans-serif;
+      margin: 0;
+      background-color: #3c3f41;
+      color: #bbbbbb;
+      font-family: 'Segoe UI';
+      font-size: 12px;
+    }
+
+    /* Slideshow container */
+    .slides-container {
+      position: relative;
+    }
+
+    /* Slides */
+    .slide-item {
+      display: none;
+      padding: 20px;
+    }
+
+    /* Next & previous buttons */
+    .prev,
+    .next {
+      cursor: pointer;
+      position: absolute;
+      top: -32px;
+      width: auto;
+      padding: 7px 10px 10px 10px;
+      color: #bbbbbb;
+      font-weight: bold;
+      height: 35px;
+      /* font-size: 20px; */
+      /* border-radius: 0 3px 3px 0; */
+      user-select: none;
+    }
+
+    /* Position the "next button" to the right */
+    .next {
+      position: absolute;
+      right: 0;
+      border-radius: 3px 0 0 3px;
+    }
+
+    /* On hover, add a black background color with a little bit see-through */
+    .prev:hover,
+    .next:hover {
+      color: white;
+    }
+
+    /* The dot/bullet/indicator container */
+    .dot-container {
+      text-align: center;
+      padding: 10px 20px;
+      height: 32px;
+    }
+
+    /* The dots/bullets/indicators */
+    .dot {
+      cursor: pointer;
+      height: 12px;
+      width: 12px;
+      margin: 0 2px;
+      background-color: #717171;
+      border-radius: 50%;
+      display: inline-block;
+      transition: background-color 0.6s ease;
+    }
+
+    /* Add a background color to the active dot/circle */
+    .active,
+    .dot:hover {
+      background-color: #bbbbbb;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="dot-container">
+  </div>
+
+  <div class="slides-container">
+
+    <a class="prev" onclick="moveSlide(-1)">❮</a>
+    <a class="next" onclick="moveSlide(1)">❯</a>
+
+  </div>
+
+  <script>
+
+    function initSlides(slidesData) {
+      var slides = document.querySelectorAll(".slide-item");
+      var dots = document.querySelectorAll(".dot");
+      slides.forEach(s => s.remove());
+      dots.forEach(s => s.remove());
+      var slidesContainer = document.querySelector(".slides-container");
+      var dotContainer = document.querySelector(".dot-container");
+      slidesData.forEach((c, i, a) => {
+        slidesContainer.insertAdjacentHTML('beforeend', '<div class="slide-item">' + c + '</div>')
+        dotContainer.insertAdjacentHTML('beforeend', '<span class="dot" onclick="showSlide(' + i + ')"></span>')
+      });
+    }
+
+    var currentSlide = 1;
+
+    function moveSlide(n) {
+      showSlide(currentSlide + n);
+    }
+
+    function showSlide(n) {
+      currentSlide = n;
+      var i;
+      var slides = document.getElementsByClassName("slide-item");
+      var dots = document.getElementsByClassName("dot");
+      if (n > slides.length) { currentSlide = 1 }
+      if (n < 1) { currentSlide = slides.length }
+      for (i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";
+      }
+      for (i = 0; i < dots.length; i++) {
+        dots[i].className = dots[i].className.replace(" active", "");
+      }
+      slides[currentSlide - 1].style.display = "block";
+      dots[currentSlide - 1].className += " active";
+    }
+    document.body.style.backgroundColor = '#3c3f41';
+    var slidesData = ["<div><div>task.webapp.create_app</div><p>task.webapp.create_appdesc</p></div>", "<div><div>task.ai.create_ai</div><p>task.ai.create_aidesc</p></div>", "<div><div>task.ai.create_connection</div><p>task.ai.create_connectiondesc</p></div>"];
+    currentSlide = 1;
+    initSlides(slidesData);
+    showSlide(currentSlide);
+  </script>
+
+</body>
+
+</html>

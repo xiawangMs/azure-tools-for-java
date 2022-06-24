@@ -8,13 +8,30 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.core;
 import com.google.common.collect.Lists;
 import com.intellij.lang.jvm.types.JvmArrayType;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiArrayInitializerMemberValue;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiConstantEvaluationHelper;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiEnumConstant;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.util.PsiUtil;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.ClassUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -81,6 +98,14 @@ public class AnnotationHelper {
         return null;
     }
 
+    private static String getEnumFieldString(final PsiClass clz, final String fieldName)
+            throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException {
+        final PsiField[] fields = clz.getFields();
+        return Arrays.stream(fields).filter(field -> field.getName().equals(fieldName))
+                .findFirst()
+                .map(PsiField::getName).orElse(null);
+    }
+
     private static String getEnumConstantString(PsiAnnotationMemberValue value) throws AzureExecutionException {
         if (value instanceof PsiReferenceExpression) {
             final PsiReferenceExpression referenceExpression = (PsiReferenceExpression) value;
@@ -90,7 +115,7 @@ public class AnnotationHelper {
                 final PsiClass enumClass = enumConstant.getContainingClass();
                 if (enumClass != null) {
                     try {
-                        return getEnumFieldString(enumClass.getQualifiedName(), enumConstant.getName());
+                        return getEnumFieldString(enumClass, enumConstant.getName());
                     } catch (ClassNotFoundException | IllegalAccessException e) {
                         throw new AzureExecutionException(e.getMessage(), e);
                     }

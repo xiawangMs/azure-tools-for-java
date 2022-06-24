@@ -5,7 +5,6 @@
 package com.microsoft.azure.toolkit.ide.appservice.function.node;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
@@ -15,13 +14,15 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils.HTTP_TRIGGER;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.ADMIN;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.ANONYMOUS;
+import static com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionsAnnotationConstants.FUNCTION;
 
 public class TriggerFunctionInBrowserAction {
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
@@ -57,7 +58,7 @@ public class TriggerFunctionInBrowserAction {
             type = AzureOperation.Type.TASK
     )
     public void trigger() {
-        final AuthorizationLevel authLevel = EnumUtils.getEnumIgnoreCase(AuthorizationLevel.class, trigger.getProperty("authLevel"));
+        final String authLevel = trigger.getProperty("authLevel");
         String targetUrl;
         switch (authLevel) {
             case ANONYMOUS:
