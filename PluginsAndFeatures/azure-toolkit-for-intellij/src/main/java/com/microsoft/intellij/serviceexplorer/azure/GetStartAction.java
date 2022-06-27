@@ -20,7 +20,7 @@ public class GetStartAction extends NodeAction {
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                GuidanceViewManager.getInstance().showGuidanceWelcome((Project) azureModule.getProject());
+                GuidanceViewManager.getInstance().showCoursesView((Project) azureModule.getProject());
             }
         });
     }
