@@ -3,39 +3,40 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ConfigConstants;
+import org.eclipse.jgit.transport.URIish;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.Optional;
 
-public class GitCloneTask implements GuidanceTask {
+public class GitCloneTask implements Task {
     public static final String DIRECTORY = "directory";
     public static final String DEFAULT_GIT_DIRECTORY = "defaultGitDirectory";
     public static final String BRANCH = "branch";
     public static final String REPOSITORY = "repository";
     public static final String REPOSITORY_PATH = "repository_path";
-    private final Guidance guidance;
+    public static final String ORIGIN = "origin";
+    private final Course course;
     private final ComponentContext context;
 
     public GitCloneTask(@Nonnull ComponentContext context) {
         this.context = context;
-        this.guidance = context.getGuidance();
+        this.course = context.getCourse();
         init();
     }
 
@@ -43,8 +44,8 @@ public class GitCloneTask implements GuidanceTask {
     @Override
     public boolean isDone() {
         // Check whether project was clone to local
-        final SequenceConfig workspaceConfig = GuidanceConfigManager.getInstance().getProcessConfigFromWorkspace(context.getProject());
-        if (workspaceConfig != null && StringUtils.equals(workspaceConfig.getName(), guidance.getName())) {
+        final CourseConfig workspaceConfig = GuidanceConfigManager.getInstance().getCourseConfigFromWorkspace(context.getProject());
+        if (workspaceConfig != null && StringUtils.equals(workspaceConfig.getName(), course.getName())) {
             Optional.ofNullable(context.getProject().getBasePath()).ifPresent(path -> this.context.applyResult(DEFAULT_GIT_DIRECTORY, path));
             return true;
         } else {
@@ -64,18 +65,26 @@ public class GitCloneTask implements GuidanceTask {
         final String branch = (String) context.getParameter(BRANCH);
         final String repositoryPath = (String) context.getParameter(REPOSITORY_PATH);
         final String directory = (String) context.getParameter(DIRECTORY);
+        AzureMessager.getMessager().info(AzureString.format("Cloning project to %s...", directory));
         try {
-            final CloneCommand cloneCommand = Git.cloneRepository().setURI(repository).setDirectory(Paths.get(directory).toFile());
-            if (StringUtils.isNotBlank(branch)) {
-                cloneCommand.setBranch(branch);
-            }
-            cloneCommand.call();
-            // Copy get start file to path
-            final File target = StringUtils.isEmpty(repositoryPath) ? new File(directory) : new File(directory, repositoryPath);
+            final File file = new File(directory);
+            final Git git = Git.init().setDirectory(file).call();
+            // add remote
+            git.remoteAdd().setName(ORIGIN).setUri(new URIish(repository)).call();
+            // set auto crlf to true
+            git.getRepository().getConfig().setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, true);
+            // create new branch and check out
+            git.fetch().setRemote(ORIGIN).call();
+            git.branchCreate().setName(branch).setStartPoint(String.format("%s/%s", ORIGIN, branch)).call();
+            git.checkout().setName(branch).call();
             AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
+            // Copy get start file to path
+            final File target = StringUtils.isEmpty(repositoryPath) ? file : new File(file, repositoryPath);
             copyConfigurationToWorkspace(target);
             ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.build().asNewProject());
-            GuidanceViewManager.getInstance().closeGuidance(context.getProject());
+            if (!context.getProject().isDisposed()) {
+                GuidanceViewManager.getInstance().closeCourseView(context.getProject());
+            }
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);
             throw new AzureToolkitRuntimeException(ex);
@@ -83,16 +92,16 @@ public class GitCloneTask implements GuidanceTask {
     }
 
     private void init() {
-        final String directoryName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String directoryName = String.format("%s-%s", context.getCourse().getName(), Utils.getTimestamp());
         final String defaultPath = new File(System.getProperty("user.home"), directoryName).getAbsolutePath();
         this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
     private void copyConfigurationToWorkspace(final File target) throws IOException {
-        if (StringUtils.isEmpty(guidance.getUri())) {
+        if (StringUtils.isEmpty(course.getUri())) {
             return;
         }
-        try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(guidance.getUri())) {
+        try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(course.getUri())) {
             if (inputStream == null) {
                 return;
             }

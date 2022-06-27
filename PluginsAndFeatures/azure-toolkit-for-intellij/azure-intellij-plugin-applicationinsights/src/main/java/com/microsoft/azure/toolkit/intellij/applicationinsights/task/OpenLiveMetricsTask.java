@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.intellij.applicationinsights.task;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
@@ -18,7 +18,7 @@ import java.util.List;
 
 import static com.microsoft.azure.toolkit.ide.applicationinsights.ApplicationInsightsActionsContributor.LIVE_METRICS;
 
-public class OpenLiveMetricsTask implements GuidanceTask {
+public class OpenLiveMetricsTask implements Task {
 
     private final ComponentContext context;
 

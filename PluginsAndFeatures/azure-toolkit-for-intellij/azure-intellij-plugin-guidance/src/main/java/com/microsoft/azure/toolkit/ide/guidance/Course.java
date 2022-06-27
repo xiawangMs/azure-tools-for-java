@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Guidance {
+public class Course {
     @Nonnull
     private final String id;
     @Nonnull
@@ -50,16 +49,16 @@ public class Guidance {
     private List<BiConsumer<Phase, Phase>> phaseListeners = new CopyOnWriteArrayList<>();
     private Phase currentPhase;
 
-    public Guidance(@Nonnull final SequenceConfig sequenceConfig, @Nonnull Project project) {
+    public Course(@Nonnull final CourseConfig courseConfig, @Nonnull Project project) {
         this.id = UUID.randomUUID().toString();
         this.project = project;
-        this.name = sequenceConfig.getName();
-        this.title = sequenceConfig.getTitle();
-        this.description = sequenceConfig.getDescription();
-        this.repository = sequenceConfig.getRepository();
-        this.context = new Context(this, sequenceConfig.getContext());
-        this.uri = sequenceConfig.getUri();
-        this.phases = sequenceConfig.getPhases().stream().map(config -> PhaseManager.createPhase(config, this)).collect(Collectors.toList());
+        this.name = courseConfig.getName();
+        this.title = courseConfig.getTitle();
+        this.description = courseConfig.getDescription();
+        this.repository = courseConfig.getRepository();
+        this.context = new Context(this, courseConfig.getContext());
+        this.uri = courseConfig.getUri();
+        this.phases = courseConfig.getPhases().stream().map(config -> PhaseManager.createPhase(config, this)).collect(Collectors.toList());
         this.initPhaseStatusListener();
     }
 

@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.GuidanceView;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,7 @@ public class GuidanceViewManager {
         return instance;
     }
 
-    public void showGuidance(@Nonnull final Project project, @Nonnull final SequenceConfig sequenceConfig) {
+    public void openCourseView(@Nonnull final Project project, @Nonnull final CourseConfig courseConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         if (toolWindow == null) {
             return;
@@ -36,13 +36,13 @@ public class GuidanceViewManager {
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                final Guidance guidance = GuidanceViewManager.createProcess(sequenceConfig, project);
-                guidanceView.showGuidance(guidance);
+                final Course course = GuidanceViewManager.createCourse(courseConfig, project);
+                guidanceView.showCourseView(course);
             }
         });
     }
 
-    public void showGuidanceWelcome(@Nonnull final Project project) {
+    public void showCoursesView(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         if (toolWindow == null) {
             return;
@@ -51,12 +51,12 @@ public class GuidanceViewManager {
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                guidanceView.showWelcomePage();
+                guidanceView.showCoursesView();
             }
         });
     }
 
-    public void closeGuidance(@Nonnull final Project project) {
+    public void closeCourseView(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         if (toolWindow == null) {
             return;
@@ -64,16 +64,16 @@ public class GuidanceViewManager {
         AzureTaskManager.getInstance().runLater(() -> {
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                guidanceView.showWelcomePage();
+                guidanceView.showCoursesView();
             }
             toolWindow.hide();
         });
     }
 
-    private static Guidance createProcess(@Nonnull final SequenceConfig config, @Nonnull Project project) {
-        final Guidance guidance = new Guidance(config, project);
-        AzureTaskManager.getInstance().runOnPooledThread(guidance::prepare);
-        return guidance;
+    private static Course createCourse(@Nonnull final CourseConfig config, @Nonnull Project project) {
+        final Course course = new Course(config, project);
+        AzureTaskManager.getInstance().runOnPooledThread(course::prepare);
+        return course;
     }
 
     public static class GuidanceViewFactory implements ToolWindowFactory, DumbAware {

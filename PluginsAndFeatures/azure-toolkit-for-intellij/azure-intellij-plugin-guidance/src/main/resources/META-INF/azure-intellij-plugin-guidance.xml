@@ -25,7 +25,7 @@
     </applicationListeners>
     <actions>
         <action id="Actions.GettingStart" class="com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction"
-                text="Show Get Started" description="Show get start tutorials">
+                text="Getting Started" description="Show Azure getting started tutorials" icon="/icons/Common/Azure.svg">
         </action>
     </actions>
 </idea-plugin>

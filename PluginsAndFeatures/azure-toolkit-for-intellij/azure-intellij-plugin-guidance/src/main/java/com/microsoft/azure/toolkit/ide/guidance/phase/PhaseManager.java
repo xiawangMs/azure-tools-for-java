@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.phase;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -19,9 +19,9 @@ public class PhaseManager {
 
     private static List<GuidancePhaseProvider> providers;
 
-    public static Phase createPhase(@Nonnull final PhaseConfig type, @Nonnull final Guidance guidance) {
+    public static Phase createPhase(@Nonnull final PhaseConfig type, @Nonnull final Course course) {
         return getTaskProviders().stream()
-            .map(provider -> provider.createPhase(type, guidance))
+            .map(provider -> provider.createPhase(type, course))
             .filter(Objects::nonNull)
             .findFirst()
             .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported phase type"));

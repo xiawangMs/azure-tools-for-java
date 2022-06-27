@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import static com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor.OPEN_IN_BROWSER;
 
 
-public class OpenInBrowserTask implements GuidanceTask {
+public class OpenInBrowserTask implements Task {
 
     private final ComponentContext context;
 

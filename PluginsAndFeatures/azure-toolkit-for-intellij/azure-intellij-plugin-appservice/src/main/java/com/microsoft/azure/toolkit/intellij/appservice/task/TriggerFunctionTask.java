@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
@@ -21,17 +21,17 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class TriggerFunctionTask implements GuidanceTask {
+public class TriggerFunctionTask implements Task {
     public static final String FUNCTION_ID = "functionId";
     public static final String TRIGGER = "trigger";
     private final Project project;
-    private final Guidance guidance;
+    private final Course guidance;
     private final ComponentContext context;
 
     public TriggerFunctionTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.project = context.getProject();
-        this.guidance = context.getGuidance();
+        this.guidance = context.getCourse();
     }
 
     @Override

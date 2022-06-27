@@ -1,6 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.phase;
 
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
@@ -14,8 +14,8 @@ public class SummaryPhaseProvider implements GuidancePhaseProvider {
     private static final String SUMMARY = "summary";
 
     @Override
-    public Phase createPhase(@Nonnull PhaseConfig config, @Nonnull Guidance guidance) {
-        return StringUtils.equals(config.getType(), SUMMARY) ? new SummaryPhase(config, guidance) : null;
+    public Phase createPhase(@Nonnull PhaseConfig config, @Nonnull Course course) {
+        return StringUtils.equals(config.getType(), SUMMARY) ? new SummaryPhase(config, course) : null;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class SummaryPhaseProvider implements GuidancePhaseProvider {
     }
 
     static class SummaryPhase extends Phase {
-        public SummaryPhase(@Nonnull PhaseConfig config, @Nonnull Guidance parent) {
+        public SummaryPhase(@Nonnull PhaseConfig config, @Nonnull Course parent) {
             super(config, parent);
         }
 

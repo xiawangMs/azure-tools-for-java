@@ -18,5 +18,6 @@ public class AzureModuleImpl extends AzureModule {
         super.loadActions();
         addAction(new SignInOutAction(this));
         addAction(new ManageSubscriptionsAction(this));
+        addAction(new GetStartAction(this));
     }
 }

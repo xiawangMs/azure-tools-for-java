@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class SequenceConfig {
+public class CourseConfig {
     private String uri;
     private String name;
     private String title;

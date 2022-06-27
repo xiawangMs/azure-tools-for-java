@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.ide.guidance.task.SignInTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public class CreateWebAppTask implements GuidanceTask {
+public class CreateWebAppTask implements Task {
     public static final String WEBAPP_NAME = "webAppName";
     public static final String WEBAPP_ID = "webappId";
 
@@ -52,7 +52,7 @@ public class CreateWebAppTask implements GuidanceTask {
     }
 
     private void init() {
-        final String defaultWebAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String defaultWebAppName = String.format("%s-%s", context.getCourse().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_WEB_APP_NAME, defaultWebAppName);
     }
 }

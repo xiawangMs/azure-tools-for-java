@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.ide.guidance;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface GuidanceTask {
+public interface Task {
 
     void execute() throws Exception;
 

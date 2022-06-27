@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.ide.guidance.task.SignInTask;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask.APPINSIGHTS_INSTRUMENTATION_KEY;
 
-public class CreateFunctionAppTask implements GuidanceTask {
+public class CreateFunctionAppTask implements Task {
     public static final String FUNCTION_APP_NAME = "functionAppName";
     public static final String FUNCTION_ID = "functionId";
     public static final String DEFAULT_FUNCTION_APP_NAME = "defaultFunctionAppName";
@@ -53,7 +53,7 @@ public class CreateFunctionAppTask implements GuidanceTask {
     }
 
     private void init() {
-        final String defaultFunctionAppName = String.format("%s-%s", context.getGuidance().getName(), Utils.getTimestamp());
+        final String defaultFunctionAppName = String.format("%s-%s", context.getCourse().getName(), Utils.getTimestamp());
         context.applyResult(DEFAULT_FUNCTION_APP_NAME, defaultFunctionAppName);
     }
 }

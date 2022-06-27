@@ -12,23 +12,31 @@ import com.intellij.openapi.actionSystem.ActionPopupMenu;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Key;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
+import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -38,20 +46,21 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class TreeUtils {
-
+    public static final Key<Pair<Object, Long>> HIGHLIGHTED_RESOURCE_KEY = Key.create("TreeHighlightedResource");
     public static final int INLINE_ACTION_ICON_OFFSET = 28;
     public static final int INLINE_ACTION_ICON_WIDTH = 16;
 
     public static void installSelectionListener(@Nonnull JTree tree) {
         tree.addTreeSelectionListener(e -> {
-            final Object node = tree.getLastSelectedPathComponent();
+            final Object n = tree.getLastSelectedPathComponent();
             Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
             if (selectionDisposable != null) {
                 Disposer.dispose(selectionDisposable);
             }
-            if (node instanceof Tree.TreeNode) {
-                final String place = "azure.component.tree";
-                final IActionGroup actions = ((Tree.TreeNode<?>) node).inner.actions();
+            if (n instanceof Tree.TreeNode) {
+                final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
+                final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                final IActionGroup actions = node.inner.actions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
                     selectionDisposable = Disposer.newDisposable();
@@ -102,7 +111,7 @@ public class TreeUtils {
                 final Object n = tree.getLastSelectedPathComponent();
                 if (n instanceof Tree.TreeNode) {
                     final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                    final String place = "azure.component.tree";
+                    final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final IActionGroup actions = node.inner.actions();
                         if (Objects.nonNull(actions)) {
@@ -125,8 +134,8 @@ public class TreeUtils {
             @Override
             public void mousePressed(MouseEvent e) {
                 final Tree.TreeNode<?> node = getTreeNodeAtMouse(tree, e);
-                final String place = "azure.component.tree";
                 if (Objects.nonNull(node) && e.getClickCount() == 1 && isMouseAtInlineActionIcon(tree, e)) {
+                    final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
                     node.inner.triggerInlineAction(event);
@@ -163,15 +172,53 @@ public class TreeUtils {
         return new IntellijAzureActionManager.ActionGroupWrapper((ActionGroup) actions);
     }
 
-    public static void renderMyTreeNode(@Nonnull Tree.TreeNode<?> node, @Nonnull SimpleColoredComponent renderer) {
+    public static void renderMyTreeNode(JTree tree, @Nonnull Tree.TreeNode<?> node, boolean selected, @Nonnull SimpleColoredComponent renderer) {
         final NodeView view = node.inner.view();
         if (BooleanUtils.isFalse(node.loaded)) {
             renderer.setIcon(AnimatedIcon.Default.INSTANCE);
         } else {
             renderer.setIcon(IntelliJAzureIcons.getIcon(view.getIcon()));
         }
+        final Object highlighted = tree.getClientProperty(HIGHLIGHTED_RESOURCE_KEY);
+        final boolean toHighlightThisNode = Optional.ofNullable(highlighted).map(h -> ((Pair<Object, Long>) h))
+            .filter(h -> Objects.equals(node.getUserObject(), h.getLeft())).isPresent();
+        if (selected && toHighlightThisNode) {
+            renderer.setBorder(BorderFactory.createLineBorder(JBColor.RED));
+            renderer.setBackground(JBColor.YELLOW);
+            renderer.setForeground(JBColor.RED);
+            renderer.setOpaque(false);
+        } else {
+            if(selected){
+                tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, null);
+            }
+            renderer.setOpaque(true);
+            renderer.setBorder(null);
+            renderer.setBackground(null);
+            renderer.setForeground(null);
+        }
         renderer.append(view.getLabel(), view.isEnabled() ? SimpleTextAttributes.REGULAR_ATTRIBUTES : SimpleTextAttributes.GRAY_ATTRIBUTES);
         renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES, true);
         renderer.setToolTipText(Optional.ofNullable(view.getTips()).orElse(view.getLabel()));
+    }
+
+    public static boolean isInAppCentricView(@Nonnull DefaultMutableTreeNode node) {
+        return isInAppCentricView(new TreePath(node.getPath()));
+    }
+
+    public static boolean isInAppCentricView(@Nonnull TreePath path) {
+        if (path.getPathCount() < 2) {
+            return false;
+        }
+        final DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getPathComponent(1);
+        return treeNode.getUserObject() instanceof AzureResources;
+    }
+
+    public static void highlightResource(@Nonnull JTree tree, @Nonnull Object resource) {
+        final Condition<DefaultMutableTreeNode> condition = n -> isInAppCentricView(n) && Objects.equals(n.getUserObject(), resource);
+        final DefaultMutableTreeNode node = TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), condition);
+        AzureTaskManager.getInstance().runLater(() -> {
+            tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, Pair.of(resource, System.currentTimeMillis()));
+            Optional.ofNullable(node).ifPresent(n -> TreeUtil.selectPath(tree, new TreePath(node.getPath()), false));
+        });
     }
 }

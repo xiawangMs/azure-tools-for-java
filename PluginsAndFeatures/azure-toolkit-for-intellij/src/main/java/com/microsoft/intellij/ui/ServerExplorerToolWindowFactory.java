@@ -33,6 +33,7 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -113,15 +114,16 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // initialize tree
         ComponentUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
         tree.setRootVisible(false);
+        AzureEventBus.on("azure.explorer.highlight_resource", new AzureEventBus.EventListener(e -> {
+            TreeUtils.highlightResource(tree, e.getSource());
+        }));
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules()
-                                                                                                                            .stream()
-                                                                                                                            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(
-                                                                                                                                m,
-                                                                                                                                tree))
-                                                                                                                            .collect(Collectors.toList());
+            .stream()
+            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree))
+            .collect(Collectors.toList());
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> {
             modules.forEach(m -> m.clearChildren());
@@ -377,7 +379,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     // TODO: should not check the value of inlineActionIcon
                     inlineActionIcon = null;
                 }
-                TreeUtils.renderMyTreeNode(node, this);
+                TreeUtils.renderMyTreeNode(jtree, node, selected, this);
                 return;
             } else if (value instanceof LoadingNode) {
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
@@ -441,9 +443,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
         final AnAction refreshAction = new RefreshAllAction(azureModule);
         final AnAction feedbackAction = ActionManager.getInstance().getAction("Actions.ProvideFeedback");
+        final AnAction getStartAction = ActionManager.getInstance().getAction("Actions.GettingStart");
         final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
         final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
-        toolWindow.setTitleActions(Arrays.asList(refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));
+        toolWindow.setTitleActions(Arrays.asList(refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction, getStartAction));
     }
 
     private boolean isOutdatedModule(Node node) {

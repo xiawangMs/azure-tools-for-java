@@ -1,5 +1,5 @@
 {
-  "$schema": "Sequence.json",
+  "$schema": "Course.json",
   "name": "hello-webapp",
   "title": "Deploy Your First Web App to Azure",
   "description": "Sample project for Azure Web App with Application Insights resource connection. By running the sample, you will have an example of deploying project to Azure Web App.",

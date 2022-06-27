@@ -1,5 +1,5 @@
 {
-  "$schema": "../flow-schema/Sequence.json",
+  "$schema": "../flow-schema/Course.json",
   "name": "hello-function",
   "title": "Deploy Your First Function App to Azure",
   "description": "This tutorial shows how to use IntelliJ toolkit to create a Java function that responds to HTTP requests and deploy it to the serverless environment of Azure Functions.",
@@ -101,33 +101,23 @@
     {
       "title": "Congratulations!",
       "type": "summary",
-      "description": "Your project has been deployed to Aure Function App, see your app in Azure Explorer now!",
+      "description": "Your project has been deployed to Aure Function App, enjoy your Azure experience!",
       "steps": [
         {
-          "title": "trigger your function",
+          "title": "View in Azure Explorer",
+          "description": null,
+          "task": {
+            "name": "task.common.focus_resource_in_explorer",
+            "paramMapping": {
+              "resourceId": "functionId"
+            }
+          }
+        },
+        {
+          "title": "Trigger function",
           "description": null,
           "task": {
             "name": "task.function.trigger_function"
-          }
-        },
-        {
-          "title": "open live metrics of your function app",
-          "description": null,
-          "task": {
-            "name": "task.application_insights.live_metrics",
-            "paramMapping": {
-              "instrumentKey": "insightsInstrumentKey"
-            }
-          }
-        },
-        {
-          "title": "open log stream of your Function App",
-          "description": null,
-          "task": {
-            "name": "task.app_service.open_log_streaming",
-            "paramMapping": {
-              "resource_id": "functionId"
-            }
           }
         }
       ]

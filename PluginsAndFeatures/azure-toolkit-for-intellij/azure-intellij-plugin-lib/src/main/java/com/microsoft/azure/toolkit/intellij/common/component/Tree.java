@@ -234,7 +234,7 @@ public class Tree extends SimpleTree implements DataProvider {
         @Override
         public void customizeCellRenderer(@Nonnull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             if (value instanceof TreeNode) {
-                TreeUtils.renderMyTreeNode((TreeNode<?>) value, this);
+                TreeUtils.renderMyTreeNode(tree, (TreeNode<?>) value, selected, this);
             } else {
                 super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
             }

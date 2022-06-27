@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.appservice.task;
 
+import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -14,37 +15,39 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 
-public class DeployFunctionAppTask implements GuidanceTask {
+// todo: @hanli Remove duplicates with DeployWebAppTask, may create common Deploy Resource Task
+public class DeployFunctionAppTask implements Task {
     private final AzureFunctionSupportConfigurationType functionType = AzureFunctionSupportConfigurationType.getInstance();
 
     private final Project project;
-    private final Guidance guidance;
+    private final Course guidance;
     private final ComponentContext context;
 
     public DeployFunctionAppTask(@Nonnull ComponentContext context) {
         this.context = context;
         this.project = context.getProject();
-        this.guidance = context.getGuidance();
+        this.guidance = context.getCourse();
     }
 
     @Override
@@ -54,18 +57,23 @@ public class DeployFunctionAppTask implements GuidanceTask {
         final RunnerAndConfigurationSettings settings = getRunConfigurationSettings((String) context.getParameter("functionId"), manager);
         manager.addConfiguration(settings);
         manager.setSelectedConfiguration(settings);
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
         final ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), settings);
         AzureMessager.getMessager().info(AzureString.format("Executing run configuration %s...", settings.getName()));
         final ExecutionEnvironment build = executionEnvironmentBuilder.contentToReuse(null).dataContext(null).activeTarget().build();
-        ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor ->
-                Objects.requireNonNull(runContentDescriptor.getProcessHandler()).addProcessListener(new ProcessAdapter() {
-                    @Override
-                    public void processTerminated(@NotNull ProcessEvent event) {
-                        countDownLatch.countDown();
-                    }
-                }));
-        countDownLatch.await();
+        final SettableFuture<Void> future = SettableFuture.create();
+        AzureTaskManager.getInstance().runLater(() -> ProgramRunnerUtil.executeConfigurationAsync(build, true, true, runContentDescriptor -> Objects.requireNonNull(runContentDescriptor.getProcessHandler()).addProcessListener(new ProcessAdapter() {
+            @Override
+            public void processTerminated(@NotNull ProcessEvent event) {
+                final Boolean result = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_RESULT);
+                if (Boolean.TRUE.equals(result)) {
+                    future.set(null);
+                } else {
+                    final Throwable throwable = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_EXCEPTION);
+                    future.setException(Objects.requireNonNullElseGet(throwable, () -> new AzureToolkitRuntimeException("Execution was terminated, please see output below")));
+                }
+            }
+        })));
+        future.get();
     }
 
     private RunnerAndConfigurationSettings getRunConfigurationSettings(final String appId, final RunManagerEx manager) {

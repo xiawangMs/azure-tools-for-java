@@ -1,6 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.phase;
 
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 
@@ -10,7 +10,7 @@ import javax.swing.*;
 
 public interface GuidancePhaseProvider {
     @Nullable
-    Phase createPhase(@Nonnull final PhaseConfig config, @Nonnull final Guidance guidance);
+    Phase createPhase(@Nonnull final PhaseConfig config, @Nonnull final Course course);
     @Nullable
 
     JPanel createPhasePanel(@Nonnull Phase phase);

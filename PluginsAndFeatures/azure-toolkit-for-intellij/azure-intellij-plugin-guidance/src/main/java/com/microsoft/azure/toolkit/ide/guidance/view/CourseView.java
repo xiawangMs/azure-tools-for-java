@@ -7,7 +7,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.util.ui.JBFont;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.guidance.Guidance;
+import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
@@ -21,7 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class SequenceView {
+public class CourseView {
     private JPanel contentPanel;
     private JLabel guidanceIcon;
     private JLabel titleLabel;
@@ -32,7 +32,7 @@ public class SequenceView {
 
     private final Project project;
 
-    public SequenceView(@Nonnull final Project project) {
+    public CourseView(@Nonnull final Project project) {
         this.project = project;
         $$$setupUI$$$();
         init();
@@ -46,21 +46,21 @@ public class SequenceView {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (AzureMessager.getMessager().confirm("Some steps might be lost, are you sure to abort current process?")) {
-                    GuidanceViewManager.getInstance().showGuidanceWelcome(project);
+                    GuidanceViewManager.getInstance().showCoursesView(project);
                 }
             }
         });
     }
 
-    public void showProcess(@Nonnull Guidance guidance) {
+    public void showCourse(@Nonnull Course course) {
         this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        this.titleLabel.setText(guidance.getTitle());
-        fillPhase(guidance);
+        this.titleLabel.setText(course.getTitle());
+        fillPhase(course);
     }
 
-    private void fillPhase(@Nonnull Guidance guidance) {
+    private void fillPhase(@Nonnull Course course) {
         this.phasesPanel.removeAll();
-        final List<Phase> phases = guidance.getPhases();
+        final List<Phase> phases = course.getPhases();
         final GridLayoutManager layout = ((GridLayoutManager) this.phasesPanel.getLayout());
         final GridLayoutManager newLayout = new GridLayoutManager(phases.size() + 1, 1, layout.getMargin(), -1, -1);
         this.phasesPanel.setLayout(newLayout);

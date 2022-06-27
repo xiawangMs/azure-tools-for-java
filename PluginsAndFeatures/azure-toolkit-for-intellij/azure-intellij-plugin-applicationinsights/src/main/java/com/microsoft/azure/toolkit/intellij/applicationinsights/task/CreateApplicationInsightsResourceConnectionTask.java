@@ -5,7 +5,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.connection.ApplicationInsightsResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.*;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 
 // todo: add create resource connection task instead of ai only
 // todo: remove duplicate codes with connector dialog
-public class CreateApplicationInsightsResourceConnectionTask implements GuidanceTask {
+public class CreateApplicationInsightsResourceConnectionTask implements Task {
 
     private final Project project;
     private final ComponentContext context;

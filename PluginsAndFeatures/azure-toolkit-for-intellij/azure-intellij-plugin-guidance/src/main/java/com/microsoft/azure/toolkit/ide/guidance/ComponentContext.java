@@ -35,8 +35,8 @@ public class ComponentContext {
         return context.getProject();
     }
 
-    public Guidance getGuidance() {
-        return context.getGuidance();
+    public Course getCourse() {
+        return context.getCourse();
     }
 
     public Object getParameter(@Nonnull final String key) {

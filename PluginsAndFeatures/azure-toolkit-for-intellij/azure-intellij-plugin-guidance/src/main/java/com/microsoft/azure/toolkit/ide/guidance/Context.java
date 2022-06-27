@@ -27,17 +27,17 @@ public class Context {
 
     private static final SimpleTemplateEngine engine = new SimpleTemplateEngine();
 
-    private final Guidance guidance;
+    private final Course course;
     private final Project project;
     private final Map<String, Object> parameters = new HashMap<>();
 
     private final Map<String, List<Consumer<Object>>> propertyChangeListenerMap = new HashMap<>();
     private final List<Consumer<Context>> contextListenerList = new ArrayList<>();
 
-    public Context(@Nonnull final Guidance guidance, @Nullable Map<String, Object> context) {
-        this.guidance = guidance;
-        this.project = guidance.getProject();
-        Optional.ofNullable(context).ifPresent(config -> parameters.putAll(config));
+    public Context(@Nonnull final Course course, @Nullable Map<String, Object> context) {
+        this.course = course;
+        this.project = course.getProject();
+        Optional.ofNullable(context).ifPresent(parameters::putAll);
     }
 
     public Object getProperty(String key) {
@@ -78,7 +78,7 @@ public class Context {
             final Template tpl = engine.createTemplate(template);
             // for not exists values, engine will render them as null, remove them in the final result
             return tpl.make(bindings).toString().replace("null", "");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return StringUtils.EMPTY;
         }
     }

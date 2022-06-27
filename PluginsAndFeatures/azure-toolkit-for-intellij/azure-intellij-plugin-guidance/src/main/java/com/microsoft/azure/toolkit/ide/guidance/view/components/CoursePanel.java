@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.ViewUtils;
 import lombok.Getter;
 
@@ -14,8 +14,8 @@ import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Objects;
 
-public class SequencePanel {
-    private final SequenceConfig sequence;
+public class CoursePanel {
+    private final CourseConfig course;
     @Getter
     private JPanel rootPanel;
     private JLabel lblTitle;
@@ -24,9 +24,9 @@ public class SequencePanel {
 
     private final Project project;
 
-    public SequencePanel(@Nonnull final SequenceConfig sequence, @Nonnull final Project project) {
+    public CoursePanel(@Nonnull final CourseConfig course, @Nonnull final Project project) {
         super();
-        this.sequence = sequence;
+        this.course = course;
         this.project = project;
         $$$setupUI$$$();
         init();
@@ -34,15 +34,15 @@ public class SequencePanel {
 
     private void init() {
         this.lblTitle.setFont(JBFont.h4());
-        // render sequence
+        // render course
         // this.lblIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        this.lblTitle.setText(sequence.getTitle());
+        this.lblTitle.setText(course.getTitle());
         this.lblTitle.setPreferredSize(new Dimension(-1, startButton.getPreferredSize().height));
         this.startButton.setVisible(false);
         this.startButton.addActionListener(e -> openGuidance());
         this.areaDescription.setFont(JBFont.medium());
         this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
-        this.areaDescription.setText(sequence.getDescription());
+        this.areaDescription.setText(course.getDescription());
     }
 
     public void toggleSelectedStatus(final boolean isSelected) {
@@ -57,12 +57,12 @@ public class SequencePanel {
     void $$$setupUI$$$() {
     }
 
-    public void addMouseListener(@Nonnull final MouseListener sequencePanelListener) {
-        this.rootPanel.addMouseListener(sequencePanelListener);
+    public void addMouseListener(@Nonnull final MouseListener coursePanelListener) {
+        this.rootPanel.addMouseListener(coursePanelListener);
     }
 
     public void openGuidance() {
-        GuidanceViewManager.getInstance().showGuidance(project, sequence);
+        GuidanceViewManager.getInstance().openCourseView(project, course);
     }
 
     private void createUIComponents() {

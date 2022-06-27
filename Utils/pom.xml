@@ -285,7 +285,7 @@
             <dependency>
                 <groupId>net.sourceforge.htmlunit</groupId>
                 <artifactId>htmlunit</artifactId>
-                <version>2.50.0</version>
+                <version>2.61.0</version>
                 <exclusions>
                     <!--xml-apis has conflict with azure-storage,-->
                     <exclusion>

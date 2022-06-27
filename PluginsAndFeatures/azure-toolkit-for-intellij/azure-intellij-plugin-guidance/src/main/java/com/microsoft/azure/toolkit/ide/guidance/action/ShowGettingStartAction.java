@@ -11,7 +11,7 @@ public class ShowGettingStartAction extends AzureAnAction {
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         if (anActionEvent.getProject() != null) {
-            GuidanceViewManager.getInstance().showGuidanceWelcome(anActionEvent.getProject());
+            GuidanceViewManager.getInstance().showCoursesView(anActionEvent.getProject());
         }
         return true;
     }

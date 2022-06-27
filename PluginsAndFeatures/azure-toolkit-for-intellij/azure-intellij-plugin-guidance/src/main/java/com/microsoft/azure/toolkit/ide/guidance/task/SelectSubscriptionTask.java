@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
-import com.microsoft.azure.toolkit.ide.guidance.GuidanceTask;
+import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -11,9 +11,8 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
-public class SelectSubscriptionTask implements GuidanceTask {
+public class SelectSubscriptionTask implements Task {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
 
     private final ComponentContext context;

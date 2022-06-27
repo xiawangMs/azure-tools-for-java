@@ -16,6 +16,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -33,6 +34,8 @@ import reactor.core.scheduler.Schedulers;
 import java.util.Map;
 
 public abstract class AzureRunProfileState<T> implements RunProfileState {
+    public static final Key<Boolean> AZURE_RUN_STATE_RESULT = Key.create("AZURE_RUN_STATE_RESULT");
+    public static final Key<Throwable> AZURE_RUN_STATE_EXCEPTION = Key.create("AZURE_RUN_STATE_EXCEPTION");
     protected final Project project;
 
     public AzureRunProfileState(@NotNull Project project) {
@@ -54,6 +57,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
             return this.executeSteps(processHandler, operation);
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(
             (res) -> {
+                processHandler.putUserData(AZURE_RUN_STATE_RESULT, true);
                 this.sendTelemetry(operation, null);
                 this.onSuccess(res, processHandler);
             },
@@ -103,8 +107,10 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
     protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
         final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
-            String.format("Failed to %s", error.getMessage()) : error.getMessage();
+                String.format("Failed to %s", error.getMessage()) : error.getMessage();
         processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
+        processHandler.putUserData(AZURE_RUN_STATE_RESULT, false);
+        processHandler.putUserData(AZURE_RUN_STATE_EXCEPTION, error);
+        processHandler.notifyProcessTerminated(-1);
     }
 }

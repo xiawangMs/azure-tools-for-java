@@ -260,6 +260,29 @@
           }
         }
       }
+    },
+    {
+      "additionalProperties": false,
+      "description": "focus on resource in Azure Explorer",
+      "properties": {
+        "name": {
+          "const": "task.common.focus_resource_in_explorer"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "resourceId": {
+              "title": "id of the resource to be focused",
+              "type": "string"
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
     }
   ]
 }

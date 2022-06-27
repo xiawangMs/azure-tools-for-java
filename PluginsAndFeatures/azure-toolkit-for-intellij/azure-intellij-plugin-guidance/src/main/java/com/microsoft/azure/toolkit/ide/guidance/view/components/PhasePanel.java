@@ -211,7 +211,7 @@ public class PhasePanel extends JPanel {
             this.statusIcon.setText("");
         } else {
             this.statusIcon.setIcon(null);
-            final int index = this.phase.getGuidance().getPhases().indexOf(this.phase) + 1;
+            final int index = this.phase.getCourse().getPhases().indexOf(this.phase) + 1;
             this.statusIcon.setText(String.format("%02d", index));
             this.statusIcon.setFont(JBUI.Fonts.create("JetBrains Mono", 14).asBold());
             this.statusIcon.setForeground(JBUI.CurrentTheme.Label.disabledForeground());

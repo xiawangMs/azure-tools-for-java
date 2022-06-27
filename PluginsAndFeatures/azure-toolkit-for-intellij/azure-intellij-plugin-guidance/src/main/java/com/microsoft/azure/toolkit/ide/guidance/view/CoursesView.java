@@ -7,8 +7,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
-import com.microsoft.azure.toolkit.ide.guidance.config.SequenceConfig;
-import com.microsoft.azure.toolkit.ide.guidance.view.components.SequencePanel;
+import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
+import com.microsoft.azure.toolkit.ide.guidance.view.components.CoursePanel;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections.CollectionUtils;
@@ -24,18 +24,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class WelcomeView {
+public class CoursesView {
     private JPanel pnlRoot;
-    private JPanel pnlProcesses;
+    private JPanel pnlCourses;
     private JLabel lblTitle;
     private JPanel pnlLoading;
     private JLabel lblLoading;
 
     private final Project project;
 
-    private final List<SequencePanel> sequencePanels = new ArrayList<>();
+    private final List<CoursePanel> coursePanels = new ArrayList<>();
 
-    public WelcomeView(@Nonnull Project project) {
+    public CoursesView(@Nonnull Project project) {
         this.project = project;
         $$$setupUI$$$();
         init();
@@ -45,28 +45,28 @@ public class WelcomeView {
     private void init() {
         this.lblTitle.setFont(JBFont.h2().asBold());
         this.lblLoading.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON));
-        AzureTaskManager.getInstance().runInBackgroundAsObservable("Loading lesson", () -> GuidanceConfigManager.getInstance().loadSequenceConfig())
+        AzureTaskManager.getInstance().runInBackgroundAsObservable("Loading lesson", () -> GuidanceConfigManager.getInstance().loadCourses())
                 .subscribeOn(Schedulers.computation())
-                .subscribe(processes -> AzureTaskManager.getInstance().runLater(() -> this.fillProcess(processes)));
+                .subscribe(courses -> AzureTaskManager.getInstance().runLater(() -> this.setCourses(courses)));
     }
 
-    private void fillProcess(final List<SequenceConfig> sequenceConfigs) {
-        this.sequencePanels.clear();
+    private void setCourses(final List<CourseConfig> courseConfigs) {
+        this.coursePanels.clear();
         this.lblLoading.setVisible(true);
-        if (CollectionUtils.isEmpty(sequenceConfigs)) {
+        if (CollectionUtils.isEmpty(courseConfigs)) {
             return;
         }
-        this.pnlProcesses.setLayout(new GridLayoutManager(sequenceConfigs.size(), 1));
-        for (int i = 0; i < sequenceConfigs.size(); i++) {
-            final SequencePanel sequencePanel = new SequencePanel(sequenceConfigs.get(i), this.project);
-            sequencePanel.getRootPanel().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            addMouseListener(sequencePanel.getRootPanel(), new SequencePanelListener(sequencePanel));
-            this.sequencePanels.add(sequencePanel);
-            this.pnlProcesses.add(sequencePanel.getRootPanel(),
+        this.pnlCourses.setLayout(new GridLayoutManager(courseConfigs.size(), 1));
+        for (int i = 0; i < courseConfigs.size(); i++) {
+            final CoursePanel coursePanel = new CoursePanel(courseConfigs.get(i), this.project);
+            coursePanel.getRootPanel().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            addMouseListener(coursePanel.getRootPanel(), new CoursePanelListener(coursePanel));
+            this.coursePanels.add(coursePanel);
+            this.pnlCourses.add(coursePanel.getRootPanel(),
                     new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         }
         this.lblLoading.setVisible(false);
-        this.sequencePanels.get(0).toggleSelectedStatus(true);
+        this.coursePanels.get(0).toggleSelectedStatus(true);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
@@ -78,7 +78,7 @@ public class WelcomeView {
     }
 
     private void cleanUpSelection() {
-        sequencePanels.forEach(panel -> panel.toggleSelectedStatus(false));
+        coursePanels.forEach(panel -> panel.toggleSelectedStatus(false));
     }
 
     private void addMouseListener(@Nonnull final JComponent component, @Nonnull MouseListener mouseListener) {
@@ -90,10 +90,10 @@ public class WelcomeView {
         });
     }
 
-    class SequencePanelListener extends MouseAdapter {
-        private final SequencePanel panel;
+    class CoursePanelListener extends MouseAdapter {
+        private final CoursePanel panel;
 
-        public SequencePanelListener(@Nonnull final SequencePanel panel) {
+        public CoursePanelListener(@Nonnull final CoursePanel panel) {
             this.panel = panel;
         }
 

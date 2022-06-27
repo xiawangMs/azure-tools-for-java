@@ -21,7 +21,6 @@ import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class Phase {
     @Nonnull
-    private final Guidance guidance;
+    private final Course course;
 
     @Nonnull
     private final String id;
@@ -58,8 +57,8 @@ public class Phase {
 
     private boolean autoExecute = false;
 
-    public Phase(@Nonnull final PhaseConfig config, @Nonnull Guidance parent) {
-        this.guidance = parent;
+    public Phase(@Nonnull final PhaseConfig config, @Nonnull Course parent) {
+        this.course = parent;
         this.id = UUID.randomUUID().toString();
         this.title = config.getTitle();
         this.type = config.getType();
@@ -148,7 +147,7 @@ public class Phase {
     }
 
     public Context getContext() {
-        return this.getGuidance().getContext();
+        return this.getCourse().getContext();
     }
 
     public String getRenderedDescription() {
@@ -160,8 +159,11 @@ public class Phase {
     }
 
     @Nullable
-    private Step getFollowingStep() {
+    private synchronized Step getFollowingStep() {
         final Step currentStep = getCurrentStep();
+        if (currentStep == null) {
+            return null;
+        }
         for (int i = 0; i < steps.size() - 1; i++) {
             if (StringUtils.equals(currentStep.getId(), steps.get(i).getId())) {
                 return steps.get(i + 1);
