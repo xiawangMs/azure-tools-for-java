@@ -96,12 +96,12 @@
       ]
     },
     {
-      "title": "Done",
+      "title": "Congratulations!",
       "type": "summary",
       "description": "Your project has been deployed to Aure Web App, enjoy your Azure experience!",
       "steps": [
         {
-          "title": "open your web app in browser",
+          "title": "Open Web App in browser",
           "description": null,
           "task": {
             "name": "task.resource.open_in_portal"

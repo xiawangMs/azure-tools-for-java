@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
@@ -81,9 +82,10 @@ public class GuidanceViewManager {
 
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-            final GuidanceView view = new GuidanceView(project);
-            guidanceViewMap.put(project, view);
+            final GuidanceView guidanceView = new GuidanceView(project);
+            guidanceViewMap.put(project, guidanceView);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+            final JBScrollPane view = new JBScrollPane(guidanceView);
             final Content content = contentFactory.createContent(view, "", false);
             toolWindow.getContentManager().addContent(content);
         }
