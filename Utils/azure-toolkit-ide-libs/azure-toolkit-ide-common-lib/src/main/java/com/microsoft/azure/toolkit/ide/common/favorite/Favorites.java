@@ -53,7 +53,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
     private static final String FAVORITE_ICON = AzureIcons.Common.FAVORITE.getIconPath();
-
+    private static final String FAVORITE_GROUP = "{favorites_group}";
     @Getter
     private static final Favorites instance = new Favorites();
     public static final String NAME = "favorites";
@@ -102,7 +102,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 this.favorites = new LinkedList<>();
             }
         }
-        return this.favorites.stream().map(id -> this.loadResourceFromAzure(id, null)).filter(Objects::nonNull)
+        return this.favorites.stream().map(id -> this.loadResourceFromAzure(id, FAVORITE_GROUP)).filter(Objects::nonNull)
             .map(c -> ((AbstractAzResource<?, ?, ?>) c));
     }
 
@@ -172,13 +172,13 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             AzureMessager.getMessager().warning(message);
             return;
         }
-        final FavoriteDraft draft = this.create(resource.getId(), null);
+        final FavoriteDraft draft = this.create(resource.getId(), FAVORITE_GROUP);
         draft.setResource(resource);
         draft.createIfNotExist();
     }
 
     public void unpin(@Nonnull String resourceId) {
-        this.delete(resourceId, null);
+        this.delete(resourceId, FAVORITE_GROUP);
     }
 
     public void persist() {

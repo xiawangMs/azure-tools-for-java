@@ -103,6 +103,7 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
     private SpringCloudAppConfig getConfig() {
         final SpringCloudAppConfig config = this.formConfig.getValue();
         config.setSubscriptionId(this.draft.getSubscriptionId());
+        config.setResourceGroup(this.draft.getParent().getResourceGroupName());
         config.setClusterName(this.draft.getParent().getName());
         config.setAppName(this.draft.getName());
         return config;
