@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
@@ -22,6 +23,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Optional;
 
 public class GitCloneTask implements Task {
@@ -79,8 +81,8 @@ public class GitCloneTask implements Task {
             git.checkout().setName(branch).call();
             AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
             // Copy get start file to path
-            final File target = StringUtils.isEmpty(repositoryPath) ? file : new File(file, repositoryPath);
-            copyConfigurationToWorkspace(target);
+            final File workspace = StringUtils.isEmpty(repositoryPath) ? file : new File(file, repositoryPath);
+            copyConfigurationToWorkspace(workspace);
             ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.build().asNewProject());
             if (!context.getProject().isDisposed()) {
                 GuidanceViewManager.getInstance().closeCourseView(context.getProject());
@@ -97,15 +99,16 @@ public class GitCloneTask implements Task {
         this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
-    private void copyConfigurationToWorkspace(final File target) throws IOException {
+    private void copyConfigurationToWorkspace(final File workspace) throws IOException {
         if (StringUtils.isEmpty(course.getUri())) {
             return;
         }
+        final File configurationDirectory = GuidanceConfigManager.getInstance().initConfigurationDirectory(workspace.getAbsolutePath());
         try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(course.getUri())) {
             if (inputStream == null) {
                 return;
             }
-            FileUtils.copyInputStreamToFile(inputStream, new File(target, GuidanceConfigManager.GETTING_START_CONFIGURATION_NAME));
+            FileUtils.copyInputStreamToFile(inputStream, new File(configurationDirectory, GuidanceConfigManager.GETTING_START_CONFIGURATION_NAME));
         }
     }
 }

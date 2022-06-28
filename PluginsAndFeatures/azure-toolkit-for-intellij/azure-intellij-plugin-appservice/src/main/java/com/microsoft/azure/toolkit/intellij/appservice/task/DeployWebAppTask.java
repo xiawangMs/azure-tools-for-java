@@ -35,6 +35,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class DeployWebAppTask implements Task {
     private final Project project;
@@ -82,15 +84,19 @@ public class DeployWebAppTask implements Task {
             @Override
             public void processTerminated(@NotNull ProcessEvent event) {
                 final Boolean result = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_RESULT);
-                final Throwable throwable = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_EXCEPTION);
                 if (Boolean.TRUE.equals(result)) {
                     future.set(null);
                 } else {
+                    final Throwable throwable = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_EXCEPTION);
                     future.setException(Objects.requireNonNullElseGet(throwable, () -> new AzureToolkitRuntimeException("Execution was terminated, please see output below")));
                 }
             }
         })));
-        future.get();
+        try {
+            future.get(10, TimeUnit.MINUTES);
+        } catch (final TimeoutException e) {
+            throw new AzureToolkitRuntimeException("Failed to deploy resource to Azure", e);
+        }
     }
 
     @Nonnull

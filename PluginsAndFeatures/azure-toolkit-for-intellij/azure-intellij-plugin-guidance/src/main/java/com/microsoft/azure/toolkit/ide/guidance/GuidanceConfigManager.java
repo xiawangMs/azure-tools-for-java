@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import org.reflections.Reflections;
@@ -18,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +29,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GuidanceConfigManager {
+    public static final String AZURE = ".azure";
     public static final String GETTING_START_CONFIGURATION_NAME = "azure-getting-started.json";
 
     private static final GuidanceConfigManager instance = new GuidanceConfigManager();
@@ -38,9 +42,25 @@ public class GuidanceConfigManager {
         return instance;
     }
 
+    public File getConfigurationDirectory(@Nonnull String workspace) {
+        return Paths.get(workspace, AZURE).toFile();
+    }
+
+    public File initConfigurationDirectory(@Nonnull String workspace) throws IOException {
+        final File result = getConfigurationDirectory(workspace);
+        if (!result.exists()) {
+            result.mkdirs();
+        }
+        if (SystemInfo.isWindows) {
+            Files.setAttribute(result.toPath(), "dos:hidden", true);
+        }
+        return result;
+    }
+
     @Nullable
     public CourseConfig getCourseConfigFromWorkspace(@Nonnull Project project) {
-        final File file = new File(project.getBasePath(), GETTING_START_CONFIGURATION_NAME);
+        final File directory = getConfigurationDirectory(project.getBasePath());
+        final File file = new File(directory, GETTING_START_CONFIGURATION_NAME);
         if (!file.exists()) {
             return null;
         }
@@ -54,17 +74,17 @@ public class GuidanceConfigManager {
     @Cacheable(value = "guidance/courses")
     public List<CourseConfig> loadCourses() {
         return Optional.of(new Reflections("guidance", Scanners.Resources))
-            .map(reflections -> {
-                try {
-                    return reflections.getResources(Pattern.compile(".*\\.json"));
-                } catch (final Exception exception) {
-                    return Collections.emptySet();
-                }
-            })
-            .orElse(Collections.emptySet())
-            .stream().map(uri -> GuidanceConfigManager.getCourse("/" + uri))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                .map(reflections -> {
+                    try {
+                        return reflections.getResources(Pattern.compile(".*\\.json"));
+                    } catch (final Exception exception) {
+                        return Collections.emptySet();
+                    }
+                })
+                .orElse(Collections.emptySet())
+                .stream().map(uri -> GuidanceConfigManager.getCourse("/" + uri))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Nullable

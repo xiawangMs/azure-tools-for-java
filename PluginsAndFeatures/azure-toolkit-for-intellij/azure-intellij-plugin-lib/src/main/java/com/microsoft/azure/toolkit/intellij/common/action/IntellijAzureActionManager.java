@@ -156,7 +156,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final IView.Label view = this.group.getView();
             final Presentation template = this.getTemplatePresentation();
             if (Objects.nonNull(view)) {
-                AnActionWrapper.applyView(view, template);
+                template.setText(view.getLabel());
             } else {
                 template.setText("Action Group");
             }
