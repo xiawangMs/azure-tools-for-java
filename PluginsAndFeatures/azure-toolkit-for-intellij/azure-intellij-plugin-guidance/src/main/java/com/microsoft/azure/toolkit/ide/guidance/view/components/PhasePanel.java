@@ -234,7 +234,7 @@ public class PhasePanel extends JPanel {
     static void doForOffsprings(JComponent c, Consumer<Component> func) {
         func.consume(c);
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
-        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(func::consume);
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton || component instanceof JTextField || component instanceof JComboBox).forEach(func::consume);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

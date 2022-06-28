@@ -57,10 +57,10 @@
     },
     {
       "title": "Prepare",
-      "description": "Create function app ${context.newWebAppName} for deployment",
+      "description": "Create Function App ${context.newWebAppName} for deployment",
       "steps": [
         {
-          "title": "Create function app",
+          "title": "Create Function App",
           "description": null,
           "inputs": [
             {
@@ -87,11 +87,11 @@
     },
     {
       "title": "Build & Deploy",
-      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Function App ${context.newFunctionAppName}",
+      "description": "Build artifacts, prepare dependent resources and deploy your project to Function App ${context.newFunctionAppName}",
       "steps": [
         {
           "title": "Deploy",
-          "description": "Deploy to Azure Function App ${context.newFunctionAppName}",
+          "description": "Deploy to Function App ${context.newFunctionAppName}",
           "task": {
             "name": "task.function.deploy"
           }
@@ -101,7 +101,7 @@
     {
       "title": "Congratulations!",
       "type": "summary",
-      "description": "Your project has been deployed to Aure Function App, enjoy your Azure experience!",
+      "description": "Your project has been deployed to Aure Functions, enjoy your Azure experience!",
       "steps": [
         {
           "title": "View in Azure Explorer",

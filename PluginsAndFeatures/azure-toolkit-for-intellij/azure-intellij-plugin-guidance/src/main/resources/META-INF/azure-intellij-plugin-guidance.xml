@@ -22,7 +22,7 @@
     </extensions>
     <actions>
         <action id="Actions.GettingStart" class="com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction"
-                text="Getting Started" description="Show Azure getting started tutorials" icon="/icons/Common/Azure.svg">
+                text="Getting Started" description="Show Azure getting started tutorials" icon="/icons/Common/get_start.svg">
         </action>
     </actions>
 </idea-plugin>

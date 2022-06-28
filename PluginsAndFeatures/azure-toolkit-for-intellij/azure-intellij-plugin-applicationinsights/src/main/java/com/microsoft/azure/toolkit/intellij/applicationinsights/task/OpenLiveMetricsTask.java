@@ -52,6 +52,6 @@ public class OpenLiveMetricsTask implements Task {
     @Nonnull
     @Override
     public String getName() {
-        return "task.common.open_metrics";
+        return "task.application_insights.live_metrics";
     }
 }

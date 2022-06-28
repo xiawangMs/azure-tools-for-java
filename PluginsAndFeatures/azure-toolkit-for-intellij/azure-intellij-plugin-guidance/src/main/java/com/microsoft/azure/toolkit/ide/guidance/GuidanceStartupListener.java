@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class GuidanceStartupListener implements StartupActivity.DumbAware {
+public class GuidanceStartupListener implements StartupActivity {
     private static final String GUIDANCE = "guidance";
     private static final String GUIDANCE_SHOWN = "guidance_shown";
 

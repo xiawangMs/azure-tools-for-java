@@ -6,27 +6,25 @@
 package com.microsoft.intellij.serviceexplorer.azure;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
+import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_IN;
+import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_OUT;
+
 public class SignInOutAction extends NodeAction {
-    private static final String ICON_SIGNIN_DARK = "SignInDark_16.png";
-    private static final String ICON_SIGNIN_LIGHT = "SignInLight_16.png";
-    private static final String ICON_SIGNOUT_DARK = "SignOutDark_16.png";
-    private static final String ICON_SIGNOUT_LIGHT = "SignOutLight_16.png";
 
     SignInOutAction(AzureModule azureModule) {
         super(azureModule, "Sign In/Out");
         addListener(new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 AzureSignInAction.onAzureSignIn((Project) azureModule.getProject());
             }
 
@@ -41,26 +39,23 @@ public class SignInOutAction extends NodeAction {
     public String getName() {
         try {
             return AuthMethodManager.getInstance().isSignedIn() ? "Sign Out" : "Sign In";
-        } catch (Exception e) {
+        } catch (final Exception e) {
             AzurePlugin.log("Error signing in", e);
             return "";
         }
     }
 
     @Override
-    public String getIconPath() {
+    public AzureIcon getIconSymbol() {
         return getIcon();
     }
 
-    public static String getIcon() {
-        boolean isSignedIn = false;
+    public static AzureIcon getIcon() {
         try {
-            isSignedIn = AuthMethodManager.getInstance().isSignedIn();
-        } catch (Exception ex) {}
-        if (DefaultLoader.getUIHelper().isDarkTheme()) {
-            return isSignedIn ? ICON_SIGNOUT_DARK : ICON_SIGNIN_DARK;
-        } else {
-            return isSignedIn ? ICON_SIGNOUT_LIGHT : ICON_SIGNIN_LIGHT;
+            return AuthMethodManager.getInstance().isSignedIn() ? SIGN_OUT : SIGN_IN;
+        } catch (final Exception e) {
+            return SIGN_IN;
         }
     }
+
 }

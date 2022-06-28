@@ -31,10 +31,8 @@ public class GuidanceViewManager {
 
     public void openCourseView(@Nonnull final Project project, @Nonnull final CourseConfig courseConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
-        if (toolWindow == null) {
-            return;
-        }
         AzureTaskManager.getInstance().runLater(() -> {
+            assert toolWindow != null;
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
@@ -46,10 +44,8 @@ public class GuidanceViewManager {
 
     public void showCoursesView(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
-        if (toolWindow == null) {
-            return;
-        }
         AzureTaskManager.getInstance().runLater(() -> {
+            assert toolWindow != null;
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
@@ -60,14 +56,12 @@ public class GuidanceViewManager {
 
     public void closeCourseView(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
-        if (toolWindow == null) {
-            return;
-        }
         AzureTaskManager.getInstance().runLater(() -> {
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
                 guidanceView.showCoursesView();
             }
+            assert toolWindow != null;
             toolWindow.hide();
         });
     }
@@ -78,7 +72,7 @@ public class GuidanceViewManager {
         return course;
     }
 
-    public static class GuidanceViewFactory implements ToolWindowFactory, DumbAware {
+    public static class GuidanceViewFactory implements ToolWindowFactory {
         private static final Map<Project, GuidanceView> guidanceViewMap = new ConcurrentHashMap<>();
 
         @Override
