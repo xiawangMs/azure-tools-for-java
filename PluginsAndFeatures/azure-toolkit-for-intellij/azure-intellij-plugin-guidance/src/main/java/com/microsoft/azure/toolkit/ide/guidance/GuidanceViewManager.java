@@ -14,13 +14,14 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GuidanceViewManager {
 
-    public static final String TOOL_WINDOW_ID = "Get Started with Azure";
+    public static final String TOOL_WINDOW_ID = "Getting Started with Azure";
 
     private static final GuidanceViewManager instance = new GuidanceViewManager();
 
@@ -85,7 +86,7 @@ public class GuidanceViewManager {
             final GuidanceView guidanceView = new GuidanceView(project);
             guidanceViewMap.put(project, guidanceView);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-            final JBScrollPane view = new JBScrollPane(guidanceView);
+            final JBScrollPane view = new JBScrollPane(guidanceView, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             final Content content = contentFactory.createContent(view, "", false);
             toolWindow.getContentManager().addContent(content);
         }

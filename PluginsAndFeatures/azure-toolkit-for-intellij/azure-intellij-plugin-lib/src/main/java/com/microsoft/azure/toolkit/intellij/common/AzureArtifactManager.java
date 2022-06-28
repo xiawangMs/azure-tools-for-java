@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -138,17 +139,19 @@ public class AzureArtifactManager {
         if (azureArtifact == null || azureArtifact.getReferencedObject() == null) {
             return null;
         }
-        switch (azureArtifact.getType()) {
-            case Gradle:
-                final String gradleModulePath = ((ExternalProjectPojo) azureArtifact.getReferencedObject()).getPath();
-                final VirtualFile gradleVirtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(gradleModulePath));
-                return ProjectFileIndex.getInstance(project).getModuleForFile(gradleVirtualFile);
-            case Maven:
-                return ProjectFileIndex.getInstance(project).getModuleForFile(((MavenProject) azureArtifact.getReferencedObject()).getFile());
-            default:
-                // IntelliJ artifact is bind to project, can not get the related module, same for File artifact
-                return null;
-        }
+        return ReadAction.compute(() -> {
+            switch (azureArtifact.getType()) {
+                case Gradle:
+                    final String gradleModulePath = ((ExternalProjectPojo) azureArtifact.getReferencedObject()).getPath();
+                    final VirtualFile gradleVirtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(gradleModulePath));
+                    return ProjectFileIndex.getInstance(project).getModuleForFile(gradleVirtualFile);
+                case Maven:
+                    return ProjectFileIndex.getInstance(project).getModuleForFile(((MavenProject) azureArtifact.getReferencedObject()).getFile());
+                default:
+                    // IntelliJ artifact is bind to project, can not get the related module, same for File artifact
+                    return null;
+            }
+        });
     }
 
     private String getGradleProjectId(ExternalProjectPojo gradleProjectPojo) {

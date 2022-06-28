@@ -81,7 +81,6 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
     @Nullable
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.create_function_module", type = AzureOperation.Type.ACTION)
     public ModuleWizardStep modifySettingsStep(@NotNull final SettingsStep settingsStep) {
         if (settingsStep instanceof ProjectSettingsStep) {
             final ProjectSettingsStep projectSettingsStep = (ProjectSettingsStep) settingsStep;
@@ -109,7 +108,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.setup_function_module", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.setup_function_root_module", type = AzureOperation.Type.ACTION)
     public void setupRootModel(@NotNull final ModifiableRootModel rootModel) throws ConfigurationException {
         final VirtualFile root = createAndGetContentEntry();
         rootModel.addContentEntry(root);
@@ -132,7 +131,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.setup_function_module", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create_function_module", type = AzureOperation.Type.ACTION)
     protected void setupModule(Module module) throws ConfigurationException {
         super.setupModule(module);
         final Project project = module.getProject();
