@@ -83,7 +83,7 @@ public class GitCloneTask implements Task {
             // Copy get start file to path
             final File workspace = StringUtils.isEmpty(repositoryPath) ? file : new File(file, repositoryPath);
             copyConfigurationToWorkspace(workspace);
-            ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.build().asNewProject());
+            ProjectUtil.openOrImport(workspace.toPath(), OpenProjectTask.build().asNewProject());
             if (!context.getProject().isDisposed()) {
                 GuidanceViewManager.getInstance().closeCourseView(context.getProject());
             }
