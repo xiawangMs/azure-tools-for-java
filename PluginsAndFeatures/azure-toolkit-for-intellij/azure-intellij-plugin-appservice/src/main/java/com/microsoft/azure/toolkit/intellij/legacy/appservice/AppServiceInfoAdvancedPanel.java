@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -113,11 +114,13 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     @Override
     public void setValue(final T config) {
         this.selectorSubscription.setValue(config.getSubscription());
-        this.selectorGroup.setValue(Optional.ofNullable(config.getResourceGroup()).map(ResourceGroupConfig::toResource).orElse(null));
         this.textName.setValue(config.getName());
-        this.selectorRuntime.setValue(config.getRuntime());
-        this.selectorRegion.setValue(config.getRegion());
-        this.selectorServicePlan.setValue(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::toResource).orElse(null));
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            this.selectorGroup.setValue(Optional.ofNullable(config.getResourceGroup()).map(ResourceGroupConfig::toResource).orElse(null));
+            this.selectorServicePlan.setValue(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::toResource).orElse(null));
+            this.selectorRuntime.setValue(config.getRuntime());
+            this.selectorRegion.setValue(config.getRegion());
+        });
     }
 
     @Override

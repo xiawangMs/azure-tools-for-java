@@ -16,6 +16,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -128,13 +129,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     public void setValue(final T val, final Boolean fixed) {
-        Optional.ofNullable(fixed).ifPresent(f -> {
-            this.setEnabled(!f);
-            this.setEditable(!f);
+        UIUtil.invokeLaterIfNeeded(() -> {
+            Optional.ofNullable(fixed).ifPresent(f -> {
+                this.setEnabled(!f);
+                this.setEditable(!f);
+            });
+            this.valueNotSet = false;
+            this.value = val;
+            this.refreshValue();
         });
-        this.valueNotSet = false;
-        this.value = val;
-        this.refreshValue();
     }
 
     public void setValue(final ItemReference<T> val) {
@@ -142,13 +145,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     public void setValue(final ItemReference<T> val, final Boolean fixed) {
-        Optional.ofNullable(fixed).ifPresent(f -> {
-            this.setEnabled(!f);
-            this.setEditable(!f);
+        UIUtil.invokeLaterIfNeeded(() -> {
+            Optional.ofNullable(fixed).ifPresent(f -> {
+                this.setEnabled(!f);
+                this.setEditable(!f);
+            });
+            this.valueNotSet = false;
+            this.value = val;
+            this.refreshValue();
         });
-        this.valueNotSet = false;
-        this.value = val;
-        this.refreshValue();
     }
 
     private void refreshValue() {
