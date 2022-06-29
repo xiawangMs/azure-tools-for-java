@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.common;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
@@ -20,12 +21,14 @@ public abstract class AzureSettingsEditor<T extends AzureRunConfigurationBase> e
     }
 
     @Override
+    @ExceptionNotification
     protected void applyEditorTo(@NotNull T conf) throws ConfigurationException {
         this.getPanel().apply(conf);
         conf.validate();
     }
 
     @Override
+    @ExceptionNotification
     protected void resetEditorFrom(@NotNull T conf) {
         this.getPanel().reset(conf);
     }
