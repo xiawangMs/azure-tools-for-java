@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotModule;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -24,11 +25,11 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class WebAppDeploymentSlotsNode extends Node<WebApp> {
+public class WebAppDeploymentSlotsNode extends Node<WebAppDeploymentSlotModule> {
     private final WebApp webApp;
 
     public WebAppDeploymentSlotsNode(@Nonnull WebApp data) {
-        super(data);
+        super(data.getDeploymentModule());
         this.webApp = data;
         this.view(new WebAppDeploymentSlotsNodeView(data));
         this.actions(WebAppActionsContributor.DEPLOYMENT_SLOTS_ACTIONS);

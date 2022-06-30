@@ -130,7 +130,7 @@ public class Tree extends SimpleTree implements DataProvider {
         public void refreshView() {
             synchronized (this.tree) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
+                if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
                     model.nodeChanged(this);
                 }
             }
@@ -139,7 +139,7 @@ public class Tree extends SimpleTree implements DataProvider {
         private void refreshChildrenView() {
             synchronized (this.tree) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
+                if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
                     model.nodeStructureChanged(this);
                 }
             }

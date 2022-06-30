@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDeploymentSlotModule;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -25,11 +26,11 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class FunctionsNode extends Node<FunctionApp> {
+public class FunctionsNode extends Node<FunctionAppDeploymentSlotModule> {
     private final FunctionApp functionApp;
 
     public FunctionsNode(@Nonnull FunctionApp functionApp) {
-        super(functionApp);
+        super(functionApp.getDeploymentModule());
         this.functionApp = functionApp;
         this.view(new FunctionsNodeView(functionApp));
         this.actions(FunctionAppActionsContributor.FUNCTIONS_ACTIONS);

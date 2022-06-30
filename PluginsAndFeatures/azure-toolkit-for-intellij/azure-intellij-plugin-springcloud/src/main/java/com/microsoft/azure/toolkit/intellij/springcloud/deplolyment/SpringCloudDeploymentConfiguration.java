@@ -23,7 +23,6 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
-import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -151,7 +150,6 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         }
 
         @Override
-        @ExceptionNotification
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
             this.panel.setConfiguration(config);
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
@@ -163,7 +161,6 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         }
 
         @Override
-        @ExceptionNotification
         protected void applyEditorTo(@NotNull SpringCloudDeploymentConfiguration config) throws ConfigurationException {
             final List<AzureValidationInfo> infos = this.panel.getAllValidationInfos(true);
             final AzureValidationInfo error = infos.stream()
