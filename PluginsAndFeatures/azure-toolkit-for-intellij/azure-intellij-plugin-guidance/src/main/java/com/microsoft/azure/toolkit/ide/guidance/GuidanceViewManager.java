@@ -1,6 +1,5 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -10,6 +9,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.GuidanceView;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,6 +29,7 @@ public class GuidanceViewManager {
         return instance;
     }
 
+    @AzureOperation(name = "guidance.open_course", type = AzureOperation.Type.ACTION)
     public void openCourseView(@Nonnull final Project project, @Nonnull final CourseConfig courseConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
@@ -36,12 +37,13 @@ public class GuidanceViewManager {
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                final Course course = GuidanceViewManager.createCourse(courseConfig, project);
+                final Course course = new Course(courseConfig, project);
                 guidanceView.showCourseView(course);
             }
         });
     }
 
+    @AzureOperation(name = "guidance.show_courses_view", type = AzureOperation.Type.ACTION)
     public void showCoursesView(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
@@ -54,7 +56,8 @@ public class GuidanceViewManager {
         });
     }
 
-    public void closeCourseView(@Nonnull final Project project) {
+    @AzureOperation(name = "guidance.close_course", type = AzureOperation.Type.ACTION)
+    public void closeGuidanceToolWindow(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
@@ -64,12 +67,6 @@ public class GuidanceViewManager {
             assert toolWindow != null;
             toolWindow.hide();
         });
-    }
-
-    private static Course createCourse(@Nonnull final CourseConfig config, @Nonnull Project project) {
-        final Course course = new Course(config, project);
-        AzureTaskManager.getInstance().runOnPooledThread(course::prepare);
-        return course;
     }
 
     public static class GuidanceViewFactory implements ToolWindowFactory {

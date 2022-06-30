@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 
@@ -36,6 +37,7 @@ public class CreateWebAppTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.create_webapp", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String name = (String) context.getParameter(WEBAPP_NAME);
         final Subscription subscription = Optional.ofNullable((String) context.getParameter(SignInTask.SUBSCRIPTION_ID))

@@ -8,6 +8,7 @@ import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
 
@@ -21,6 +22,7 @@ public class OpenResourceInAzureTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.open_resource_in_azure", type = AzureOperation.Type.SERVICE)
     public void execute() {
         final String id = (String) taskContext.getParameter("webappId");
         final ResourceId resourceId = ResourceId.fromString(id);

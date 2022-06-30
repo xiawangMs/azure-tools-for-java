@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
@@ -114,9 +115,9 @@ public class SummaryPanel extends JPanel {
         detailsPanel.add(new Spacer(), new GridConstraints(0, steps.size(), 1, 1, 0, FILL_HORIZONTAL, 7, 3, null, null, null, 0));
     }
 
+    @AzureOperation(name = "guidance.execute_summary_step.step", params = {"this.step.getTitle()"}, type = AzureOperation.Type.ACTION)
     private void executeStep(final Step step) {
-        final AzureString title = AzureString.format("run action: %s", step.getTitle());
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, step::execute));
+        step.execute();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

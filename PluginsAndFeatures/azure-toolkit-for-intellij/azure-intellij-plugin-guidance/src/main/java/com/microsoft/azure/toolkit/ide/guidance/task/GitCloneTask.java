@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
-import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
@@ -12,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +23,6 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.Optional;
 
 public class GitCloneTask implements Task {
@@ -62,6 +61,7 @@ public class GitCloneTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.clone", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String repository = (String) context.getParameter(REPOSITORY);
         final String branch = (String) context.getParameter(BRANCH);
@@ -85,7 +85,7 @@ public class GitCloneTask implements Task {
             copyConfigurationToWorkspace(workspace);
             ProjectUtil.openOrImport(workspace.toPath(), OpenProjectTask.build().asNewProject());
             if (!context.getProject().isDisposed()) {
-                GuidanceViewManager.getInstance().closeCourseView(context.getProject());
+                GuidanceViewManager.getInstance().closeGuidanceToolWindow(context.getProject());
             }
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);

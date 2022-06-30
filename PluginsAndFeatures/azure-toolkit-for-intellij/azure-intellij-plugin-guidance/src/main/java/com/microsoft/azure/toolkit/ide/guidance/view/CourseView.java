@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.view;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -13,6 +14,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -31,6 +33,8 @@ public class CourseView {
     private JPanel headPanel;
 
     private final Project project;
+    @Getter
+    private Course course;
 
     public CourseView(@Nonnull final Project project) {
         this.project = project;
@@ -52,7 +56,8 @@ public class CourseView {
         });
     }
 
-    public void showCourse(@Nonnull Course course) {
+    public void setCourse(@Nonnull Course course) {
+        this.course = course;
         this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
         this.titleLabel.setText(course.getTitle());
         fillPhase(course);

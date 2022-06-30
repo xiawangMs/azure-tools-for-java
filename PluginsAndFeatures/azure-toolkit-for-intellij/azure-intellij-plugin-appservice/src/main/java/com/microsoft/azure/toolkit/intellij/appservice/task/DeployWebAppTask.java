@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
@@ -35,8 +36,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class DeployWebAppTask implements Task {
     private final Project project;
@@ -70,6 +69,7 @@ public class DeployWebAppTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.deploy_webapp", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         AzureMessager.getMessager().info("Setting up run configuration for web app deployment...");
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
@@ -92,11 +92,7 @@ public class DeployWebAppTask implements Task {
                 }
             }
         })));
-        try {
-            future.get(10, TimeUnit.MINUTES);
-        } catch (final TimeoutException e) {
-            throw new AzureToolkitRuntimeException("Failed to deploy resource to Azure", e);
-        }
+        future.get();
     }
 
     @Nonnull

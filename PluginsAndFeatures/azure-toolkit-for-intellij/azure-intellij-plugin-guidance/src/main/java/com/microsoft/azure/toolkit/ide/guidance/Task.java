@@ -5,10 +5,12 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.Disposable;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface Task {
+public interface Task extends Disposable {
 
     void execute() throws Exception;
 
@@ -30,5 +32,10 @@ public interface Task {
     @Nullable
     default String getDoc() {
         return null;
+    }
+
+    @Override
+    default void dispose() {
+
     }
 }

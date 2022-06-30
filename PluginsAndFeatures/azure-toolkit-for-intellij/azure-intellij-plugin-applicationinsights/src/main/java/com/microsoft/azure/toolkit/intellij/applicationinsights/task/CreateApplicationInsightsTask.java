@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -32,6 +33,7 @@ public class CreateApplicationInsightsTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.create_application_insights", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String name = (String) context.getParameter(APPLICATION_INSIGHTS_NAME);
         final String subscriptionId = (String) context.getParameter(SUBSCRIPTION_ID);

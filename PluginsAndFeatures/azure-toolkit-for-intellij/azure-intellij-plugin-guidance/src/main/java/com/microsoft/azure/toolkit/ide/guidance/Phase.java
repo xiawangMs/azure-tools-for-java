@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.Disposable;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Phase {
+public class Phase implements Disposable {
     @Nonnull
     private final Course course;
 
@@ -132,7 +133,7 @@ public class Phase {
 
     public void execute() {
         setStatus(Status.RUNNING);
-        AzureTaskManager.getInstance().runInBackgroundAsObservable("Validating inputs", () -> validateInputs())
+        AzureTaskManager.getInstance().runInBackgroundAsObservable("Validating inputs", this::validateInputs)
                 .subscribeOn(Schedulers.io())
                 .subscribe(result -> {
                     if (result) {
@@ -180,4 +181,8 @@ public class Phase {
         listenerList.remove(listener);
     }
 
+    @Override
+    public void dispose() {
+        this.getSteps().forEach(Step::dispose);
+    }
 }

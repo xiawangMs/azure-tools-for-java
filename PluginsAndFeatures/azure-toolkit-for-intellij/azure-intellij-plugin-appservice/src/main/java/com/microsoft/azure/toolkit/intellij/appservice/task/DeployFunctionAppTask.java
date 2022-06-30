@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
@@ -35,8 +36,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 // todo: @hanli Remove duplicates with DeployWebAppTask, may create common Deploy Resource Task
 public class DeployFunctionAppTask implements Task {
@@ -53,6 +52,7 @@ public class DeployFunctionAppTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.deploy_function_app", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         AzureMessager.getMessager().info("Setting up run configuration for function app deployment...");
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
@@ -75,11 +75,7 @@ public class DeployFunctionAppTask implements Task {
                 }
             }
         })));
-        try {
-            future.get(10, TimeUnit.MINUTES);
-        } catch (final TimeoutException e) {
-            throw new AzureToolkitRuntimeException("Failed to deploy resource to Azure", e);
-        }
+        future.get();
     }
 
     private RunnerAndConfigurationSettings getRunConfigurationSettings(final String appId, final RunManagerEx manager) {

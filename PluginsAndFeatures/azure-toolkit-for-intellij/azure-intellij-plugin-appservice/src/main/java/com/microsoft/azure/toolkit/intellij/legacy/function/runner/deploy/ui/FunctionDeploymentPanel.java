@@ -53,7 +53,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private AppSettingsTable appSettingsTable;
     private FunctionAppConfig appSettingsFunctionApp;
     private String appSettingsKey = UUID.randomUUID().toString();
-
+    private Module previousModule = null;
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
@@ -140,24 +140,16 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             functionAppComboBox.setValue(new AzureComboBox.ItemReference<>(item -> FunctionAppConfig.isSameApp(item, configuration.getConfig())));
             functionAppComboBox.setConfigModel(configuration.getConfig());
         }
-        final Module previousModule = configuration.getModule();
-        if (previousModule != null) {
-            for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
-                final Module module = cbFunctionModule.getItemAt(i);
-                if (Paths.get(module.getModuleFilePath()).equals(Paths.get(previousModule.getModuleFilePath()))) {
-                    cbFunctionModule.setSelectedIndex(i);
-                    break;
-                }
-            }
-        }
+        this.previousModule = configuration.getModule();
+        selectModule(previousModule);
     }
 
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
-        configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
         // save app settings storage key instead of real value
         configuration.setAppSettingsKey(appSettingsKey);
+        Optional.ofNullable((Module) cbFunctionModule.getSelectedItem()).ifPresent(configuration::saveTargetModule);
         Optional.ofNullable(functionAppComboBox.getValue()).ifPresent(configuration::saveConfig);
     }
 
@@ -197,7 +189,23 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private void fillModules() {
         AzureTaskManager.getInstance()
                 .runOnPooledThreadAsObservable(new AzureTask<>(() -> FunctionUtils.listFunctionModules(project)))
-                .subscribe(modules -> AzureTaskManager.getInstance().runLater(() ->
-                        Arrays.stream(modules).forEach(cbFunctionModule::addItem), AzureTask.Modality.ANY));
+                .subscribe(modules -> AzureTaskManager.getInstance().runLater(() -> {
+                    Arrays.stream(modules).forEach(cbFunctionModule::addItem);
+                    selectModule(previousModule);
+                }, AzureTask.Modality.ANY));
+    }
+
+    // todo: @hanli migrate to use AzureComboBox<Module>
+    private void selectModule(final Module target) {
+        if (target == null) {
+            return;
+        }
+        for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
+            final Module module = cbFunctionModule.getItemAt(i);
+            if (Paths.get(module.getModuleFilePath()).equals(Paths.get(target.getModuleFilePath()))) {
+                cbFunctionModule.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 }

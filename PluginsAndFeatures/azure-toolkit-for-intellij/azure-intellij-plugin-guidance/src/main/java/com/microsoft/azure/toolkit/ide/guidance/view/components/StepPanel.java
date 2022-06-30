@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,16 +42,18 @@ public class StepPanel extends JPanel {
         this.step.addStatusListener(this::updateStatus);
         this.actionButton.setText("Run");
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        this.actionButton.addActionListener(e -> {
-            final AzureString title = AzureString.format("run step '%s'", this.step.getTitle());
-            AzureTaskManager.getInstance().runInBackground(title, this.step::execute);
-        });
+        this.actionButton.addActionListener(e -> execute());
         this.descPanel.setBorder(null);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.step.getDescription()));
         this.renderDescription();
         this.initOutputPanel();
         this.updateStatus(this.step.getStatus());
         this.step.getContext().addContextListener(ignore -> this.renderDescription());
+    }
+
+    @AzureOperation(name = "guidance.execute_step.step", params = {"this.step.getTitle()"}, type = AzureOperation.Type.ACTION)
+    private void execute() {
+        this.step.execute();
     }
 
     private void renderDescription() {

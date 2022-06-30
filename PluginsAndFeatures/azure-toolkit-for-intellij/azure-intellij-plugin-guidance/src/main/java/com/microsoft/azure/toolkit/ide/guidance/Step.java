@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.Disposable;
 import com.microsoft.azure.toolkit.ide.guidance.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.ide.guidance.input.InputManager;
@@ -19,21 +20,29 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import rx.Observable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Step {
+public class Step implements Disposable {
     @Nonnull
     private final String id;
     @Nonnull
@@ -82,7 +91,10 @@ public class Step {
                 setStatus(Status.RUNNING);
                 if (this.phase.validateInputs()) {
                     this.applyInputs();
-                    this.task.execute();
+                    Mono.fromCallable(() -> {
+                        this.task.execute();
+                        return null;
+                    }).subscribeOn(Schedulers.boundedElastic()).timeout(Duration.ofMinutes(10)).block();
                     setStatus(Status.SUCCEED);
                 } else {
                     setStatus(Status.FAILED);
@@ -124,5 +136,10 @@ public class Step {
 
     private void applyInputs() {
         this.phase.getInputs().forEach(GuidanceInput::applyResult);
+    }
+
+    @Override
+    public void dispose() {
+        Optional.of(this.getTask()).ifPresent(Task::dispose);
     }
 }

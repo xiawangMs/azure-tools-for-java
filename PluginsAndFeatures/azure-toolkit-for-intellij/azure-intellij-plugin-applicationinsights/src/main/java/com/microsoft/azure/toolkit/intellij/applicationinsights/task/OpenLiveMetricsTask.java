@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -27,6 +28,7 @@ public class OpenLiveMetricsTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.open_live_metrics", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String applicationInsightsId = (String) context.getParameter("applicationInsightsId");
         final String instrumentKey = (String) context.getParameter("instrumentKey");

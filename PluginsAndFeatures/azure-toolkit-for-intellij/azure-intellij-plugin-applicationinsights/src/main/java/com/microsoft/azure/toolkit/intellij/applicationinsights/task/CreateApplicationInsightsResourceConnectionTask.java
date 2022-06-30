@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
 
@@ -28,6 +29,7 @@ public class CreateApplicationInsightsResourceConnectionTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.create_application_insights_resource_connection", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final Resource resource = getResource();
         final Resource consumer = getModuleConsumer();

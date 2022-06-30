@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +76,7 @@ public class PhasePanel extends JPanel {
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(AllIcons.Actions.Execute);
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        this.actionButton.addActionListener(e -> this.phase.execute(true));
+        this.actionButton.addActionListener(e -> execute());
         this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
         this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.descPanel.setBorder(null);
@@ -94,6 +95,11 @@ public class PhasePanel extends JPanel {
         }
         this.updateStatus(this.phase.getStatus());
         this.phase.getContext().addContextListener(ignore -> this.renderDescription());
+    }
+
+    @AzureOperation(name = "guidance.execute_phase.phase", params = {"this.phase.getTitle()"}, type = AzureOperation.Type.ACTION)
+    private void execute() {
+        this.phase.execute(true);
     }
 
     private void initInputsPanel() {
