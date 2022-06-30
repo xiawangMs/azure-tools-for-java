@@ -17,16 +17,16 @@ public class SelectSubscriptionTask implements Task {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
 
     private final ComponentContext context;
-    private final AzureEventBus.EventListener accountListener;
+    private AzureEventBus.EventListener accountListener;
 
     public SelectSubscriptionTask(@Nonnull final ComponentContext context) {
         this.context = context;
-        this.accountListener = new AzureEventBus.EventListener(ignore ->
-                AzureTaskManager.getInstance().runOnPooledThread(this::selectSubscription));
     }
 
     @Override
     public void prepare() {
+        this.accountListener = new AzureEventBus.EventListener(ignore ->
+                AzureTaskManager.getInstance().runOnPooledThread(this::selectSubscription));
         AzureEventBus.on("account.subscription_changed.account", accountListener);
     }
 
@@ -51,6 +51,9 @@ public class SelectSubscriptionTask implements Task {
 
     @Override
     public void dispose() {
-        AzureEventBus.off("account.subscription_changed.account", accountListener);
+        if (accountListener != null) {
+            AzureEventBus.off("account.subscription_changed.account", accountListener);
+        }
+        accountListener = null;
     }
 }
