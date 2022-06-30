@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
@@ -73,8 +74,10 @@ public class GitCloneTask implements Task {
             final Git git = Git.init().setDirectory(file).call();
             // add remote
             git.remoteAdd().setName(ORIGIN).setUri(new URIish(repository)).call();
-            // set auto crlf to true
-            git.getRepository().getConfig().setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, true);
+            // set auto crlf to true in windows
+            if (SystemInfo.isWindows) {
+                git.getRepository().getConfig().setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, true);
+            }
             // create new branch and check out
             git.fetch().setRemote(ORIGIN).call();
             git.branchCreate().setName(branch).setStartPoint(String.format("%s/%s", ORIGIN, branch)).call();
