@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.guidance.task.TaskManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -22,20 +23,15 @@ import lombok.Setter;
 import lombok.ToString;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import rx.Observable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -85,16 +81,12 @@ public class Step implements Disposable {
 
     public void execute() {
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run task '%s'", this.getTitle()), () -> {
-            final IAzureMessager currentMessager = AzureMessager.getMessager();
             OperationContext.current().setMessager(output);
             try {
                 setStatus(Status.RUNNING);
                 if (this.phase.validateInputs()) {
                     this.applyInputs();
-                    Mono.fromCallable(() -> {
-                        this.task.execute();
-                        return null;
-                    }).subscribeOn(Schedulers.boundedElastic()).timeout(Duration.ofMinutes(10)).block();
+                    Mono.fromCallable(this::executeTask).subscribeOn(Schedulers.boundedElastic()).timeout(Duration.ofMinutes(10)).block();
                     setStatus(Status.SUCCEED);
                 } else {
                     setStatus(Status.FAILED);
@@ -103,10 +95,16 @@ public class Step implements Disposable {
                 setStatus(Status.FAILED);
                 AzureMessager.getMessager().error(e);
                 AzureMessager.getDefaultMessager().error(e);
-            } finally {
-                OperationContext.current().setMessager(currentMessager);
             }
         }));
+    }
+
+    @Nullable
+    @AzureOperation(name = "guidance.execute_task.step", params = "this.title", type = AzureOperation.Type.TASK)
+    private Object executeTask() throws Exception {
+        OperationContext.current().setMessager(output);
+        this.task.execute();
+        return null;
     }
 
     public String getRenderedDescription() {
