@@ -119,6 +119,16 @@
           "task": {
             "name": "task.function.trigger_function"
           }
+        },
+        {
+          "title": "Open live metrics",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.live_metrics",
+            "paramMapping": {
+              "instrumentKey": "insightsInstrumentKey"
+            }
+          }
         }
       ]
     }
