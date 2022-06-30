@@ -153,18 +153,20 @@ public class PhasePanel extends JPanel {
     }
 
     private void updateStatus(Status status) {
-        this.updateStatusIcon(status);
-        this.updateView(status, this.detailsPanel.isVisible());
-        final boolean focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
-        this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
-        this.actionButton.setVisible(focused);
-        final Color bgColor = focused ? BACKGROUND_COLOR : null;
-        doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
-        doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
-        if (status == Status.FAILED) {
-            this.actionButton.setText("Retry");
-            this.toggleDetails(true);
-        }
+        UIUtil.invokeLaterIfNeeded(() -> {
+            this.updateStatusIcon(status);
+            this.updateView(status, this.detailsPanel.isVisible());
+            final boolean focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
+            this.actionButton.setEnabled(status == Status.READY || status == Status.FAILED);
+            this.actionButton.setVisible(focused);
+            final Color bgColor = focused ? BACKGROUND_COLOR : null;
+            doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
+            doForOffsprings(this.inputsPanel, c -> c.setEnabled(status != Status.RUNNING && status != Status.SUCCEED));
+            if (status == Status.FAILED) {
+                this.actionButton.setText("Retry");
+                this.toggleDetails(true);
+            }
+        });
     }
 
     protected void paintComponent(@NotNull Graphics g) {
