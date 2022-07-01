@@ -8,6 +8,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StartStream
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
 
@@ -24,6 +25,7 @@ public class OpenLogStreamingTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.open_log_streaming", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String resourceId = (String) context.getParameter(RESOURCE_ID);
         final Object resource = Azure.az(AzureAppService.class).getById(resourceId);

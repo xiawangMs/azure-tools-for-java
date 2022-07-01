@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -35,6 +36,7 @@ public class TriggerFunctionTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.trigger_function", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String functionId = (String) context.getParameter(FUNCTION_ID);
         final String trigger = (String) context.getParameter(TRIGGER);

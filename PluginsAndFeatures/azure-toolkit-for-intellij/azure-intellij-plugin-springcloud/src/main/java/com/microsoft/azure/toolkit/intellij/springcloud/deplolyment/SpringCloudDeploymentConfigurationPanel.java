@@ -139,7 +139,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     @Override
     public SpringCloudAppConfig getValue() {
         final SpringCloudApp app = Objects.requireNonNull(this.selectorApp.getValue(), "target app is not specified.");
-        final SpringCloudAppConfig config = app instanceof SpringCloudAppDraft ?
+        final SpringCloudAppConfig config = app.isDraftForCreating() ?
             ((SpringCloudAppDraft) app).getConfig() : SpringCloudAppConfig.fromApp(app);
         return this.getValue(config);
     }
@@ -147,6 +147,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     public SpringCloudAppConfig getValue(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         appConfig.setSubscriptionId(Optional.ofNullable(this.selectorSubscription.getValue()).map(Subscription::getId).orElse(null));
+        appConfig.setResourceGroup(Optional.ofNullable(this.selectorCluster.getValue()).map(AzResource::getResourceGroupName).orElse(null));
         appConfig.setClusterName(Optional.ofNullable(this.selectorCluster.getValue()).map(AzResource::getName).orElse(null));
         appConfig.setAppName(Optional.ofNullable(this.selectorApp.getValue()).map(AzResource::getName).orElse(null));
         final AzureArtifact artifact = this.selectorArtifact.getValue();

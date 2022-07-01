@@ -17,7 +17,10 @@ import com.intellij.ui.jcef.JBCefClient;
 import com.intellij.ui.jcef.JBCefJSQuery;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.StringUtils;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
@@ -29,12 +32,21 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 
 public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
+    private static final String TARGET = "target";
+    private static final String SURVEY = "survey";
+    private static final String SUBMIT_SURVEY = "submit-survey";
+    private static final String FEATURE_REQUEST = "feature request";
+    private static final String ISSUE = "issue";
+    private static final String QUALTRICS_SURVEY = "qualtrics survey";
+    private static final String SURVEY_THANKS = "survey thanks";
     private final JBCefJSQuery myJSQueryOpenInBrowser;
     private final JBCefBrowser jbCefBrowser;
     private JPanel pnlRoot;
+    private Project project;
 
     public ProvideFeedbackEditor(final Project project, VirtualFile virtualFile) {
         super(virtualFile);
+        this.project = project;
         this.jbCefBrowser = new JBCefBrowser("https://www.surveymonkey.com/r/PNB5NBL?mode=simple");
         final CefBrowser browser = jbCefBrowser.getCefBrowser();
         final JBCefClient client = jbCefBrowser.getJBCefClient();
@@ -42,14 +54,17 @@ public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
         // Create a JS query instance
         this.myJSQueryOpenInBrowser = JBCefJSQuery.create((JBCefBrowserBase) jbCefBrowser);
         myJSQueryOpenInBrowser.addHandler((e) -> {
-            AzureTaskManager.getInstance().runLater(() -> {
-                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-                fileEditorManager.closeFile(virtualFile);
-            });
+            AzureTaskManager.getInstance().runLater(() -> closeEditor());
             return new JBCefJSQuery.Response("ok!");
         });
         client.addRequestHandler(openLinkWithLocalBrowser(), browser);
         client.addLoadHandler(modifySubmitButtonInSurveyCollectionPage(), browser);
+    }
+
+    @AzureOperation(name = "common.complete_feedback", type = AzureOperation.Type.ACTION)
+    private void closeEditor() {
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        fileEditorManager.closeFile(virtualFile);
     }
 
     @Nonnull
@@ -81,16 +96,34 @@ public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
     private CefRequestHandlerAdapter openLinkWithLocalBrowser() {
         return new CefRequestHandlerAdapter() {
             @Override
+            @AzureOperation(name = "common.feedback_browse", type = AzureOperation.Type.ACTION)
             public boolean onBeforeBrowse(CefBrowser browser, CefFrame frame, CefRequest request, boolean user_gesture, boolean is_redirect) {
-                if (request.getURL().contains("survey-thanks")) {
-                    return true;
-                } else if (!request.getURL().contains("www.surveymonkey.com/r/PNB5NBL")) {
-                    BrowserUtil.browse(request.getURL());
-                    return true;
+                final String target = getBrowserTarget(request);
+                OperationContext.action().setTelemetryProperty(TARGET, target);
+                if (StringUtils.equalsAny(target, SURVEY, SUBMIT_SURVEY)) {
+                    return false;
                 }
-                return false;
+                if (!StringUtils.equals(target, SURVEY_THANKS)) {
+                    BrowserUtil.browse(request.getURL());
+                }
+                return true;
             }
         };
+    }
+
+    private String getBrowserTarget(CefRequest request) {
+        final String url = request.getURL();
+        if (StringUtils.containsIgnoreCase(url, "www.surveymonkey.com/r/PNB5NBL")) {
+            return StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? SURVEY : SUBMIT_SURVEY;
+        } else if (StringUtils.containsIgnoreCase(url, "github.com/Microsoft/azure-tools-for-java/issues/new")) {
+            return StringUtils.containsIgnoreCase(url, "feature request") ? FEATURE_REQUEST : ISSUE;
+        } else if (StringUtils.containsIgnoreCase(url, "microsoft.qualtrics.com/jfe/form/SV_b17fG5QQlMhs2up")) {
+            return QUALTRICS_SURVEY;
+        } else if (StringUtils.containsIgnoreCase(url, "survey-thanks")) {
+            return SURVEY_THANKS;
+        } else {
+            return StringUtils.EMPTY;
+        }
     }
 
     @Override

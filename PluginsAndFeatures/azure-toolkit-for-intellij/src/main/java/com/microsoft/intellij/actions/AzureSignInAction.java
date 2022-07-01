@@ -42,7 +42,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.AzureAnAction;
-import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.intellij.ui.DeviceLoginUI;
 import com.microsoft.intellij.ui.ErrorWindow;
@@ -89,11 +88,11 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     public AzureSignInAction(@Nullable String title) {
-        super(title, title, UIHelperImpl.loadIcon(SignInOutAction.getIcon()));
+        super(title, title, IntelliJAzureIcons.getIcon(SignInOutAction.getIcon()));
     }
 
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
-        Project project = DataKeys.PROJECT.getData(e.getDataContext());
+        final Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
         return true;
     }
@@ -109,7 +108,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     @Override
     public void update(AnActionEvent e) {
         try {
-            boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
             if (isSignIn) {
                 e.getPresentation().setText(SIGN_OUT);
                 e.getPresentation().setDescription(SIGN_OUT);
@@ -117,8 +116,8 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
                 e.getPresentation().setText(SIGN_IN);
                 e.getPresentation().setDescription(SIGN_IN);
             }
-            e.getPresentation().setIcon(UIHelperImpl.loadIcon(SignInOutAction.getIcon()));
-        } catch (Exception ex) {
+            e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(SignInOutAction.getIcon()));
+        } catch (final Exception ex) {
             ex.printStackTrace();
             LOGGER.error("update", ex);
         }
@@ -151,11 +150,11 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     public static void onAzureSignIn(Project project) {
-        JFrame frame = WindowManager.getInstance().getFrame(project);
-        AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-        boolean isSignIn = authMethodManager.isSignedIn();
+        final JFrame frame = WindowManager.getInstance().getFrame(project);
+        final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+        final boolean isSignIn = authMethodManager.isSignedIn();
         if (isSignIn) {
-            boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), getSignOutWarningMessage(authMethodManager),
+            final boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), getSignOutWarningMessage(authMethodManager),
                 "Azure Sign Out", IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
             if (res) {
                 EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
@@ -165,7 +164,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         } else {
             signInIfNotSignedIn(project).subscribe(isLoggedIn -> {
                 if (isLoggedIn) {
-                    AzureAccount az = Azure.az(AzureAccount.class);
+                    final AzureAccount az = Azure.az(AzureAccount.class);
                     AzureTaskManager.getInstance().runOnPooledThread(() ->
                         authMethodManager.getAzureManager().getSelectedSubscriptions().stream().limit(5).forEach(s -> {
                             // pre-load regions;
@@ -192,7 +191,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             }
             return Mono.just(false);
         }).doOnError(e -> {
-            Throwable cause = Exceptions.getFinalCause(e);
+            final Throwable cause = Exceptions.getFinalCause(e);
             if (shouldNoticeErrorToUser(cause)) {
                 AzureMessager.getMessager().error(e);
             }
@@ -203,10 +202,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         if (cause instanceof InterruptedException) {
             return false;
         }
-        if (cause instanceof MsalClientException && StringUtils.equals(cause.getMessage(), "No Authorization code was returned from the server")) {
-            return false;
-        }
-        return true;
+        return !(cause instanceof MsalClientException) || !StringUtils.equals(cause.getMessage(), "No Authorization code was returned from the server");
     }
 
     private static void persistAuthMethodDetails() {
@@ -221,7 +217,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         }
 
         AuthConfiguration auth = new AuthConfiguration();
-        AuthType type = dialog.getData();
+        final AuthType type = dialog.getData();
         auth.setType(type);
         if (type == AuthType.SERVICE_PRINCIPAL) {
             final ServicePrincipalLoginDialog spDialog = new ServicePrincipalLoginDialog(project);
@@ -240,24 +236,24 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             final AuthConfiguration auth;
             try {
                 auth = showSignInWindowAndGetAuthConfiguration(project);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 sink.error(e);
                 return;
             }
-            Single<AuthMethodDetails> single;
+            final Single<AuthMethodDetails> single;
             if (auth.getType() != AuthType.DEVICE_CODE) {
                 single = loginNonDeviceCodeSingle(auth);
             } else {
                 single = loginDeviceCodeSingle().map(account -> {
                     AzureTaskManager.getInstance().runLater(() -> deviceLoginUI.promptDeviceCode(account.getDeviceCode()));
 
-                    CompletableFuture<AuthMethodDetails> future =
+                    final CompletableFuture<AuthMethodDetails> future =
                         account.continueLogin().map(ac -> fromAccountEntity(ac.getEntity())).doFinally(signal -> deviceLoginUI.closePrompt()).toFuture();
                     deviceLoginUI.setFuture(future);
 
                     try {
                         return future.get();
-                    } catch (Throwable ex) {
+                    } catch (final Throwable ex) {
                         if (!(ex instanceof CancellationException)) {
                             ex.printStackTrace();
                             ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
@@ -345,7 +341,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             operation.trackProperties(properties);
             operation.trackProperty(AZURE_ENVIRONMENT, Azure.az(AzureCloud.class).getName());
             return loginCallable.call();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             if (shouldNoticeErrorToUser(e)) {
                 EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             }

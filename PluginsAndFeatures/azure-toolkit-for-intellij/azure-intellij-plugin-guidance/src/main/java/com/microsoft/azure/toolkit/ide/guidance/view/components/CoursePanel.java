@@ -6,6 +6,7 @@ import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.ViewUtils;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
@@ -61,6 +62,7 @@ public class CoursePanel {
         this.rootPanel.addMouseListener(coursePanelListener);
     }
 
+    @AzureOperation(name = "guidance.open_course.course", params = {"this.course.getTitle()"}, type = AzureOperation.Type.ACTION)
     public void openGuidance() {
         GuidanceViewManager.getInstance().openCourseView(project, course);
     }

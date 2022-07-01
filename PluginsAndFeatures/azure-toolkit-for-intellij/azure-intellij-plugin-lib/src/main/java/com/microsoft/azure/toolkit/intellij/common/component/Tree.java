@@ -128,16 +128,20 @@ public class Tree extends SimpleTree implements DataProvider {
 
         @Override
         public void refreshView() {
-            final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-            if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
-                model.nodeChanged(this);
+            synchronized (this.tree) {
+                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
+                    model.nodeChanged(this);
+                }
             }
         }
 
         private void refreshChildrenView() {
-            final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-            if (Objects.nonNull(this.getParent()) && Objects.nonNull(model)) {
-                model.nodeStructureChanged(this);
+            synchronized (this.tree) {
+                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
+                    model.nodeStructureChanged(this);
+                }
             }
         }
 
@@ -211,13 +215,15 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         public synchronized void clearChildren() {
-            this.removeAllChildren();
-            this.loaded = null;
-            if (this.getAllowsChildren()) {
-                this.add(new LoadingNode());
-                this.tree.collapsePath(new TreePath(this.getPath()));
+            synchronized (this.tree) {
+                this.removeAllChildren();
+                this.loaded = null;
+                if (this.getAllowsChildren()) {
+                    this.add(new LoadingNode());
+                    this.tree.collapsePath(new TreePath(this.getPath()));
+                }
+                this.refreshChildrenView();
             }
-            this.refreshChildrenView();
         }
 
         @Override

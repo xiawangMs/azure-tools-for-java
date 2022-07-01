@@ -39,7 +39,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 .getMessageBus().syncPublisher(ConnectionTopics.CONNECTIONS_REFRESHED)
                 .connectionsRefreshed();
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(t -> OperationBundle.description("connector|explorer.refresh"));
+                .title(t -> OperationBundle.description("connector.refresh_connections"));
         final Action<Object> refreshAction = new Action<>(REFRESH_CONNECTIONS, refreshHandler, refreshView);
 
         final Consumer<Module> addHandler = (m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject());

@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.Disposable;
 import com.microsoft.azure.toolkit.ide.guidance.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.ide.guidance.input.InputManager;
@@ -12,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.guidance.task.TaskManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -19,9 +21,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +38,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Step {
+public class Step implements Disposable {
     @Nonnull
     private final String id;
     @Nonnull
@@ -76,13 +81,12 @@ public class Step {
 
     public void execute() {
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run task '%s'", this.getTitle()), () -> {
-            final IAzureMessager currentMessager = AzureMessager.getMessager();
             OperationContext.current().setMessager(output);
             try {
                 setStatus(Status.RUNNING);
                 if (this.phase.validateInputs()) {
                     this.applyInputs();
-                    this.task.execute();
+                    Mono.fromCallable(this::executeTask).subscribeOn(Schedulers.boundedElastic()).timeout(Duration.ofMinutes(10)).block();
                     setStatus(Status.SUCCEED);
                 } else {
                     setStatus(Status.FAILED);
@@ -91,10 +95,16 @@ public class Step {
                 setStatus(Status.FAILED);
                 AzureMessager.getMessager().error(e);
                 AzureMessager.getDefaultMessager().error(e);
-            } finally {
-                OperationContext.current().setMessager(currentMessager);
             }
         }));
+    }
+
+    @Nullable
+    @AzureOperation(name = "guidance.execute_task.step", params = "this.title", type = AzureOperation.Type.TASK)
+    private Object executeTask() throws Exception {
+        OperationContext.current().setMessager(output);
+        this.task.execute();
+        return null;
     }
 
     public String getRenderedDescription() {
@@ -124,5 +134,10 @@ public class Step {
 
     private void applyInputs() {
         this.phase.getInputs().forEach(GuidanceInput::applyResult);
+    }
+
+    @Override
+    public void dispose() {
+        Optional.of(this.getTask()).ifPresent(Task::dispose);
     }
 }

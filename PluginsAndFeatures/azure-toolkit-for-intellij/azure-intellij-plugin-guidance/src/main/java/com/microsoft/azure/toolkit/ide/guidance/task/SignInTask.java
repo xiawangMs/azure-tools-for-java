@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class SignInTask implements Task {
     private final ComponentContext context;
 
     @Override
+    @AzureOperation(name = "guidance.sign_in", type = AzureOperation.Type.SERVICE)
     public void execute() {
         final AzureAccount az = Azure.az(AzureAccount.class);
         if (az.isSignedIn()) {
@@ -52,6 +55,7 @@ public class SignInTask implements Task {
                 final Action<Object> tryAzureAction = AzureActionManager.getInstance().getAction(IntellijAccountActionsContributor.TRY_AZURE);
                 throw new AzureToolkitRuntimeException("Failed to sign in or there is no subscription in your account", signInAction, tryAzureAction);
             } else {
+                AuthMethodManager.getInstance().setAuthMethodDetails(methodDetails);
                 AzureMessager.getMessager().info(AzureString.format("Sign in successfully with %s", Objects.requireNonNull(methodDetails).getAccountEmail()));
             }
         }

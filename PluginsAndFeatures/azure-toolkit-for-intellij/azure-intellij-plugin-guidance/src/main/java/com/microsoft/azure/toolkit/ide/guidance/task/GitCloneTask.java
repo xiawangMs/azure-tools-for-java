@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Course;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
@@ -11,6 +12,7 @@ import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -60,6 +62,7 @@ public class GitCloneTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.clone", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String repository = (String) context.getParameter(REPOSITORY);
         final String branch = (String) context.getParameter(BRANCH);
@@ -71,19 +74,21 @@ public class GitCloneTask implements Task {
             final Git git = Git.init().setDirectory(file).call();
             // add remote
             git.remoteAdd().setName(ORIGIN).setUri(new URIish(repository)).call();
-            // set auto crlf to true
-            git.getRepository().getConfig().setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, true);
+            // set auto crlf to true in windows
+            if (SystemInfo.isWindows) {
+                git.getRepository().getConfig().setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, true);
+            }
             // create new branch and check out
             git.fetch().setRemote(ORIGIN).call();
             git.branchCreate().setName(branch).setStartPoint(String.format("%s/%s", ORIGIN, branch)).call();
             git.checkout().setName(branch).call();
             AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
             // Copy get start file to path
-            final File target = StringUtils.isEmpty(repositoryPath) ? file : new File(file, repositoryPath);
-            copyConfigurationToWorkspace(target);
-            ProjectUtil.openOrImport(target.toPath(), OpenProjectTask.build().asNewProject());
+            final File workspace = StringUtils.isEmpty(repositoryPath) ? file : new File(file, repositoryPath);
+            copyConfigurationToWorkspace(workspace);
+            ProjectUtil.openOrImport(workspace.toPath(), OpenProjectTask.build().asNewProject());
             if (!context.getProject().isDisposed()) {
-                GuidanceViewManager.getInstance().closeCourseView(context.getProject());
+                GuidanceViewManager.getInstance().closeGuidanceToolWindow(context.getProject());
             }
         } catch (final Exception ex) {
             AzureMessager.getMessager().error(ex);
@@ -97,15 +102,16 @@ public class GitCloneTask implements Task {
         this.context.applyResult(DEFAULT_GIT_DIRECTORY, defaultPath);
     }
 
-    private void copyConfigurationToWorkspace(final File target) throws IOException {
+    private void copyConfigurationToWorkspace(final File workspace) throws IOException {
         if (StringUtils.isEmpty(course.getUri())) {
             return;
         }
+        final File configurationDirectory = GuidanceConfigManager.getInstance().initConfigurationDirectory(workspace.getAbsolutePath());
         try (final InputStream inputStream = GuidanceConfigManager.class.getResourceAsStream(course.getUri())) {
             if (inputStream == null) {
                 return;
             }
-            FileUtils.copyInputStreamToFile(inputStream, new File(target, GuidanceConfigManager.GETTING_START_CONFIGURATION_NAME));
+            FileUtils.copyInputStreamToFile(inputStream, new File(configurationDirectory, GuidanceConfigManager.GETTING_START_CONFIGURATION_NAME));
         }
     }
 }

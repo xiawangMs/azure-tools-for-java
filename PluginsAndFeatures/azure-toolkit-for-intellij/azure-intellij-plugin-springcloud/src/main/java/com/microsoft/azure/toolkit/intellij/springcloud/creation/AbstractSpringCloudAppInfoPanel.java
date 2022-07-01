@@ -102,6 +102,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
 
     protected SpringCloudAppConfig getValue(SpringCloudAppConfig config) {
         config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
+        config.setResourceGroup(Optional.ofNullable(this.getSelectorCluster().getValue()).map(AzResource::getResourceGroupName).orElse(null));
         config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(AzResource::getName).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;

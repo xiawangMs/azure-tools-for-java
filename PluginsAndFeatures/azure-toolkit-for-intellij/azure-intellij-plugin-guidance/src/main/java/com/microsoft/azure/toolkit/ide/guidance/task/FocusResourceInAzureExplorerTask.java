@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
@@ -23,6 +24,7 @@ public class FocusResourceInAzureExplorerTask implements Task {
     private final ComponentContext context;
 
     @Override
+    @AzureOperation(name = "guidance.focus_resource", type = AzureOperation.Type.SERVICE)
     public void execute() {
         final String resourceId = (String) context.getParameter(RESOURCE_ID);
         final AbstractAzResource<?, ?, ?> resource = Azure.az().getById(resourceId);

@@ -6,6 +6,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
 
@@ -21,6 +22,7 @@ public class OpenInBrowserTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.open_in_browser", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String webAppId = (String) context.getParameter("webappId");
         final WebApp webApp = Azure.az(AzureWebApp.class).webApp(webAppId);

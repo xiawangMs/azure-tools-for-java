@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,8 +87,10 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         this.txtName.setValue(data.getName());
         this.subscriptionComboBox.setValue(data.getSubscription());
         // todo: @hanli refactor ai library to support get draft resource group
-        Optional.ofNullable(data.getResourceGroup()).ifPresent(resourceGroupComboBox::setValue);
-        Optional.ofNullable(data.getRegion()).ifPresent(regionComboBox::setValue);
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            Optional.ofNullable(data.getResourceGroup()).ifPresent(resourceGroupComboBox::setValue);
+            Optional.ofNullable(data.getRegion()).ifPresent(regionComboBox::setValue);
+        });
     }
 
     @Override

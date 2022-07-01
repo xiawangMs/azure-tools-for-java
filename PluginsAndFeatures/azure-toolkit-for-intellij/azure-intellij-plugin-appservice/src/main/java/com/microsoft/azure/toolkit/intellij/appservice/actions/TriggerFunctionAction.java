@@ -17,7 +17,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
 import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.StringUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -30,13 +29,20 @@ import java.util.Optional;
 
 public class TriggerFunctionAction {
 
-    private static final String HTTP_REQUEST_TEMPLATE =
+    private static final String REQUEST_TEMPLATE =
             "### Please refer https://docs.microsoft.com/en-us/azure/azure-functions/functions-manually-run-non-http for details\n" +
                     "POST https://%s/admin/functions/%s\n" +
                     "Content-Type: application/json\n" +
                     "x-functions-key: %s\n" +
                     "\n" +
                     "%s";
+
+    private static final String HTTP_TRIGGER_REQUEST_TEMPLATE =
+            "### Please refer https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger for details\n" +
+                    "POST https://%s/api/%s?code=%s\n" +
+                    "Content-Type: application/json\n" +
+                    "\n" +
+                    "{}";
     private static final String EMPTY_CONTENT = "{}";
     private static final String INPUT_CONTENT = "{ \"input\" : \"test\" }";
 
@@ -64,11 +70,16 @@ public class TriggerFunctionAction {
         }
     }
 
-    private static CharSequence getRequestContent(FunctionEntity functionEntity) {
+    private static String getRequestContent(FunctionEntity functionEntity) {
         final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(functionEntity.getFunctionAppId());
         final String triggerType = Optional.ofNullable(functionEntity.getTrigger())
                 .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
-        final String content = StringUtils.equalsIgnoreCase(triggerType, "timerTrigger") ? EMPTY_CONTENT : INPUT_CONTENT;
-        return String.format(HTTP_REQUEST_TEMPLATE, functionApp.getHostName(), functionEntity.getName(), functionApp.getMasterKey(), content);
+        if (StringUtils.equalsIgnoreCase(triggerType, "httpTrigger")) {
+            return String.format(HTTP_TRIGGER_REQUEST_TEMPLATE, functionApp.getHostName(), functionEntity.getName(), functionApp.getMasterKey());
+        } else if (StringUtils.equalsIgnoreCase(triggerType, "timerTrigger")) {
+            return String.format(REQUEST_TEMPLATE, functionApp.getHostName(), functionEntity.getName(), functionApp.getMasterKey(), EMPTY_CONTENT);
+        } else {
+            return String.format(REQUEST_TEMPLATE, functionApp.getHostName(), functionEntity.getName(), functionApp.getMasterKey(), INPUT_CONTENT);
+        }
     }
 }

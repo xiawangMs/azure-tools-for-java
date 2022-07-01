@@ -84,7 +84,7 @@ public class ServicePlanCreationDialog extends AzureDialog<AppServicePlanDraft>
     @Override
     public AppServicePlanDraft getValue() {
         final AppServicePlanDraft draft = Azure.az(AzureAppService.class).plans(this.subscription.getId())
-            .create(this.textName.getValue(), "");
+            .create(this.textName.getValue(), "<none>");
         draft.setRegion(this.region).setOperatingSystem(this.os).setPricingTier(this.comboBoxPricingTier.getValue());
         return draft;
     }

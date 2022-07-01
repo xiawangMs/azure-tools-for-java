@@ -61,7 +61,10 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
     @Override
     public <D> void registerAction(Action.Id<D> id, Action<D> action) {
-        ActionManager.getInstance().registerAction(id.getId(), new AnActionWrapper<>(action));
+        final ActionManager manager = ActionManager.getInstance();
+        if (Objects.isNull(manager.getAction(id.getId()))) {
+            manager.registerAction(id.getId(), new AnActionWrapper<>(action));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -80,7 +83,10 @@ public class IntellijAzureActionManager extends AzureActionManager {
     public void registerGroup(String id, ActionGroup group) {
         final ActionGroupWrapper nativeGroup = new ActionGroupWrapper(group);
         group.setOrigin(nativeGroup);
-        ActionManager.getInstance().registerAction(id, nativeGroup);
+        final ActionManager manager = ActionManager.getInstance();
+        if (Objects.isNull(manager.getAction(id))) {
+            manager.registerAction(id, nativeGroup);
+        }
     }
 
     @Override
@@ -156,7 +162,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final IView.Label view = this.group.getView();
             final Presentation template = this.getTemplatePresentation();
             if (Objects.nonNull(view)) {
-                AnActionWrapper.applyView(view, template);
+                template.setText(view.getLabel());
             } else {
                 template.setText("Action Group");
             }

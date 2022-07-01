@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.66.0](#3660)
   - [3.65.0](#3650)
   - [3.64.0](#3640)
   - [3.63.0](#3630)
@@ -84,9 +85,24 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.66.0
+### Added
+- New "Getting Started with Azure" experience.    
+- Support for IntelliJ IDEA 2022.2(EAP).
+- SNAPSHOT and BETA versions of this plugin are available in [`Dev` channel](https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij/versions/dev).    
+
+### Fixed
+- Error "java.lang.IllegalStateException" occurs if there are resources having same name but different resource groups.
+- Configurations go back to default after deploying an artifact to a newly created Azure Spring App.
+- [#6730](https://github.com/microsoft/azure-tools-for-java/issues/6730): Uncaught Exception java.lang.NullPointerException when creating/updating spring cloud app.
+- [#6725](https://github.com/microsoft/azure-tools-for-java/issues/6725): Uncaught Exception com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException: you are not signed-in. when deploying to Azure Web App.
+- [#6696](https://github.com/microsoft/azure-tools-for-java/issues/6696): Unable to run debug on azure java function on intellij (2022.1) with azure toolkit (3.65.1).
+- [#6671](https://github.com/microsoft/azure-tools-for-java/issues/6671): Uncaught Exception java.lang.Throwable: Executor with context action id: "RunClass" was already registered!
+
 ## 3.65.0
 ### Added
-- New "Provide feedback" experience. 
+- New "Provide feedback" experience.
+  <img src="https://user-images.githubusercontent.com/69189193/171312904-f52d6991-af50-4b81-a4d9-b4186a510e14.png" alt="screenshot of 'provide feedback'" width="500"/>
 - New Azure service support: Azure Application Insights
   - direct resource management in Azure Explorer.
   - resource connection from both local projects and Azure computing services.

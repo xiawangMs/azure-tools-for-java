@@ -58,7 +58,7 @@
       "description": "Create resources and related resource connection for deployment",
       "steps": [
         {
-          "title": "Create web app",
+          "title": "Create Web App",
           "description": null,
           "inputs": [
             {
@@ -82,7 +82,7 @@
           }
         },
         {
-          "title": "Create application insight app",
+          "title": "Create Application Insights app",
           "description": null,
           "task": {
             "name": "task.application_insights.create",
@@ -96,7 +96,7 @@
           }
         },
         {
-          "title": "Create resource connection between your project and application insight ${context.applicationInsightName}",
+          "title": "Create resource connection between your project and Application Insights ${context.applicationInsightName}",
           "description": null,
           "task": {
             "name": "task.application_insights.create_connector"
@@ -137,6 +137,13 @@
           "description": null,
           "task": {
             "name": "task.webapp.open_in_browser"
+          }
+        },
+        {
+          "title": "Open live metrics",
+          "description": null,
+          "task": {
+            "name": "task.application_insights.live_metrics"
           }
         }
       ]

@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Optional;
 
 public class AzureArtifact {
     private final String name;
@@ -38,8 +39,8 @@ public class AzureArtifact {
         if (StringUtils.isEmpty(path)) {
             return null;
         }
-        final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-        return createFromFile(virtualFile);
+        return Optional.ofNullable(LocalFileSystem.getInstance().findFileByPath(path))
+                .map(AzureArtifact::createFromFile).orElse(null);
     }
 
     public static AzureArtifact createFromFile(@NotNull VirtualFile virtualFile) {

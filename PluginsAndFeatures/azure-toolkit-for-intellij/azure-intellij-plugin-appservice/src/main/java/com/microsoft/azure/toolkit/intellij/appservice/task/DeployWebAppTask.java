@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
@@ -68,6 +69,7 @@ public class DeployWebAppTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.deploy_webapp", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         AzureMessager.getMessager().info("Setting up run configuration for web app deployment...");
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
@@ -82,10 +84,10 @@ public class DeployWebAppTask implements Task {
             @Override
             public void processTerminated(@NotNull ProcessEvent event) {
                 final Boolean result = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_RESULT);
-                final Throwable throwable = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_EXCEPTION);
                 if (Boolean.TRUE.equals(result)) {
                     future.set(null);
                 } else {
+                    final Throwable throwable = event.getProcessHandler().getUserData(AzureRunProfileState.AZURE_RUN_STATE_EXCEPTION);
                     future.setException(Objects.requireNonNullElseGet(throwable, () -> new AzureToolkitRuntimeException("Execution was terminated, please see output below")));
                 }
             }

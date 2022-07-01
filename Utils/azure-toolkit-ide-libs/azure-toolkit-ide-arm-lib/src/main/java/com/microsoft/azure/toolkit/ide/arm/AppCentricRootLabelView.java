@@ -26,6 +26,8 @@ public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResource
         super(service, NAME, iconPath);
         this.subscriptionListener = new AzureEventBus.EventListener(this::onLogin);
         this.logoutListener = new AzureEventBus.EventListener(this::onLogout);
+        AzureEventBus.on("account.login.account", subscriptionListener);
+        AzureEventBus.on("account.restore_sign_in", subscriptionListener);
         AzureEventBus.on("account.subscription_changed.account", subscriptionListener);
         AzureEventBus.on("account.logout.account", logoutListener);
         this.onLogin(null);

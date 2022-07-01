@@ -1,6 +1,5 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -10,17 +9,19 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.GuidanceView;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GuidanceViewManager {
 
-    public static final String TOOL_WINDOW_ID = "Get Started with Azure";
+    public static final String TOOL_WINDOW_ID = "Getting Started with Azure";
 
     private static final GuidanceViewManager instance = new GuidanceViewManager();
 
@@ -28,27 +29,25 @@ public class GuidanceViewManager {
         return instance;
     }
 
+    @AzureOperation(name = "guidance.open_course.course", params = {"courseConfig.getTitle()"}, type = AzureOperation.Type.ACTION)
     public void openCourseView(@Nonnull final Project project, @Nonnull final CourseConfig courseConfig) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
-        if (toolWindow == null) {
-            return;
-        }
         AzureTaskManager.getInstance().runLater(() -> {
+            assert toolWindow != null;
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
-                final Course course = GuidanceViewManager.createCourse(courseConfig, project);
+                final Course course = new Course(courseConfig, project);
                 guidanceView.showCourseView(course);
             }
         });
     }
 
+    @AzureOperation(name = "guidance.show_courses_view", type = AzureOperation.Type.ACTION)
     public void showCoursesView(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
-        if (toolWindow == null) {
-            return;
-        }
         AzureTaskManager.getInstance().runLater(() -> {
+            assert toolWindow != null;
             toolWindow.show();
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
@@ -57,27 +56,20 @@ public class GuidanceViewManager {
         });
     }
 
-    public void closeCourseView(@Nonnull final Project project) {
+    @AzureOperation(name = "guidance.close_course", type = AzureOperation.Type.ACTION)
+    public void closeGuidanceToolWindow(@Nonnull final Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
-        if (toolWindow == null) {
-            return;
-        }
         AzureTaskManager.getInstance().runLater(() -> {
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
                 guidanceView.showCoursesView();
             }
+            assert toolWindow != null;
             toolWindow.hide();
         });
     }
 
-    private static Course createCourse(@Nonnull final CourseConfig config, @Nonnull Project project) {
-        final Course course = new Course(config, project);
-        AzureTaskManager.getInstance().runOnPooledThread(course::prepare);
-        return course;
-    }
-
-    public static class GuidanceViewFactory implements ToolWindowFactory, DumbAware {
+    public static class GuidanceViewFactory implements ToolWindowFactory {
         private static final Map<Project, GuidanceView> guidanceViewMap = new ConcurrentHashMap<>();
 
         @Override
@@ -85,7 +77,7 @@ public class GuidanceViewManager {
             final GuidanceView guidanceView = new GuidanceView(project);
             guidanceViewMap.put(project, guidanceView);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-            final JBScrollPane view = new JBScrollPane(guidanceView);
+            final JBScrollPane view = new JBScrollPane(guidanceView, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             final Content content = contentFactory.createContent(view, "", false);
             toolWindow.getContentManager().addContent(content);
         }

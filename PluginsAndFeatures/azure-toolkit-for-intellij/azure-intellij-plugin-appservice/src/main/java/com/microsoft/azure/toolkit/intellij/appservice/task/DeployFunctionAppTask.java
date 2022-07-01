@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
@@ -51,6 +52,7 @@ public class DeployFunctionAppTask implements Task {
     }
 
     @Override
+    @AzureOperation(name = "guidance.deploy_function_app", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         AzureMessager.getMessager().info("Setting up run configuration for function app deployment...");
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);

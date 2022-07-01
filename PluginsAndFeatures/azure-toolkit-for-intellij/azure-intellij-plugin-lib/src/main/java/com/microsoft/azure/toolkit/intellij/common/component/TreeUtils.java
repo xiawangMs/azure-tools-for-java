@@ -182,21 +182,13 @@ public class TreeUtils {
         final Object highlighted = tree.getClientProperty(HIGHLIGHTED_RESOURCE_KEY);
         final boolean toHighlightThisNode = Optional.ofNullable(highlighted).map(h -> ((Pair<Object, Long>) h))
             .filter(h -> Objects.equals(node.getUserObject(), h.getLeft())).isPresent();
+        SimpleTextAttributes attributes = view.isEnabled() ? SimpleTextAttributes.REGULAR_ATTRIBUTES : SimpleTextAttributes.GRAY_ATTRIBUTES;
         if (selected && toHighlightThisNode) {
-            renderer.setBorder(BorderFactory.createLineBorder(JBColor.RED));
-            renderer.setBackground(JBColor.YELLOW);
-            renderer.setForeground(JBColor.RED);
-            renderer.setOpaque(false);
-        } else {
-            if(selected){
-                tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, null);
-            }
-            renderer.setOpaque(true);
-            renderer.setBorder(null);
-            renderer.setBackground(null);
-            renderer.setForeground(null);
+            attributes = attributes.derive(SimpleTextAttributes.STYLE_SEARCH_MATCH, JBColor.RED, JBColor.YELLOW, null);
+        } else if (selected) {
+            tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, null);
         }
-        renderer.append(view.getLabel(), view.isEnabled() ? SimpleTextAttributes.REGULAR_ATTRIBUTES : SimpleTextAttributes.GRAY_ATTRIBUTES);
+        renderer.append(view.getLabel(), attributes);
         renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES, true);
         renderer.setToolTipText(Optional.ofNullable(view.getTips()).orElse(view.getLabel()));
     }

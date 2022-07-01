@@ -8,6 +8,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
@@ -16,16 +17,21 @@ public class SelectSubscriptionTask implements Task {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
 
     private final ComponentContext context;
-    private final AzureEventBus.EventListener accountListener;
+    private AzureEventBus.EventListener accountListener;
 
     public SelectSubscriptionTask(@Nonnull final ComponentContext context) {
         this.context = context;
+    }
+
+    @Override
+    public void prepare() {
         this.accountListener = new AzureEventBus.EventListener(ignore ->
-                AzureTaskManager.getInstance().runOnPooledThread(() -> selectSubscription()));
+                AzureTaskManager.getInstance().runOnPooledThread(this::selectSubscription));
         AzureEventBus.on("account.subscription_changed.account", accountListener);
     }
 
     @Override
+    @AzureOperation(name = "guidance.select_subscription", type = AzureOperation.Type.SERVICE)
     public void execute() {
         selectSubscription();
     }
@@ -43,4 +49,11 @@ public class SelectSubscriptionTask implements Task {
         AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
     }
 
+    @Override
+    public void dispose() {
+        if (accountListener != null) {
+            AzureEventBus.off("account.subscription_changed.account", accountListener);
+        }
+        accountListener = null;
+    }
 }

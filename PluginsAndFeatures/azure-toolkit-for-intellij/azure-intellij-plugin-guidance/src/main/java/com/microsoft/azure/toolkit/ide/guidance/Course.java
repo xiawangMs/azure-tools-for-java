@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Course {
+public class Course implements Disposable {
     @Nonnull
     private final String id;
     @Nonnull
@@ -109,5 +110,10 @@ public class Course {
 
     public void removePhaseListener(BiConsumer<Phase, Phase> listener) {
         phaseListeners.remove(listener);
+    }
+
+    @Override
+    public void dispose() {
+        this.getPhases().forEach(Phase::dispose);
     }
 }

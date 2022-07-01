@@ -1,5 +1,22 @@
-<!-- Version: 3.65.0 -->
+<!-- Version: 3.66.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.66.0
+### Added
+- New "Getting Started with Azure" experience.    
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.gettingstarted.gif" alt="screenshot of 'getting started'" width="500"/>
+- Support for IntelliJ IDEA 2022.2(EAP).
+- SNAPSHOT and BETA versions of this plugin are available in [`Dev` channel](https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij/versions/dev).    
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.devchannel.png" alt="screenshot of 'dev channel'" width="500"/>
+
+### Fixed
+- Error "java.lang.IllegalStateException" occurs if there are resources having same name but different resource groups.
+- Configurations go back to default after deploying an artifact to a newly created Azure Spring App.
+- [#6730](https://github.com/microsoft/azure-tools-for-java/issues/6730): Uncaught Exception java.lang.NullPointerException when creating/updating spring cloud app.
+- [#6725](https://github.com/microsoft/azure-tools-for-java/issues/6725): Uncaught Exception com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException: you are not signed-in. when deploying to Azure Web App.
+- [#6696](https://github.com/microsoft/azure-tools-for-java/issues/6696): Unable to run debug on azure java function on intellij (2022.1) with azure toolkit (3.65.1).
+- [#6671](https://github.com/microsoft/azure-tools-for-java/issues/6671): Uncaught Exception java.lang.Throwable: Executor with context action id: "RunClass" was already registered!
+
 ## 3.65.0
 ### Added
 - New "Provide feedback" experience.    

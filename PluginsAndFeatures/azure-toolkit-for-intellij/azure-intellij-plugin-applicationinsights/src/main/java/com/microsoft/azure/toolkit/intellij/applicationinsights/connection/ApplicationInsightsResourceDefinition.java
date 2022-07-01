@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.intellij.CommonConst;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
@@ -75,7 +74,6 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
         public static synchronized File getApplicationInsightsLibrary() {
             if (!applicationInsightsLibrary.exists()) {
                 try {
-                    AzureMessager.getMessager().info("Downloading java agent for application insights...");
                     FileUtils.copyURLToFile(new URL(APPLICATION_INSIGHTS_URL), applicationInsightsLibrary);
                 } catch (IOException e) {
                     return null;

@@ -11,7 +11,7 @@ import lombok.Getter;
 
 public enum AzureActionEnum {
 
-    REFRESH("Refresh", "Refreshing", AzureIcons.Common.REFRESH, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY),
+    REFRESH("Refresh", "Refreshing", AzureIcons.Action.REFRESH, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY),
     CREATE("Create", "Creating", AzureIcons.Common.CREATE, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY + 2),
 
     OPEN_IN_PORTAL("Open In Portal", "Opening", AzureIcons.Common.OPEN_IN_PORTAL, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY + 10),

@@ -15,6 +15,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
@@ -24,6 +25,7 @@ public class ProvideFeedbackAction extends AnAction implements DumbAware {
     public static final Key<String> ID = new Key<>("ProvideFeedbackAction");
 
     @Override
+    @AzureOperation(name = "common.provide_feedback", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(Objects.requireNonNull(anActionEvent.getProject()));
         if (fileEditorManager == null) {
