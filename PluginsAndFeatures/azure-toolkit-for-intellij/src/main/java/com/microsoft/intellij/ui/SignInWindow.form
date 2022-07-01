@@ -104,11 +104,7 @@
   </grid>
   <buttonGroups>
     <group name="authTypeGroup" bound="true">
-      <member id="b585a"/>
       <member id="aeb98"/>
-      <member id="b8c75"/>
-      <member id="335d5"/>
-      <member id="b5b0d"/>
     </group>
   </buttonGroups>
 </form>

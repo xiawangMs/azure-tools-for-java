@@ -21,6 +21,8 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.accessibility.AccessibleContext;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
@@ -56,19 +58,35 @@ public class SignInWindow extends AzureDialogWrapper {
         cliBtn.addActionListener(e -> updateSelection());
         cliBtn.setActionCommand(AuthType.AZURE_CLI.name());
         cliBtn.putClientProperty(DESC, cliDesc);
+        bindDescriptionLabel(cliBtn, cliDesc);
         oauthBtn.addActionListener(e -> updateSelection());
         oauthBtn.setActionCommand(AuthType.OAUTH2.name());
         oauthBtn.putClientProperty(DESC, oauthDesc);
+        bindDescriptionLabel(oauthBtn, oauthDesc);
         deviceBtn.addActionListener(e -> updateSelection());
         deviceBtn.setActionCommand(AuthType.DEVICE_CODE.name());
         deviceBtn.putClientProperty(DESC, deviceDesc);
+        bindDescriptionLabel(deviceBtn, deviceDesc);
         spBtn.addActionListener(e -> updateSelection());
         spBtn.setActionCommand(AuthType.SERVICE_PRINCIPAL.name());
         spBtn.putClientProperty(DESC, spDesc);
+        bindDescriptionLabel(spBtn, spDesc);
+
+        authTypeGroup = new ButtonGroup();
+        authTypeGroup.add(cliBtn);
+        authTypeGroup.add(oauthBtn);
+        authTypeGroup.add(deviceBtn);
+        authTypeGroup.add(spBtn);
         final Dimension size = this.contentPane.getPreferredSize();
         this.contentPane.setPreferredSize(new Dimension(500, size.height));
         cliBtn.setSelected(true);
         updateSelection();
+    }
+
+    private void bindDescriptionLabel(@Nonnull final JRadioButton button, @Nonnull final JLabel label) {
+        label.setLabelFor(button);
+        final AccessibleContext accessibleContext = button.getAccessibleContext();
+        accessibleContext.setAccessibleDescription(accessibleContext.getAccessibleDescription() + " " + label.getText());
     }
 
     private void updateSelection() {
