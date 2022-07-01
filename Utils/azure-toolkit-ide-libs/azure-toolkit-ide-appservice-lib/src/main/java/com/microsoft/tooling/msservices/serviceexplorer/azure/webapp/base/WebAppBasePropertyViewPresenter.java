@@ -175,6 +175,6 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         }
         telemetryMap.put("operationName", actionName);
         telemetryMap.put("serviceName", "WebApp");
-        AzureTelemeter.log(AzureTelemetry.Type.INFO, telemetryMap);
+        AzureTelemeter.log(AzureTelemetry.Type.OP_END, telemetryMap);
     }
 }
