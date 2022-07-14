@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-resource-connector-lib')
+    compile 'com.spotify:docker-client:8.16.0'
+    compile 'io.kubernetes:client-java:16.0.0'
+    compile 'com.microsoft.azure:azure-toolkit-storage-lib'
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    compile 'com.microsoft.azure:azure-toolkit-ide-containerservice-lib'
+}

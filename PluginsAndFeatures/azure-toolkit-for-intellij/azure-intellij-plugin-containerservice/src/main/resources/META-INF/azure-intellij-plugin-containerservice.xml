@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.containerservice.ContainerServiceNodeProvider"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.containerservice.ContainerServiceActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.containerservice.IntelliJContainerServiceActionsContributor"/>
+    </extensions>
+</idea-plugin>

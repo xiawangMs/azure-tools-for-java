@@ -92,12 +92,12 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         return deployTarget;
     }
 
-    private void applyResourceConnection(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
+    private void applyResourceConnection(@Nonnull WebAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
         uploadJavaAgent(deployTarget);
         updateApplicationSettings(deployTarget, processHandler);
     }
 
-    private void uploadJavaAgent(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget) {
+    private void uploadJavaAgent(@Nonnull WebAppBase<?, ?, ?> deployTarget) {
         final File javaAgent = webAppConfiguration.getJavaAgent();
         if (javaAgent == null || !javaAgent.exists()) {
             return;
@@ -107,7 +107,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         updateAppServiceVMOptions(deployTarget, targetPath);
     }
 
-    private void deployJavaAgentToAppService(AppServiceAppBase<?, ?, ?> deployTarget, File javaAgent, String targetPath) {
+    private void deployJavaAgentToAppService(WebAppBase<?, ?, ?> deployTarget, File javaAgent, String targetPath) {
         AppServiceFile file;
         try {
             file = deployTarget.getFileByPath(targetPath);
