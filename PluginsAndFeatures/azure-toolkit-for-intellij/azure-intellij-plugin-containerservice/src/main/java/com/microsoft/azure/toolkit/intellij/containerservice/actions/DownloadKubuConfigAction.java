@@ -5,11 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.containerservice.actions;
 
-import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ShowSettingsUtil;
-import com.intellij.openapi.options.ex.ConfigurableExtensionPointUtil;
 import com.intellij.openapi.project.Project;
-import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.StringUtils;
 import com.microsoft.azure.toolkit.intellij.common.FileChooser;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -21,6 +18,8 @@ import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -37,17 +36,18 @@ public class DownloadKubuConfigAction {
             final byte[] content = isAdmin ? cluster.getAdminKubeConfig() : cluster.getUserKubeConfig();
             FileUtils.writeByteArrayToFile(destFile, content);
             AzureMessager.getMessager().info(AzureString.format("Save kubernetes configuration file for %s to %s successfully.",
-                    cluster.getName(), destFile.getAbsolutePath()), "Azure", getOpenKubernetesAction(project));
+                    cluster.getName(), destFile.getAbsolutePath()), "Azure", getOpenKubernetesAction(project, destFile));
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e);
         }
     }
 
-    private static Action getOpenKubernetesAction(@Nonnull Project project) {
+    private static Action getOpenKubernetesAction(@Nonnull Project project, @Nonnull File file) {
         final Consumer<Void> consumer = ignore -> {
-            final Configurable kubernetes = ConfigurableExtensionPointUtil.getConfigurables(project, true).stream()
-                    .filter(configurable -> StringUtils.equals(configurable.getDisplayName(), "Kubernetes"))
-                    .findFirst().orElse(null);
+//            final Configurable kubernetes = ConfigurableExtensionPointUtil.getConfigurables(project, true).stream()
+//                    .filter(configurable -> StringUtils.equals(configurable.getDisplayName(), "Kubernetes"))
+//                    .findFirst().orElse(null);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(file.getAbsolutePath()), null);
             AzureTaskManager.getInstance().runLater(() -> ShowSettingsUtil.getInstance().showSettingsDialog(project, "Kubernetes"));
         };
         final ActionView.Builder view = new ActionView.Builder("Set kubeconfig file for project")

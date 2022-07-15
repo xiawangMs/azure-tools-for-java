@@ -32,22 +32,22 @@ public class ContainerServiceActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder adminConfigView = new ActionView.Builder("Download kubeconfig (admin)")
+        final ActionView.Builder adminConfigView = new ActionView.Builder("Download Kubeconfig (Admin)")
                 .title(s -> Optional.ofNullable(s).map(r -> description("kubernetes.kubu_config_admin.kubernetes", ((KubernetesCluster) r).name())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isRunning());
         am.registerAction(DOWNLOAD_CONFIG_ADMIN, new Action<>(DOWNLOAD_CONFIG_ADMIN, adminConfigView));
 
-        final ActionView.Builder userConfigView = new ActionView.Builder("Download kubeconfig (user)")
+        final ActionView.Builder userConfigView = new ActionView.Builder("Download Kubeconfig (User)")
                 .title(s -> Optional.ofNullable(s).map(r -> description("kubernetes.kubu_config_user.kubernetes", ((KubernetesCluster) r).name())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isRunning());
         am.registerAction(DOWNLOAD_CONFIG_USER, new Action<>(DOWNLOAD_CONFIG_USER, userConfigView));
 
-        final ActionView.Builder getAdminCredentialView = new ActionView.Builder("Get credential (admin)")
+        final ActionView.Builder getAdminCredentialView = new ActionView.Builder("Get Kubernetes Credential (Admin)")
                 .title(s -> Optional.ofNullable(s).map(r -> description("kubernetes.get_credential_admin.kubernetes", ((KubernetesCluster) r).name())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isRunning());
         am.registerAction(GET_CREDENTIAL_ADMIN, new Action<>(GET_CREDENTIAL_ADMIN, getAdminCredentialView));
 
-        final ActionView.Builder getUserCredentialView = new ActionView.Builder("Get credential (user)")
+        final ActionView.Builder getUserCredentialView = new ActionView.Builder("Get Kubernetes Credential (User)")
                 .title(s -> Optional.ofNullable(s).map(r -> description("kubernetes.get_credential_user.kubernetes", ((KubernetesCluster) r).name())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isRunning());
         am.registerAction(GET_CREDENTIAL_USER, new Action<>(GET_CREDENTIAL_USER, getUserCredentialView));

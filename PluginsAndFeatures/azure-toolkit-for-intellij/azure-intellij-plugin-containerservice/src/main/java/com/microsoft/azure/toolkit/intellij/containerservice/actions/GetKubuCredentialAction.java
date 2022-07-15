@@ -37,6 +37,9 @@ public class GetKubuCredentialAction {
 
     private static void mergeConfigToKubConfig(File newConfigFile) throws IOException {
         final File configFile = Path.of(System.getProperty("user.home"), KubeConfig.KUBEDIR, KubeConfig.KUBECONFIG).toFile();
+        if (!configFile.exists() || configFile.getTotalSpace() == 0) {
+
+        }
         final KubeConfig origin = KubeConfig.loadKubeConfig(new FileReader(configFile));
         final ArrayList<Object> users = origin.getUsers();
         final ArrayList<Object> clusters = origin.getClusters();
