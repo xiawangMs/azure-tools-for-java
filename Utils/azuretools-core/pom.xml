@@ -73,7 +73,7 @@
                     <verbose>false</verbose>
                     <outxml>true</outxml>
                     <forceAjcCompile>true</forceAjcCompile>
-                    <sources /><!-- this is important!-->
+                    <sources/><!-- this is important!-->
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>com.microsoft.azure</groupId>
@@ -164,8 +164,11 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure</artifactId>
-            <version>${azure.version}</version>
+            <artifactId>azure-mgmt-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-mgmt-resources</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>

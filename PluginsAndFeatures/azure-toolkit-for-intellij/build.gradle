@@ -187,7 +187,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
-    compile 'com.microsoft.azure:azure-client-authentication'
+    compile 'com.microsoft.azure:azure-mgmt-eventhub'
     aspect "com.microsoft.azure:azure-toolkit-common-lib", {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"

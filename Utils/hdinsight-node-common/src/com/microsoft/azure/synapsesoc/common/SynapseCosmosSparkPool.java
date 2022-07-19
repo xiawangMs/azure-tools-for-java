@@ -17,12 +17,12 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;
 import com.microsoft.azure.projectarcadia.common.ArcadiaWorkSpace;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.schedulers.Schedulers;
 
@@ -68,10 +68,9 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
             }
             String subscriptionId = matcher.group("sid");
 
-            // Get SubscriptionDetail from subscription ID
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            SubscriptionDetail subscription = subscriptionManager.getSubscriptionIdToSubscriptionDetailsMap().getOrDefault(subscriptionId, null);
+            // Get Subscription from subscription ID
+            final Account account = Azure.az(AzureAccount.class).account();
+            Subscription subscription = account.getSubscription(subscriptionId);
             if (subscription == null) {
                 throw new IOException("User has no permission to access subscription " + subscriptionId + ".");
             }
@@ -103,7 +102,7 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
                     storageRootPath == null ? null : new AzureSparkCosmosCluster.StorageAccount(
                             azureSparkServerlessAccount.getDetailResponse().defaultDataLakeStoreAccount(),
                             storageRootPath,
-                            azureSparkServerlessAccount.getSubscription().getSubscriptionId());
+                            azureSparkServerlessAccount.getSubscription().getId());
 
             synchronized (this) {
                 if (!isConfigInfoAvailable()) {

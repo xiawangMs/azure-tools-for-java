@@ -9,12 +9,12 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationErrorHandler;
 import com.microsoft.azure.hdinsight.sdk.common.RequestCallback;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.helpers.azure.rest.AzureAADHelper;
 import com.microsoft.tooling.msservices.helpers.azure.rest.RestServiceManager;
 import com.microsoft.tooling.msservices.helpers.azure.rest.RestServiceManagerBaseImpl;
@@ -33,18 +33,17 @@ public class ClusterOperationImpl implements IClusterOperation {
       * @return cluster raw data info
       * @throws IOException
       */
-     public List<ClusterRawInfo> listCluster(final SubscriptionDetail subscription) throws AzureCmdException {
+     public List<ClusterRawInfo> listCluster(final Subscription subscription) throws AzureCmdException {
           try {
-              String response = requestWithToken(subscription.getTenantId(), (accessToken) -> {
-                      Environment environment = AuthMethodManager.getInstance().getAzureManager().getEnvironment();
-                      String managementUrl = Environment.valueOf(environment.getName()).getAzureEnvironment().resourceManagerEndpoint();
-                      return AzureAADHelper.executeRequest(managementUrl,
-                              String.format("/subscriptions/%s/providers/Microsoft.HDInsight/clusters?api-version=%s", subscription.getSubscriptionId(), VERSION),
-                              RestServiceManager.ContentType.Json,
-                              "GET",
-                              null,
-                              accessToken,
-                              new RestServiceManagerBaseImpl());
+               String response = requestWithToken(subscription.getTenantId(), (accessToken) -> {
+                    String managementUrl = Azure.az(AzureCloud.class).getOrDefault().getResourceManagerEndpoint();
+                    return AzureAADHelper.executeRequest(managementUrl,
+                            String.format("/subscriptions/%s/providers/Microsoft.HDInsight/clusters?api-version=%s", subscription.getId(), VERSION),
+                            RestServiceManager.ContentType.Json,
+                            "GET",
+                            null,
+                            accessToken,
+                            new RestServiceManagerBaseImpl());
                       });
 
                return new AuthenticationErrorHandler<List<ClusterRawInfo>>() {
@@ -69,12 +68,12 @@ public class ClusterOperationImpl implements IClusterOperation {
       * @return cluster configuration info
       * @throws IOException
       */
-     public ClusterConfiguration getClusterConfiguration(final SubscriptionDetail subscription, final String clusterId) throws AzureCmdException {
+     public ClusterConfiguration getClusterConfiguration(final Subscription subscription, final String clusterId) throws AzureCmdException {
           try {
                String response = requestWithToken(subscription.getTenantId(), new RequestCallback<String>() {
                     @Override
                     public String execute(String accessToken) throws Throwable {
-                         String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
+                         String managementURI = Azure.az(AzureCloud.class).getOrDefault().getResourceManagerEndpoint();
                          return AzureAADHelper.executeRequest(managementURI,
                                  String.format("%s/configurations?api-version=%s", clusterId.replaceAll("/+$", ""), VERSION),
                                  RestServiceManager.ContentType.Json,
@@ -106,13 +105,7 @@ public class ClusterOperationImpl implements IClusterOperation {
      @NotNull
      public <T> T requestWithToken(@NotNull String tenantId, @NotNull final RequestCallback<T> requestCallback)
              throws Throwable {
-          AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-          // not signed in
-          if (azureManager == null) {
-               return null;
-          }
-
-          String accessToken = azureManager.getAccessToken(tenantId);
+          String accessToken = IdeAzureAccount.getInstance().getAccessTokenForTrack1(tenantId);
           return requestCallback.execute(accessToken);
      }
 }

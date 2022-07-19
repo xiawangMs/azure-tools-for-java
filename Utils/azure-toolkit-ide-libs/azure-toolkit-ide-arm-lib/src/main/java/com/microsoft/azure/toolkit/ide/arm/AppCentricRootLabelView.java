@@ -26,16 +26,16 @@ public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResource
         super(service, NAME, iconPath);
         this.subscriptionListener = new AzureEventBus.EventListener(this::onLogin);
         this.logoutListener = new AzureEventBus.EventListener(this::onLogout);
-        AzureEventBus.on("account.login.account", subscriptionListener);
+        AzureEventBus.on("account.logged_in.account", subscriptionListener);
         AzureEventBus.on("account.restore_sign_in", subscriptionListener);
         AzureEventBus.on("account.subscription_changed.account", subscriptionListener);
-        AzureEventBus.on("account.logout.account", logoutListener);
+        AzureEventBus.on("account.logged_out.account", logoutListener);
         this.onLogin(null);
     }
 
     private void onLogin(AzureEvent azureEvent) {
         final AzureAccount az = Azure.az(AzureAccount.class);
-        if (!az.isSignedIn()) {
+        if (!az.isLoggedIn()) {
             this.label = NAME;
         } else {
             final Account account = az.account();
@@ -60,6 +60,6 @@ public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResource
     public void dispose() {
         super.dispose();
         AzureEventBus.on("account.subscription_changed.account", subscriptionListener);
-        AzureEventBus.off("account.logout.account", logoutListener);
+        AzureEventBus.off("account.logged_out.account", logoutListener);
     }
 }

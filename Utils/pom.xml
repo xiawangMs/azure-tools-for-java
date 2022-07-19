@@ -32,7 +32,7 @@
     <name>${project.artifactId}-${project.version}</name>
     <properties>
         <azuretool.version>3.67.0-SNAPSHOT</azuretool.version>
-        <azure.version>1.41.2</azure.version>
+        <azure.version>1.41.3</azure.version>
         <kotlin.version>1.4.20</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
         <findsecbugs.version>1.11.0</findsecbugs.version>
@@ -239,6 +239,36 @@
                 <version>${azure.toolkit-ide-lib.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-mgmt-redis</artifactId>
+                <version>${azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-mgmt-resources</artifactId>
+                <version>${azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-mgmt-compute</artifactId>
+                <version>${azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-mgmt-network</artifactId>
+                <version>${azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-mgmt-eventhub</artifactId>
+                <version>${azure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-mgmt-storage</artifactId>
+                <version>${azure.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.reactivex</groupId>

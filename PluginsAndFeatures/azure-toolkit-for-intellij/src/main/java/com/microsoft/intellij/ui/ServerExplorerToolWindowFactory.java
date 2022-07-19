@@ -12,12 +12,16 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.options.newEditor.SettingsDialog;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
@@ -37,7 +41,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
@@ -78,6 +82,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
+import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener, DumbAware {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -114,9 +119,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // initialize tree
         ComponentUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
         tree.setRootVisible(false);
-        AzureEventBus.on("azure.explorer.highlight_resource", new AzureEventBus.EventListener(e -> {
-            TreeUtils.highlightResource(tree, e.getSource());
-        }));
+        AzureEventBus.on("azure.explorer.highlight_resource", new AzureEventBus.EventListener(e -> TreeUtils.highlightResource(tree, e.getSource())));
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
@@ -166,12 +169,12 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private void treeMousePressed(MouseEvent e, JTree tree) {
         // delegate click to the node's click action if this is a left button click
         if (SwingUtilities.isLeftMouseButton(e)) {
-            TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+            final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
             if (treePath == null) {
                 return;
             }
             // get the tree node associated with left mouse click
-            Node node = getTreeNodeOnMouseClick(tree, treePath);
+            final Node node = getTreeNodeOnMouseClick(tree, treePath);
             // if the node in question is in a "loading" state then we
             // do not propagate the click event to it
             if (Objects.nonNull(node) && !node.isLoading()) {
@@ -180,17 +183,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // for right click show the context menu populated with all the
             // actions from the node
         } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-            TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
+            final TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
             if (treePath == null) {
                 return;
             }
             // get the tree node associated with right mouse click
-            Node node = getTreeNodeOnMouseClick(tree, treePath);
+            final Node node = getTreeNodeOnMouseClick(tree, treePath);
             if (Objects.nonNull(node) && node.hasNodeActions()) {
                 // select the node which was right-clicked
                 tree.getSelectionModel().setSelectionPath(treePath);
 
-                JPopupMenu menu = createPopupMenuForNode(node);
+                final JPopupMenu menu = createPopupMenuForNode(node);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
@@ -202,8 +205,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         if (raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || raw instanceof LoadingNode) {
             return null;
         }
-        SortableTreeNode treeNode = (SortableTreeNode) raw;
-        Node node = (Node) treeNode.getUserObject();
+        final SortableTreeNode treeNode = (SortableTreeNode) raw;
+        final Node node = (Node) treeNode.getUserObject();
         // set tree and tree path to expand the node later
         node.setTree(tree);
         node.setTreePath(treePath);
@@ -241,7 +244,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
-        SortableTreeNode treeNode = new SortableTreeNode(node, true);
+        final SortableTreeNode treeNode = new SortableTreeNode(node, true);
 
         // associate the DefaultMutableTreeNode with the Node via it's "viewData"
         // property; this allows us to quickly retrieve the DefaultMutableTreeNode
@@ -268,7 +271,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private void removeEventHandlers(Node node) {
         node.removePropertyChangeListener(this);
 
-        ObservableList<Node> childNodes = node.getChildNodes();
+        final ObservableList<Node> childNodes = node.getChildNodes();
         childNodes.removeAllChangeListeners();
 
         if (node.hasChildNodes()) {
@@ -291,7 +294,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // this event is fired whenever a property on a node in the
         // model changes; we respond by triggering a node change
         // event in the tree's model
-        Node node = (Node) evt.getSource();
+        final Node node = (Node) evt.getSource();
 
         // the treeModel object can be null before it is initialized
         // from createToolWindowContent; we ignore property change
@@ -325,7 +328,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             switch (e.getAction()) {
                 case add:
                     // create child tree nodes for the new nodes
-                    for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                    for (final Node childNode : (Collection<Node>) e.getNewItems()) {
                         if (isOutdatedModule(childNode)) {
                             continue;
                         }
@@ -335,7 +338,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 case remove:
                     // unregistered all event handlers recursively and remove
                     // child nodes from the tree
-                    for (Node childNode : (Collection<Node>) e.getOldItems()) {
+                    for (final Node childNode : (Collection<Node>) e.getOldItems()) {
                         if (isOutdatedModule(childNode)) {
                             continue;
                         }
@@ -356,18 +359,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         }
     }
 
-    private class NodeTreeCellRenderer extends NodeRenderer {
+    private static class NodeTreeCellRenderer extends NodeRenderer {
         private Icon inlineActionIcon = null;
 
         @Override
         public void customizeCellRenderer(@NotNull JTree jtree,
-                                          final Object v,
+                                          final Object value,
                                           boolean selected,
                                           boolean expanded,
                                           boolean isLeaf,
                                           int row,
                                           boolean focused) {
-            Object value = v;
             inlineActionIcon = null;
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
                 final com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?> node =
@@ -388,8 +390,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
 
             // if the node has an icon set then we use that
-            SortableTreeNode treeNode = (SortableTreeNode) value;
-            Node node = (Node) treeNode.getUserObject();
+            final SortableTreeNode treeNode = (SortableTreeNode) value;
+            final Node node = (Node) treeNode.getUserObject();
 
             // "node" can be null if it's the root node which we keep hidden to simulate
             // a multi-root tree control
@@ -447,6 +449,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
         final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
         toolWindow.setTitleActions(Arrays.asList(getStartAction, refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));
+        if (toolWindow instanceof ToolWindowEx) {
+            final AnAction devBlogsAction = ActionManager.getInstance().getAction("AzureToolkit.ViewDevBlogs");
+            final AnAction documentAction = ActionManager.getInstance().getAction("AzureToolkit.ViewToolingDocument");
+            final AnAction whatsNewAction = ActionManager.getInstance().getAction("Actions.WhatsNew");
+            final AnAction reportIssueAction = ActionManager.getInstance().getAction("AzureToolkit.GithubIssue");
+            final AnAction featureRequestAction = ActionManager.getInstance().getAction("AzureToolkit.FeatureRequest");
+            final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("AzureToolkit.OpenSdkReferenceBook");
+            final AnAction openAzureSettingsAction = ActionManager.getInstance().getAction(OPEN_AZURE_SETTINGS.getId());
+            ((ToolWindowEx) toolWindow).setAdditionalGearActions(new DefaultActionGroup(documentAction, devBlogsAction, whatsNewAction, reportIssueAction,
+                    featureRequestAction, Separator.create(), openSdkReferenceBookAction, openAzureSettingsAction));
+        }
     }
 
     private boolean isOutdatedModule(Node node) {
@@ -469,7 +482,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         @Override
         public void update(@NotNull AnActionEvent e) {
-            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            final boolean isSignIn = IdeAzureAccount.getInstance().isLoggedIn();
             e.getPresentation().setEnabled(isSignIn);
         }
     }

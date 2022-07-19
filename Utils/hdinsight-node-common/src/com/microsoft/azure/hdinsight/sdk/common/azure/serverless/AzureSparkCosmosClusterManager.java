@@ -19,13 +19,14 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.api.GetAccountsListResponse;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -41,7 +42,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static rx.Observable.*;
+import static rx.Observable.concat;
+import static rx.Observable.empty;
+import static rx.Observable.from;
 
 public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                                            ILogger {
@@ -79,10 +82,8 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
         this.httpMap.put("common", new AzureHttpObservable(ApiVersion.VERSION));
 
         // Invalid cached accounts when signing out or changing subscription selection
-        AuthMethodManager.getInstance().addSignOutEventListener(() -> accounts = ImmutableSortedSet.of());
-        if (getAzureManager() != null) {
-            getAzureManager().getSubscriptionManager().addListener(ev -> accounts = ImmutableSortedSet.of());
-        }
+        AzureEventBus.once("account.logged_out.account", (t, e) -> accounts = ImmutableSortedSet.of());
+        AzureEventBus.on("account.subscription_changed.account", new AzureEventBus.EventListener(e -> accounts = ImmutableSortedSet.of()));
     }
 
     //
@@ -111,11 +112,6 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .orElse(null);
     }
 
-    @Nullable
-    public AzureManager getAzureManager() {
-        return AuthMethodManager.getInstance().getAzureManager();
-    }
-
     /**
      * Get the cached clusters, non-block
      *
@@ -124,19 +120,21 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
-        if (getAzureManager() == null) {
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        if (!az.isLoggedIn()) {
             return ImmutableSortedSet.of();
         }
 
         return ImmutableSortedSet.copyOf(accounts.stream()
-                .flatMap(account -> account.getClusters().stream())
-                .iterator());
+            .flatMap(account -> account.getClusters().stream())
+            .iterator());
     }
 
     @NotNull
     @Override
     public ClusterContainer refresh() {
-        if (getAzureManager() == null) {
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        if (!az.isLoggedIn()) {
             return this;
         }
 
@@ -179,20 +177,21 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .defaultIfEmpty(this);
     }
 
-    private Observable<List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>> getAzureDataLakeAccountsRequest() {
-        if (getAzureManager() == null) {
+    private Observable<List<Triple<Subscription, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>> getAzureDataLakeAccountsRequest() {
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        if (!az.isLoggedIn()) {
             return Observable.error(new AuthException(
-                    "Can't get Azure Data Lake account since the user isn't signed in, please sign in by Azure Explorer."));
+                "Can't get Azure Data Lake account since the user isn't signed in, please sign in by Azure Explorer."));
         }
 
         // Loop subscriptions to get all accounts
         return Observable
-                .fromCallable(() -> getAzureManager().getSubscriptionManager().getSelectedSubscriptionDetails())
-                .flatMap(Observable::from)             // Get Subscription details one by one
-                .map(sub -> Pair.of(
-                        sub,
-                        URI.create(getSubscriptionsUri(sub.getSubscriptionId()).toString() + "/")
-                           .resolve(REST_SEGMENT_ADL_ACCOUNT)))
+            .fromCallable(() -> az.account().getSelectedSubscriptions())
+            .flatMap(Observable::from)             // Get Subscription details one by one
+            .map(sub -> Pair.of(
+                sub,
+                URI.create(getSubscriptionsUri(sub.getId()).toString() + "/")
+                    .resolve(REST_SEGMENT_ADL_ACCOUNT)))
                 .doOnNext(pair -> log().debug("Pair(Subscription, AccountsListUri): " + pair.toString()))
                 .map(subUriPair -> Pair.of(
                         subUriPair.getLeft(),
@@ -207,8 +206,8 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
                                 .onErrorResumeNext(err -> {
                                     log().warn(String.format("Ignore subscription %s(%s) with exception",
-                                                             subAccountsObPair.getLeft().getSubscriptionName(),
-                                                             subAccountsObPair.getLeft().getSubscriptionId()),
+                                                    subAccountsObPair.getLeft().getName(),
+                                                    subAccountsObPair.getLeft().getId()),
                                             err);
 
                                     return empty();
@@ -236,13 +235,13 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     }
 
     @NotNull
-    private synchronized AzureHttpObservable getHttp(SubscriptionDetail subscriptionDetail) {
-        if (httpMap.containsKey(subscriptionDetail.getSubscriptionId())) {
-            return httpMap.get(subscriptionDetail.getSubscriptionId());
+    private synchronized AzureHttpObservable getHttp(Subscription subscriptionDetail) {
+        if (httpMap.containsKey(subscriptionDetail.getId())) {
+            return httpMap.get(subscriptionDetail.getId());
         }
 
         AzureHttpObservable subHttp = new AzureManagementHttpObservable(subscriptionDetail, ApiVersion.VERSION);
-        httpMap.put(subscriptionDetail.getSubscriptionId(), subHttp);
+        httpMap.put(subscriptionDetail.getId(), subHttp);
 
         return subHttp;
     }
@@ -261,7 +260,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
     @NotNull
     private AzureSparkCosmosClusterManager updateWithResponse(
-            List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>> accountsResponse) {
+            List<Triple<Subscription, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>> accountsResponse) {
         accounts = ImmutableSortedSet.copyOf(accountsResponse
                 .stream()
                 .map(subAccountBasicDetailTriple ->     // Triple: subscription, accountBasic, accountDetail
@@ -269,9 +268,9 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                 subAccountBasicDetailTriple.getLeft(),
                                 // endpoint property is account's base URI
                                 URI.create("https://" + subAccountBasicDetailTriple.getMiddle().endpoint()),
-                                           subAccountBasicDetailTriple.getMiddle().name())
-                                   .setBasicResponse(subAccountBasicDetailTriple.getMiddle())
-                                   .setDetailResponse(subAccountBasicDetailTriple.getRight()))
+                                subAccountBasicDetailTriple.getMiddle().name())
+                                .setBasicResponse(subAccountBasicDetailTriple.getMiddle())
+                                .setDetailResponse(subAccountBasicDetailTriple.getRight()))
                 .iterator());
 
         return this;

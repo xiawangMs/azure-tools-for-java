@@ -50,8 +50,8 @@ import com.microsoft.azure.toolkit.lib.network.publicipaddress.PublicIpAddressDr
 import com.microsoft.azure.toolkit.lib.network.virtualnetwork.Network;
 import com.microsoft.azure.toolkit.lib.network.virtualnetwork.NetworkDraft;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import io.jsonwebtoken.lang.Collections;
 import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -464,7 +464,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
             if (networkSecurityGroup instanceof NetworkSecurityGroupDraft) {
                 rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((NetworkSecurityGroupDraft) networkSecurityGroup).getSecurityRules();
-                rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
+                rdoAllowSelectedInboundPorts.setSelected(!CollectionUtils.isEmpty(securityRuleList));
                 pnlPorts.setValue(securityRuleList);
                 pnlBasicPorts.setValue(securityRuleList);
             } else if (networkSecurityGroup.exists()) {

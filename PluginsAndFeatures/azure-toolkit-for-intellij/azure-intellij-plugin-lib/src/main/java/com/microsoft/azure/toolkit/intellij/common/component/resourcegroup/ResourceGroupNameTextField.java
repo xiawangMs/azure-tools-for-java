@@ -4,7 +4,6 @@
  */
 package com.microsoft.azure.toolkit.intellij.common.component.resourcegroup;
 
-import com.microsoft.azure.CloudException;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -52,7 +51,7 @@ public class ResourceGroupNameTextField extends AzureTextInput {
             if (Azure.az(AzureResources.class).groups(subscription.getId()).exists(value)) {
                 return AzureValidationInfo.error(String.format(CONFLICT_NAME, subscription.getName()), this);
             }
-        } catch (final CloudException e) {
+        } catch (final Exception e) {
             return AzureValidationInfo.error(e.getMessage(), this);
         }
         return AzureValidationInfo.success(this);

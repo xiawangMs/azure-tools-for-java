@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+@FunctionalInterface
 public interface TextDocumentListenerAdapter extends DocumentListener {
     default void insertUpdate(final DocumentEvent e) {
         this.onDocumentChanged();
@@ -21,6 +22,5 @@ public interface TextDocumentListenerAdapter extends DocumentListener {
         this.onDocumentChanged();
     }
 
-    default void onDocumentChanged() {
-    }
+    void onDocumentChanged();
 }

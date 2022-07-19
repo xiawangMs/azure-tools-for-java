@@ -87,10 +87,11 @@
           id="Azure Activity Log"
           canCloseContents="true"
           icon="/icons/Common/AzureActivityLog.svg"/>
-    <projectConfigurable groupId="root"
+    <applicationConfigurable parentId="tools"
                          id="com.microsoft.intellij.AzureConfigurable"
-                         provider="com.microsoft.intellij.AzureConfigurableProvider"
-                         dynamic="true"/>
+                         provider="com.microsoft.intellij.AzureConfigurableProvider"/>
+    <projectConfigurable parentId="root" instance="com.microsoft.intellij.DeprecatedAzureConfigurable"
+                             id="com.microsoft.intellij.DeprecatedAzureConfigurable"/>
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
@@ -263,6 +264,8 @@
       <separator/>
       <reference ref="AzureToolkit.OpenSdkReferenceBook"/>
       <separator/>
+      <reference ref="AzureToolkit.ViewDevBlogs"/>
+      <reference ref="AzureToolkit.ViewToolingDocument"/>
       <reference ref="AzureToolkit.GithubIssue"/>
       <reference ref="AzureToolkit.FeatureRequest"/>
       <reference ref="Actions.ProvideFeedback"/>
