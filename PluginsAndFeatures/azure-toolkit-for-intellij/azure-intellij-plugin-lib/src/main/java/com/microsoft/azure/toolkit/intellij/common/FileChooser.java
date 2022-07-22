@@ -11,6 +11,7 @@ import com.intellij.openapi.fileChooser.FileSaverDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -19,7 +20,12 @@ public class FileChooser {
 
     @Nullable
     public static File showFileSaver(String title, String fileName) {
-        final FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(title, "");
+        return showFileSaver(title, fileName, StringUtils.EMPTY);
+    }
+
+    @Nullable
+    public static File showFileSaver(String title, String fileName, String description) {
+        final FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(title, description);
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
         final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), fileName);
         if (save != null) {

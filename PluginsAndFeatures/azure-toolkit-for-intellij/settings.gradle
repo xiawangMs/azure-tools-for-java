@@ -14,4 +14,5 @@ include 'azure-intellij-plugin-arm'
 include 'azure-intellij-plugin-containerregistry'
 include 'azure-intellij-plugin-applicationinsights'
 include 'azure-intellij-plugin-guidance'
+include 'azure-intellij-plugin-containerservice'
 

@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.containerservice.creation.KubernetesCreationDialog">
+  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="15" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="610" height="495"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="e2285" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Project Details"/>
+          <titleFont style="1"/>
+          <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+        </properties>
+      </component>
+      <vspacer id="bf3e7">
+        <constraints>
+          <grid row="14" column="0" row-span="1" col-span="5" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="62bbe" class="javax.swing.JLabel" binding="lblSubscription">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Subscription:"/>
+          <toolTipText value="All resources in an Azure subscription are billed together."/>
+        </properties>
+      </component>
+      <component id="71ccc" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="cbSubscription">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="8d2a5" class="javax.swing.JLabel" binding="lblResourceGroup">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Resource group:"/>
+          <toolTipText value="A resource group is a collection of resources that share the same lifecycle, permissions, and policies."/>
+        </properties>
+      </component>
+      <component id="6a67e" class="com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox" binding="cbResourceGroup">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="e6045" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Cluster Details"/>
+          <titleFont style="1"/>
+          <toolTipText value=""/>
+        </properties>
+      </component>
+      <component id="aa51a" class="javax.swing.JLabel" binding="lblName">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Name:"/>
+          <toolTipText value="The name of the Azure Kubernetes Service cluster."/>
+        </properties>
+      </component>
+      <component id="b73ba" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtName">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="ccdb0" class="javax.swing.JLabel" binding="lblRegion">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Region:"/>
+          <toolTipText value="The Azure region into which the cluster should be deployed."/>
+        </properties>
+      </component>
+      <component id="6c29d" class="com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox" binding="cbRegion">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="b173f" class="javax.swing.JLabel" binding="lblKubernetesVersion">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Kubernetes version:"/>
+          <toolTipText value="The version of Kubernetes that should be used for this cluster. You will be able to upgrade this version after creating the cluster. "/>
+        </properties>
+      </component>
+      <component id="e330c" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Primary node pool"/>
+          <titleFont style="1"/>
+          <toolTipText value="The number and size of nodes in the primary node pool in your cluster. For production workloads, at least 3 nodes are recommended for resiliency. For development or test workloads, only one node is required. If you would like to add additional node pools or to see additional configuration options for this node pool, go to the 'Node pools' tab above. You will be able to add additional node pools after creating your cluster. "/>
+        </properties>
+      </component>
+      <component id="e3eb" class="javax.swing.JLabel" binding="lblNodeSize">
+        <constraints>
+          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Node size:"/>
+          <toolTipText value="The size of the virtual machines that will form the nodes in the cluster. This cannot be changed after creating the cluster."/>
+        </properties>
+      </component>
+      <component id="6c152" class="javax.swing.JLabel" binding="lblScaleMethod">
+        <constraints>
+          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Scale method:"/>
+          <toolTipText value="The size of the virtual machines that will form the nodes in the cluster. This cannot be changed after creating the cluster."/>
+        </properties>
+      </component>
+      <component id="91189" class="javax.swing.JLabel" binding="lblNodeCount">
+        <constraints>
+          <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Node count:"/>
+          <toolTipText value="The number of nodes that should be created along with the cluster. You will be able to resize the cluster later."/>
+        </properties>
+      </component>
+      <component id="9b004" class="javax.swing.JLabel" binding="lblMinNodeCount">
+        <constraints>
+          <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Min node count:"/>
+          <toolTipText value=""/>
+        </properties>
+      </component>
+      <component id="95600" class="javax.swing.JLabel" binding="lblMaxNodeCount">
+        <constraints>
+          <grid row="11" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Max node count:"/>
+          <toolTipText value=""/>
+        </properties>
+      </component>
+      <hspacer id="a11a3">
+        <constraints>
+          <grid row="11" column="4" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <grid id="e8fec" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="9" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="942a2" class="javax.swing.JRadioButton" binding="manualRadioButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Manual"/>
+            </properties>
+          </component>
+          <component id="92f52" class="javax.swing.JRadioButton" binding="autoScaleRadioButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Autoscale"/>
+            </properties>
+          </component>
+          <hspacer id="ed24d">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+        </children>
+      </grid>
+      <component id="4ecb0" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="12" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Networking"/>
+          <titleFont style="1"/>
+          <toolTipText value=""/>
+        </properties>
+      </component>
+      <component id="fe187" class="javax.swing.JLabel" binding="lblDnsNamePrefix">
+        <constraints>
+          <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="DNS name prefix:"/>
+          <toolTipText value="DNS name prefix to use with the hosted Kubernetes API server FQDN. You will use this to connect to the Kubernetes API when managing containers after creating the cluster."/>
+        </properties>
+      </component>
+      <component id="1f6e8" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtDnsPrefix">
+        <constraints>
+          <grid row="13" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="aa62f" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple" binding="cbKubernetesVersion" custom-create="true">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="82061" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple" binding="cbNodeSize" custom-create="true">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="916a" class="com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput" binding="txtNodeCount">
+        <constraints>
+          <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <columns value="10"/>
+        </properties>
+      </component>
+      <component id="cb3e4" class="com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput" binding="txtMinNodeCount">
+        <constraints>
+          <grid row="11" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <columns value="10"/>
+        </properties>
+      </component>
+      <component id="82654" class="com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput" binding="txtMaxNodeCount">
+        <constraints>
+          <grid row="11" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <columns value="10"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
