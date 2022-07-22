@@ -298,7 +298,7 @@ public class SelectImageStep extends WizardPage {
         skuComboBox.setEnabled(false);
         imageLabelList.setEnabled(false);
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final List<VirtualMachinePublisher> publishers = wizard.getAzure()
+            final List<VirtualMachinePublisher> publishers = wizard.getComputeManager()
                     .virtualMachineImages().publishers().listByRegion(region);
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 for (VirtualMachinePublisher publisher : publishers) {

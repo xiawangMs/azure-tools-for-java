@@ -37,7 +37,7 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
         final Predicate<Object> condition = (r) -> r instanceof AzureSpringCloud;
         final Consumer<Object> handler = (r) -> {
             final IAccount account = Azure.az(IAzureAccount.class).account();
-            final String url = String.format("%s/#create/Microsoft.AppPlatform", account.portalUrl());
+            final String url = String.format("%s/#create/Microsoft.AppPlatform", account.getPortalUrl());
             am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
         };
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);

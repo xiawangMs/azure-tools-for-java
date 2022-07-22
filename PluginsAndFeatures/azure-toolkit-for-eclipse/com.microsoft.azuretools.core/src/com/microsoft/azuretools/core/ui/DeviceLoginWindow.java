@@ -6,7 +6,7 @@
 package com.microsoft.azuretools.core.ui;
 
 import com.azure.identity.DeviceCodeInfo;
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 import com.microsoft.azuretools.core.utils.AccessibilityUtils;
@@ -34,137 +34,100 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.Future;
+import java.util.Optional;
 
-public class DeviceLoginWindow implements IDeviceLoginUI {
+public class DeviceLoginWindow extends AzureDialogWrapper {
 
-    private static ILog LOG = Activator.getDefault().getLog();
-    private DeviceLoginDialog dialog;
+	private DeviceCodeInfo deviceCode;
+	private Link link;
+	private Runnable onCancel;
 
-    @Setter
-    private Future future;
+	public DeviceLoginWindow(Shell parentShell) {
+		super(parentShell);
+		setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
+	}
 
-    private Shell shell;
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		Composite area = (Composite) super.createDialogArea(parent);
+		FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
+		fillLayout.marginHeight = 10;
+		fillLayout.marginWidth = 10;
+		area.setLayout(fillLayout);
+		GridData gridData = new GridData(GridData.FILL_BOTH);
+		area.setLayoutData(gridData);
 
-    public DeviceLoginWindow(Shell shell) {
-        this.shell = shell;
+		link = new Link(area, SWT.NONE);
+		link.setText("");
+		link.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+							.openURL(new URL(deviceCode.getVerificationUrl()));
+				} catch (PartInitException | MalformedURLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+		AccessibilityUtils.addAccessibilityNameForUIComponent(link, deviceCode.getMessage());
+
+		Label label = new Label(area, SWT.NONE);
+		label.setText("Waiting for signing in with the code, do not close the window.");
+
+		return area;
+	}
+
+	public void show(final DeviceCodeInfo deviceCode) {
+		this.deviceCode = deviceCode;
+		final String url = deviceCode.getVerificationUrl();
+		final String message = "<p>"
+				+ deviceCode.getMessage().replace(url, String.format("<a href=\"%s\">%s</a>", url, url))
+				+ "</p><p>Waiting for signing in with the code ...</p>";
+		link.setText(message);
+		this.open();
+	}
+
+	@Override
+	protected void okPressed() {
+		final StringSelection selection = new StringSelection(deviceCode.getUserCode());
+		final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(selection, selection);
+		try {
+			PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+					.openURL(new URL(deviceCode.getVerificationUrl()));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void cancelPressed() {
+        Optional.ofNullable(onCancel).ifPresent(Runnable::run);
+		super.cancelPressed();
+	}
+
+    public void setDoOnCancel(Runnable onCancel) {
+        this.onCancel = onCancel;
     }
 
-    @Override
-    public void promptDeviceCode(DeviceCodeInfo deviceCode) {
-        final Runnable gui = () -> {
-            try {
-                dialog = new DeviceLoginDialog(shell, deviceCode);
-                dialog.open();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
-            }
-        };
-        Display.getDefault().syncExec(gui);
-    }
+	@Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText("Azure Device Login");
+	}
 
-    public void closePrompt() {
-        if (dialog != null && dialog.getShell() != null) {
-            Display.getDefault().syncExec(() -> dialog.close());
-        }
-    }
+	@Override
+	protected Point getInitialSize() {
+		Point shellSize = super.getInitialSize();
+		return new Point(Math.max(this.convertHorizontalDLUsToPixels(350), shellSize.x),
+				Math.max(this.convertVerticalDLUsToPixels(120), shellSize.y));
+	}
 
-    @Override
-    public void cancel() {
-        if (future != null) {
-            this.future.cancel(true);
-        }
-    }
-
-    private class DeviceLoginDialog extends AzureDialogWrapper {
-
-        private final DeviceCodeInfo deviceCode;
-        private Link link;
-
-        public DeviceLoginDialog(Shell parentShell, DeviceCodeInfo deviceCode
-        ) {
-            super(parentShell);
-            setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
-            this.deviceCode = deviceCode;
-        }
-
-        @Override
-        protected Control createDialogArea(Composite parent) {
-            Composite area = (Composite) super.createDialogArea(parent);
-            FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
-            fillLayout.marginHeight = 10;
-            fillLayout.marginWidth = 10;
-            area.setLayout(fillLayout);
-            GridData gridData = new GridData(GridData.FILL_BOTH);
-            area.setLayoutData(gridData);
-
-            link = new Link(area, SWT.NONE);
-            link.setText(createHtmlFormatMessage());
-            link.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    try {
-                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                            .openURL(new URL(deviceCode.getVerificationUrl()));
-                    } catch (PartInitException | MalformedURLException ex) {
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
-                    }
-                }
-            });
-            AccessibilityUtils.addAccessibilityNameForUIComponent(link, deviceCode.getMessage());
-
-            Label label = new Label(area, SWT.NONE);
-            label.setText("Waiting for signing in with the code, do not close the window.");
-
-            return area;
-        }
-
-        @Override
-        protected void configureShell(Shell newShell) {
-            super.configureShell(newShell);
-            newShell.setText("Azure Device Login");
-        }
-
-        @Override
-        protected void okPressed() {
-            final StringSelection selection = new StringSelection(deviceCode.getUserCode());
-            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(selection, selection);
-            try {
-                PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                    .openURL(new URL(deviceCode.getVerificationUrl()));
-            } catch (Exception e) {
-                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", e));
-            }
-        }
-
-        @Override
-        protected void cancelPressed() {
-            DeviceLoginWindow.this.cancel();
-            super.cancelPressed();
-        }
-
-        @Override
-        protected Point getInitialSize() {
-            Point shellSize = super.getInitialSize();
-            return new Point(Math.max(this.convertHorizontalDLUsToPixels(350), shellSize.x),
-                Math.max(this.convertVerticalDLUsToPixels(120), shellSize.y));
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            super.createButtonsForButtonBar(parent);
-            Button okButton = getButton(IDialogConstants.OK_ID);
-            okButton.setText("Copy&&Open");
-        }
-
-        private String createHtmlFormatMessage() {
-            final String verificationUrl = deviceCode.getVerificationUrl();
-            return deviceCode.getMessage()
-                .replace(verificationUrl, String.format("<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>", verificationUrl, verificationUrl, verificationUrl, verificationUrl));
-        }
-    }
-
-
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		super.createButtonsForButtonBar(parent);
+		Button okButton = getButton(IDialogConstants.OK_ID);
+		okButton.setText("Copy&&Open");
+	}
 }

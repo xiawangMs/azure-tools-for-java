@@ -34,12 +34,13 @@ public class GuidanceViewManager {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             assert toolWindow != null;
-            toolWindow.show();
+            toolWindow.setAvailable(true);
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
                 final Course course = new Course(courseConfig, project);
                 guidanceView.showCourseView(course);
             }
+            toolWindow.activate(null);
         });
     }
 
@@ -48,11 +49,12 @@ public class GuidanceViewManager {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             assert toolWindow != null;
-            toolWindow.show();
+            toolWindow.setAvailable(true);
             final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
             if (Objects.nonNull(guidanceView)) {
                 guidanceView.showCoursesView();
             }
+            toolWindow.activate(null);
         });
     }
 
@@ -71,6 +73,11 @@ public class GuidanceViewManager {
 
     public static class GuidanceViewFactory implements ToolWindowFactory {
         private static final Map<Project, GuidanceView> guidanceViewMap = new ConcurrentHashMap<>();
+
+        @Override
+        public boolean shouldBeAvailable(@NotNull Project project) {
+            return false;
+        }
 
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {

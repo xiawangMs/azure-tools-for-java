@@ -17,18 +17,16 @@ import com.microsoft.azure.toolkit.eclipse.common.logstream.EclipseAzureLogStrea
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
-import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 
 import reactor.core.publisher.Flux;
 
@@ -82,7 +80,7 @@ public class FunctionAppLogStreamingHandler {
                 .orElseThrow(() -> new IOException(AzureMessageBundle
                         .message("appService.logStreaming.error.aiNotFound", subscriptionId).toString()));
         final String aiUrl = getApplicationInsightLiveMetricsUrl(insights,
-                IdentityAzureManager.getInstance().getPortalUrl());
+                Azure.az(AzureAccount.class).account().getPortalUrl());
         AzureTaskManager.getInstance().runLater(() -> PluginUtil.openLinkInBrowser(aiUrl));
     }
 

@@ -457,8 +457,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             final AnAction featureRequestAction = ActionManager.getInstance().getAction("AzureToolkit.FeatureRequest");
             final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("AzureToolkit.OpenSdkReferenceBook");
             final AnAction openAzureSettingsAction = ActionManager.getInstance().getAction(OPEN_AZURE_SETTINGS.getId());
-            ((ToolWindowEx) toolWindow).setAdditionalGearActions(new DefaultActionGroup(documentAction, devBlogsAction, whatsNewAction, reportIssueAction,
-                    featureRequestAction, Separator.create(), openSdkReferenceBookAction, openAzureSettingsAction));
+            (toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, openAzureSettingsAction, Separator.create(),
+                    reportIssueAction, featureRequestAction, feedbackAction, Separator.create(),
+                    devBlogsAction, documentAction));
         }
     }
 

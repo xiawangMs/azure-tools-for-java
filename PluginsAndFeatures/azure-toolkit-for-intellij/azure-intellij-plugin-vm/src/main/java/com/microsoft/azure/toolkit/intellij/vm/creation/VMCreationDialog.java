@@ -70,9 +70,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implements AzureForm<VirtualMachineDraft> {
-    private static final String SSH_PUBLIC_KEY_DESCRIPTION = "<html> Provide an RSA public key file in the single-line format (starting with \"ssh-rsa\") or " +
+    public static final String SSH_PUBLIC_KEY_DESCRIPTION = "<html> Provide an RSA public key file in the single-line format (starting with \"ssh-rsa\") or " +
         "the multi-line PEM format. <p/> You can generate SSH keys using ssh-keygen on Linux and OS X, or PuTTYGen on Windows. </html>";
-    private static final String SELECT_CERT_TITLE = "Select Cert for Your VM";
+    public static final String SELECT_CERT_TITLE = "Select Cert for Your VM";
     private static final String VIRTUAL_MACHINE_CREATION_DIALOG_TITLE = "Create Virtual Machine";
     private JTabbedPane tabbedPane;
     private JPanel rootPane;

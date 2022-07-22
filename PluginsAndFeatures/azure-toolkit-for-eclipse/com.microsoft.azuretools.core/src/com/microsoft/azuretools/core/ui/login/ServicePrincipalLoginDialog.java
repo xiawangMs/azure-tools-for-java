@@ -7,8 +7,8 @@ package com.microsoft.azuretools.core.ui.login;
 import com.google.gson.JsonSyntaxException;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.AuthConfiguration;
+import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -64,6 +64,10 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     public AzureForm<AuthConfiguration> getForm() {
         return this.loginPanel;
     }
+
+	public AuthConfiguration getValue() {
+		return this.loginPanel.getValue();
+	}
 
     @Override
     protected Point getInitialSize() {
@@ -272,7 +276,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
                 if (map == null) {
                     return;
                 }
-                AuthConfiguration newData = new AuthConfiguration();
+                AuthConfiguration newData = new AuthConfiguration(AuthType.SERVICE_PRINCIPAL);
                 if (map.containsKey("appId")) {
                     newData.setClient(StringUtils.defaultString(map.get("appId")));
                 }
@@ -307,7 +311,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
         @Override
         public AuthConfiguration getValue() {
-            AuthConfiguration data = new AuthConfiguration();
+            AuthConfiguration data = new AuthConfiguration(AuthType.SERVICE_PRINCIPAL);
 
             data.setClient(txtClientId.getValue());
             data.setTenant(txtTenantId.getValue());

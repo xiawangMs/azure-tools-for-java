@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -40,6 +41,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -98,7 +100,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         OperationContext.current().setMessager(messager);
         OperationContext.current().setTelemetryProperties(getTelemetryProperties());
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
-        if (Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).filter(a -> a.getFile().exists()).isEmpty()) {
+        if (Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).map(IArtifact::getFile).filter(File::exists).isEmpty()) {
             final Action.Id<Void> REOPEN = Action.Id.of("springcloud.reopen_deploy_dialog");
             throw new AzureToolkitRuntimeException(
                 message("springcloud.deploy_app.no_artifact").toString(),

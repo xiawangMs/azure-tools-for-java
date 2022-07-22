@@ -31,10 +31,10 @@ import com.microsoft.applicationinsights.ui.activator.Activator;
 import com.microsoft.applicationinsights.util.AILibraryUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
@@ -106,11 +106,10 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
     private void populateValues() {
         try {
             subscription.removeAll();
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            if (azureManager == null) {
+            if (!IdeAzureAccount.getInstance().isLoggedIn()) {
                 return;
             }
-            List<Subscription> subList = azureManager.getSelectedSubscriptions();
+            List<Subscription> subList = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
             // check at least single subscription is associated with the account
             if (subList.size() > 0) {
                 for (Subscription sub : subList) {

@@ -22,25 +22,23 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azure.management.compute.VirtualMachineImage;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
+import com.microsoft.azure.management.compute.implementation.ComputeManager;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
+import com.microsoft.azure.management.network.implementation.NetworkManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azureexplorer.helpers.CreateStorageAccountTask;
-import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -91,7 +89,8 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     private boolean withNewAvailabilitySet;
     private NetworkSecurityGroup networkSecurityGroup;
 
-    private Azure azure;
+	private ComputeManager computeManager;
+	private NetworkManager networkManager;
 
     public CreateVMWizard(VMArmModule node) {
         this.node = node;
@@ -157,12 +156,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                     DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                node.addChildNode(new VMNode(node, subscription.getId(), vm));
-                            } catch (AzureCmdException e) {
-                                PluginUtil.displayErrorDialogWithAzureMsg(PluginUtil.getParentShell(), Messages.err,
-                                        "An error occurred while refreshing the list of virtual machines.", e);
-                            }
+                            node.addChildNode(new VMNode(node, subscription.getId(), vm));
                         }
                     });
                 } catch (Exception e) {
@@ -185,19 +179,22 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
         return getContainer().getCurrentPage() instanceof SettingsStep;
     }
 
-    public Azure getAzure() {
-        return azure;
+    public ComputeManager getComputeManager() {
+        return computeManager;
     }
-
-    public void setAzure(Azure azure) {
-        this.azure = azure;
+    
+    public NetworkManager getNetworkManager() {
+    	return networkManager;
     }
 
     public void setSubscription(Subscription subscription) {
         try {
             this.subscription = subscription;
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            azure = azureManager.getAzure(subscription.getId());
+            final String subscriptionId = subscription.getId();
+            final ComputeManager.Configurable cm = ComputeManager.configure();
+            final NetworkManager.Configurable nm = NetworkManager.configure();
+            computeManager = IdeAzureAccount.getInstance().authenticateForTrack1(subscriptionId, cm, (t, c) -> c.authenticate(t, subscriptionId));
+            networkManager = IdeAzureAccount.getInstance().authenticateForTrack1(subscriptionId, nm, (t, c) -> c.authenticate(t, subscriptionId));
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().showException(ex.getMessage(), ex, "Error selecting subscription", true, false);
         }

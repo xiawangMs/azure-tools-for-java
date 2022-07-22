@@ -19,12 +19,11 @@ import com.microsoft.azure.toolkit.lib.storage.model.Performance;
 import com.microsoft.azure.toolkit.lib.storage.model.Redundancy;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -341,12 +340,11 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
         if (subscription == null) {
             try {
                 subscriptionComboBox.setEnabled(true);
-                AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
                 // not signed in
-                if (azureManager == null) {
+                if (!IdeAzureAccount.getInstance().isLoggedIn()) {
                     return;
                 }
-                List<Subscription> subscriptions = azureManager.getSelectedSubscriptions();
+                List<Subscription> subscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
                 for (Subscription sub : subscriptions) {
                     if (sub.isSelected()) {
                         subscriptionComboBox.add(sub.getName());

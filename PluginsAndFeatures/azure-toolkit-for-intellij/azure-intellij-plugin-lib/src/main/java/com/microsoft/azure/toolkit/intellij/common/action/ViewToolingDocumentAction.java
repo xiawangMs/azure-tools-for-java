@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.action;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
@@ -15,6 +16,10 @@ import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonAction
 
 public class ViewToolingDocumentAction extends AnAction implements DumbAware {
     public static final String DOC_URL = "https://aka.ms/javaToolingDoc";
+
+    public ViewToolingDocumentAction() {
+        super(AllIcons.Actions.Annotate);
+    }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {

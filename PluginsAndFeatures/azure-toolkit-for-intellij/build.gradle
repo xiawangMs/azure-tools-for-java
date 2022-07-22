@@ -289,18 +289,25 @@ wrapper() {
 
 //installIdea.dependsOn buildPlugin
 //installIdea.dependsOn checkstyleMain
-
-patchPluginXml {
+String timestamp = (new Date()).format('yyyyMMddHHmmss')
+ext.getPatchedVersion = {
     if (Boolean.valueOf(needPatchVersion) || pluginVersion.endsWith("SNAPSHOT")) {
-        String timestamp = (new Date()).format('yyyyMMddHHmmss')
         if (pluginVersion.endsWith("SNAPSHOT")) {
             def fixedPluginVersion = pluginVersion.split("-")
-            version = "${fixedPluginVersion[0]}-${intellijDisplayVersion}-SNAPSHOT.${timestamp}"
+            return "${fixedPluginVersion[0]}-${intellijDisplayVersion}-SNAPSHOT.${timestamp}"
         } else {
-            version = "${pluginVersion}-${intellijDisplayVersion}-BETA.${timestamp}"
+            return "${pluginVersion}-${intellijDisplayVersion}-BETA.${timestamp}"
         }
     } else {
-        version = "${pluginVersion}-${intellijDisplayVersion}"
+        return "${pluginVersion}-${intellijDisplayVersion}"
     }
+}
+
+patchPluginXml {
+    version = getPatchedVersion()
     sinceBuild = patchPluginXmlSinceBuild
+}
+
+buildPlugin {
+    archiveVersion = getPatchedVersion()
 }

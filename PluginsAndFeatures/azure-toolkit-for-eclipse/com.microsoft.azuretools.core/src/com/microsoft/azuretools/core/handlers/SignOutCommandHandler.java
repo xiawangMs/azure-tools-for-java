@@ -5,8 +5,10 @@
 
 package com.microsoft.azuretools.core.handlers;
 
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
-import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -17,62 +19,35 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
-
-import javax.annotation.Nonnull;
 
 public class SignOutCommandHandler extends AzureAbstractHandler {
 
-    @Override
-    public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        doSignOut(window.getShell());
+	@Override
+	public Object onExecute(ExecutionEvent event) throws ExecutionException {
+		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+		doSignOut(window.getShell());
 
-        return null;
-    }
+		return null;
+	}
 
-    public static void doSignOut(Shell shell) {
-        EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.SIGNOUT, (operation) -> {
-            AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            MessageBox messageBox = new MessageBox(
-                    shell,
-                    SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-            messageBox.setMessage(getSignOutWarningMessage(authMethodManager));
-            messageBox.setText("Azure Sign Out");
-            int response = messageBox.open();
-            if (response == SWT.YES) {
-                if (authMethodManager.isSignedIn()) {
-                    authMethodManager.signOut();
-                }
-            }
-        }, (ex) -> ex.printStackTrace());
-    }
-
-    public static String getSignOutWarningMessage(@Nonnull AuthMethodManager authMethodManager) {
-        final AuthMethodDetails authMethodDetails = authMethodManager.getAuthMethodDetails();
-        if (authMethodDetails == null || authMethodDetails.getAuthType() == null) {
-            return "Do you really want to sign out?";
-        }
-        final AuthType authType = authMethodDetails.getAuthType();
-        final String warningMessage;
-        switch (authType) {
-            case SERVICE_PRINCIPAL:
-                warningMessage = String.format("Signed in using service principal \"%s\"", authMethodDetails.getClientId());
-                break;
-            case OAUTH2:
-            case DEVICE_CODE:
-                warningMessage = String.format("Signed in as %s(%s)", authMethodDetails.getAccountEmail(), authType.toString());
-                break;
-            case AZURE_CLI:
-                warningMessage = "Signed in with Azure CLI";
-                break;
-            default:
-                warningMessage = "Signed in by unknown authentication method.";
-                break;
-        }
-        return String.format("%s\nDo you really want to sign out? %s",
-                warningMessage, authType == AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "");
-    }
+	public static void doSignOut(Shell shell) {
+		EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.SIGNOUT, (operation) -> {
+			final AzureAccount az = Azure.az(AzureAccount.class);
+			if (az.isLoggedIn()) {
+				final Account account = az.account();
+				final AuthType authType = account.getType();
+				MessageBox messageBox = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				final String warningMessage = String.format("Signed in as \"%s\" with %s", account.getUsername(), authType.getLabel());
+				final String additionalMsg = authType == AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "";
+				final String msg = String.format("%s\nDo you really want to sign out? %s", warningMessage, additionalMsg);
+				messageBox.setMessage(msg);
+				messageBox.setText("Azure Sign Out");
+				int response = messageBox.open();
+				if (response == SWT.YES) {
+					az.logout();
+				}
+			}
+		}, (ex) -> ex.printStackTrace());
+	}
 }

@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.redis.RedisCache;
 import com.microsoft.azure.toolkit.redis.RedisCacheDraft;
 import com.microsoft.azure.toolkit.redis.RedisCacheModule;
 import com.microsoft.azure.toolkit.redis.model.RedisConfig;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -30,7 +29,6 @@ import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -78,7 +76,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private static final Activator LOG = Activator.getDefault();
-    protected final AzureManager azureManager;
     private List<Subscription> selectedSubscriptions;
     private List<Region> sortedLocations;
     private List<String> sortedGroups;
@@ -153,8 +150,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
      */
     public CreateRedisCacheForm(Shell parentShell) throws IOException {
         super(parentShell);
-        azureManager = AuthMethodManager.getInstance().getAzureManager();
-        selectedSubscriptions = azureManager.getSelectedSubscriptions();
+        selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
         if (selectedSubscriptions.size() > 0) {
             currentSub = selectedSubscriptions.get(0);
         }

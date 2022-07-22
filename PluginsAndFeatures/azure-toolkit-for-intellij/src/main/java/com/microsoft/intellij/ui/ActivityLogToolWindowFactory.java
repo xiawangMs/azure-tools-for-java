@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -50,6 +51,11 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
     @Override
     public boolean isApplicable(@NotNull Project project) {
         return !AzurePlugin.IS_ANDROID_STUDIO;
+    }
+
+    @Override
+    public boolean shouldBeAvailable(@NotNull Project project) {
+        return false;
     }
 
     @Override
@@ -113,6 +119,9 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
                             rows.put(key, item);
                             AzureTaskManager.getInstance().runLater(() -> table.getListTableModel().addRow(item));
                         }
+                        final ToolWindow window = Objects.requireNonNull(ToolWindowManager.getInstance(project).getToolWindow(ACTIVITY_LOG_WINDOW));
+                        window.setAvailable(true);
+                        window.activate(null);
                     }
                 });
     }

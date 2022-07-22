@@ -7,13 +7,10 @@ package com.microsoft.azuretools.core.ui;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
-import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.core.runtime.ILog;
@@ -30,8 +27,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -51,22 +46,20 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
 
     private Table table;
 
-    private SubscriptionManager subscriptionManager;
-    private List<SubscriptionDetail> sdl;
+    private List<Subscription> sdl;
 
     /**
      * Create the dialog.
      * @param parentShell
      */
-    private SubscriptionsDialog(Shell parentShell, SubscriptionManager subscriptionManage) {
+    private SubscriptionsDialog(Shell parentShell) {
         super(parentShell);
         setHelpAvailable(false);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
-        this.subscriptionManager = subscriptionManage;
     }
 
-    public static SubscriptionsDialog go(Shell parentShell, SubscriptionManager subscriptionManager) {
-        SubscriptionsDialog d = new SubscriptionsDialog(parentShell, subscriptionManager);
+    public static SubscriptionsDialog go(Shell parentShell) {
+        SubscriptionsDialog d = new SubscriptionsDialog(parentShell);
         if (d.open() == Window.OK) {
             return d;
         }
@@ -151,12 +144,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Reading subscriptions...", IProgressMonitor.UNKNOWN);
-                    EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
-                        Azure.az(AzureAccount.class).account().reloadSubscriptions().block();
-                    }, (ex) -> {
-                            ex.printStackTrace();
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
-                        });
+                    Azure.az(AzureAccount.class).account().reloadSubscriptions();
                     monitor.done();
                 }
             });
@@ -168,10 +156,10 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void setSubscriptions() {
-        sdl = subscriptionManager.getSubscriptionDetails();
-        for (SubscriptionDetail sd : sdl) {
+        sdl = Azure.az(AzureAccount.class).account().getSubscriptions();
+        for (Subscription sd : sdl) {
             TableItem item = new TableItem(table, SWT.NULL);
-            item.setText(new String[] {sd.getSubscriptionName(), sd.getSubscriptionId()});
+            item.setText(new String[] {sd.getName(), sd.getId()});
             item.setChecked(sd.isSelected());
         }
     }
@@ -179,10 +167,8 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     private void refreshSubscriptions() {
         System.out.println("refreshSubscriptions");
         table.removeAll();
-        subscriptionManager.cleanSubscriptions();
         refreshSubscriptionsAsync();
         setSubscriptions();
-        subscriptionManager.setSubscriptionDetails(sdl);
     }
 
     /**
@@ -217,27 +203,10 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             this.sdl.get(i).setSelected(tia[i].getChecked());
         }
 
-        try {
-            subscriptionManager.setSubscriptionDetails(sdl);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@SubscriptionDialog", ex));
-        }
-
-        List<String> selectedIds = this.sdl.stream().filter(SubscriptionDetail::isSelected)
-                .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
-        IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
-
-        IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
-        Mono.fromCallable(() -> {
-            AzureAccount az = Azure.az(AzureAccount.class);
-            selectedIds.stream().limit(5).forEach(sid -> {
-                // pr-load regions
-                az.listRegions(sid);
-            });
-            return 1;
-        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
-
+        List<String> selectedIds = this.sdl.stream().filter(Subscription::isSelected)
+                .map(Subscription::getId).collect(Collectors.toList());
+        Azure.az(AzureAccount.class).account().setSelectedSubscriptions(selectedIds);
+        
         final Map<String, String> properties = new HashMap<>();
         properties.put("subsCount", String.valueOf(rc));
         properties.put("selectedSubsCount", String.valueOf(chekedCount));

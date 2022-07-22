@@ -11,13 +11,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.core.ui.SubscriptionsDialog;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 
-public class SelectSubsriptionsCommandHandler extends AzureAbstractHandler {
+public class SelectSubscriptionsCommandHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
@@ -28,13 +27,10 @@ public class SelectSubsriptionsCommandHandler extends AzureAbstractHandler {
 
     public static void onSelectSubscriptions(Shell parentShell) {
         try {
-            AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-            if (manager == null) {
+            if (!IdeAzureAccount.getInstance().isLoggedIn()) {
                 return;
             }
-
-            SubscriptionManager sm = manager.getSubscriptionManager();
-            SubscriptionsDialog.go(parentShell, sm);
+            SubscriptionsDialog.go(parentShell);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

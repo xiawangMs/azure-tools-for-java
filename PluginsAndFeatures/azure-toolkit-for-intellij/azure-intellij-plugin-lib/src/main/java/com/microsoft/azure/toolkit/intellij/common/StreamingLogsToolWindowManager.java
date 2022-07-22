@@ -35,7 +35,6 @@ public class StreamingLogsToolWindowManager {
                                         ConsoleView consoleView) {
         AzureTaskManager.getInstance().runLater(() -> {
             final ToolWindow toolWindow = getToolWindow(project);
-            toolWindow.show(null);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final String consoleName = getConsoleViewName(resourceId, resourceName);
             Content content = toolWindow.getContentManager().findContent(consoleName);
@@ -45,6 +44,8 @@ public class StreamingLogsToolWindowManager {
                 toolWindow.getContentManager().addContent(content);
             }
             toolWindow.getContentManager().setSelectedContent(content);
+            toolWindow.setAvailable(true);
+            toolWindow.activate(null);
         });
     }
 

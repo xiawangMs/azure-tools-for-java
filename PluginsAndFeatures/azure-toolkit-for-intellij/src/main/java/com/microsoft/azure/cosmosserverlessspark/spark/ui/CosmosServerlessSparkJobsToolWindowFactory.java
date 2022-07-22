@@ -14,6 +14,17 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.PluginUtil;
 
 public class CosmosServerlessSparkJobsToolWindowFactory implements ToolWindowFactory {
+
+    @Override
+    public void init(@org.jetbrains.annotations.NotNull ToolWindow toolWindow) {
+        toolWindow.setToHideOnEmptyContent(true);
+    }
+
+    @Override
+    public boolean shouldBeAvailable(@org.jetbrains.annotations.NotNull Project project) {
+        return false;
+    }
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         toolWindow.setIcon(

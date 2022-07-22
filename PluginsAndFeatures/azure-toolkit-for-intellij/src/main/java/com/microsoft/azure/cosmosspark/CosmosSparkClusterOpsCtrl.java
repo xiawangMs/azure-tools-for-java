@@ -196,6 +196,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     AzureSparkServerlessAccount account = accountNodePair.getLeft();
                     CosmosSparkADLAccountNode node = accountNodePair.getRight();
                     ToolWindow toolWindow = ToolWindowManager.getInstance((Project) node.getProject()).getToolWindow("Cosmos Serverless Spark Jobs");
+                    toolWindow.setAvailable(true);
                     Content existingContent= toolWindow.getContentManager().findContent(getDisplayName(account.getName()));
                     if (existingContent != null) {
                         // if the requested job list tab already exists in tool window,

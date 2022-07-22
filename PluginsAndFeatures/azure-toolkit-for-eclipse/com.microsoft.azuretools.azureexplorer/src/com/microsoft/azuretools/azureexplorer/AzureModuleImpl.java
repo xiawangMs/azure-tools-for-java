@@ -22,9 +22,9 @@
 
 package com.microsoft.azuretools.azureexplorer;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
+import com.microsoft.azuretools.core.handlers.SelectSubscriptionsCommandHandler;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -58,9 +58,7 @@ public class AzureModuleImpl extends AzureModule {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                     try {
-                        AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-                        boolean isSignedIn = authMethodManager.isSignedIn();
-                        if (isSignedIn) {
+                        if (IdeAzureAccount.getInstance().isLoggedIn()) {
                             SignOutCommandHandler.doSignOut(PluginUtil.getParentShell());
                         } else {
                             SignInCommandHandler.doSignIn(PluginUtil.getParentShell());
@@ -75,7 +73,7 @@ public class AzureModuleImpl extends AzureModule {
         @Override
         public String getName() {
             try {
-                return AuthMethodManager.getInstance().isSignedIn() ? "Sign Out" : "Sign In";
+                return IdeAzureAccount.getInstance().isLoggedIn() ? "Sign Out" : "Sign In";
             } catch (Exception ex) {
                 Activator.getDefault().log(ex.getMessage(), ex);
                 return "";
@@ -88,11 +86,7 @@ public class AzureModuleImpl extends AzureModule {
         }
 
         public static String getIcon() {
-            boolean isSignedIn = false;
-            try {
-                isSignedIn = AuthMethodManager.getInstance().isSignedIn();
-            } catch (Exception ex) {}
-            return isSignedIn ? ICON_SIGNOUT : ICON_SIGNIN;
+            return IdeAzureAccount.getInstance().isLoggedIn() ? ICON_SIGNOUT : ICON_SIGNIN;
         }
     }
 
@@ -105,7 +99,7 @@ public class AzureModuleImpl extends AzureModule {
             addListener(new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    SelectSubsriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
+                	SelectSubscriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
                     azureModule.load(false);
                 }
             });
@@ -114,7 +108,7 @@ public class AzureModuleImpl extends AzureModule {
         @Override
         public boolean isEnabled() {
             try {
-                return super.isEnabled() && AuthMethodManager.getInstance().isSignedIn();
+                return super.isEnabled() && IdeAzureAccount.getInstance().isLoggedIn();
             } catch (Exception ex) {
                 Activator.getDefault().log(ex.getMessage(), ex);
                 return false;

@@ -11,11 +11,12 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.ide.common.util.ParserXMLUtility;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.auth.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.utils.FileUtil;
@@ -230,13 +231,11 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
         CommonSettings.setUserAgent(userAgent);
 
         // we need to get rid of AuthMethodManager, using az.azure_account
-        if (AuthMethodManager.getInstance().isSignedIn()) {
-            final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            final String azureEnv = authMethodManager.getAuthMethodDetails().getAzureEnv();
-            final AzureEnvironment currentEnv = AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
+        if (IdeAzureAccount.getInstance().isLoggedIn()) {
+            final AzureEnvironment currentEnv = Azure.az(AzureAccount.class).account().getEnvironment();
             if (!Objects.equals(currentEnv, cbAzureEnv.getValue())) {
                 EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
-                    authMethodManager.signOut();
+                    Azure.az(AzureAccount.class).logout();
                 });
             }
         }

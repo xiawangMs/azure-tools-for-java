@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <executionTargetType implementation="com.microsoft.azure.toolkit.intellij.vm.runtarget.AzureVmTargetType"/>
+    </extensions>
+</idea-plugin>

@@ -1,5 +1,4 @@
 <idea-plugin>
-    <resource-bundle>com.microsoft.azure.toolkit.operation.title.springcloud</resource-bundle>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor"/>

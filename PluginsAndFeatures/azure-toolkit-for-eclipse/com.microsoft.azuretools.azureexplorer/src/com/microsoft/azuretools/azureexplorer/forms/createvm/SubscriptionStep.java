@@ -22,10 +22,11 @@
 
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -118,9 +119,8 @@ public class SubscriptionStep extends WizardPage {
 
     private void loadSubscriptions() {
         try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             // not signed in
-            if (azureManager == null) {
+            if (!IdeAzureAccount.getInstance().isLoggedIn()) {
                 return;
             }
             /*
@@ -130,7 +130,7 @@ public class SubscriptionStep extends WizardPage {
              * upn.split("#")[1] : upn)); } else { userInfoLabel.setText(""); }
              */
 
-            List<Subscription> Subscriptions = AuthMethodManager.getInstance().getAzureManager().getSelectedSubscriptions();
+            List<Subscription> Subscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
             for (Subscription subscription : Subscriptions) {
                 if (subscription.isSelected()) {
                     subscriptionComboBox.add(subscription.getName());

@@ -277,7 +277,7 @@ public class MachineSettingsStep extends WizardPage {
             AzureTaskManager.getInstance().runInBackground( "Loading VM sizes...", new Runnable() {
                 @Override
                 public void run() {
-                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = wizard.getAzure()
+                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = wizard.getComputeManager()
                             .virtualMachines().sizes().listByRegion(wizard.getRegion().getName());
                     Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
                         @Override

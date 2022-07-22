@@ -7,7 +7,7 @@ package com.microsoft.azuretools.core.testers;
 
 import org.eclipse.core.expressions.PropertyTester;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 
 public class AuthPropertyTester extends PropertyTester {
     public static final String PROPERTY_NAMESPACE = "com.microsoft.azuretools.core.testers";
@@ -18,9 +18,7 @@ public class AuthPropertyTester extends PropertyTester {
 
         if (PROPERTY_IS_SIGNED_IN.equals(property)) {
             try {
-                AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-                boolean isSignIn = authMethodManager.isSignedIn();
-                return isSignIn;
+                return IdeAzureAccount.getInstance().isLoggedIn();
             } catch (Exception e) {
                 e.printStackTrace();
             }

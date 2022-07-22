@@ -293,7 +293,7 @@ public class SettingsStep extends WizardPage {
                     @Override
                     public void run() {
                         if (virtualNetworks == null) {
-                            virtualNetworks = wizard.getAzure().networks().list();
+                            virtualNetworks = wizard.getNetworkManager().networks().list();
                         }
                         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                             @Override
@@ -428,7 +428,7 @@ public class SettingsStep extends WizardPage {
             @Override
             public void run() {
                 if (publicIpAddresses == null) {
-                    publicIpAddresses = wizard.getAzure().publicIPAddresses().list();
+                    publicIpAddresses = wizard.getNetworkManager().publicIPAddresses().list();
                 }
                 DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                     @Override
@@ -492,7 +492,7 @@ public class SettingsStep extends WizardPage {
             @Override
             public void run() {
                 if (networkSecurityGroups == null) {
-                    networkSecurityGroups = wizard.getAzure().networkSecurityGroups().list();
+                    networkSecurityGroups = wizard.getNetworkManager().networkSecurityGroups().list();
                 }
                 DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                     @Override
@@ -535,7 +535,7 @@ public class SettingsStep extends WizardPage {
             @Override
             public void run() {
                 if (availabilitySets == null) {
-                    availabilitySets = wizard.getAzure().availabilitySets().list();
+                    availabilitySets = wizard.getComputeManager().availabilitySets().list();
                 }
                 DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                     @Override

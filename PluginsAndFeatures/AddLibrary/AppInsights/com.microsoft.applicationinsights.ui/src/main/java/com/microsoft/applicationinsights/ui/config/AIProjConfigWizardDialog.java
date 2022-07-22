@@ -9,14 +9,15 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPreferenc
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.applicationinsights.ui.activator.Activator;
 import com.microsoft.applicationinsights.util.AILibraryUtil;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.core.applicationinsights.AILibraryHandler;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -165,12 +166,10 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 
     private void setData() {
         try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null || !AuthMethodManager.getInstance().isSignedIn()) {
+            if (!IdeAzureAccount.getInstance().isLoggedIn()) {
                 return;
             }
-            List<Subscription> subList = azureManager.getSelectedSubscriptions();
+            List<Subscription> subList = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
             if (subList.size() > 0 && !ApplicationInsightsPreferences.isLoaded()) {
                 // if (manager.authenticated()) {
                 // authenticated using AD. Proceed for updating application insights registry.

@@ -73,7 +73,7 @@ public class CommonUtils {
             .name(functionApp.getName())
             .resourceId(functionApp.getId())
             .servicePlan(plan)
-            .subscription(Subscription.builder().id(functionApp.getSubscriptionId()).build())
+            .subscription(new Subscription(functionApp.getSubscriptionId()))
             .resourceGroup(ResourceGroupConfig.fromResource(functionApp.getResourceGroup()))
             .runtime(functionApp.getRuntime())
             .region(functionApp.getRegion())

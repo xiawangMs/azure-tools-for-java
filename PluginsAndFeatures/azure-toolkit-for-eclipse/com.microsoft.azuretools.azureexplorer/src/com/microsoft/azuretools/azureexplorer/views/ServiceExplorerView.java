@@ -51,12 +51,14 @@ import com.microsoft.azure.toolkit.eclipse.common.EclipseAzureIcons;
 import com.microsoft.azure.toolkit.eclipse.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.eclipse.explorer.AzureTreeNode;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus.EventListener;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.AzureModuleImpl;
-import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
+import com.microsoft.azuretools.core.handlers.SelectSubscriptionsCommandHandler;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -421,14 +423,11 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         fillLocalToolBar(bars.getToolBarManager());
         updateActions();
         try {
-            Runnable signInOutListener = new Runnable() {
-                @Override
-                public void run() {
-                    updateActions();
-                }
-            };
-            AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
-            AuthMethodManager.getInstance().addSignOutEventListener(signInOutListener);
+			EventListener signInOutListener = new EventListener(e -> updateActions());
+			AzureEventBus.on("account.logged_in.account", signInOutListener);
+            AzureEventBus.on("account.subscription_changed.account", signInOutListener);
+            AzureEventBus.on("account.logged_out.account", signInOutListener);
+            AzureEventBus.on("account.account.restoring_auth", signInOutListener);
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
         }
@@ -436,7 +435,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
 
     private void updateActions() {
         try {
-            boolean isSignedIn = AuthMethodManager.getInstance().isSignedIn();
+            boolean isSignedIn = IdeAzureAccount.getInstance().isLoggedIn();
             selectSubscriptionAction.setEnabled(isSignedIn);
             signInOutAction.setImageDescriptor(Activator.getImageDescriptor(isSignedIn ? "icons/SignOutLight_16.png" : "icons/SignInLight_16.png"));
             signInOutAction.setToolTipText(isSignedIn ? "Sign Out" : "Sign In");
@@ -464,8 +463,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             @Override
             public void run() {
                 try {
-                    AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-                    boolean isSignedIn = authMethodManager.isSignedIn();
+                    boolean isSignedIn = IdeAzureAccount.getInstance().isLoggedIn();
                     if (isSignedIn) {
                         SignOutCommandHandler.doSignOut(PluginUtil.getParentShell());
                     } else {
@@ -481,8 +479,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             @Override
             public void run() {
                 try {
-                    if (AuthMethodManager.getInstance().isSignedIn()) {
-                        SelectSubsriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
+                    if (IdeAzureAccount.getInstance().isLoggedIn()) {
+                        SelectSubscriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
                         azureModule.load(false);
                     }
                 } catch (Exception ex) {

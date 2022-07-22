@@ -41,7 +41,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -349,7 +349,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     private void validate() throws InvalidFormDataException {
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
+        if (!IdeAzureAccount.getInstance().isLoggedIn()) {
             throw new InvalidFormDataException(NEED_SIGN_IN);
         }
         // docker file

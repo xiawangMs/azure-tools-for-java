@@ -7,15 +7,16 @@ package com.microsoft.applicationinsights.preference;
 
 import com.microsoft.applicationinsights.ui.activator.Activator;
 import com.microsoft.applicationinsights.ui.config.AIResourceChangeListener;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
-import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
+import com.microsoft.azuretools.core.handlers.SelectSubscriptionsCommandHandler;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
@@ -98,7 +99,7 @@ public class ApplicationInsightsPreferencePage extends PreferencePage implements
         gridData.horizontalIndent = 3;
         boolean isSignedIn = false;
         try {
-            isSignedIn = AuthMethodManager.getInstance().isSignedIn();
+            isSignedIn = IdeAzureAccount.getInstance().isLoggedIn();
         } catch (Exception e) {
             // ignore
         }
@@ -318,14 +319,13 @@ public class ApplicationInsightsPreferencePage extends PreferencePage implements
 
     private void signInOutBtnListener() {
         try {
-            AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            boolean isSignedIn = authMethodManager.isSignedIn();
+            boolean isSignedIn = IdeAzureAccount.getInstance().isLoggedIn();
             if (isSignedIn) {
                 SignOutCommandHandler.doSignOut(PluginUtil.getParentShell());
             } else {
                 SignInCommandHandler.doSignIn(PluginUtil.getParentShell());
             }
-            signInOutBtn.setImage(PluginUtil.getImage(authMethodManager.isSignedIn() ? ICON_SIGNOUT : ICON_SIGNIN));
+            signInOutBtn.setImage(PluginUtil.getImage(isSignedIn ? ICON_SIGNOUT : ICON_SIGNIN));
             tableViewer.refresh();
         } catch (Exception ex) {
             Activator.getDefault().log(ex.getMessage(), ex);
@@ -337,8 +337,8 @@ public class ApplicationInsightsPreferencePage extends PreferencePage implements
         // com.microsoft.azuretools.core.Activator.getImageDescriptor("icons/ConnectAccountsLight_16.png")) {
         // public void run() {
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                SelectSubsriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
+            if (IdeAzureAccount.getInstance().isLoggedIn()) {
+                SelectSubscriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
                 tableViewer.refresh();
             }
         } catch (Exception ex) {
@@ -470,9 +470,8 @@ public class ApplicationInsightsPreferencePage extends PreferencePage implements
 
     private void loadInfoFirstTime() {
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                List<Subscription> subList = azureManager.getSelectedSubscriptions();
+            if (IdeAzureAccount.getInstance().isLoggedIn()) {
+                List<Subscription> subList = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
                 if (subList.size() > 0) {
                     // if (!ApplicationInsightsPreferences.isLoaded()) {
                     // authenticated using AD. Proceed for updating application insights registry.
