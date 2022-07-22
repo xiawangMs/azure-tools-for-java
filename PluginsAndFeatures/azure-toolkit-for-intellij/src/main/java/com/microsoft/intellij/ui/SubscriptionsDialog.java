@@ -14,7 +14,10 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -35,6 +38,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,8 +50,11 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -64,12 +71,14 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
     private static final Logger LOGGER = Logger.getInstance(SubscriptionsDialog.class);
     private final Project project;
     private final TailingDebouncer filter;
+    private final TailingDebouncer updateSelectionInfo;
     private JPanel contentPane;
     private JPanel panelTable;
     private SearchTextField searchBox;
     private JBTable table;
 
     private List<SimpleSubscription> candidates;
+    private JLabel selectionInfo;
 
     public SubscriptionsDialog(@Nonnull Project project) {
         super(project, true, IdeModalityType.PROJECT);
@@ -79,6 +88,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         setOKButtonText("Select");
         init();
         this.filter = new TailingDebouncer(() -> this.updateTableView(), 300);
+        this.updateSelectionInfo = new TailingDebouncer(() -> this.updateSelectionInfoInner(), 300);
         table.setAutoCreateRowSorter(true);
     }
 
@@ -125,6 +135,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
     private void setCandidates(@Nonnull List<Subscription> subs) {
         this.candidates = subs.stream()
             .map(s -> new SimpleSubscription(s.getId(), s.getName(), s.isSelected()))
+            .sorted(Comparator.comparing(s -> s.getName().toLowerCase()))
             .collect(Collectors.toList());
         this.updateTableView();
     }
@@ -135,15 +146,27 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         final String k = this.searchBox.getText();
         final List<SimpleSubscription> subs = this.candidates.stream()
             .filter(s -> StringUtils.isBlank(k) || StringUtils.containsIgnoreCase(s.getName(), k) || StringUtils.containsIgnoreCase(s.getId(), k))
-            .sorted(Comparator
-                .comparing(SimpleSubscription::isSelected).reversed()
-                .thenComparing(s -> s.getName().toLowerCase()))
+            .sorted(Comparator.comparing(SimpleSubscription::isSelected).reversed())
             .collect(Collectors.toList());
-        final boolean noneSelected = StringUtils.isBlank(k) && subs.size() > 0 && !subs.get(0).isSelected();
         for (final SimpleSubscription sd : subs) {
-            model.addRow(new Object[]{noneSelected || sd.isSelected(), sd.getName(), sd});
+            model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd});
         }
-        model.fireTableDataChanged();
+    }
+
+    protected JPanel createSouthAdditionalPanel() {
+        this.selectionInfo = new JLabel();
+        this.selectionInfo.setForeground(UIUtil.getLabelInfoForeground());
+        final JPanel panel = new NonOpaquePanel(new BorderLayout());
+        panel.setBorder(JBUI.Borders.emptyLeft(10));
+        panel.add(this.selectionInfo);
+        this.updateSelectionInfoInner();
+        return panel;
+    }
+
+    private void updateSelectionInfoInner() {
+        final long count = ObjectUtils.firstNonNull(this.candidates, Collections.<SimpleSubscription>emptyList()).stream().filter(s -> s.isSelected()).count();
+        final String msg = count < 1 ? "No subscription is selected" : count == 1 ? "1 subscription is selected" : count + " subscriptions are selected";
+        this.selectionInfo.setText(msg);
     }
 
     @Override
@@ -155,6 +178,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
                 final SimpleSubscription sub = (SimpleSubscription) model.getValueAt(rowIndex, SUBSCRIPTION_COLUMN);
                 sub.setSelected(selected);
             }
+        }
+        if (e.getType() == TableModelEvent.UPDATE || e.getType() == TableModelEvent.INSERT) {
+            this.updateSelectionInfo.debounce();
         }
     }
 
@@ -178,6 +204,17 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         table.getTableHeader().setReorderingAllowed(false);
         model.addTableModelListener(this);
         // new TableSpeedSearch(table);
+        final ActionListener actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final int[] rows = table.getSelectedRows();
+                for (final int row : rows) {
+                    final boolean selected = (boolean) model.getValueAt(row, CHECKBOX_COLUMN);
+                    model.setValueAt(!selected, row, CHECKBOX_COLUMN);
+                }
+            }
+        };
+        table.registerKeyboardAction(actionListener, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         final AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
@@ -198,10 +235,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
             }
         };
         refreshAction.registerCustomShortcutSet(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK, contentPane);
-        final ToolbarDecorator tableToolbarDecorator =
-            ToolbarDecorator.createDecorator(table)
-                .disableUpDownActions()
-                .addExtraActions(refreshAction);
+        final ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(table)
+            .disableUpDownActions()
+            .addExtraAction(refreshAction);
 
         panelTable = tableToolbarDecorator.createPanel();
     }
