@@ -44,7 +44,7 @@ public class AzureVmTargetConnectionStep extends SshTargetStepBase implements Ta
     public void _init() {
         super._init();
         this.setTitle(AzureVmTargetType.DISPLAY_NAME);
-        this.setStepDescription(formatStepLabel(1, 4, "select an existing Azure Virtual Machine instance."));
+        this.setStepDescription(formatStepLabel(1, 4, "Select an existing Azure Virtual Machine instance."));
     }
 
     @Override

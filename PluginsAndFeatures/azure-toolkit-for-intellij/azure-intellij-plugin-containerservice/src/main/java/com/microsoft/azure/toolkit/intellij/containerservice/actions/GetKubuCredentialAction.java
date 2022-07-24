@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
@@ -26,27 +26,26 @@ import java.util.Map;
 public class GetKubuCredentialAction {
     public static void getKubuCredential(@Nonnull KubernetesCluster cluster, @Nonnull Project project, boolean isAdmin) {
         try {
-            final File file = Files.createTempFile("azure-kubernetes", "yml").toFile();
             final byte[] content = isAdmin ? cluster.getAdminKubeConfig() : cluster.getUserKubeConfig();
-            FileUtils.writeByteArrayToFile(file, content);
-            mergeConfigToKubConfig(file);
+            mergeConfigToKubConfig(content);
+            AzureMessager.getMessager().info(AzureString.format("Kubeconfig for %s has been merged to local kube config and set as default context", cluster.getName()),
+                    null, KubernetesUtils.getConnectKubernetesActions(project));
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e);
         }
     }
 
-    private static void mergeConfigToKubConfig(File newConfigFile) throws IOException {
+    private static void mergeConfigToKubConfig(@Nonnull final byte[] content) throws IOException {
         final File configFile = Path.of(System.getProperty("user.home"), KubeConfig.KUBEDIR, KubeConfig.KUBECONFIG).toFile();
         if (!configFile.exists() || configFile.getTotalSpace() == 0) {
-            FileUtils.copyFile(newConfigFile, configFile);
-            AzureMessager.getMessager().info(AzureString.format("Kubeconfig has been saved to %s", configFile.getAbsolutePath()));
+            FileUtils.writeByteArrayToFile(configFile, content);
             return;
         }
         final KubeConfig origin = KubeConfig.loadKubeConfig(new FileReader(configFile));
         final ArrayList<Object> users = origin.getUsers();
         final ArrayList<Object> clusters = origin.getClusters();
         final ArrayList<Object> contexts = origin.getContexts();
-        final KubeConfig newConfig = KubeConfig.loadKubeConfig(new FileReader(newConfigFile));
+        final KubeConfig newConfig = KubeConfig.loadKubeConfig(new StringReader(new String(content)));
         final ArrayList<Object> newConfigUsers = newConfig.getUsers();
         final ArrayList<Object> newConfigClusters = newConfig.getClusters();
         final ArrayList<Object> newConfigContexts = newConfig.getContexts();
@@ -63,15 +62,14 @@ public class GetKubuCredentialAction {
                 }
             }
         }
-        final ArrayList mergedUsers = merge(users, newConfigUsers, false);
-        final ArrayList mergedClusters = merge(clusters, newConfigClusters, false);
-        final ArrayList mergedContexts = merge(contexts, newConfigContexts, false);
+        final ArrayList mergedUsers = merge(users, newConfigUsers, "user");
+        final ArrayList mergedClusters = merge(clusters, newConfigClusters, "cluster");
+        final ArrayList mergedContexts = merge(contexts, newConfigContexts, "context");
         new FilePersister(configFile)
                 .save(mergedContexts, mergedClusters, mergedUsers, origin.getPreferences(), newConfig.getCurrentContext());
-        AzureMessager.getMessager().info(AzureString.format("Merged %s as current context in %s", newConfig.getCurrentContext(), configFile.getAbsolutePath()));
     }
 
-    public static ArrayList merge(ArrayList origin, ArrayList newConfig, boolean overwrite) {
+    public static ArrayList merge(ArrayList origin, ArrayList newConfig, String type) {
         final ArrayList result = new ArrayList(origin);
         for (final Object o : newConfig) {
             if (o instanceof Map) {
@@ -79,10 +77,7 @@ public class GetKubuCredentialAction {
                 final Object existingObject = result.stream().filter(map -> (map instanceof Map) &&
                         StringUtils.equals(((Map<?, ?>) map).get("name").toString(), name)).findFirst().orElse(null);
                 if (existingObject != null) {
-                    if (overwrite) {
-                        result.remove(existingObject);
-                        result.add(o);
-                    }
+                    AzureMessager.getMessager().info(AzureString.format("skip merging as %s (%s) already exists in kubeconfig", type, name));
                 } else {
                     result.add(o);
                 }
