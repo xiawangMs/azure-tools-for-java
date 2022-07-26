@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.intellij.containerservice.actions;
 
+import com.intellij.ide.plugins.PluginManagerConfigurable;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -11,11 +12,10 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.PluginsAdvertiser;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -27,7 +27,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public class KubernetesUtils {
@@ -76,11 +75,10 @@ public class KubernetesUtils {
     }
 
     private static Action<?> getRecommendKubernetesPluginAction(@Nonnull final Project project) {
-        final String recommendPlugin = PlatformUtils.isIdeaUltimate() ? KUBERNETES_PLUGIN_ID : REDHAT_KUBERNETES_PLUGIN_ID;
-        final PluginId recommendPluginId = PluginId.getId(recommendPlugin);
         final Consumer<Void> consumer = ignore -> AzureTaskManager.getInstance().runLater(() ->
-                PluginsAdvertiser.installAndEnable(project, Set.of(recommendPluginId), true, () -> {
-                }));
+                ShowSettingsUtil.getInstance().editConfigurable(null, new PluginManagerConfigurable(), it ->
+                        it.openMarketplaceTab("/tag: \"Cloud\" Kubernetes")
+                ));
         final ActionView.Builder view = new ActionView.Builder("Install kubernetes plugin")
                 .title(ignore -> AzureString.fromString("Install kubernetes plugin")).enabled(ignore -> true);
         final Action.Id<Void> id = Action.Id.of("kubernetes.install_kubernetes_plugin");
