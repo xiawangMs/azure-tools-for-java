@@ -68,7 +68,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
     @Override
     public boolean hasChildren() {
-        return file.getType() == AppServiceFile.Type.DIRECTORY;
+        return file.getType() == AppServiceFile.Type.DIRECTORY && appService.getFormalStatus().isRunning();
     }
 
     @Override
@@ -87,6 +87,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         @Getter
         private final AppServiceFile file;
         private final AzureEventBus.EventListener listener;
+        private final AzureEventBus.EventListener appStatusListener;
 
         @Nullable
         @Setter
@@ -96,14 +97,23 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         public AppServiceFileLabelView(@Nonnull AppServiceFile file) {
             this.file = file;
             this.listener = new AzureEventBus.EventListener(this::onEvent);
+            this.appStatusListener= new AzureEventBus.EventListener(this::onAppStatusChanged);
             AzureEventBus.on("resource.refreshed.resource", listener);
+            AzureEventBus.on("resource.status_changed.resource", appStatusListener);
             this.refreshView();
+        }
+
+        private void onAppStatusChanged(AzureEvent event) {
+            final Object source = event.getSource();
+            if ((source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(((AppServiceAppBase<?, ?, ?>) source).getId(), this.file.getApp().getId()))) {
+                AzureTaskManager.getInstance().runLater(this::refreshChildren);
+            }
         }
 
         private void onEvent(AzureEvent event) {
             final String type = event.getType();
             final Object source = event.getSource();
-            if (source instanceof AppServiceFile && StringUtils.equalsIgnoreCase(((AppServiceFile) source).getFullName(), this.file.getFullName())) {
+            if ((source instanceof AppServiceFile && StringUtils.equalsIgnoreCase(((AppServiceFile) source).getFullName(), this.file.getFullName()))) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }
@@ -140,6 +150,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         @Override
         public void dispose() {
             AzureEventBus.off("resource.refreshed.resource", listener);
+            AzureEventBus.off("resource.status_changed.resource", appStatusListener);
             this.refresher = null;
         }
     }

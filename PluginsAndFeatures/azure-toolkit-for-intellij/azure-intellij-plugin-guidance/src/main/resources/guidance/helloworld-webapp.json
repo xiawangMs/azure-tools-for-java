@@ -84,6 +84,7 @@
         {
           "title": "Create Application Insights app",
           "description": null,
+          "continueOnError": true,
           "task": {
             "name": "task.application_insights.create",
             "paramMapping": {
@@ -98,6 +99,7 @@
         {
           "title": "Create resource connection between your project and Application Insights ${context.applicationInsightName}",
           "description": null,
+          "continueOnError": true,
           "task": {
             "name": "task.application_insights.create_connector"
           }

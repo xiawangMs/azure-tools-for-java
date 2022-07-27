@@ -82,12 +82,13 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
     public SubscriptionsDialog(@Nonnull Project project) {
         super(project, true, IdeModalityType.PROJECT);
         this.project = project;
+        this.filter = new TailingDebouncer(this::updateTableView, 300);
+        this.updateSelectionInfo = new TailingDebouncer(this::updateSelectionInfoInner, 300);
+        $$$setupUI$$$();
         setModal(true);
         setTitle("Select Subscriptions");
         setOKButtonText("Select");
         init();
-        this.filter = new TailingDebouncer(this::updateTableView, 300);
-        this.updateSelectionInfo = new TailingDebouncer(this::updateSelectionInfoInner, 300);
         table.setAutoCreateRowSorter(true);
     }
 
@@ -303,5 +304,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         public String toString() {
             return this.id;
         }
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    private void $$$setupUI$$$() {
     }
 }

@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -26,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
 import javax.annotation.Nonnull;
@@ -34,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -165,7 +168,14 @@ public class FunctionAppService {
         final String resourceGroup = config.getResourceGroup().getName();
         final String name = config.getMonitorConfig().getApplicationInsightsConfig().getName();
         final Region region = config.getRegion();
-        return new GetOrCreateApplicationInsightsTask(subscriptionId, resourceGroup, region, name).execute();
+        try {
+            return new GetOrCreateApplicationInsightsTask(subscriptionId, resourceGroup, region, name).execute();
+        } catch (final Throwable e) {
+            final Throwable rootCause = ExceptionUtils.getRootCause(e);
+            AzureMessager.getMessager().warning(AzureString.format("Failed to get/create application insights %s, caused by %s", name,
+                    StringUtils.firstNonBlank(rootCause.getMessage(), rootCause.getClass().getSimpleName())));
+            return null;
+        }
     }
 
     public void deployFunctionApp(final FunctionApp functionApp, final File stagingFolder) throws IOException {
@@ -176,15 +186,15 @@ public class FunctionAppService {
         if (!StringUtils.equalsIgnoreCase(functionApp.getStatus(), RUNNING)) {
             functionApp.start();
         }
-        final String resourceUrl = String.format(PORTAL_URL_PATTERN, Azure.az(AzureAccount.class).account().getPortalUrl(), functionApp.id());
+        final String resourceUrl = String.format(PORTAL_URL_PATTERN, Azure.az(AzureAccount.class).account().getPortalUrl(), functionApp.getId());
         AzureMessager.getMessager().info(String.format(DEPLOY_FINISH, resourceUrl));
     }
 
     private FunctionDeployType getDeployType(final FunctionApp functionApp) {
-        if (functionApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
+        if (Objects.requireNonNull(functionApp.getRuntime()).getOperatingSystem() == OperatingSystem.WINDOWS) {
             return FunctionDeployType.RUN_FROM_ZIP;
         }
-        final PricingTier pricingTier = functionApp.getAppServicePlan().getPricingTier();
+        final PricingTier pricingTier = Objects.requireNonNull(functionApp.getAppServicePlan()).getPricingTier();
         return StringUtils.equalsAnyIgnoreCase(pricingTier.getTier(), "Dynamic", "ElasticPremium") ?
                 FunctionDeployType.RUN_FROM_BLOB : FunctionDeployType.RUN_FROM_ZIP;
     }

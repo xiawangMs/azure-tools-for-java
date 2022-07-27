@@ -10,8 +10,10 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public class SelectSubscriptionTask implements Task {
     public static final String SUBSCRIPTION_ID = "subscriptionId";
@@ -43,8 +45,9 @@ public class SelectSubscriptionTask implements Task {
     }
 
     private void selectSubscription() {
-        final AzureAccount az = Azure.az(AzureAccount.class);
-        final Subscription subscription = az.account().getSelectedSubscriptions().get(0);
+        final List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
+        assert CollectionUtils.isNotEmpty(selectedSubscriptions) : "there is no subscription in your account";
+        final Subscription subscription = selectedSubscriptions.get(0);
         context.applyResult(SUBSCRIPTION_ID, subscription.getId());
         AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
     }

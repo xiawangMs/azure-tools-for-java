@@ -57,6 +57,7 @@ public class Step implements Disposable {
     @ToString.Exclude
     private final Phase phase;
 
+    private final boolean continueOnError;
     @Nonnull
     private Status status = Status.INITIAL;
     private IAzureMessager output;
@@ -67,6 +68,7 @@ public class Step implements Disposable {
         this.id = UUID.randomUUID().toString();
         this.title = config.getTitle();
         this.description = config.getDescription();
+        this.continueOnError = config.isContinueOnError();
         this.task = TaskManager.createTask(config.getTask(), phase.getCourse().getContext());
         this.inputs = Optional.ofNullable(config.getInputs())
             .map(configs -> configs.stream().map(inputConfig ->
@@ -92,7 +94,7 @@ public class Step implements Disposable {
                     setStatus(Status.FAILED);
                 }
             } catch (final Exception e) {
-                setStatus(Status.FAILED);
+                setStatus(continueOnError ? Status.PARTIAL_SUCCEED : Status.FAILED);
                 AzureMessager.getMessager().error(e);
                 AzureMessager.getDefaultMessager().error(e);
             }
@@ -130,6 +132,10 @@ public class Step implements Disposable {
     public void prepare() {
         task.prepare();
         this.setStatus(task.isDone() ? Status.SUCCEED : Status.READY);
+    }
+
+    public boolean isReady() {
+        return task.isReady();
     }
 
     private void applyInputs() {

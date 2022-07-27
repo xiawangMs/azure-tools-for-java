@@ -150,6 +150,7 @@ public class Tree extends SimpleTree implements DataProvider {
         @Override
         @AzureOperation(name = "common.load_children.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
         public synchronized void refreshChildren(boolean... incremental) {
+            Optional.ofNullable(this.inner).ifPresent(ignore -> this.setAllowsChildren(inner.hasChildren()));
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
                 if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
@@ -161,6 +162,9 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
                 this.loaded = null;
                 this.loadChildren(incremental);
+            } else if (!this.getAllowsChildren()) {
+                this.removeAllChildren();
+                this.refreshChildrenView();
             }
         }
 

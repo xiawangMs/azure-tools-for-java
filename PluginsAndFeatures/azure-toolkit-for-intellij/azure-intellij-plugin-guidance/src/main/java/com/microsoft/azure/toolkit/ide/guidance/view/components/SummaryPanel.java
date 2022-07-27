@@ -28,6 +28,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH;
 import static com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL;
@@ -74,7 +75,7 @@ public class SummaryPanel extends JPanel {
 
     private void updateStatus(Status status) {
         this.statusIcon.setIcon(AllIcons.General.BalloonInformation);
-        this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED || status == Status.SUCCEED;
+        this.focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED || status == Status.SUCCEED || status == Status.PARTIAL_SUCCEED;
         this.setVisible(this.focused);
         final Color bgColor = this.focused ? BACKGROUND_COLOR : JBUI.CurrentTheme.ToolWindow.background();
         PhasePanel.doForOffsprings(this.contentPanel, c -> c.setBackground(bgColor));
@@ -95,9 +96,9 @@ public class SummaryPanel extends JPanel {
     }
 
     private void initDetailsPanel() {
-        final List<Step> steps = phase.getSteps();
-        if (CollectionUtils.isEmpty(steps) || steps.size() == 1) {
-            // skip render steps panel for single task
+        final List<Step> steps = phase.getSteps().stream().filter(step -> step.isReady()).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(steps)) {
+            // skip render steps panel when empty
             this.detailsPanel.setVisible(false);
             return;
         }
