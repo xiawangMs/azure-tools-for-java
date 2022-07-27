@@ -25,23 +25,37 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h3>3.66.0</h3>
-        <h4>Added</h4>
-        <ul>
-          <li>New "Getting Started with Azure" experience.</li>
-          <li>Support for IntelliJ IDEA 2022.2(EAP).</li>
-          <li>SNAPSHOT and BETA versions of this plugin are available in [`Dev` channel](https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij/versions/dev).</li>
-        </ul>
-        <h4>Fixed</h4>
-        <ul>
-          <li>Error "java.lang.IllegalStateException" occurs if there are resources having same name but different resource groups.</li>
-          <li>Configurations go back to default after deploying an artifact to a newly created Azure Spring App.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6730">#6730</a>: Uncaught Exception java.lang.NullPointerException when creating/updating spring cloud app.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6725">#6725</a>: Uncaught Exception com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException: you are not signed-in. when deploying to Azure Web App.</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6696">#6696</a>: Unable to run debug on azure java function on intellij (2022.1) with azure toolkit (3.65.1).</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6671">#6671</a>: Uncaught Exception java.lang.Throwable: Executor with context action id: "RunClass" was already registered!</li>
-        </ul>
-        <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
+      <h3>3.67.0</h3>
+      <h4>Added</h4>
+      <ul>
+          <li>New Azure service support: Azure Kubernetes service.
+              <ul>
+                  <li>direct resource management in Azure Explorer.</li>
+                  <li>connection to other K8s plugins.</li>
+              </ul>
+          </li>
+          <li>Support for running or debugging local projects directly on Azure Virtual Machine by leveraging <a
+                  href="https://www.jetbrains.com/help/idea/run-targets.html"><code>Run Targets</code></a>.
+          </li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+          <li>Most Tool Windows will hide by default and show only when they are triggered by related actions.</li>
+          <li>An explicit search box is added on subscription dialog to filter subscriptions more conveniently.
+              <ul>
+                  <li>support for toggling selection of subscriptions by `space` key even checkbox is not focused.</li>
+              </ul>
+          </li>
+          <li>A loading spinner would show first when the feedback page is loading.</li>
+          <li>Entries of some common actions in <code>&lt;Toolbar&gt;/Tools/Azure</code> are also added into the gear actions group of Azure Explorer.
+          </li>
+      </ul>
+      <h4>Fixed</h4>
+      <ul>
+          <li>Error occurs if expand or download files/logs of a stopped function app.</li>
+          <li>Known CVE issues.</li>
+      </ul>
+      <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
   </change-notes>

@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.67.0](#3670)
   - [3.66.0](#3660)
   - [3.65.0](#3650)
   - [3.64.0](#3640)
@@ -84,6 +85,24 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.67.0
+### Added
+- New Azure service support: Azure Kubernetes service.
+  - direct resource management in Azure Explorer.
+  - connection to other K8s plugins.    
+- Support for running or debugging local projects directly on Azure Virtual Machine by leveraging [`Run Targets`](https://www.jetbrains.com/help/idea/run-targets.html).     
+
+### Changed
+- Most Tool Windows will hide by default and show only when they are triggered by related actions.
+- An explicit search box is added on subscription dialog to filter subscriptions more conveniently.
+  - support for toggling selection of subscriptions by `space` key even checkbox is not focused.
+- A loading spinner would show first when the feedback page is loading.
+- Entries of some common actions in `<Toolbar>/Tools/Azure` are also added into the gear actions group of Azure Explorer.
+
+### Fixed
+- Error occurs if expand or download files/logs of a stopped function app.
+- Known CVE issues.
 
 ## 3.66.0
 ### Added
