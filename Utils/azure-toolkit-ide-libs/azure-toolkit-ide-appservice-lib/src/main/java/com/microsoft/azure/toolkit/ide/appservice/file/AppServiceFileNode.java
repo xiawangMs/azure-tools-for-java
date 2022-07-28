@@ -9,8 +9,10 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,18 +70,24 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
     @Override
     public boolean hasChildren() {
-        return file.getType() == AppServiceFile.Type.DIRECTORY && appService.getFormalStatus().isRunning();
+        return file.getType() == AppServiceFile.Type.DIRECTORY;
     }
 
     @Override
     public List<Node<?>> getChildren() {
-        return file.getType() != AppServiceFile.Type.DIRECTORY ? Collections.emptyList() :
-                appService.getFilesInDirectory(file.getPath()).stream()
-                        .sorted((first, second) -> first.getType() == second.getType() ?
-                                StringUtils.compare(first.getName(), second.getName()) :
-                                first.getType() == AppServiceFile.Type.DIRECTORY ? -1 : 1)
-                        .map(AppServiceFileNode::new)
-                        .collect(Collectors.toList());
+        if (file.getType() != AppServiceFile.Type.DIRECTORY) {
+            return Collections.emptyList();
+        }
+        if (!appService.getFormalStatus().isRunning()) {
+            AzureMessager.getMessager().warning(AzureString.format("Can not list files for app service with status %s", appService.getStatus()));
+            return Collections.emptyList();
+        }
+        return appService.getFilesInDirectory(file.getPath()).stream()
+                .sorted((first, second) -> first.getType() == second.getType() ?
+                        StringUtils.compare(first.getName(), second.getName()) :
+                        first.getType() == AppServiceFile.Type.DIRECTORY ? -1 : 1)
+                .map(AppServiceFileNode::new)
+                .collect(Collectors.toList());
     }
 
     static class AppServiceFileLabelView implements NodeView {
@@ -87,7 +95,6 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         @Getter
         private final AppServiceFile file;
         private final AzureEventBus.EventListener listener;
-        private final AzureEventBus.EventListener appStatusListener;
 
         @Nullable
         @Setter
@@ -97,17 +104,8 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         public AppServiceFileLabelView(@Nonnull AppServiceFile file) {
             this.file = file;
             this.listener = new AzureEventBus.EventListener(this::onEvent);
-            this.appStatusListener= new AzureEventBus.EventListener(this::onAppStatusChanged);
             AzureEventBus.on("resource.refreshed.resource", listener);
-            AzureEventBus.on("resource.status_changed.resource", appStatusListener);
             this.refreshView();
-        }
-
-        private void onAppStatusChanged(AzureEvent event) {
-            final Object source = event.getSource();
-            if ((source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(((AppServiceAppBase<?, ?, ?>) source).getId(), this.file.getApp().getId()))) {
-                AzureTaskManager.getInstance().runLater(this::refreshChildren);
-            }
         }
 
         private void onEvent(AzureEvent event) {
@@ -150,7 +148,6 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         @Override
         public void dispose() {
             AzureEventBus.off("resource.refreshed.resource", listener);
-            AzureEventBus.off("resource.status_changed.resource", appStatusListener);
             this.refresher = null;
         }
     }
