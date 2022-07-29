@@ -263,12 +263,12 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
     private AzureValidationInfo validateDnsNamePrefix() {
         final String name = txtDnsPrefix.getValue();
         if (StringUtils.isEmpty(name)) {
-            return AzureValidationInfo.error(AzureMessageBundle.message("kubernetes.cluster.dnsNamePrefix.validate.empty").toString(), txtName);
+            return AzureValidationInfo.error(AzureMessageBundle.message("kubernetes.cluster.dnsNamePrefix.validate.empty").toString(), txtDnsPrefix);
         }
         if (!DNS_NAME_PREFIX_PATTERN.matcher(name).matches()) {
-            return AzureValidationInfo.error(AzureMessageBundle.message("kubernetes.cluster.dnsNamePrefix.validate.invalid").toString(), txtName);
+            return AzureValidationInfo.error(AzureMessageBundle.message("kubernetes.cluster.dnsNamePrefix.validate.invalid").toString(), txtDnsPrefix);
         }
-        return AzureValidationInfo.success(txtName);
+        return AzureValidationInfo.success(txtDnsPrefix);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
