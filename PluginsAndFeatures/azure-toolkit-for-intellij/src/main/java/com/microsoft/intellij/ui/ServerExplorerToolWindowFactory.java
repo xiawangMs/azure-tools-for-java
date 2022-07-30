@@ -477,7 +477,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         @Override
         public void actionPerformed(AnActionEvent event) {
-            azureModule.load(true);
+//            azureModule.load(true);
             AzureExplorer.refreshAll();
         }
 

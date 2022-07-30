@@ -28,6 +28,13 @@ public class OpenLiveMetricsTask implements Task {
     }
 
     @Override
+    public boolean isReady() {
+        final String applicationInsightsId = (String) context.getParameter("applicationInsightsId");
+        final String instrumentKey = (String) context.getParameter("instrumentKey");
+        return !StringUtils.isAllBlank(applicationInsightsId, instrumentKey);
+    }
+
+    @Override
     @AzureOperation(name = "guidance.open_live_metrics", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
         final String applicationInsightsId = (String) context.getParameter("applicationInsightsId");

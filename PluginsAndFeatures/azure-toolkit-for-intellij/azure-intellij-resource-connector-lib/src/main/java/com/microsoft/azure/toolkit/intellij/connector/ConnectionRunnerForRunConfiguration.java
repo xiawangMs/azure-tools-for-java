@@ -130,7 +130,6 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     public static class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged, IWebAppRunConfiguration.ModuleChangedListener {
         @Override
         @ExceptionNotification
-        @AzureOperation(name = "connector.update_connection_task", type = AzureOperation.Type.ACTION)
         public void runConfigurationAdded(@Nonnull RunnerAndConfigurationSettings settings) {
             final RunConfiguration config = settings.getConfiguration();
             final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
@@ -168,7 +167,6 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
 
         @Override
         @ExceptionNotification
-        @AzureOperation(name = "connector.update_connection_task", type = AzureOperation.Type.ACTION)
         public void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
             final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
             final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();

@@ -66,7 +66,7 @@ public abstract class AppServiceConfig {
     public static Region getDefaultRegion() {
         final AzureEnvironment environment = Azure.az(AzureAccount.class).account().getEnvironment();
         if (environment == AzureEnvironment.AZURE) {
-            return Region.US_WEST;
+            return Region.US_SOUTH_CENTRAL;
         } else if (environment == AzureEnvironment.AZURE_CHINA) {
             return Region.CHINA_NORTH2;
         } else {

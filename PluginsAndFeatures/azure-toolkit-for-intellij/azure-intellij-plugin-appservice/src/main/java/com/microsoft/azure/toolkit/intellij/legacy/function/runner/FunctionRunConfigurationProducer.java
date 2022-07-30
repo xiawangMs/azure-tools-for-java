@@ -42,7 +42,6 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.setup_run_configuration", type = AzureOperation.Type.ACTION)
     protected boolean setupConfigurationFromContext(AzureRunConfigurationBase runConfigurationBase, ConfigurationContext context, Ref ref) {
         if (!(runConfigurationBase instanceof FunctionRunConfiguration || runConfigurationBase instanceof FunctionDeployConfiguration)) {
             return false;
