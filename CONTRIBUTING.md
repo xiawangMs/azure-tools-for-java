@@ -1,5 +1,12 @@
 ## Azure Toolkit for IntelliJ IDEA
 ### Building
+* Clone and Build [azure-maven-plugins/azure-toolkit-libs](https://github.com/microsoft/azure-maven-plugins/tree/develop/azure-toolkit-libs) first. 
+  Azure Toolkit for Intellij doesn't depend on our maven plugins, but they share some code together.
+    ```
+    $ git clone https://github.com/microsoft/azure-maven-plugins.git
+    $ cd azure-maven-plugins/azure-toolkit-libs
+    $ mvn clean install
+    ```
 * Clone the repository with HTTPS or SSH:
     ```
     $ git clone https://github.com/Microsoft/azure-tools-for-java.git

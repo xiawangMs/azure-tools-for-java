@@ -1,11 +1,16 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.7.2"
-    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+    id "org.jetbrains.intellij" version "1.5.2"
+    id "org.jetbrains.kotlin.jvm" version "1.6.10"
+    id "de.undercouch.download" version "4.1.1"
+    id "com.github.ben-manes.versions" version "0.39.0"
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 ext {
-    azureToolkitVersion = "0.23.0"
+    azureToolkitVersion = "0.24.0-SNAPSHOT"
+    azureToolkitUtilsVersion = "3.68.0-SNAPSHOT"
 }
+
 group 'com.microsoft.azure.toolkit'
 apply plugin: 'java'
 
@@ -22,38 +27,6 @@ intellij {
     plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins]
     downloadSources = Boolean.valueOf(sources)
 }
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-configurations {
-    compile.exclude module: 'slf4j-api'
-    compile.exclude module: 'log4j'
-    compile.exclude module: 'stax-api'
-    compile.exclude module: 'groovy-templates'
-}
-
-dependencies {
-    compile 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
-    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
-
-    compile project(':azure-intellij-plugin-lib')
-    compile project(':azure-intellij-plugin-service-explorer')
-
-    def modules = IntellijPluginModules.split(",")
-    modules.each { m ->
-        compile project(':' + m)
-    }
-
-    aspect 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
-        exclude group: "com.squareup.okhttp3", module: "okhttp"
-        exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
-        exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
-    }
-}
-
 
 gradle.taskGraph.whenReady { graph ->
     def hasRootRunTask = graph.hasTask(':runIde')
@@ -75,7 +48,8 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.23.0"
+        azureToolkitVersion = "0.24.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.68.0-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
@@ -103,25 +77,99 @@ subprojects {
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations'
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
+        compile 'com.microsoft.azure:azure-toolkit-common-lib'
+        aspect 'com.microsoft.azure:azure-toolkit-common-lib'
+        compileOnly 'org.jetbrains:annotations'
+    }
+}
 
-        compile 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
-            exclude group: "com.squareup.okhttp3", module: "okhttp"
-            exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
-            exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+sourceSets {
+    main {
+        java.srcDirs 'src/main/java'
+        resources {
+            srcDir 'src/main/resources'
         }
-
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
-            exclude group: "com.squareup.okhttp3", module: "okhttp"
-            exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
-            exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+    }
+    test {
+        java {
+            srcDir 'src/test/java'
+        }
+        resources {
+            srcDir 'src/test/resources'
         }
     }
 }
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    compile.exclude module:'slf4j-api'
+    compile.exclude module:'log4j'
+    compile.exclude module:'stax-api'
+    compile.exclude module:'groovy-xml'
+    compile.exclude module:'groovy-templates'
+    compile.exclude module:'jna'
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+    }
+}
+
+dependencies {
+    compile 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
+
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-plugin-service-explorer')
+
+    def modules = IntellijPluginModules.split(",")
+    modules.each { m ->
+        compile project(':' + m)
+    }
+
+    aspect "com.microsoft.azure:azure-toolkit-common-lib", {
+        exclude group: "com.squareup.okhttp3", module: "okhttp"
+        exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+        exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+    }
+}
+
 wrapper() {
     gradleVersion = '6.9'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+String timestamp = (new Date()).format('yyyyMMddHHmmss')
+ext.getPatchedVersion = {
+    if (Boolean.valueOf(needPatchVersion) || pluginVersion.endsWith("SNAPSHOT")) {
+        if (pluginVersion.endsWith("SNAPSHOT")) {
+            def fixedPluginVersion = pluginVersion.split("-")
+            return "${fixedPluginVersion[0]}-${intellijDisplayVersion}-SNAPSHOT.${timestamp}"
+        } else {
+            return "${pluginVersion}-${intellijDisplayVersion}-BETA.${timestamp}"
+        }
+    } else {
+        return "${pluginVersion}-${intellijDisplayVersion}"
+    }
+}
+
+patchPluginXml {
+    version = getPatchedVersion()
+    sinceBuild = patchPluginXmlSinceBuild
+}
+
+buildPlugin {
+    archiveVersion = getPatchedVersion()
 }

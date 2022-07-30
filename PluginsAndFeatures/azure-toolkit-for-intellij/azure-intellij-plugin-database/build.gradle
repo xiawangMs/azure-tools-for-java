@@ -15,11 +15,11 @@ dependencies {
     compile 'org.postgresql:postgresql:42.3.1'
 
     // TODO(andxu): remove the legacy dependencies
-    compile 'com.microsoft.azuretools:azuretools-core:3.67.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.68.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.67.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.68.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 }
