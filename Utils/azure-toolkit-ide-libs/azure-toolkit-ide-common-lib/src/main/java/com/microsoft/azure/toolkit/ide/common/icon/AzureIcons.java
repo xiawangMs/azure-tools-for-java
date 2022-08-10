@@ -181,6 +181,10 @@ public final class AzureIcons {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.ContainerService/default.svg").build();
     }
 
+    public static final class Cosmos {
+        public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.DocumentDB/default.svg").build();
+    }
+
     public static final class Connector {
         public static final AzureIcon CONNECT = AzureIcon.builder().iconPath("/icons/connector/connect.svg").build();
     }
