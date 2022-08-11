@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<drivers>
+    <driver id="az_cosmos_cassandra" dbms="AZ_COSMOS_CASSANDRA" forced-dbms="AZ_COSMOS_CASSANDRA" based-on="cassandra" name="Azure Cosmos DB (Cassandra)" icon="AllIcons.Providers.Azure" dialect="CassandraQL">
+        <url-template/>
+        <url-template name="default" template="jdbc:cassandra://&lt;\,,{host::localhost}?[:{port::10350}]&gt;[/{database:::keyspace}?[/{account:cosmos_account_cassandra}?][\?&lt;&amp;,user={user},password={password},{:identifier}={:identifier}&gt;]]"/>
+        <artifact name="Cassandra" use="true" rolling="true"/>
+        <option name="auto-sync" value="true"/>
+        <option name="use-ssl" value="true"/>
+        <option name="ssl" value="true"/>
+        <property name="appName" value="DataGrip"/>
+    </driver>
+</drivers>

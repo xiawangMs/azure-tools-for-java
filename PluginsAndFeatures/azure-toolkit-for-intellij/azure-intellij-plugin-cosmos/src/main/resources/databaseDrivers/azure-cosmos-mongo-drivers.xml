@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<drivers>
+    <driver id="az_cosmos_mongo" dbms="AZ_COSMOS_MONGO" forced-dbms="AZ_COSMOS_MONGO" based-on="mongo" name="Azure Cosmos DB (Mongo DB)" icon="AllIcons.Providers.Azure" dialect="MongoJS">
+        <url-template/>
+        <url-template name="default" template="[jdbc:]mongodb[+srv]://[{user:identifier}[:{password:param}]@]&lt;\,,{host::localhost}?[:{port::10255}]&gt;/[{account:cosmos_account_mongo}?]\?ssl=true[&amp;&lt;&amp;,{:identifier}={:param}&gt;]"/>
+        <artifact name="MongoDB" use="true" rolling="true"/>
+        <option name="auto-sync" value="true"/>
+        <option name="use-ssl" value="true"/>
+        <option name="ssl" value="true"/>
+        <property name="appName" value="DataGrip"/>
+    </driver>
+</drivers>
