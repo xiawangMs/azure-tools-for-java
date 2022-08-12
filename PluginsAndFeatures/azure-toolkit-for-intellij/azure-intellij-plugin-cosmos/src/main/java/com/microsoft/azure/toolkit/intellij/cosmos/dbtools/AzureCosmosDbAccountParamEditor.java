@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
     public static final String KEY_USERNAME = "username";
+    public static final String NONE = "<NONE>";
     @Getter
     @Setter
     private String text = "";
@@ -57,7 +58,9 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         interchange.addPersistentProperty(KEY_USERNAME);
         interchange.addPersistentProperty("user");
         final String initialAccountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
-        combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialAccountId)));
+        if (StringUtils.isNotBlank(initialAccountId)) {
+            combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialAccountId)));
+        }
 
         interchange.addPropertyChangeListener((evt -> onPropertiesChanged(evt.getPropertyName(), evt.getNewValue())), this);
         combox.addValueChangedListener(this::setAccount);
@@ -81,7 +84,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         this.account = account;
         if (account == null) {
             this.connectionString = null;
-            interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, null);
+            interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, NONE);
             return;
         }
         this.updating = true;
