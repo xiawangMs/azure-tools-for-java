@@ -5,8 +5,6 @@
         <url-template name="default" template="jdbc:cassandra://&lt;\,,{host::localhost}?[:{port::10350}]&gt;[/{database:::keyspace}?[/{account:cosmos_account_cassandra}?][\?&lt;&amp;,user={user},password={password},{:identifier}={:identifier}&gt;]]"/>
         <artifact name="Cassandra" use="true" rolling="true"/>
         <option name="auto-sync" value="true"/>
-        <option name="use-ssl" value="true"/>
-        <option name="ssl" value="true"/>
         <property name="appName" value="DataGrip"/>
     </driver>
 </drivers>

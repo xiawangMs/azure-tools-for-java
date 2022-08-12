@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID;
+import static com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID;
 
 @Getter
 @SuppressWarnings("UnstableApiUsage")
