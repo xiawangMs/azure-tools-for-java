@@ -6,13 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
 import com.intellij.credentialStore.OneTimeString;
+import com.intellij.database.dataSource.DataSourceConfigurable;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.dataSource.url.DataInterchange;
 import com.intellij.database.dataSource.url.FieldSize;
 import com.intellij.database.dataSource.url.TypesRegistry;
+import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
 import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.components.JBCheckBox;
 import com.intellij.util.Consumer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -27,6 +30,7 @@ import com.microsoft.azure.toolkit.lib.cosmos.model.MongoDatabaseAccountConnecti
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoCosmosDBAccount;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.NotNull;
@@ -43,9 +47,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MongoCosmosDbAccountParamEditor extends ParamEditorBase<ComboBox<MongoCosmosDBAccount>> {
-    public static final String TYPE_NAME = "cosmos_account_mongo";
-    public static final String CAPTION = "Account";
-    public static final String PARAM_NAME = "account";
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
     public static final String KEY_USERNAME = "username";
     @Getter
@@ -101,9 +102,10 @@ public class MongoCosmosDbAccountParamEditor extends ParamEditorBase<ComboBox<Mo
             final String password = String.valueOf(connectionString.getPassword());
             MongoCosmosDbAccountParamEditor.this.text = connectionString.getConnection();
             AzureTaskManager.getInstance().runLater(() -> {
-                interchange.getDataSource().setAuthProviderId(AzurePluginAuthProvider.ID);
                 LocalDataSource.setUsername(dataSource, user);
                 interchange.getCredentials().storePassword(dataSource, new OneTimeString(password));
+                this.setUseSsl(true);
+                this.getDataSourceConfigurable().getDataSource().setAuthProviderId(AzurePluginAuthProvider.ID);
                 final Map<String, String> map = new HashMap<>();
                 interchange.putProperties(consumer -> {
                     consumer.consume(KEY_COSMOS_ACCOUNT_ID, account.getId());
@@ -113,11 +115,16 @@ public class MongoCosmosDbAccountParamEditor extends ParamEditorBase<ComboBox<Mo
                     consumer.consume("port", port);
                     this.updating = false;
                 });
+                this.setUsernameAndPassword(user, password);
             }, AzureTask.Modality.ANY);
         });
     }
 
     static class MongoCosmosDbAccountFactory implements TypesRegistry.TypeDescriptorFactory {
+        private static final String TYPE_NAME = "cosmos_account_mongo";
+        private static final String CAPTION = "Account";
+        private static final String PARAM_NAME = "account";
+
         MongoCosmosDbAccountFactory() {
             makeAccountShowAtTop();
         }
@@ -165,5 +172,24 @@ public class MongoCosmosDbAccountParamEditor extends ParamEditorBase<ComboBox<Mo
         protected String getItemText(Object item) {
             return Optional.ofNullable(item).map(i -> ((CosmosDBAccount) i)).map(AbstractAzResource::getName).orElse("");
         }
+    }
+
+    private void setUsernameAndPassword(String user, String password) {
+        final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
+        model.setParameter("user", user);
+        model.setParameter("password", password);
+        model.commit(true);
+    }
+
+    @SneakyThrows
+    private void setUseSsl(boolean useSsl) {
+        final DataSourceConfigurable configurable = this.getDataSourceConfigurable();
+        final JBCheckBox useSSLCheckBox = (JBCheckBox) FieldUtils.readField(configurable.getSshSslPanel(), "myUseSSLJBCheckBox", true);
+        useSSLCheckBox.setSelected(useSsl);
+    }
+
+    @SneakyThrows
+    private DataSourceConfigurable getDataSourceConfigurable() {
+        return (DataSourceConfigurable) FieldUtils.readField(this.getInterchange(), "myConfigurable", true);
     }
 }
