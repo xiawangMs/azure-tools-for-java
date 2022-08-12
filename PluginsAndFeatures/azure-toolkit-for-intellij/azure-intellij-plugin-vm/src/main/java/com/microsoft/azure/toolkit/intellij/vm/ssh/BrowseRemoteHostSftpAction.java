@@ -37,7 +37,7 @@ public class BrowseRemoteHostSftpAction {
     @AzureOperation(name = "vm.browse_files_sftp", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig curSshConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
-        final WebServerConfig server = getOrCreateWebServerConfigFromSsh(curSshConfig, project);
+        final WebServerConfig server = getOrCreateWebServerConfigFromSsh(validateSshConfig(curSshConfig), project);
         AzureTaskManager.getInstance().runLater(() -> {
             final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
             toolWindow.show(null);
@@ -88,12 +88,16 @@ public class BrowseRemoteHostSftpAction {
         serverConfig.setName(ssh.getName());
         serverConfig.getFileTransferConfig().setAccessType(AccessType.SFTP);
         serverConfig.getFileTransferConfig().setPort(AccessType.SFTP.getDefaultPort());
+        serverConfig.getFileTransferConfig().setSshConfig(ssh);
+        return serverConfig;
+    }
+
+    private static SshConfig validateSshConfig(SshConfig ssh) {
         // key-pair mode, need to check private key path
         if (AuthType.KEY_PAIR == ssh.getAuthType() && ssh.getKeyPath().isEmpty()) {
             ssh.setKeyPath(Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toString());
         }
-        serverConfig.getFileTransferConfig().setSshConfig(ssh);
-        return serverConfig;
+        return ssh;
     }
 
 }

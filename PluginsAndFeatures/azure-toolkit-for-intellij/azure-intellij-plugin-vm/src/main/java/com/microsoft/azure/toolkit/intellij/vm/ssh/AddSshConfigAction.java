@@ -52,8 +52,7 @@ public class AddSshConfigAction {
         config.setUsername(vm.getAdminUserName());
         config.setAuthType(vm.isPasswordAuthenticationDisabled() ? AuthType.KEY_PAIR : AuthType.PASSWORD);
         config.setHost(vm.getHostIp());
-        // fixme get port info from vm
-        config.setPort(22);
+        config.setPort(vm.getSshPort());
         return config;
     }
 

@@ -62,19 +62,23 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
                 TerminalView.getInstance(project).createNewSession(runner, tabState);
             });
         } catch (final RemoteSdkException e) {
-            final Action.Id<Void> id = Action.Id.of("vm.open_ssh_configuration");
-            final Action<?> openSshConfigurationAction = new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> {
-                final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
-                ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
-                    try {
-                        MethodUtils.invokeMethod(configurable, true, "select", sshCredential);
-                    } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
-                        AzureMessager.getMessager().error(e2);
-                    }
-                });
-            }), new ActionView.Builder("Modify SSH Configuration"));
-            AzureMessager.getMessager().warning(e.getMessage(), SSH_CONNECTION_TITLE, openSshConfigurationAction);
+            AzureMessager.getMessager().warning(e.getMessage(), SSH_CONNECTION_TITLE,
+                    openSshConfigurationAction(project, sshCredential));
         }
+    }
+
+    private Action<?> openSshConfigurationAction(final @NotNull Project project, RemoteCredentials sshCredential) {
+        final Action.Id<Void> id = Action.Id.of("vm.open_ssh_configuration");
+        return new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> {
+            final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
+            ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
+                try {
+                    MethodUtils.invokeMethod(configurable, true, "select", sshCredential);
+                } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
+                    AzureMessager.getMessager().error(e2);
+                }
+            });
+        }), new ActionView.Builder("Modify SSH Configuration"));
     }
 
 }
