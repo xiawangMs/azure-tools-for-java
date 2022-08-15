@@ -141,8 +141,8 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
             if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                 return Collections.emptyList();
             }
-            return Azure.az(AzureCosmosService.class).accounts(kind).stream()
-                .filter(m -> !m.isDraftForCreating()).map(a -> a).collect(Collectors.toList());
+            return Azure.az(AzureCosmosService.class).getDatabaseAccounts(kind).stream()
+                .filter(m -> !m.isDraftForCreating()).collect(Collectors.toList());
         }
 
         @Override
