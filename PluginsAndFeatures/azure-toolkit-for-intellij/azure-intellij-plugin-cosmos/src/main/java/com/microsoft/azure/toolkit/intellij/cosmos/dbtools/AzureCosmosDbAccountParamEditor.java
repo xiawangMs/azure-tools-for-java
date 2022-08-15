@@ -56,7 +56,6 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
         interchange.addPersistentProperty(KEY_USERNAME);
-        interchange.addPersistentProperty("user");
         final String initialAccountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
         if (StringUtils.isNotBlank(initialAccountId)) {
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialAccountId)));
@@ -109,15 +108,14 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                     consumer.consume("port", port);
                     this.updating = false;
                 });
-                this.setUsernameAndPassword(user, password);
+                this.setUsername(user);
             }, AzureTask.Modality.ANY);
         });
     }
 
-    private void setUsernameAndPassword(String user, String password) {
+    private void setUsername(String user) {
         final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
         model.setParameter("user", user);
-        model.setParameter("password", password);
         model.commit(true);
     }
 
