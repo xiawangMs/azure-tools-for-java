@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -42,6 +43,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     public static final Action.Id<CosmosDBAccount> OPEN_DATABASE_TOOL = Action.Id.of("cosmos.open_database_tool");
     public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("cosmos.open_data_explorer.account");
     public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("cosmos.copy_connection_string.account");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_KUBERNETES_SERVICE = Action.Id.of("group.create_cosmos_db_account");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -70,6 +72,13 @@ public class CosmosActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof CosmosDBAccount && ((CosmosDBAccount) s).getFormalStatus().isConnected());
         final Action<CosmosDBAccount> openDataExplorerAction = new Action<>(OPEN_DATA_EXPLORER, openAzureStorageExplorer, openAzureStorageExplorerView);
         am.registerAction(OPEN_DATA_EXPLORER, openDataExplorerAction);
+
+        final ActionView.Builder createClusterView = new ActionView.Builder("Azure Cosmos DB")
+                .title(s -> Optional.ofNullable(s).map(r ->
+                        description("group.create_cosmos_db_account.group", ((ResourceGroup) r).getName())).orElse(null))
+                .enabled(s -> s instanceof ResourceGroup);
+        am.registerAction(GROUP_CREATE_KUBERNETES_SERVICE, new Action<>(GROUP_CREATE_KUBERNETES_SERVICE, createClusterView));
+
     }
 
     @Override
