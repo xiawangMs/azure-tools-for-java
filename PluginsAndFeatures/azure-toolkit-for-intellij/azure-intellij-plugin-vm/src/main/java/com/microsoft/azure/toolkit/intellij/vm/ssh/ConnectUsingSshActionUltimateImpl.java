@@ -42,7 +42,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
         return instance;
     }
 
-    @AzureOperation(name = "vm.connect_using_ssh_community_ultimate", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "vm.connect_using_ssh_community_ultimate.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
         AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE,() ->
