@@ -65,6 +65,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
+                ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
                 "---",
                 ResourceCommonActionsContributor.CREATE
         );
@@ -80,6 +81,7 @@ public class CosmosActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.CREATE,
                 ResourceCommonActionsContributor.DELETE,
                 "---",
+                ResourceCommonActionsContributor.CONNECT,
                 CosmosActionsContributor.COPY_CONNECTION_STRING
         );
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
@@ -92,6 +94,8 @@ public class CosmosActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                "---",
+                ResourceCommonActionsContributor.CONNECT,
                 "---",
                 ResourceCommonActionsContributor.CREATE,
                 ResourceCommonActionsContributor.DELETE
@@ -108,9 +112,9 @@ public class CosmosActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.DELETE
         );
-        am.registerGroup(SQL_CONTAINER_ACTIONS, databaseGroup);
-        am.registerGroup(MONGO_COLLECTION_ACTIONS, databaseGroup);
-        am.registerGroup(CASSANDRA_TABLE_ACTIONS, databaseGroup);
+        am.registerGroup(SQL_CONTAINER_ACTIONS, collectionGroup);
+        am.registerGroup(MONGO_COLLECTION_ACTIONS, collectionGroup);
+        am.registerGroup(CASSANDRA_TABLE_ACTIONS, collectionGroup);
     }
 
     @Override

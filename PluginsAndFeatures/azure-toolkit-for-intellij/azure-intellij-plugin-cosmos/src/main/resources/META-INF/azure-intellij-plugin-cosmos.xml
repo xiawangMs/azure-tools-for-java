@@ -2,6 +2,7 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.cosmos.CosmosNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.cosmos.CosmosActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.cosmos.IntelliJCosmosActionsContributor"/>
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.cosmos.connection.CassandraCosmosDBAccountResourceDefinition"/>
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.cosmos.connection.MongoCosmosDBAccountResourceDefinition"/>
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition"/>
