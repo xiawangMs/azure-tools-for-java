@@ -54,7 +54,7 @@ public class BrowseRemoteHostSftpAction {
     private static void sshConnection(@Nonnull Project project, SshConfig sshConfig, Runnable afterConnectionHandler) {
         final SshUiData sshUiData = new SshUiData(sshConfig);
         final String title = String.format("connecting to %s", sshConfig.getName());
-        AzureTaskManager.getInstance().runInBackground(title, () -> {
+        AzureTaskManager.getInstance().runInModal(title, () -> {
             final AtomicBoolean authenticationStatus = new AtomicBoolean(false);
             final StringBuilder failedMessage = new StringBuilder("Can not connect to remote host.");
             try {
@@ -69,7 +69,7 @@ public class BrowseRemoteHostSftpAction {
                 if (authenticationStatus.get()) {
                     AzureTaskManager.getInstance().runLater(afterConnectionHandler);
                 } else {
-                    AzureMessager.getMessager().warning(failedMessage.toString(), title);
+                    AzureMessager.getMessager().error(failedMessage.toString(), title);
                 }
             }
         });
