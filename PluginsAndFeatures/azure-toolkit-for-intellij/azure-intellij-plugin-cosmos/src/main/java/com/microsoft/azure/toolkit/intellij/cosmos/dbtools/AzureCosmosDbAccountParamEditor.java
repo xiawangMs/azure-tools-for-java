@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
     public static final String KEY_USERNAME = "username";
+    public static final String NONE = "<NONE>";
     @Getter
     @Setter
     private String text = "";
@@ -55,9 +56,10 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
         interchange.addPersistentProperty(KEY_USERNAME);
-        interchange.addPersistentProperty("user");
         final String initialAccountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
-        combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialAccountId)));
+        if (StringUtils.isNotBlank(initialAccountId)) {
+            combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialAccountId)));
+        }
 
         interchange.addPropertyChangeListener((evt -> onPropertiesChanged(evt.getPropertyName(), evt.getNewValue())), this);
         combox.addValueChangedListener(this::setAccount);
@@ -81,7 +83,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         this.account = account;
         if (account == null) {
             this.connectionString = null;
-            interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, null);
+            interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, NONE);
             return;
         }
         this.updating = true;
@@ -106,15 +108,14 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                     consumer.consume("port", port);
                     this.updating = false;
                 });
-                this.setUsernameAndPassword(user, password);
+                this.setUsername(user);
             }, AzureTask.Modality.ANY);
         });
     }
 
-    private void setUsernameAndPassword(String user, String password) {
+    private void setUsername(String user) {
         final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
         model.setParameter("user", user);
-        model.setParameter("password", password);
         model.commit(true);
     }
 
@@ -140,8 +141,8 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
             if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                 return Collections.emptyList();
             }
-            return Azure.az(AzureCosmosService.class).accounts(kind).stream()
-                .filter(m -> !m.isDraftForCreating()).map(a -> a).collect(Collectors.toList());
+            return Azure.az(AzureCosmosService.class).getDatabaseAccounts(kind).stream()
+                .filter(m -> !m.isDraftForCreating()).collect(Collectors.toList());
         }
 
         @Override

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <drivers>
-    <driver id="az_cosmos_cassandra" dbms="AZ_COSMOS_CASSANDRA" forced-dbms="AZ_COSMOS_CASSANDRA" based-on="cassandra" name="Azure Cosmos DB (Cassandra)" icon="AllIcons.Providers.Azure" dialect="CassandraQL">
-        <url-template/>
+    <!--driver will use same icon as that of DBMS if not configured according to com/intellij/database/dataSource/DatabaseDriverImpl.class:644-->
+    <driver id="az_cosmos_cassandra" name="Azure Cosmos DB (Cassandra)"
+            dbms="AZ_COSMOS_CASSANDRA" forced-dbms="AZ_COSMOS_CASSANDRA"
+            dialect="CassandraQL" driver-class="com.dbschema.CassandraJdbcDriver">
         <url-template name="default" template="jdbc:cassandra://&lt;\,,{host::localhost}?[:{port::10350}]&gt;[/{database:::keyspace}?[/{account:cosmos_account_cassandra}?][\?&lt;&amp;,user={user},password={password},{:identifier}={:identifier}&gt;]]"/>
         <artifact name="Cassandra" use="true" rolling="true"/>
         <option name="auto-sync" value="true"/>
