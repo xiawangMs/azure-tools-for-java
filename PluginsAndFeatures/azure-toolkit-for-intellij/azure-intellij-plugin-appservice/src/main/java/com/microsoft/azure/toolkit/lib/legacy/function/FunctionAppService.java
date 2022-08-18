@@ -64,7 +64,7 @@ public class FunctionAppService {
     private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
     private static final String FUNCTIONS_EXTENSION_VERSION_NAME = "FUNCTIONS_EXTENSION_VERSION";
-    private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
+    private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~4";
     private static final String DEPLOY_START = "Starting deployment...";
     private static final String DEPLOY_FINISH = "Deployment done, you may access your resource through %s";
     private static final String RUNNING = "Running";
