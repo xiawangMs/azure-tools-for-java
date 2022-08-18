@@ -54,11 +54,11 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
 
         final BiConsumer<ResourceGroup, AnActionEvent> groupCreateHandler = (r, e) ->
                 CreateCosmosDBAccountAction.create(e.getProject(), getDefaultConfig(r));
-        am.registerHandler(CosmosActionsContributor.GROUP_CREATE_KUBERNETES_SERVICE, (r, e) -> true, groupCreateHandler);
+        am.registerHandler(CosmosActionsContributor.GROUP_CREATE_COSMOS_SERVICE, (r, e) -> true, groupCreateHandler);
 
-        final Function<MongoCosmosDBAccount, MongoDatabase> mnogoFunction = account -> account.mongoDatabases().list().stream().findFirst().orElse(null);
+        final Function<MongoCosmosDBAccount, MongoDatabase> mongoFunction = account -> account.mongoDatabases().list().stream().findFirst().orElse(null);
         am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MongoCosmosDBAccount, (AzResource<?, ?, ?> r, AnActionEvent e) ->
-                openResourceConnector((MongoCosmosDBAccount) r, mnogoFunction, MongoCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
+                openResourceConnector((MongoCosmosDBAccount) r, mongoFunction, MongoCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MongoDatabase, (AzResource<?, ?, ?> r, AnActionEvent e) ->
                 openResourceConnector((MongoDatabase) r, MongoCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
 

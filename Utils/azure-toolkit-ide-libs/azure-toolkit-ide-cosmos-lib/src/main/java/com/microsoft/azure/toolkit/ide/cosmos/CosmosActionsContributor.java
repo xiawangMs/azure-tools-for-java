@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
@@ -43,7 +44,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     public static final Action.Id<CosmosDBAccount> OPEN_DATABASE_TOOL = Action.Id.of("cosmos.open_database_tool");
     public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("cosmos.open_data_explorer.account");
     public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("cosmos.copy_connection_string.account");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_KUBERNETES_SERVICE = Action.Id.of("group.create_cosmos_db_account");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_COSMOS_SERVICE = Action.Id.of("group.create_cosmos_db_account");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -77,7 +78,7 @@ public class CosmosActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r ->
                         description("group.create_cosmos_db_account.group", ((ResourceGroup) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ResourceGroup);
-        am.registerAction(GROUP_CREATE_KUBERNETES_SERVICE, new Action<>(GROUP_CREATE_KUBERNETES_SERVICE, createClusterView));
+        am.registerAction(GROUP_CREATE_COSMOS_SERVICE, new Action<>(GROUP_CREATE_COSMOS_SERVICE, createClusterView));
 
     }
 
@@ -137,6 +138,9 @@ public class CosmosActionsContributor implements IActionsContributor {
         am.registerGroup(SQL_CONTAINER_ACTIONS, collectionGroup);
         am.registerGroup(MONGO_COLLECTION_ACTIONS, collectionGroup);
         am.registerGroup(CASSANDRA_TABLE_ACTIONS, collectionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_COSMOS_SERVICE);
     }
 
     @Override

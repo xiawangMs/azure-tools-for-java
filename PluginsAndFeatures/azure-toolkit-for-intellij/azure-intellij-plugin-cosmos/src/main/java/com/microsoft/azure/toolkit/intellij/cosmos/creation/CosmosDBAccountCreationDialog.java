@@ -106,7 +106,7 @@ public class CosmosDBAccountCreationDialog extends AzureDialog<CosmosDBAccountDr
 
     @Override
     protected String getDialogTitle() {
-        return "Create Cosmos DB Account";
+        return "Create Azure Cosmos DB Account";
     }
 
     @Override
@@ -116,7 +116,7 @@ public class CosmosDBAccountCreationDialog extends AzureDialog<CosmosDBAccountDr
 
     @Override
     public CosmosDBAccountDraft.Config getValue() {
-        CosmosDBAccountDraft.Config result = new CosmosDBAccountDraft.Config();
+        final CosmosDBAccountDraft.Config result = new CosmosDBAccountDraft.Config();
         result.setSubscription(cbSubscription.getValue());
         result.setResourceGroup(cbResourceGroup.getValue());
         result.setName(txtName.getValue());
