@@ -10,7 +10,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.remote.AuthType;
+import com.intellij.ssh.RemoteCredentialsUtil;
+import com.intellij.ssh.SshException;
 import com.intellij.ssh.config.unified.SshConfig;
+import com.intellij.ssh.ui.unified.SshUiData;
 import com.intellij.ui.content.Content;
 import com.jetbrains.plugins.webDeployment.config.AccessType;
 import com.jetbrains.plugins.webDeployment.config.GroupedServersConfigManager;
@@ -18,8 +21,10 @@ import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerGroupingWrap;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowFactory;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowPanel;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -30,18 +35,36 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 public class BrowseRemoteHostSftpAction {
 
-    @AzureOperation(name = "vm.browse_files_sftp", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "vm.browse_files_sftp.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig curSshConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
-        final WebServerConfig server = getOrCreateWebServerConfigFromSsh(validateSshConfig(curSshConfig), project);
-        AzureTaskManager.getInstance().runLater(() -> {
+        final SshConfig sshConfig = validateSshConfig(curSshConfig);
+        final Runnable openToolWindowHandler = () -> {
+            final WebServerConfig server = getOrCreateWebServerConfigFromSsh(sshConfig, project);
             final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
             toolWindow.show(null);
             toolWindow.activate(() -> selectServerInToolWindow(toolWindow, server.getName(), project));
+        };
+        tryConnecting(project, sshConfig, openToolWindowHandler);
+    }
+
+    private static void tryConnecting(@Nonnull Project project, SshConfig sshConfig, Runnable callback) {
+        final SshUiData sshUiData = new SshUiData(sshConfig);
+        final AzureString title = OperationBundle.description("vm.connecting.vm", sshConfig.getName());
+        AzureTaskManager.getInstance().runInModal(title, () -> {
+            try {
+                RemoteCredentialsUtil.connectionBuilder(sshUiData, project)
+                    .withConnectionTimeout(10L, TimeUnit.SECONDS)
+                    .checkCanAuthenticate(true);
+                AzureTaskManager.getInstance().runLater(callback);
+            } catch (final SshException e) {
+                AzureMessager.getMessager().error(e, title.toString());
+            }
         });
     }
 

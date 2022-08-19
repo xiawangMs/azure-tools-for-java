@@ -39,7 +39,7 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
         am.registerAction(ADD_SSH_CONFIG, new Action<>(ADD_SSH_CONFIG, addSshConfigView));
 
         final ActionView.Builder connectSshView = new ActionView.Builder("Connect Using SSH", AzureIcons.Action.CONSOLE.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("vm.connect_by_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("vm.connect_using_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(CONNECT_SSH, new Action<>(CONNECT_SSH, connectSshView));
 
