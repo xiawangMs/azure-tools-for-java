@@ -21,6 +21,7 @@ import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerGroupingWrap;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowFactory;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowPanel;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -34,7 +35,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class BrowseRemoteHostSftpAction {
@@ -42,35 +42,27 @@ public class BrowseRemoteHostSftpAction {
     @AzureOperation(name = "vm.browse_files_sftp.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig curSshConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
-        final Runnable afterConnectionHandler = () -> {
-            final WebServerConfig server = getOrCreateWebServerConfigFromSsh(validateSshConfig(curSshConfig), project);
+        final SshConfig validateSshConfig = validateSshConfig(curSshConfig);
+        final Runnable openToolWindowHandler = () -> {
+            final WebServerConfig server = getOrCreateWebServerConfigFromSsh(validateSshConfig, project);
             final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
             toolWindow.show(null);
             toolWindow.activate(() -> selectServerInToolWindow(toolWindow, server.getName(), project));
         };
-        sshConnection(project, curSshConfig, afterConnectionHandler);
+        tryConnecting(project, curSshConfig, openToolWindowHandler);
     }
 
-    private static void sshConnection(@Nonnull Project project, SshConfig sshConfig, Runnable afterConnectionHandler) {
+    private static void tryConnecting(@Nonnull Project project, SshConfig sshConfig, Runnable callback) {
         final SshUiData sshUiData = new SshUiData(sshConfig);
-        final String title = String.format("connecting to %s", sshConfig.getName());
+        final AzureString title = AzureString.format("connecting to %s ...", sshConfig.getName());
         AzureTaskManager.getInstance().runInModal(title, () -> {
-            final AtomicBoolean authenticationStatus = new AtomicBoolean(false);
-            final StringBuilder failedMessage = new StringBuilder("Can not connect to remote host.");
             try {
-                authenticationStatus.set(RemoteCredentialsUtil.connectionBuilder(sshUiData, project)
-                        .withConnectionTimeout(10L, TimeUnit.SECONDS)
-                        .checkCanAuthenticate(true));
+                RemoteCredentialsUtil.connectionBuilder(sshUiData, project)
+                    .withConnectionTimeout(10L, TimeUnit.SECONDS)
+                    .checkCanAuthenticate(true);
+                AzureTaskManager.getInstance().runLater(callback);
             } catch (final SshException e) {
-                failedMessage.append(System.lineSeparator());
-                failedMessage.append(e.getMessage());
-                authenticationStatus.set(false);
-            } finally {
-                if (authenticationStatus.get()) {
-                    AzureTaskManager.getInstance().runLater(afterConnectionHandler);
-                } else {
-                    AzureMessager.getMessager().error(failedMessage.toString(), title);
-                }
+                AzureMessager.getMessager().error(e, title.toString());
             }
         });
     }
