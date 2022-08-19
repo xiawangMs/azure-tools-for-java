@@ -24,6 +24,7 @@ import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowPanel;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -42,19 +43,19 @@ public class BrowseRemoteHostSftpAction {
     @AzureOperation(name = "vm.browse_files_sftp.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig curSshConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
-        final SshConfig validateSshConfig = validateSshConfig(curSshConfig);
+        final SshConfig sshConfig = validateSshConfig(curSshConfig);
         final Runnable openToolWindowHandler = () -> {
-            final WebServerConfig server = getOrCreateWebServerConfigFromSsh(validateSshConfig, project);
+            final WebServerConfig server = getOrCreateWebServerConfigFromSsh(sshConfig, project);
             final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
             toolWindow.show(null);
             toolWindow.activate(() -> selectServerInToolWindow(toolWindow, server.getName(), project));
         };
-        tryConnecting(project, curSshConfig, openToolWindowHandler);
+        tryConnecting(project, sshConfig, openToolWindowHandler);
     }
 
     private static void tryConnecting(@Nonnull Project project, SshConfig sshConfig, Runnable callback) {
         final SshUiData sshUiData = new SshUiData(sshConfig);
-        final AzureString title = AzureString.format("connecting to %s ...", sshConfig.getName());
+        final AzureString title = OperationBundle.description("vm.connecting.vm", sshConfig.getName());
         AzureTaskManager.getInstance().runInModal(title, () -> {
             try {
                 RemoteCredentialsUtil.connectionBuilder(sshUiData, project)
