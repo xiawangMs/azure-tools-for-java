@@ -186,6 +186,7 @@ dependencies {
     compile project(':azure-intellij-plugin-containerservice')
     compile project(':azure-intellij-plugin-applicationinsights')
     compile project(':azure-intellij-plugin-guidance')
+    compile project(':azure-intellij-plugin-cosmos')
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
@@ -224,7 +225,7 @@ dependencies {
     }
     compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21")
 
     testImplementation 'io.cucumber:cucumber-java:7.0.0'
     testImplementation 'io.cucumber:cucumber-junit:7.0.0'

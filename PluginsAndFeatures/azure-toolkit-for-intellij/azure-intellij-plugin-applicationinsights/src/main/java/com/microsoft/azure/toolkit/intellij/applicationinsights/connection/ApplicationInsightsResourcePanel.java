@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.applicationinsights.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -23,7 +22,6 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -43,7 +41,7 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
         this.insightComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                this.insightComboBox.refreshItems();
+                this.insightComboBox.reloadItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 this.insightComboBox.clear();
             }
@@ -86,10 +84,19 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
                 .map(id -> Azure.az(AzureApplicationInsights.class).applicationInsights(id).list()
                         .stream().sorted((first, second) -> StringUtils.compare(first.getName(), second.getName())).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
-        this.insightComboBox = new AzureComboBoxSimple<>(loader) {
+        this.insightComboBox = new AzureComboBox<>(loader) {
             @Override
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((ApplicationInsight) i).getName()).orElse(StringUtils.EMPTY);
+            }
+
+            @Override
+            protected void refreshItems() {
+                Optional.ofNullable(ApplicationInsightsResourcePanel.this.subscriptionComboBox)
+                    .map(AzureComboBox::getValue)
+                    .map(Subscription::getId)
+                    .ifPresent(id -> Azure.az(AzureApplicationInsights.class).applicationInsights(id).refresh());
+                super.refreshItems();
             }
         };
     }

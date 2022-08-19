@@ -34,8 +34,8 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("postgre.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
+        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open with Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
+            .title(s -> Optional.ofNullable(s).map(r -> description("postgre.open_by_database_tools.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof PostgreSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
@@ -55,6 +55,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
             ResourceCommonActionsContributor.CREATE
         );

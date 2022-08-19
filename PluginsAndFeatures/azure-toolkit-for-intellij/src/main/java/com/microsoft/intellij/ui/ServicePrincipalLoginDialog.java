@@ -5,6 +5,7 @@
 
 package com.microsoft.intellij.ui;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.lang.Language;
 import com.intellij.openapi.application.ApplicationManager;
@@ -33,8 +34,8 @@ import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -268,7 +269,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             }
             map.put("appId", data.getClient());
             map.put("tenant", data.getTenant());
-            String text = JsonUtils.getGson().toJson(map);
+            String text = JsonUtils.toJson(map);
             if (!StringUtils.equals(jsonDataEditor.getText(), text)) {
                 this.jsonDataEditor.setText(text);
                 this.jsonDataEditor.setCaretPosition(0);
@@ -280,7 +281,8 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
     private void json2UIComponents(String json) {
         try {
-            Map<String, String> map = JsonUtils.fromJson(json, HashMap.class);
+            final TypeReference<HashMap<String, String>> type = new TypeReference<>() {};
+            final Map<String, String> map = JsonUtils.fromJson(json, type);
             if (map != null) {
                 ApplicationManager.getApplication().invokeAndWait(() -> {
                     if (!intermediateState.compareAndSet(false, true)) {

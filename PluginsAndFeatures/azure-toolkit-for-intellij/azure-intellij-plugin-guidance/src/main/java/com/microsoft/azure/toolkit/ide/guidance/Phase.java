@@ -103,8 +103,10 @@ public class Phase implements Disposable {
     }
 
     public void setStatus(final Status status) {
-        this.status = status;
-        this.listenerList.forEach(listener -> AzureTaskManager.getInstance().runOnPooledThread(() -> listener.accept(status)));
+        if (this.status != status) {
+            this.status = status;
+            this.listenerList.forEach(listener -> AzureTaskManager.getInstance().runOnPooledThread(() -> listener.accept(status)));
+        }
     }
 
     public boolean validateInputs() {

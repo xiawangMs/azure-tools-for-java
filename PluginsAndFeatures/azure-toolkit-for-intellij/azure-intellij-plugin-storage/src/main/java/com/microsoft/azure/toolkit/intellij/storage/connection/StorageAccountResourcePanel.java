@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.storage.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -44,7 +43,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
         this.accountComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                this.accountComboBox.refreshItems();
+                this.accountComboBox.reloadItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 this.accountComboBox.clear();
             }
@@ -86,10 +85,19 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
                 .map(Subscription::getId)
                 .map(id -> Azure.az(AzureStorageAccount.class).accounts(id).list())
                 .orElse(Collections.emptyList());
-        this.accountComboBox = new AzureComboBoxSimple<>(loader) {
+        this.accountComboBox = new AzureComboBox<>(loader) {
             @Override
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((StorageAccount) i).name()).orElse(StringUtils.EMPTY);
+            }
+
+            @Override
+            protected void refreshItems() {
+                Optional.ofNullable(StorageAccountResourcePanel.this.subscriptionComboBox)
+                    .map(AzureComboBox::getValue)
+                    .map(Subscription::getId)
+                    .ifPresent(id -> Azure.az(AzureStorageAccount.class).accounts(id).refresh());
+                super.refreshItems();
             }
         };
     }

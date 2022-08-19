@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.containerservice.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -68,8 +69,8 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
     private JLabel lblKubernetesVersion;
     private JLabel lblRegion;
     private JLabel lblName;
-    private AzureComboBoxSimple<String> cbKubernetesVersion;
-    private AzureComboBoxSimple<VirtualMachineSize> cbNodeSize;
+    private AzureComboBox<String> cbKubernetesVersion;
+    private AzureComboBox<VirtualMachineSize> cbNodeSize;
 
     public KubernetesCreationDialog(@Nullable Project project) {
         super(project);
@@ -152,7 +153,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         // todo: add validator for k8s name
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
         this.cbResourceGroup.addItemListener(e -> this.txtName.validateValueAsync()); // trigger validation after resource group changed
-        this.cbRegion.addItemListener(e -> this.cbKubernetesVersion.refreshItems());
+        this.cbRegion.addItemListener(e -> this.cbKubernetesVersion.reloadItems());
 
         this.manualRadioButton.addItemListener(e -> toggleScaleMethod(!manualRadioButton.isSelected()));
         this.autoScaleRadioButton.addItemListener(e -> toggleScaleMethod(autoScaleRadioButton.isSelected()));
@@ -206,7 +207,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             final Subscription subscription = (Subscription) e.getItem();
             this.cbResourceGroup.setSubscription(subscription);
             this.cbRegion.setSubscription(subscription);
-            this.cbKubernetesVersion.refreshItems();
+            this.cbKubernetesVersion.reloadItems();
             this.txtName.validateValueAsync(); // trigger validation after subscription changed
         }
     }
@@ -221,12 +222,18 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             }
             return new ArrayList<>(Azure.az(AzureContainerService.class).kubernetes(subscription.getId()).listVirtualMachineVersion(region));
         };
-        this.cbKubernetesVersion = new AzureComboBoxSimple<>(kubernetesVersionSupplier);
+        this.cbKubernetesVersion = new AzureComboBox<>(kubernetesVersionSupplier);
         this.cbKubernetesVersion.setRequired(true);
-        this.cbNodeSize = new AzureComboBoxSimple<>(VirtualMachineSize::values) {
+        this.cbNodeSize = new AzureComboBox<>(VirtualMachineSize::values) {
             @Override
             protected String getItemText(Object item) {
                 return item instanceof VirtualMachineSize ? ((VirtualMachineSize) item).getValue() : super.getItemText(item);
+            }
+
+            @Nonnull
+            @Override
+            protected List<ExtendableTextComponent.Extension> getExtensions() {
+                return Collections.emptyList();
             }
         };
         this.cbNodeSize.setRequired(true);

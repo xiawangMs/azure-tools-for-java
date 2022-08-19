@@ -21,10 +21,10 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.microsoft.azure.toolkit.ide.appservice.util.JsonUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionsConstants;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -164,14 +164,11 @@ public class AppSettingsTableUtils {
     }
 
     public static Map<String, String> getAppSettingsFromLocalSettingsJson(File target) {
-        final Map<String, String> result = new HashMap<>();
-        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
+        final Map<String, Object> jsonObject = JsonUtils.readFromJsonFile(target, Map.class);
         if (jsonObject == null) {
             return new HashMap<>();
         }
-        final JsonObject valueObject = jsonObject.getAsJsonObject(LOCAL_SETTINGS_VALUES);
-        valueObject.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().getAsString()));
-        return result;
+        return (Map<String, String>) jsonObject.get(LOCAL_SETTINGS_VALUES);
     }
 
     public static void exportLocalSettingsJsonFile(File target, Map<String, String> appSettings) throws IOException {
@@ -185,14 +182,13 @@ public class AppSettingsTableUtils {
         if (!target.exists()) {
             target.createNewFile();
         }
-        JsonObject jsonObject = JsonUtils.readJsonFile(target);
+        Map<String, Object> jsonObject = JsonUtils.readFromJsonFile(target, Map.class);
         if (jsonObject == null) {
-            jsonObject = JsonUtils.fromJsonString(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
+            jsonObject = JsonUtils.fromJson(DEFAULT_LOCAL_SETTINGS_JSON, Map.class);
         }
-        final JsonObject valueObject = new JsonObject();
-        appSettings.forEach(valueObject::addProperty);
-        jsonObject.add(LOCAL_SETTINGS_VALUES, valueObject);
-        JsonUtils.writeJsonToFile(target, jsonObject);
+        final Map<String, Object> valueObject = new HashMap<>(appSettings);
+        jsonObject.put(LOCAL_SETTINGS_VALUES, valueObject);
+        JsonUtils.writeToJsonFile(target, jsonObject);
     }
 
 }
