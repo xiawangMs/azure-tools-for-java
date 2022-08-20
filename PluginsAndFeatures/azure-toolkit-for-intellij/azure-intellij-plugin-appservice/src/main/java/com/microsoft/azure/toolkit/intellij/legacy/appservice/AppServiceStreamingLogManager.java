@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsig
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDraft;
+import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -38,11 +39,9 @@ import reactor.core.publisher.Flux;
 
 import javax.annotation.Nullable;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -77,7 +76,7 @@ public enum AppServiceStreamingLogManager {
     @AzureOperation(name = "appservice.close_log_stream.app", params = {"nameFromResourceId(appId)"}, type = AzureOperation.Type.SERVICE)
     public void closeStreamingLog(Project project, String appId) {
         final AzureString title = OperationBundle.description("appservice.close_log_stream.app", ResourceUtils.nameFromResourceId(appId));
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
             } else {
@@ -90,7 +89,7 @@ public enum AppServiceStreamingLogManager {
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
         final Action<Void> retry = Action.retryFromFailure(() -> this.showAppServiceStreamingLog(project, resourceId, logStreaming));
         final AzureString title = OperationBundle.description("appservice.open_log_stream.app", ResourceUtils.nameFromResourceId(resourceId));
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             try {
                 final String name = logStreaming.getTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);
@@ -110,10 +109,8 @@ public enum AppServiceStreamingLogManager {
                             return;
                         }
                     }
-                    final Flux<String> log = logStreaming.getStreamingLogContent();
-                    if (log == null) {
-                        return;
-                    }
+                    final Flux<String> historyLogStreaming = getHistoryLogStreaming(resourceId);
+                    final Flux<String> log = Flux.merge(historyLogStreaming, logStreaming.getStreamingLogContent());
                     consoleView.startStreamingLog(log);
                 }
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
@@ -127,6 +124,26 @@ public enum AppServiceStreamingLogManager {
     private AppServiceStreamingLogConsoleView getOrCreateConsoleView(Project project, String resourceId) {
         return consoleViewMap.compute(resourceId,
             (id, view) -> (view == null || view.isDisposed()) ? new AppServiceStreamingLogConsoleView(project, id) : view);
+    }
+
+    @Nullable
+    private Flux<String> getHistoryLogStreaming(String resourceId) {
+        final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(resourceId);
+        Flux<String> fluxString = Flux.empty();
+        if (functionApp != null) {
+            try {
+                final List<AppServiceFile> localLogFileList = (List<AppServiceFile>) functionApp.getFilesInDirectory("\\LogFiles\\Application\\Functions\\Host");
+                Flux<ByteBuffer> mergedFluxByte = Flux.empty();
+                for (final AppServiceFile appServiceFile : localLogFileList) {
+                    final Flux<ByteBuffer> subFluxString = functionApp.getFileContent(appServiceFile.getPath());
+                    mergedFluxByte = Flux.merge(mergedFluxByte, subFluxString);
+                }
+                fluxString = mergedFluxByte.map(f ->  StandardCharsets.ISO_8859_1.decode(f).toString());
+            } catch (final Exception e) {
+                // ignore
+            }
+        }
+        return fluxString;
     }
 
     interface ILogStreaming {
