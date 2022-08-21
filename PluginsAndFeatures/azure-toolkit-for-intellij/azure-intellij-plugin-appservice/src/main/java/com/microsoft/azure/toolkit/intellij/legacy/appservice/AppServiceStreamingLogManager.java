@@ -111,7 +111,8 @@ public enum AppServiceStreamingLogManager {
                     }
                     final Flux<String> historyLogStreaming = getHistoryLogStreaming(resourceId);
                     final Flux<String> log = Flux.merge(historyLogStreaming, logStreaming.getStreamingLogContent());
-                    consoleView.startStreamingLog(log);
+                    consoleView.setLogStreaming(log);
+                    consoleView.startStreamingLog();
                 }
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
                         project, resourceId, logStreaming.getTitle(), consoleView);
