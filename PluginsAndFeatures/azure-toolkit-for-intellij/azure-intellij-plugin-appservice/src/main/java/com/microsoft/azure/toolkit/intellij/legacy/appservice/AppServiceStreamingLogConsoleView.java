@@ -9,19 +9,21 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+import java.awt.BorderLayout;
 import java.awt.event.ItemEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
@@ -84,20 +86,22 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
             final JPanel value = (JPanel) MethodUtils.invokeMethod(field2.get(this), true, "getContent");
             value.add(BorderLayout.NORTH, this.initComboBox());
         } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
-            System.out.println("wy " + e.toString());
+            // ignore
         }
     }
 
     private AzureComboBox<LogFilterData> initComboBox() {
-        final List<LogFilterData> filterList = new ArrayList<>();
-        filterList.add(new LogFilterData("Last 6 hours", 6));
-        filterList.add(new LogFilterData("Last 24 hours", 24));
-        filterList.add(new LogFilterData("Last 2 days", 48));
-        final Supplier<List<LogFilterData>> loader = () -> filterList;
+        final Supplier<List<LogFilterData>> loader = () -> {
+            final List<LogFilterData> filterList = new ArrayList<>();
+            filterList.add(new LogFilterData("Last 6 hours", 6));
+            filterList.add(new LogFilterData("Last 24 hours", 24));
+            filterList.add(new LogFilterData("Last 2 days", 48));
+            return filterList;
+        };
         final AzureComboBox<LogFilterData> comboBox = new AzureComboBox<>(loader) {
             @Override
             protected String getItemText(Object item) {
-                return ((LogFilterData) item).getText();
+                return Optional.ofNullable(item).map(i -> ((LogFilterData) i).getText()).orElse(StringUtils.EMPTY);
             }
 
             @Override
@@ -108,7 +112,7 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 final int timeRange = ((LogFilterData) e.getItem()).getTimeRange();
-                System.out.println("wy time range: " + timeRange);
+                // todo filter log
             }
         });
         return comboBox;
