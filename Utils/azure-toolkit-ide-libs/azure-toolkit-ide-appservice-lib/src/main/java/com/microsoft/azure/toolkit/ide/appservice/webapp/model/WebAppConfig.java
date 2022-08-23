@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -38,7 +39,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 public class WebAppConfig extends AppServiceConfig {
-    public static final Runtime DEFAULT_RUNTIME = Runtime.LINUX_JAVA8_TOMCAT9;
+    public static final Runtime DEFAULT_RUNTIME = WebAppDraft.DEFAULT_RUNTIME;
     public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
     @Builder.Default
     protected Runtime runtime = DEFAULT_RUNTIME;
