@@ -22,8 +22,8 @@ public class AzureSdkReferenceBookDialog extends DialogWrapper {
         this.init();
     }
 
-    public void initDialog(@Nullable final String feature) {
-        this.bookPanel.init(feature);
+    public void selectFeature(@Nullable final String feature) {
+        this.bookPanel.selectFeature(feature);
     }
 
     @Override
