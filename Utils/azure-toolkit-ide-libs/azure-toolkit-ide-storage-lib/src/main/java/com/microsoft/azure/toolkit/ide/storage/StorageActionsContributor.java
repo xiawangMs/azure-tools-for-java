@@ -85,6 +85,7 @@ public class StorageActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.PIN,
             "---",
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",

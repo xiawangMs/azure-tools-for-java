@@ -58,6 +58,7 @@ public class RedisActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.PIN,
             "---",
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             RedisActionsContributor.OPEN_EXPLORER,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,

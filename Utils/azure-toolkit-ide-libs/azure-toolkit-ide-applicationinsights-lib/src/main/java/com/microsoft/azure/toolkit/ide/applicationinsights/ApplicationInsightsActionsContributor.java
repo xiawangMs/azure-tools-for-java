@@ -99,6 +99,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 ResourceCommonActionsContributor.PIN,
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
+                ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
                 ApplicationInsightsActionsContributor.CONNECTION_STRING,
