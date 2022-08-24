@@ -28,6 +28,8 @@ import org.jetbrains.plugins.gradle.model.ExternalDependency;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import javax.swing.text.Document;
+import java.io.StringReader;
 import java.util.Optional;
 
 public class AzureSdkProjectDependencyPanel {
@@ -133,7 +135,8 @@ public class AzureSdkProjectDependencyPanel {
 
     private class DependencyNotificationMessager implements IAzureMessager {
         @Override
-        public boolean show(IAzureMessage message) {
+        public synchronized boolean show(IAzureMessage message) {
+            paneMessage.setDocument(paneMessage.getEditorKit().createDefaultDocument());
             paneMessage.setText(message.getMessage().toString());
             return true;
         }
