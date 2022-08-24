@@ -96,7 +96,6 @@ public class FunctionAppSettingsTableUtils {
         final JPanel tablePanel = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable, importButton, exportButton);
         final GridConstraints tableConstraint = new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 7, 7, null, null, null);
         result.add(tablePanel, tableConstraint);
-        result.setMinimumSize(new Dimension(-1, 100));
         return result;
     }
 

@@ -127,6 +127,7 @@ public class AppSettingModel implements TableModel {
         return ListUtils.indexOf(appSettings, pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key));
     }
 
+    @Nonnull
     public Map<String, String> getAppSettings() {
         final Map<String, String> result = new HashMap<>();
         appSettings.forEach(pair -> result.put(pair.getKey(), pair.getValue()));
