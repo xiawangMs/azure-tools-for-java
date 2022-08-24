@@ -10,6 +10,7 @@ import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -22,6 +23,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -62,6 +64,14 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         this.region = region;
         resetToDraft();
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected Network doGetDefaultValue() {
+        return CacheManager.getUsageHistory(Network.class)
+            .get(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
+                (Objects.isNull(region) || Objects.equals(region, v.getRegion())));
     }
 
     @Nonnull

@@ -11,6 +11,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -73,6 +74,14 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         this.region = region;
         resetToDraft();
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected PublicIpAddress doGetDefaultValue() {
+        return CacheManager.getUsageHistory(PublicIpAddress.class)
+            .get(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
+                (Objects.isNull(region) || Objects.equals(region, v.getRegion())));
     }
 
     @Override

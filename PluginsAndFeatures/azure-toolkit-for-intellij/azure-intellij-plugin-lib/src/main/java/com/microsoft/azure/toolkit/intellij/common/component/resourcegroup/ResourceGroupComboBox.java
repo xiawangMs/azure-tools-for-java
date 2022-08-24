@@ -10,6 +10,7 @@ import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -19,6 +20,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -56,6 +58,13 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected ResourceGroup doGetDefaultValue() {
+        return CacheManager.getUsageHistory(ResourceGroup.class)
+            .get(g -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), g.getSubscriptionId()));
     }
 
     @Nonnull

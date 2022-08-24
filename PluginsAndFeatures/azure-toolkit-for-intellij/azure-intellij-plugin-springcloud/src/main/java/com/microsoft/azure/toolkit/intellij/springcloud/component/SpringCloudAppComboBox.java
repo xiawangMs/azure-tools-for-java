@@ -10,6 +10,7 @@ import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.SpringCloudAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
@@ -17,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -53,6 +55,13 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected SpringCloudApp doGetDefaultValue() {
+        return CacheManager.getUsageHistory(SpringCloudApp.class)
+            .get(v -> Objects.isNull(cluster) || Objects.equals(cluster, v.getParent()));
     }
 
     @NotNull

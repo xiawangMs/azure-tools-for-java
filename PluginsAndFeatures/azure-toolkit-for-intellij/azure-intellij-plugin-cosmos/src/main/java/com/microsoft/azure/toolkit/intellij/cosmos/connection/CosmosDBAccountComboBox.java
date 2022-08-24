@@ -1,11 +1,13 @@
 package com.microsoft.azure.toolkit.intellij.cosmos.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +33,15 @@ public class CosmosDBAccountComboBox<T extends CosmosDBAccount> extends AzureCom
             return;
         }
         this.refreshItems();
+    }
+
+    @Nullable
+    @Override
+    protected T doGetDefaultValue() {
+        final List<T> items = this.getItems();
+        //noinspection unchecked
+        return (T) CacheManager.getUsageHistory(items.get(0).getClass())
+            .get(v -> Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription()));
     }
 
     @Override

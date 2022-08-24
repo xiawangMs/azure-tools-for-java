@@ -33,6 +33,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -230,6 +231,13 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         private final DatabaseAccountKind kind;
         private boolean noAccounts;
         private Consumer<Boolean> accountsListener;
+
+        @Nullable
+        @Override
+        protected CosmosDBAccount doGetDefaultValue() {
+            return CacheManager.getUsageHistory(CosmosDBAccount.class)
+                .get(v -> Objects.isNull(kind) || Objects.equals(kind, v.getKind()));
+        }
 
         @Nonnull
         @Override

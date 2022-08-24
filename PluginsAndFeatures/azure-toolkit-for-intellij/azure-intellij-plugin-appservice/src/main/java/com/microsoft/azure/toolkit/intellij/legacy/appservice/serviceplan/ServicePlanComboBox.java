@@ -23,6 +23,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -87,6 +88,15 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected AppServicePlan doGetDefaultValue() {
+        return CacheManager.getUsageHistory(AppServicePlan.class)
+            .get(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription()) &&
+                (Objects.isNull(region) || Objects.equals(region, v.getRegion())) &&
+                (Objects.isNull(os) || os == v.getOperatingSystem())));
     }
 
     public void setValidPricingTierList(@Nonnull final List<PricingTier> pricingTierList, @Nonnull final PricingTier defaultPricingTier) {

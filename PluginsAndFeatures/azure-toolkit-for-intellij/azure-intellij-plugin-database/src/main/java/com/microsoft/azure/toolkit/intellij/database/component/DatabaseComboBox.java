@@ -6,12 +6,14 @@
 package com.microsoft.azure.toolkit.intellij.database.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +33,15 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected T doGetDefaultValue() {
+        final T item = this.getItems().get(0);
+        //noinspection unchecked
+        return (T) CacheManager.getUsageHistory(item.getClass())
+            .get(v -> Objects.isNull(server) || Objects.equals(server, v.getServer()));
     }
 
     @Override

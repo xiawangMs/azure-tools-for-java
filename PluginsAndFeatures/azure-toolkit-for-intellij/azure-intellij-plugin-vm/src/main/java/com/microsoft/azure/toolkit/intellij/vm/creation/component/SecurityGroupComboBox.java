@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.network.AzureNetwork;
@@ -14,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.network.networksecuritygroup.NetworkSecur
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +34,14 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
     public void setRegion(Region region) {
         this.region = region;
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected NetworkSecurityGroup doGetDefaultValue() {
+        return CacheManager.getUsageHistory(NetworkSecurityGroup.class)
+            .get(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
+                (Objects.isNull(region) || Objects.equals(region, v.getRegion())));
     }
 
     @Override

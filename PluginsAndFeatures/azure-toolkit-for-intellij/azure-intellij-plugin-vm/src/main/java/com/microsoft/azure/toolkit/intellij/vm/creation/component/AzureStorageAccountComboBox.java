@@ -11,6 +11,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.storage.creation.VMStorageAccountCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
@@ -37,6 +38,13 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
     public void setSubscription(final Subscription subscription) {
         this.subscription = subscription;
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected StorageAccountConfig doGetDefaultValue() {
+        return CacheManager.getUsageHistory(StorageAccountConfig.class)
+            .get(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
     }
 
     @Override
