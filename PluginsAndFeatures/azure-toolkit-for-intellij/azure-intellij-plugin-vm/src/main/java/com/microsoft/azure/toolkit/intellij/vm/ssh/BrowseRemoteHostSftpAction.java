@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -56,16 +57,18 @@ public class BrowseRemoteHostSftpAction {
     private static void tryConnecting(@Nonnull Project project, SshConfig sshConfig, Runnable callback) {
         final SshUiData sshUiData = new SshUiData(sshConfig);
         final AzureString title = OperationBundle.description("vm.connecting.vm", sshConfig.getName());
-        AzureTaskManager.getInstance().runInModal(title, () -> {
+        final AzureTask<Void> task = new AzureTask<>(title, () -> {
             try {
                 RemoteCredentialsUtil.connectionBuilder(sshUiData, project)
-                    .withConnectionTimeout(10L, TimeUnit.SECONDS)
-                    .checkCanAuthenticate(true);
+                        .withConnectionTimeout(10L, TimeUnit.SECONDS)
+                        .checkCanAuthenticate(true);
                 AzureTaskManager.getInstance().runLater(callback);
             } catch (final SshException e) {
                 AzureMessager.getMessager().error(e, title.toString());
             }
         });
+        task.setBackgroundable(false);
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     private static void selectServerInToolWindow(ToolWindow toolWindow, String serverName, @Nonnull Project project) {
