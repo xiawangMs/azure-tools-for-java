@@ -48,7 +48,7 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
     @Override
     protected VirtualMachine doGetDefaultValue() {
         return CacheManager.getUsageHistory(VirtualMachine.class)
-            .get(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
+            .peek(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
     }
 
 //    @Nullable

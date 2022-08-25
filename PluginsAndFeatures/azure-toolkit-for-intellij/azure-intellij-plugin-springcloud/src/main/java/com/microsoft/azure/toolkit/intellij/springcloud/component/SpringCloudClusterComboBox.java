@@ -49,7 +49,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
     @Override
     protected SpringCloudCluster doGetDefaultValue() {
         return CacheManager.getUsageHistory(SpringCloudCluster.class)
-            .get(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
+            .peek(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
     }
 
     @NotNull

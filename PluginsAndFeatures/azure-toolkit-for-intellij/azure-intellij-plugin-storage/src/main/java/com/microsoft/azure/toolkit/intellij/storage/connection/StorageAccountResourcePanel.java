@@ -93,7 +93,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
             @Override
             protected StorageAccount doGetDefaultValue() {
                 return CacheManager.getUsageHistory(StorageAccount.class)
-                    .get(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
+                    .peek(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
             }
 
             @Override

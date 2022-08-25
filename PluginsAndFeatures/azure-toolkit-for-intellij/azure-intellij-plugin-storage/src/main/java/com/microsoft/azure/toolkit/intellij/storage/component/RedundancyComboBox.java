@@ -54,7 +54,7 @@ public class RedundancyComboBox extends AzureComboBox<Redundancy> {
     @Override
     protected Redundancy doGetDefaultValue() {
         return CacheManager.getUsageHistory(Redundancy.class)
-            .get(v -> Objects.isNull(performance) || Objects.equals(performance, v.getPerformance()));
+            .peek(v -> Objects.isNull(performance) || Objects.equals(performance, v.getPerformance()));
     }
 
     @Nonnull

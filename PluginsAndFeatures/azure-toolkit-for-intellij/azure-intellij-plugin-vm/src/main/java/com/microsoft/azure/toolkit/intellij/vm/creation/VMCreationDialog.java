@@ -62,6 +62,9 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -158,6 +161,10 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         rdoPassword.addItemListener(e -> toggleAuthenticationType(false));
         rdoSshPublicKey.addItemListener(e -> toggleAuthenticationType(true));
         rdoSshPublicKey.setSelected(true);
+        final Path path = Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa.pub");
+        if (Files.exists(path)) {
+            txtCertificate.setText(path.toString());
+        }
 
         final ButtonGroup securityGroup = new ButtonGroup();
         securityGroup.add(rdoNoneSecurityGroup);
@@ -266,16 +273,16 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
 
     private List<JLabel> getLabels() {
         return Arrays.stream(this.getClass().getDeclaredFields())
-                .map(field -> {
-                    try {
-                        return field.get(this);
-                    } catch (final IllegalAccessException e) {
-                        return null;
-                    }
-                }).filter(Objects::nonNull)
-                .filter(value -> value instanceof JLabel)
-                .map(value -> (JLabel) value)
-                .collect(Collectors.toList());
+            .map(field -> {
+                try {
+                    return field.get(this);
+                } catch (final IllegalAccessException e) {
+                    return null;
+                }
+            }).filter(Objects::nonNull)
+            .filter(value -> value instanceof JLabel)
+            .map(value -> (JLabel) value)
+            .collect(Collectors.toList());
     }
 
     private void toggleAzureSpotInstance(boolean enableAzureSpotInstance) {
@@ -488,7 +495,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(txtUserName, txtVisualMachineName, cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
-                passwordFieldInput, confirmPasswordFieldInput, txtCertificate, txtMaximumPrice);
+            passwordFieldInput, confirmPasswordFieldInput, txtCertificate, txtMaximumPrice);
     }
 
     @Override
@@ -508,11 +515,11 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         final String name = txtVisualMachineName.getText();
         if (StringUtils.isEmpty(name) || name.length() > 64) {
             return AzureValidationInfo.error("Invalid virtual machine name. The name must be between 1 and 64 " +
-                    "characters long.", txtVisualMachineName);
+                "characters long.", txtVisualMachineName);
         }
         if (!name.matches("^[A-Za-z][A-Za-z0-9-]*$") || name.endsWith("-")) {
             return AzureValidationInfo.error("Invalid virtual machine name. The name must start with a letter, " +
-                    "contain only letters, numbers, and hyphens, and end with a letter or number.", txtVisualMachineName);
+                "contain only letters, numbers, and hyphens, and end with a letter or number.", txtVisualMachineName);
         }
         return AzureValidationInfo.success(txtVisualMachineName);
     }
@@ -529,9 +536,9 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
     private AzureValidationInfo validatePassword() {
         final String password = passwordFieldInput.getValue();
         if (!password.matches("(?=^.{8,72}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])" +
-                "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+            "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
             return AzureValidationInfo.error("The password does not conform to complexity requirements. \n" +
-                    "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", passwordFieldInput);
+                "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", passwordFieldInput);
         }
         return AzureValidationInfo.success(passwordFieldInput);
     }

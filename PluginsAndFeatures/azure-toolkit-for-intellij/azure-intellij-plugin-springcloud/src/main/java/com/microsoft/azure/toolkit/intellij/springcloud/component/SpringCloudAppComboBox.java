@@ -61,7 +61,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @Override
     protected SpringCloudApp doGetDefaultValue() {
         return CacheManager.getUsageHistory(SpringCloudApp.class)
-            .get(v -> Objects.isNull(cluster) || Objects.equals(cluster, v.getParent()));
+            .peek(v -> Objects.isNull(cluster) || Objects.equals(cluster, v.getParent()));
     }
 
     @NotNull

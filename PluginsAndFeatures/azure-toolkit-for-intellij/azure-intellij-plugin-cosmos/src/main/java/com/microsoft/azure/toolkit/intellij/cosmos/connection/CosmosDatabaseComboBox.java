@@ -43,7 +43,7 @@ public class CosmosDatabaseComboBox<T extends ICosmosDatabase, E extends CosmosD
         final List<T> items = this.getItems();
         //noinspection unchecked
         return (T) CacheManager.getUsageHistory(items.get(0).getClass())
-            .get(v -> Objects.isNull(account) || Objects.equals(account, ((AbstractAzResource<?, ?, ?>) v).getParent()));
+            .peek(v -> Objects.isNull(account) || Objects.equals(account, ((AbstractAzResource<?, ?, ?>) v).getParent()));
     }
 
     @Override

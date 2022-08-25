@@ -30,7 +30,7 @@ public class ImageComboBox extends AzureComboBox<VmImage> {
     @Override
     protected VmImage doGetDefaultValue() {
         return CacheManager.getUsageHistory(VmImage.class)
-            .get(v -> Objects.isNull(imageSku) || Objects.equals(imageSku.name(), v.getSku()));
+            .peek(v -> Objects.isNull(imageSku) || Objects.equals(imageSku.name(), v.getSku()));
     }
 
     @Override

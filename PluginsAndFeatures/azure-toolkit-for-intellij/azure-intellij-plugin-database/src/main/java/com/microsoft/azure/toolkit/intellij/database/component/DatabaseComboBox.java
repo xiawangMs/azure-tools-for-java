@@ -41,7 +41,7 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
         final T item = this.getItems().get(0);
         //noinspection unchecked
         return (T) CacheManager.getUsageHistory(item.getClass())
-            .get(v -> Objects.isNull(server) || Objects.equals(server, v.getServer()));
+            .peek(v -> Objects.isNull(server) || Objects.equals(server, v.getServer()));
     }
 
     @Override

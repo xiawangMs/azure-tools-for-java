@@ -32,7 +32,7 @@ public class ModuleComboBox extends AzureComboBox<Module> {
     @Override
     protected Module doGetDefaultValue() {
         return CacheManager.getUsageHistory(Module.class)
-            .get(v -> Objects.isNull(project) || Objects.equals(project, v.getProject()));
+            .peek(v -> Objects.isNull(project) || Objects.equals(project, v.getProject()));
     }
 
     @Override

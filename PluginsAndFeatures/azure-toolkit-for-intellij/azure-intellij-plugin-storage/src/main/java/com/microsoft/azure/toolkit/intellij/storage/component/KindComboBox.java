@@ -40,7 +40,7 @@ public class KindComboBox extends AzureComboBox<Kind> {
     @Override
     protected Kind doGetDefaultValue() {
         return CacheManager.getUsageHistory(Kind.class)
-            .get(v -> Objects.isNull(performance) || Objects.equals(performance, v.getPerformance()));
+            .peek(v -> Objects.isNull(performance) || Objects.equals(performance, v.getPerformance()));
     }
 
     @Nonnull

@@ -44,7 +44,7 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
     @Override
     protected StorageAccountConfig doGetDefaultValue() {
         return CacheManager.getUsageHistory(StorageAccountConfig.class)
-            .get(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
+            .peek(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
     }
 
     @Override

@@ -236,7 +236,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         @Override
         protected CosmosDBAccount doGetDefaultValue() {
             return CacheManager.getUsageHistory(CosmosDBAccount.class)
-                .get(v -> Objects.isNull(kind) || Objects.equals(kind, v.getKind()));
+                .peek(v -> Objects.isNull(kind) || Objects.equals(kind, v.getKind()));
         }
 
         @Nonnull

@@ -40,7 +40,7 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
     @Override
     protected NetworkSecurityGroup doGetDefaultValue() {
         return CacheManager.getUsageHistory(NetworkSecurityGroup.class)
-            .get(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
+            .peek(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
                 (Objects.isNull(region) || Objects.equals(region, v.getRegion())));
     }
 

@@ -92,7 +92,7 @@ public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>>
             @Nullable
             @Override
             protected RedisCache doGetDefaultValue() {
-                return CacheManager.getUsageHistory(RedisCache.class).get(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
+                return CacheManager.getUsageHistory(RedisCache.class).peek(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
             }
 
             @Override

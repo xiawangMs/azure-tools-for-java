@@ -19,7 +19,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
-import com.microsoft.azure.toolkit.lib.common.cache.UsageHistory;
+import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -189,8 +189,9 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     public T getDefaultValue() {
         final List<T> items = this.getItems();
         final T value = doGetDefaultValue();
-        if (Objects.nonNull(value) && items.contains(value)) {
-            return value;
+        final int index = items.indexOf(value);
+        if (Objects.nonNull(value) && index > -1) {
+            return items.get(index);
         } else {
             return this.getModel().getElementAt(0);
         }
@@ -200,14 +201,14 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     protected T doGetDefaultValue() {
         final List<T> items = this.getItems();
         //noinspection unchecked
-        final UsageHistory<T> history = (UsageHistory<T>) CacheManager.getUsageHistory(items.get(0).getClass());
-        return history.get();
+        final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(items.get(0).getClass());
+        return history.peek();
     }
 
     protected void doSetValue(final T value) {
         //noinspection unchecked
-        final UsageHistory<T> history = (UsageHistory<T>) CacheManager.getUsageHistory(value.getClass());
-        history.put(value);
+        final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(value.getClass());
+        history.push(value);
         super.setSelectedItem(value);
     }
 

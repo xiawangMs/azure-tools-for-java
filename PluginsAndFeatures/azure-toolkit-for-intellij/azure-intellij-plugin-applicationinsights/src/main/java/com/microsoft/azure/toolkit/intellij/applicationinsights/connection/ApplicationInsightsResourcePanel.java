@@ -96,7 +96,7 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
             @Override
             protected ApplicationInsight doGetDefaultValue() {
                 return CacheManager.getUsageHistory(ApplicationInsight.class)
-                    .get(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
+                    .peek(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
             }
 
             @Override

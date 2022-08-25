@@ -70,7 +70,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
     @Override
     protected Network doGetDefaultValue() {
         return CacheManager.getUsageHistory(Network.class)
-            .get(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
+            .peek(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription())) &&
                 (Objects.isNull(region) || Objects.equals(region, v.getRegion())));
     }
 

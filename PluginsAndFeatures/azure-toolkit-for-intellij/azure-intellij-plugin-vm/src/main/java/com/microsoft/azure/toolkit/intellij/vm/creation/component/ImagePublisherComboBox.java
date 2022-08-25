@@ -45,7 +45,7 @@ public class ImagePublisherComboBox extends AzureComboBox<VmImagePublisher> {
     @Override
     protected VmImagePublisher doGetDefaultValue() {
         return CacheManager.getUsageHistory(VmImagePublisher.class)
-            .get(v -> Objects.isNull(region) || Objects.equals(region, v.region()));
+            .peek(v -> Objects.isNull(region) || Objects.equals(region, v.region()));
     }
 
     @Override

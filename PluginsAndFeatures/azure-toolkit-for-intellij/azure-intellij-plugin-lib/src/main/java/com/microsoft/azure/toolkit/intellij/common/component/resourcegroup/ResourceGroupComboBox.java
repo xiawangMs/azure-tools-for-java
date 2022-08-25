@@ -64,7 +64,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     @Override
     protected ResourceGroup doGetDefaultValue() {
         return CacheManager.getUsageHistory(ResourceGroup.class)
-            .get(g -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), g.getSubscriptionId()));
+            .peek(g -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), g.getSubscriptionId()));
     }
 
     @Nonnull

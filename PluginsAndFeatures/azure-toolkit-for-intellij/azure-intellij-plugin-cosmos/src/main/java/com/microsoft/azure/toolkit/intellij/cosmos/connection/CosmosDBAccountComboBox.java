@@ -41,7 +41,7 @@ public class CosmosDBAccountComboBox<T extends CosmosDBAccount> extends AzureCom
         final List<T> items = this.getItems();
         //noinspection unchecked
         return (T) CacheManager.getUsageHistory(items.get(0).getClass())
-            .get(v -> Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription()));
+            .peek(v -> Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription()));
     }
 
     @Override
