@@ -1,11 +1,14 @@
 package com.microsoft.azure.toolkit.intellij.cosmos.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDatabase;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +35,15 @@ public class CosmosDatabaseComboBox<T extends ICosmosDatabase, E extends CosmosD
         }
         this.setValidationInfo(null);
         this.refreshItems();
+    }
+
+    @Nullable
+    @Override
+    protected T doGetDefaultValue() {
+        final List<T> items = this.getItems();
+        //noinspection unchecked
+        return (T) CacheManager.getUsageHistory(items.get(0).getClass())
+            .peek(v -> Objects.isNull(account) || Objects.equals(account, ((AbstractAzResource<?, ?, ?>) v).getParent()));
     }
 
     @Override

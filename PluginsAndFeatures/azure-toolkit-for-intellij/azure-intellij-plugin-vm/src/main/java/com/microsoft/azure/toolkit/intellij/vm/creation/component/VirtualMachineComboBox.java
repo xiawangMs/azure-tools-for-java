@@ -8,12 +8,14 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.VMCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.compute.AzureCompute;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,6 +42,13 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Nullable
+    @Override
+    protected VirtualMachine doGetDefaultValue() {
+        return CacheManager.getUsageHistory(VirtualMachine.class)
+            .peek(v -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), v.getSubscriptionId()));
     }
 
 //    @Nullable

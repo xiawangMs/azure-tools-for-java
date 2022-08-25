@@ -8,12 +8,15 @@ import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
+import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccountDraft;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccountModule;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseAccountKind;
@@ -25,6 +28,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -43,14 +47,23 @@ public class CreateCosmosDBAccountAction {
         });
     }
 
-    public static CosmosDBAccountDraft.Config getDefaultConfig(final ResourceGroup resourceGroup) {
-        final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
+    public static CosmosDBAccountDraft.Config getDefaultConfig(@Nullable final ResourceGroup resourceGroup) {
+        final List<Subscription> subs = az(AzureAccount.class).account().getSelectedSubscriptions();
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(subs), "There are no subscriptions in your account.");
         final String name = String.format("cosmos-db-%s", Utils.getTimestamp());
         final String defaultResourceGroupName = String.format("rg-%s", name);
-        final Subscription subscription = resourceGroup == null ? selectedSubscriptions.get(0) : resourceGroup.getSubscription();
-        final ResourceGroup group = resourceGroup == null ? az(AzureResources.class).groups(subscription.getId())
-                .create(defaultResourceGroupName, defaultResourceGroupName) : resourceGroup;
+
+        final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
+        final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
+            .peek(r -> Objects.isNull(historySub) || r.getSubscriptionId().equals(historySub.getId()));
+        final ResourceGroup group = Optional.ofNullable(resourceGroup)
+            .or(() -> Optional.ofNullable(historyRg))
+            .orElse(az(AzureResources.class).groups(subs.get(0).getId())
+                .create(defaultResourceGroupName, defaultResourceGroupName));
+        final Subscription subscription = Optional.of(group).map(AzResource::getSubscription)
+            .or(() -> Optional.ofNullable(historySub))
+            .orElse(subs.get(0));
+
         final CosmosDBAccountDraft.Config config = new CosmosDBAccountDraft.Config();
         config.setName(name);
         config.setSubscription(subscription);
@@ -69,6 +82,7 @@ public class CreateCosmosDBAccountAction {
             }
             final CosmosDBAccountModule module = az(AzureCosmosService.class).databaseAccounts(config.getSubscription().getId());
             final CosmosDBAccountDraft draft = module.create(config.getName(), config.getResourceGroup().getName());
+            CacheManager.getUsageHistory(CosmosDBAccount.class).push(draft);
             draft.setConfig(config);
             draft.commit();
         });

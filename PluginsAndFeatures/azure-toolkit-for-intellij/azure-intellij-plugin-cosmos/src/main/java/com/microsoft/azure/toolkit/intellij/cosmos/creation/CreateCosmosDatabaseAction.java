@@ -3,6 +3,8 @@ package com.microsoft.azure.toolkit.intellij.cosmos.creation;
 import com.intellij.openapi.project.Project;
 import com.microsoft.applicationinsights.core.dependencies.javaxannotation.Nonnull;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -49,6 +51,8 @@ public class CreateCosmosDatabaseAction {
             final ICosmosDatabaseDraft<?, ?> draft = draftSupplier.apply(account, config);
             draft.setConfig(config);
             draft.commit();
+            final LRUStack history = CacheManager.getUsageHistory(draft.getClass());
+            history.push(draft);
         });
     }
 }
