@@ -25,17 +25,30 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
     private static Map<String, String> SERVICE_FEATURE_MAP = new HashMap<>() {
         {
             put("Microsoft.ContainerService", "Container Service");
+            put("Microsoft.ContainerService/managedClusters", "Container Service");
             put("Microsoft.Resources", "Resource Management");
+            put("Microsoft.Resources/resourceGroups", "Resource Management");
             put("Microsoft.Web", "App Service");
+            put("Microsoft.Web/sites", "App Service");
             put("Microsoft.Compute", "Compute");
+            put("Microsoft.Compute/virtualMachines", "Compute");
             put("Microsoft.ContainerRegistry", "Container Registry");
+            put("Microsoft.ContainerRegistry/registries", "Container Registry");
             put("Microsoft.DBforMySQL", "MySQL");
+            put("Microsoft.DBforMySQL/servers", "MySQL");
             put("Microsoft.DBforPostgreSQL", "PostgreSQL");
+            put("Microsoft.DBforPostgreSQL/servers", "PostgreSQL");
             put("Microsoft.Cache", "Redis");
+            put("Microsoft.Cache/Redis", "Redis");
             put("Microsoft.AppPlatform", "Spring Cloud");
+            put("Microsoft.AppPlatform/Spring", "Spring Cloud");
             put("Microsoft.Sql", "SQL");
+            put("Microsoft.Sql/servers", "SQL");
             put("Microsoft.Storage", "Storage - Blobs");
+            put("Microsoft.Storage/storageAccounts", "Storage - Blobs");
             put("Microsoft.Insights", "Monitor Ingestion");
+            put("Microsoft.Insights/components", "Monitor Ingestion");
+            put("Microsoft.DocumentDB/databaseAccounts", "Cosmos DB");
         }
     };
 

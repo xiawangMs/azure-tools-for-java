@@ -12,12 +12,14 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.xml.DomUtil;
@@ -67,7 +69,8 @@ public class DependencyUtils {
         if (model == null) {
             throw new AzureToolkitRuntimeException(String.format("Can not find build file for module %s", module.getName()));
         }
-        WriteCommandAction.writeCommandAction(project, new PsiFile[]{DomUtil.getFile(model)}).withName(MavenDomBundle.message("maven.dom.quickfix.add.maven.dependency")).run(() -> {
+        final XmlFile file = DomUtil.getFile(model);
+        WriteCommandAction.writeCommandAction(project, new PsiFile[]{file}).withName(MavenDomBundle.message("maven.dom.quickfix.add.maven.dependency")).run(() -> {
             final MavenDomDependency existingDependency = model.getDependencies().getDependencies().stream()
                     .filter(dependency -> StringUtils.equalsIgnoreCase(dependency.getGroupId().getStringValue(), entity.getGroupId()) &&
                             StringUtils.equalsIgnoreCase(dependency.getArtifactId().getStringValue(), entity.getArtifactId()))
@@ -78,6 +81,7 @@ public class DependencyUtils {
             } else {
                 existingDependency.getVersion().setStringValue(version);
             }
+            FileEditorManager.getInstance(project).openFile(file.getVirtualFile(), true, false);
         });
         final AnAction action = ActionManager.getInstance().getAction("Maven.Reimport");
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
@@ -118,6 +122,7 @@ public class DependencyUtils {
                     existingDependency.addStatementBefore(factory.createStatementFromText(dependencies), null);
                 }
             }
+            FileEditorManager.getInstance(project).openFile(virtualFile, true, false);
         });
         final AnAction action = ActionManager.getInstance().getAction("ExternalSystem.RefreshAllProjects");
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;

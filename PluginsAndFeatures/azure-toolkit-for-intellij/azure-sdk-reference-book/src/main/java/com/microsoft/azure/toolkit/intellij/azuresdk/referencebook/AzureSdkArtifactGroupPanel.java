@@ -22,28 +22,12 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.GradleProjectModule;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.MavenProjectModule;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.ProjectModule;
-import com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.components.ModuleComboBox;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
 import icons.OpenapiIcons;
 import lombok.Getter;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenArtifact;
-import org.jetbrains.plugins.gradle.model.ExternalDependency;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,25 +36,18 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.GRADLE;
 import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.MAVEN;
 
 public class AzureSdkArtifactGroupPanel {
-    public static final String DEPENDENCY_ADDED = "Dependency Added";
-    public static final String ADD_DEPENDENCY = "Add Dependency";
-    public static final String UPDATE_DEPENDENCY = "Update Dependency";
     @Getter
     private JPanel contentPanel;
     private EditorTextField viewer;
     private JPanel artifactsPnl;
     private ActionToolbarImpl toolbar;
-    private JPanel pnlAddDependencies;
-    private ModuleComboBox cbModule;
-    private JButton btnAddDependency;
-    private JTextPane paneMessage;
+    private AzureSdkProjectDependencyPanel pnlAddDependencies;
     private ButtonGroup artifactsGroup;
     private final List<AzureSdkArtifactDetailPanel> artifactPnls = new ArrayList<>();
     private AzureSdkArtifactEntity pkg;
@@ -78,11 +55,9 @@ public class AzureSdkArtifactGroupPanel {
     private static DependencyType type = MAVEN;
 
     private final Project project;
-    private final IAzureMessager messager;
 
     public AzureSdkArtifactGroupPanel(@Nullable Project project) {
         this.project = project;
-        this.messager = new DependencyNotificationMessager();
         $$$setupUI$$$();
         init();
     }
@@ -91,8 +66,6 @@ public class AzureSdkArtifactGroupPanel {
         if (!MavenUtils.isMavenProject(project) && !GradleUtils.isGradleProject(project)) {
             pnlAddDependencies.setVisible(false);
         }
-        cbModule.addItemListener(e -> refreshDependencyButton());
-        btnAddDependency.addActionListener(e -> onAddDependency());
     }
 
     public void setData(@Nonnull final List<? extends AzureSdkArtifactEntity> artifacts) {
@@ -118,7 +91,9 @@ public class AzureSdkArtifactGroupPanel {
         this.pkg = pkg;
         this.version = version;
         this.viewer.setText(pkg.getDependencySnippet(type, version));
-        refreshDependencyButton();
+        this.pnlAddDependencies.setPkg(pkg);
+        this.pnlAddDependencies.setVersion(version);
+        this.pnlAddDependencies.onSelectModule();
     }
 
     private void onDependencyTypeSelected(DependencyType type) {
@@ -175,68 +150,7 @@ public class AzureSdkArtifactGroupPanel {
         this.toolbar = this.buildCodeViewerToolbar();
         this.toolbar.setForceMinimumSize(true);
         this.toolbar.setTargetComponent(this.viewer);
-        this.cbModule = new ModuleComboBox(this.project);
-        cbModule.reloadItems();
-    }
-
-    @AzureOperation(name = "sdk.refresh_dependency", type = AzureOperation.Type.ACTION)
-    private void refreshDependencyButton() {
-        OperationContext.action().setMessager(messager);
-        btnAddDependency.setText("Loading...");
-        btnAddDependency.setEnabled(false);
-        AzureTaskManager.getInstance().runInBackground("Loading dependencies status", () -> {
-            final ProjectModule module = cbModule.getValue();
-            if (module instanceof MavenProjectModule) {
-                final MavenArtifact mavenDependency = ((MavenProjectModule) module).getMavenDependency(pkg.getGroupId(), pkg.getArtifactId());
-                final String currentVersion = Optional.ofNullable(mavenDependency).map(MavenArtifact::getVersion).orElse(null);
-                updateDependencyStatus(module, currentVersion);
-            } else if (module instanceof GradleProjectModule) {
-                final ExternalDependency gradleDependency = ((GradleProjectModule) module).getGradleDependency(pkg.getGroupId(), pkg.getArtifactId());
-                final String currentVersion = Optional.ofNullable(gradleDependency).map(ExternalDependency::getVersion).orElse(null);
-                updateDependencyStatus(module, currentVersion);
-            } else {
-                btnAddDependency.setEnabled(false);
-            }
-        });
-    }
-
-    private void updateDependencyStatus(final ProjectModule module, final String currentVersion) {
-        if (StringUtils.isEmpty(currentVersion)) {
-            AzureMessager.getMessager().info(AzureString.format("Library %s was not found in module %s", pkg.getArtifactId(), module.getName()));
-            btnAddDependency.setEnabled(true);
-            btnAddDependency.setText(ADD_DEPENDENCY);
-        } else {
-            AzureMessager.getMessager().info(AzureString.format("Library %s was found in module %s with version %s",
-                    pkg.getArtifactId(), module.getName(), currentVersion));
-            final ComparableVersion current = new ComparableVersion(currentVersion);
-            final ComparableVersion targetVersion = new ComparableVersion(version);
-            btnAddDependency.setText(current.compareTo(targetVersion) >= 0 ? DEPENDENCY_ADDED : UPDATE_DEPENDENCY);
-            btnAddDependency.setEnabled(current.compareTo(targetVersion) < 0);
-        }
-    }
-
-    @AzureOperation(name = "sdk.add_dependency", type = AzureOperation.Type.ACTION)
-    private void onAddDependency() {
-        OperationContext.action().setMessager(messager);
-        btnAddDependency.setText("Running...");
-        btnAddDependency.setEnabled(false);
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>("Add dependency", this::addDependency));
-    }
-
-    private void addDependency() {
-        final ProjectModule module = cbModule.getValue();
-        try {
-            if (module instanceof MavenProjectModule) {
-                DependencyUtils.addOrUpdateMavenDependency((MavenProjectModule) module, pkg, version);
-            } else if (module instanceof GradleProjectModule) {
-                DependencyUtils.addOrUpdateGradleDependency((GradleProjectModule) module, pkg, version);
-            }
-            btnAddDependency.setText(DEPENDENCY_ADDED);
-            btnAddDependency.setEnabled(false);
-        } catch (final Throwable t) {
-            AzureMessager.getMessager().error(t);
-            refreshDependencyButton();
-        }
+        this.pnlAddDependencies = new AzureSdkProjectDependencyPanel(project);
     }
 
     /**
@@ -277,15 +191,6 @@ public class AzureSdkArtifactGroupPanel {
                 }
             };
         }
-    }
-
-    private class DependencyNotificationMessager implements IAzureMessager {
-        @Override
-        public boolean show(IAzureMessage message) {
-            paneMessage.setText(message.getMessage().toString());
-            return true;
-        }
-
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
