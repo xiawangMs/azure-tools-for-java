@@ -140,6 +140,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             });
             this.valueNotSet = false;
             this.value = val;
+            if (Objects.nonNull(this.value)) {
+                final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(value.getClass());
+                history.push((T) value);
+            }
             this.refreshValue();
         });
     }
@@ -174,10 +178,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             if (this.value instanceof AzureComboBox.ItemReference) {
                 items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
             } else if (items.contains(this.value)) {
-                this.doSetValue((T) this.value);
+                super.setSelectedItem(this.value);
             } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
                 super.addItem((T) this.value);
-                this.doSetValue((T) this.value);
+                super.setSelectedItem(this.value);
             } else {
                 super.setSelectedItem(null);
             }
@@ -203,13 +207,6 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         //noinspection unchecked
         final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(items.get(0).getClass());
         return history.peek();
-    }
-
-    protected void doSetValue(final T value) {
-        //noinspection unchecked
-        final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(value.getClass());
-        history.push(value);
-        super.setSelectedItem(value);
     }
 
     @Override
