@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
@@ -30,10 +31,11 @@ public class AzureSdkReferenceBookPanel {
         $$$setupUI$$$();
         this.contentPanel.setPreferredSize(new Dimension(960, 600));
         this.initListeners();
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("loading Azure SDK data"), () -> this.servicesTreePanel.refresh());
     }
 
-    public void init(@Nullable final String featureName) {
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("loading Azure SDK data"), () -> this.servicesTreePanel.init(featureName));
+    public void selectFeature(@Nonnull final String feature) {
+        this.servicesTreePanel.selectFeature(feature);
     }
 
     private void initListeners() {

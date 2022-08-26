@@ -19,6 +19,8 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -74,6 +76,7 @@ public class CreateWebAppAction {
             indicator.setIndeterminate(true);
             return WebAppService.getInstance().createWebApp(config);
         });
+        CacheManager.getUsageHistory(WebAppConfig.class).push(config);
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(CreateWebAppAction::notifyCreationSuccess);
     }
 

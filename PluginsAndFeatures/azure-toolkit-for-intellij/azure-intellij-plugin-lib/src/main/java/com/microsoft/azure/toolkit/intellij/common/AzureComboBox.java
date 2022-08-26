@@ -18,6 +18,8 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -161,7 +163,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     private void refreshValue() {
         if (this.valueNotSet) {
             if (this.getItemCount() > 0 && this.getSelectedIndex() != 0) {
-                super.setSelectedIndex(0);
+                super.setSelectedItem(this.getDefaultValue());
             }
         } else {
             final Object selected = this.getSelectedItem();
@@ -171,17 +173,43 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             final List<T> items = this.getItems();
             if (this.value instanceof AzureComboBox.ItemReference) {
                 items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
-            } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
-                // todo: unify model for custom created resource
-                super.addItem((T) this.value);
-                super.setSelectedItem(this.value);
             } else if (items.contains(this.value)) {
-                super.setSelectedItem(this.value);
+                this.doSetValue((T) this.value);
+            } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
+                super.addItem((T) this.value);
+                this.doSetValue((T) this.value);
             } else {
                 super.setSelectedItem(null);
             }
             this.valueDebouncer.debounce();
         }
+    }
+
+    @Override
+    public T getDefaultValue() {
+        final List<T> items = this.getItems();
+        final T value = doGetDefaultValue();
+        final int index = items.indexOf(value);
+        if (Objects.nonNull(value) && index > -1) {
+            return items.get(index);
+        } else {
+            return this.getModel().getElementAt(0);
+        }
+    }
+
+    @Nullable
+    protected T doGetDefaultValue() {
+        final List<T> items = this.getItems();
+        //noinspection unchecked
+        final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(items.get(0).getClass());
+        return history.peek();
+    }
+
+    protected void doSetValue(final T value) {
+        //noinspection unchecked
+        final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(value.getClass());
+        history.push(value);
+        super.setSelectedItem(value);
     }
 
     @Override

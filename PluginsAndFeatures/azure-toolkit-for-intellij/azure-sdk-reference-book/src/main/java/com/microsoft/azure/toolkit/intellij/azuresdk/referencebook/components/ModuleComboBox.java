@@ -7,17 +7,21 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.components;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.GradleProjectModule;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.MavenProjectModule;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.ProjectModule;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,14 +37,27 @@ public class ModuleComboBox extends AzureComboBox<ProjectModule> {
         this.project = project;
     }
 
+    @Nullable
+    @Override
+    protected ProjectModule doGetDefaultValue() {
+        return CacheManager.getUsageHistory(ProjectModule.class)
+            .peek(v -> Objects.isNull(project) || Objects.equals(project, v.getProject()));
+    }
+
     @Nonnull
     @Override
     protected List<ProjectModule> loadItems() {
         final List<GradleProjectModule> gradleProjectModules = GradleProjectModule.listGradleModules(project);
         final List<MavenProjectModule> mavenProjectModules = MavenProjectModule.listMavenModules(project);
         return Stream.of(mavenProjectModules, gradleProjectModules).flatMap(List::stream)
-                .sorted((Comparator<ProjectModule>) (first, second) -> StringUtils.compare(first.getName(), second.getName()))
-                .collect(Collectors.toList());
+            .sorted((Comparator<ProjectModule>) (first, second) -> StringUtils.compare(first.getName(), second.getName()))
+            .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
+        return Collections.emptyList();
     }
 
     @Override

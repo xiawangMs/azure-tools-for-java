@@ -7,11 +7,16 @@ package com.microsoft.azure.toolkit.ide.cosmos;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraCosmosDBAccount;
@@ -24,15 +29,15 @@ import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoDatabase;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlContainer;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 
 public class CosmosNodeProvider implements IExplorerNodeProvider {
 
@@ -46,19 +51,19 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
     }
 
     @Override
-    public boolean accept(@NotNull Object data, @Nullable Node<?> parent, ViewType type) {
+    public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureCosmosService || data instanceof CosmosDBAccount || data instanceof MongoDatabase || data instanceof MongoCollection ||
                 data instanceof CassandraKeyspace || data instanceof CassandraTable || data instanceof SqlDatabase || data instanceof SqlContainer;
     }
 
     @Nullable
     @Override
-    public Node<?> createNode(@NotNull Object data, @Nullable Node<?> parent, @NotNull IExplorerNodeProvider.Manager manager) {
+    public Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull IExplorerNodeProvider.Manager manager) {
         if (data instanceof AzureCosmosService) {
             final AzureCosmosService service = ((AzureCosmosService) data);
             final Function<AzureCosmosService, List<CosmosDBAccount>> listFunction = acs -> acs.list().stream().flatMap(m -> m.databaseAccounts().list().stream())
                     .collect(Collectors.toList());
-            return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
+            return new Node<>(service).view(new AzureCosmosServiceLabelView(service, NAME, ICON))
                     .actions(CosmosActionsContributor.SERVICE_ACTIONS)
                     .addChildren(listFunction, (account, serviceNode) -> this.createNode(account, serviceNode, manager));
         } else if (data instanceof SqlCosmosDBAccount) {
@@ -132,11 +137,35 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
         return null;
     }
 
+    static class AzureCosmosServiceLabelView extends AzureServiceLabelView<AzureCosmosService> {
+
+        public AzureCosmosServiceLabelView(@Nonnull AzureCosmosService service, String label, String iconPath) {
+            super(service, label, iconPath);
+        }
+
+        @Override
+        public void onEvent(AzureEvent event) {
+            final Object source = event.getSource();
+            final AzureTaskManager tm = AzureTaskManager.getInstance();
+            if (source instanceof AzService && source.equals(this.getService())) {
+                tm.runLater(this::refreshChildren);
+            }
+        }
+    }
+
     static class CosmosDBAccountLabelView<T extends CosmosDBAccount> extends AzureResourceLabelView<T> {
 
-        public CosmosDBAccountLabelView(@NotNull T resource) {
+        private static final AzureResourceIconProvider<CosmosDBAccount> COSMOS_ICON_PROVIDER = new AzureResourceIconProvider<CosmosDBAccount>()
+                .withModifier(CosmosDBAccountLabelView::getAPIModifier);
+
+        public CosmosDBAccountLabelView(@Nonnull T resource) {
             super(resource, account -> account.getFormalStatus().isRunning() ?
-                    Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown") : account.getStatus(), DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
+                    Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown") : account.getStatus(), COSMOS_ICON_PROVIDER);
+        }
+
+        @Nonnull
+        private static AzureIcon.Modifier getAPIModifier(@Nonnull CosmosDBAccount resource) {
+            return new AzureIcon.Modifier(StringUtils.lowerCase(Objects.requireNonNull(resource.getKind()).getValue()), AzureIcon.ModifierLocation.BOTTOM_LEFT);
         }
     }
 }

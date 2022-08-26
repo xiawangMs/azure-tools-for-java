@@ -122,7 +122,9 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
 
             refreshProjectComboBox();
 
-            panel.add(ScrollPaneFactory.createScrollPane(formBuilder.getPanel(), true), "North");
+            final JPanel content = formBuilder.getPanel();
+            content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            panel.add(ScrollPaneFactory.createScrollPane(content, true), "North");
         } catch (final RuntimeException e) {
             log.error(e.getLocalizedMessage(), e);
             throw e;

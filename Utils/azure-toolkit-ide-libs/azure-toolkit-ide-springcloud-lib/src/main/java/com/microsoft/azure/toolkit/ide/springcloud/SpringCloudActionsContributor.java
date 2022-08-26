@@ -77,6 +77,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.PIN,
             "---",
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
             ResourceCommonActionsContributor.CREATE
