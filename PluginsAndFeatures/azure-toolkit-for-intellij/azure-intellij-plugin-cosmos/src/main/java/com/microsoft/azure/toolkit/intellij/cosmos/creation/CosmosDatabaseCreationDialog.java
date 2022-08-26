@@ -11,7 +11,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,14 +50,27 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         buttonGroup.add(manualRadioButton);
         autoscaleRadioButton.addItemListener(e -> toggleThroughputStatus());
         manualRadioButton.addItemListener(e -> toggleThroughputStatus());
-
+        txtName.addValidator(() -> validateDatabaseName());
         txtThroughputRu.setMinValue(400);
         txtThroughputRu.setMaxValue(1000000);
         txtThroughputRu.setValue(400);
+        txtThroughputRu.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
         txtMaxThroughput.setMinValue(1000);
         txtMaxThroughput.setValue(4000);
+        txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtMaxThroughput));
 
         autoscaleRadioButton.setSelected(true);
+    }
+
+    private AzureValidationInfo validateDatabaseName() {
+            final String value = txtName.getValue();
+            return StringUtils.endsWith(value, StringUtils.SPACE) || StringUtils.containsAny(value, "\\", "/","#", "?", "%") ?
+                    AzureValidationInfo.error("Database name not end with space nor contains characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
+    }
+
+    private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input) {
+        final Integer value = input.getValue();
+        return Objects.nonNull(value) && value % 100 == 0 ? AzureValidationInfo.success(input) : AzureValidationInfo.error("Throughput must be in multiples of 100", input);
     }
 
     private void toggleThroughputStatus() {

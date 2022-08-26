@@ -48,6 +48,7 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
             put("Microsoft.Storage/storageAccounts", "Storage - Blobs");
             put("Microsoft.Insights", "Monitor Ingestion");
             put("Microsoft.Insights/components", "Monitor Ingestion");
+            put("Microsoft.DocumentDB", "Cosmos DB");
             put("Microsoft.DocumentDB/databaseAccounts", "Cosmos DB");
         }
     };

@@ -47,31 +47,6 @@ public class CreateCosmosDBAccountAction {
         });
     }
 
-    public static CosmosDBAccountDraft.Config getDefaultConfig(@Nullable final ResourceGroup resourceGroup) {
-        final List<Subscription> subs = az(AzureAccount.class).account().getSelectedSubscriptions();
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(subs), "There are no subscriptions in your account.");
-        final String name = String.format("cosmos-db-%s", Utils.getTimestamp());
-        final String defaultResourceGroupName = String.format("rg-%s", name);
-
-        final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
-        final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
-            .peek(r -> Objects.isNull(historySub) || r.getSubscriptionId().equals(historySub.getId()));
-        final ResourceGroup group = Optional.ofNullable(resourceGroup)
-            .or(() -> Optional.ofNullable(historyRg))
-            .orElse(az(AzureResources.class).groups(subs.get(0).getId())
-                .create(defaultResourceGroupName, defaultResourceGroupName));
-        final Subscription subscription = Optional.of(group).map(AzResource::getSubscription)
-            .or(() -> Optional.ofNullable(historySub))
-            .orElse(subs.get(0));
-
-        final CosmosDBAccountDraft.Config config = new CosmosDBAccountDraft.Config();
-        config.setName(name);
-        config.setSubscription(subscription);
-        config.setResourceGroup(group);
-        config.setKind(DatabaseAccountKind.SQL);
-        return config;
-    }
-
     @AzureOperation(name = "cosmos.create_account.account", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final CosmosDBAccountDraft.Config config, final Project project) {
         final AzureString title = OperationBundle.description("cosmos.create_account.account", config.getName());
