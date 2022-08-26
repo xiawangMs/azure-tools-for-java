@@ -36,6 +36,11 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private final List<ResourceGroup> draftItems = new ArrayList<>();
 
     @Override
+    public String getLabel() {
+        return "Resource Group";
+    }
+
+    @Override
     protected String getItemText(final Object item) {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
