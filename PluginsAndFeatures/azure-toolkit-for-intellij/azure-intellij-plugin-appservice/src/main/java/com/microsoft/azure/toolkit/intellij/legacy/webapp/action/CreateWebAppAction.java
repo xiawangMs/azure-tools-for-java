@@ -77,7 +77,7 @@ public class CreateWebAppAction {
             return WebAppService.getInstance().createWebApp(config);
         });
         CacheManager.getUsageHistory(WebAppConfig.class).push(config);
-        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(CreateWebAppAction::notifyCreationSuccess);
+        return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle().doOnSuccess(CreateWebAppAction::notifyCreationSuccess);
     }
 
     @AzureOperation(name = "webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
