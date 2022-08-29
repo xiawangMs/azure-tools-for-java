@@ -176,7 +176,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             if (this.value instanceof AzureComboBox.ItemReference) {
                 items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
             } else if (items.contains(this.value)) {
-                super.setSelectedItem(this.value);
+                super.setSelectedItem(items.get(items.indexOf(this.value))); // set the equivalent item in the list as selected.
             } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
                 super.addItem((T) this.value);
                 super.setSelectedItem(this.value);
