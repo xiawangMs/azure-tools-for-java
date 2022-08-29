@@ -93,6 +93,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     protected void init() {
         this.myEditor = new AzureComboBoxEditor();
         this.setEditable(true);
+        this.setEditor(this.myEditor);
         this.setLoading(false);
         this.setRenderer(new SimpleListCellRenderer<>() {
             @Override
@@ -261,7 +262,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     protected void setLoading(final boolean loading) {
         this.loading = loading;
         SwingUtilities.invokeLater(() -> {
-            this.setEditor(this.myEditor);
+            this.myEditor.rerender();
             this.repaint();
         });
     }
@@ -392,6 +393,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
                 return List.of(Extension.create(new AnimatedIcon.Default(), "Loading...", null));
             }
             return AzureComboBox.this.getExtensions();
+        }
+
+        public void rerender() {
+            ((ExtendableTextField) this.getEditorComponent()).setExtensions(this.getExtensions());
         }
     }
 
