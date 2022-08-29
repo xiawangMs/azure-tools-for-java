@@ -103,7 +103,8 @@ public class PostgreSqlCreationDialog extends AzureDialog<DatabaseServerConfig> 
 
         final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
         final Subscription subscription = Optional.ofNullable(historySub).orElse(subs.get(0));
-        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek();
+        final List<Region> regions = az(AzureAccount.class).listRegions(subscription.getId());
+        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek(regions::contains);
         final Region region = Optional.ofNullable(historyRegion).orElse(Region.US_EAST);
         final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class).peek(r -> r.getSubscriptionId().equals(subscription.getId()));
         final String rgName = "rs-" + defaultNameSuffix;
