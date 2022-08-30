@@ -16,11 +16,13 @@ import org.jetbrains.idea.maven.utils.MavenArtifactUtilKt;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
 public class MavenProjectModule implements ProjectModule {
     private final Project project;
+    @Nonnull
     private final MavenProject mavenProject;
 
     public MavenProjectModule(@Nonnull final Project project, @Nonnull final MavenProject mavenProject) {
@@ -34,14 +36,14 @@ public class MavenProjectModule implements ProjectModule {
 
     public MavenArtifact getMavenDependency(final String groupId, final String artifactId) {
         return mavenProject.getDependencies().stream()
-                .filter(dependency -> MavenArtifactUtilKt.resolved(dependency))
+                .filter(MavenArtifactUtilKt::resolved)
                 .filter(dependency -> StringUtils.equalsIgnoreCase(groupId, dependency.getGroupId()) &&
                         StringUtils.equalsIgnoreCase(artifactId, dependency.getArtifactId())).findFirst().orElse(null);
     }
 
     @Override
     public String getName() {
-        return mavenProject.getDisplayName();
+        return Optional.ofNullable(mavenProject.getMavenId().getArtifactId()).orElseGet(mavenProject::getName);
     }
 
     @Override

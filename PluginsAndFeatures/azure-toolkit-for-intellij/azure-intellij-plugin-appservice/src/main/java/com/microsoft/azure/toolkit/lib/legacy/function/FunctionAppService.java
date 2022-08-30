@@ -101,7 +101,7 @@ public class FunctionAppService {
         draft.setRuntime(config.getRuntime());
         draft.setAppSettings(appSettings);
         draft.setDiagnosticConfig(config.getMonitorConfig().getDiagnosticConfig());
-        return draft.createIfNotExist();
+        return draft.commit();
     }
 
     private Map<String, String> getAppSettings(final FunctionAppConfig config) {
