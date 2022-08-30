@@ -173,9 +173,10 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
                     Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown") : account.getStatus(), COSMOS_ICON_PROVIDER);
         }
 
-        @Nonnull
+        @Nullable
         private static AzureIcon.Modifier getAPIModifier(@Nonnull CosmosDBAccount resource) {
-            return new AzureIcon.Modifier(StringUtils.lowerCase(Objects.requireNonNull(resource.getKind()).getValue()), AzureIcon.ModifierLocation.BOTTOM_LEFT);
+            final DatabaseAccountKind kind = resource.getKind();
+            return Objects.isNull(kind) ? null : new AzureIcon.Modifier(StringUtils.lowerCase(kind.getValue()), AzureIcon.ModifierLocation.BOTTOM_LEFT);
         }
     }
 }

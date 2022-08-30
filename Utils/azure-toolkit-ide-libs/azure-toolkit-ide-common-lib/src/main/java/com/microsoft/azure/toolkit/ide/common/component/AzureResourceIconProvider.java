@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,10 @@ public class AzureResourceIconProvider<T extends AzResource<?, ?, ?>> implements
             return AzureIcons.Common.REFRESH_ICON;
         }
         final String iconPath = getAzureBaseResourceIconPath(resource);
-        final List<AzureIcon.Modifier> modifiers = modifierFunctionList.stream().map(function -> function.apply(resource)).collect(Collectors.toList());
+        final List<AzureIcon.Modifier> modifiers = modifierFunctionList.stream()
+                .map(function -> function.apply(resource))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         return AzureIcon.builder().iconPath(iconPath).modifierList(modifiers).build();
     }
 
