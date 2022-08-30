@@ -120,7 +120,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             if (Objects.nonNull(cluster) && Objects.isNull(app)) {
                 final SpringCloudAppDraft draft = cluster.apps().create(appName, resourceGroup);
                 draft.setConfig(appConfig);
-                this.selectorApp.addLocalItem(draft);
+                this.selectorApp.setValue(draft);
             }
         });
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();

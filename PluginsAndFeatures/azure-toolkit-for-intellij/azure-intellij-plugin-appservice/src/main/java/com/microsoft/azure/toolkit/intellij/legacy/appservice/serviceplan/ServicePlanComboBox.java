@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -30,6 +29,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,7 +43,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
-    private final List<AppServicePlanDraft> localItems = new ArrayList<>();
+    private final List<AppServicePlan> localItems = new LinkedList<>();
     private OperatingSystem os;
     private Region region;
     @Setter
@@ -92,6 +92,15 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Override
+    public void setValue(AppServicePlan val) {
+        if (val.isDraftForCreating() && !this.localItems.contains(val)) {
+            this.localItems.add(0, val);
+        }
+        this.reloadItems();
+        super.setValue(val);
     }
 
     @Nullable
@@ -177,11 +186,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         dialog.setOkActionListener((plan) -> {
             plan.setRegion(region);
             plan.setOperatingSystem(os);
-            this.localItems.add(0, plan);
             dialog.close();
-            final List<AppServicePlan> items = this.getItems();
-            items.add(0, plan);
-            this.setItems(items);
             this.setValue(plan);
         });
         dialog.show();
