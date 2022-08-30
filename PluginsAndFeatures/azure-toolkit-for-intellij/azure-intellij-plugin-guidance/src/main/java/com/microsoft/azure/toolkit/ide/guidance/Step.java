@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -96,7 +97,10 @@ public class Step implements Disposable {
             } catch (final Exception e) {
                 setStatus(continueOnError ? Status.PARTIAL_SUCCEED : Status.FAILED);
                 AzureMessager.getMessager().error(e);
-                AzureMessager.getDefaultMessager().error(e);
+                // Also show error notification
+                if (!Objects.equals(AzureMessager.getMessager(), AzureMessager.getDefaultMessager())) {
+                    AzureMessager.getDefaultMessager().error(e);
+                }
             }
         }));
     }

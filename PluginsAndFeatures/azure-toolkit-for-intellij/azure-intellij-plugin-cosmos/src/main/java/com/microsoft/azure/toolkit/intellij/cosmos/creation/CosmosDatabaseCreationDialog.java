@@ -65,7 +65,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
     private AzureValidationInfo validateDatabaseName() {
             final String value = txtName.getValue();
             return StringUtils.endsWith(value, StringUtils.SPACE) || StringUtils.containsAny(value, "\\", "/","#", "?", "%") ?
-                    AzureValidationInfo.error("Database name not end with space nor contains characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
+                    AzureValidationInfo.error("Database name should not end with space nor contains characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
     }
 
     private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input) {
