@@ -23,15 +23,15 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private SpringCloudCluster cluster;
-    private final Map<String, SpringCloudApp> localItems = new HashMap<>();
+    private final List<SpringCloudApp> localItems = new LinkedList<>();
 
     @Override
     protected String getItemText(final Object item) {
@@ -57,6 +57,15 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         this.reloadItems();
     }
 
+    @Override
+    public void setValue(SpringCloudApp val) {
+        if (val.isDraftForCreating() && !this.localItems.contains(val)) {
+            this.localItems.add(0, val);
+        }
+        this.reloadItems();
+        super.setValue(val);
+    }
+
     @Nullable
     @Override
     protected SpringCloudApp doGetDefaultValue() {
@@ -75,7 +84,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         final List<SpringCloudApp> apps = new ArrayList<>();
         if (Objects.nonNull(this.cluster)) {
             if (!this.localItems.isEmpty()) {
-                apps.add(this.localItems.get(this.cluster.name()));
+                apps.addAll(this.localItems.stream().filter(a -> a.getParent().getName().equals(this.cluster.getName())).collect(Collectors.toList()));
             }
             apps.addAll(cluster.apps().list());
         }
@@ -105,20 +114,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         dialog.setOkActionListener((config) -> {
             final SpringCloudAppDraft app = cluster.apps().create(config.getAppName(), cluster.getResourceGroupName());
             app.setConfig(config);
-            this.addLocalItem(app);
             dialog.close();
             this.setValue(app);
         });
         dialog.show();
-    }
-
-    public void addLocalItem(SpringCloudApp app) {
-        final SpringCloudApp cached = this.localItems.get(app.getParent().name());
-        if (Objects.isNull(cached) || !Objects.equals(app.name(), cached.name())) {
-            this.localItems.put(app.getParent().name(), app);
-            final List<SpringCloudApp> items = this.getItems();
-            items.add(0, app);
-            this.setItems(items);
-        }
     }
 }

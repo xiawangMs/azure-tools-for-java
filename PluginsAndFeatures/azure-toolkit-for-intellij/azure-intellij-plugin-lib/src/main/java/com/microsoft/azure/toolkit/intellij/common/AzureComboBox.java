@@ -21,7 +21,6 @@ import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -178,9 +177,6 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
                 items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
             } else if (items.contains(this.value)) {
                 super.setSelectedItem(items.get(items.indexOf(this.value))); // set the equivalent item in the list as selected.
-            } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
-                super.addItem((T) this.value);
-                super.setSelectedItem(this.value);
             } else {
                 super.setSelectedItem(null);
             }
