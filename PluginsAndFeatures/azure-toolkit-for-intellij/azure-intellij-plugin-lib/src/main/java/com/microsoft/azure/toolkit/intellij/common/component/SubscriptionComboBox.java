@@ -22,6 +22,11 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SubscriptionComboBox extends AzureComboBox<Subscription> {
 
+    @Override
+    public String getLabel() {
+        return "Subscription";
+    }
+
     @Nonnull
     @Override
     @AzureOperation(

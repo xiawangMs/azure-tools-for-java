@@ -38,6 +38,8 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
 public class IntelliJApplicationInsightsActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
@@ -66,8 +68,7 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
 
         final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
         final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
-            .peek(r -> Objects.isNull(historySub) || r.getSubscriptionId().equals(historySub.getId()));
-        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek();
+            .peek(r -> Objects.isNull(historySub) ? subs.stream().anyMatch(s -> s.getId().equals(r.getSubscriptionId())) : r.getSubscriptionId().equals(historySub.getId()));
 
         final String timestamp = Utils.getTimestamp();
         final ResourceGroup rg = Optional.ofNullable(resourceGroup)
@@ -76,6 +77,8 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
         final Subscription subscription = Optional.ofNullable(rg).map(AzResource::getSubscription)
             .or(() -> Optional.ofNullable(historySub).filter(subs::contains))
             .orElse(subs.get(0));
+        final List<Region> regions = az(AzureAccount.class).listRegions(subscription.getId());
+        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek(regions::contains);
         final Region region = Optional.ofNullable(rg).map(ResourceGroup::getRegion)
             .or(() -> Optional.ofNullable(historyRegion))
             .orElse(null);

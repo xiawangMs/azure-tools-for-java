@@ -154,7 +154,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         if (deployTarget instanceof WebApp) {
             processHandler.setText("Updating application settings...");
             final WebAppDraft draft = (WebAppDraft) deployTarget.update();
-            webAppConfiguration.getAppSettingsToRemove().forEach(draft::removeAppSetting);
+            Optional.ofNullable(webAppConfiguration.getAppSettingsToRemove()).ifPresent(keys -> keys.forEach(draft::removeAppSetting));
             draft.setAppSettings(applicationSettings);
             draft.updateIfExist();
             processHandler.setText("Update application settings successfully.");
@@ -162,7 +162,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
             processHandler.setText("Updating deployment slot application settings...");
             final WebAppDeploymentSlotDraft update = (WebAppDeploymentSlotDraft) deployTarget.update();
             update.setAppSettings(applicationSettings);
-            webAppConfiguration.getAppSettingsToRemove().forEach(update::removeAppSetting);
+            Optional.ofNullable(webAppConfiguration.getAppSettingsToRemove()).ifPresent(keys -> keys.forEach(update::removeAppSetting));
             update.updateIfExist();
             processHandler.setText("Update deployment slot application settings successfully.");
         }
