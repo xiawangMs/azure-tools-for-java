@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -61,11 +64,13 @@ public class FunctionAppConfig extends AppServiceConfig {
         final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
         final Subscription sub = Optional.ofNullable(historySub).orElseGet(() -> subs.stream().findFirst().orElse(null));
 
-        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek();
+        final List<Region> regions = az(AzureAccount.class).listRegions(sub.getId());
+        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek(regions::contains);
         final Region region = Optional.ofNullable(historyRegion).orElseGet(AppServiceConfig::getDefaultRegion);
 
         final String rgName = Utils.generateRandomResourceName(String.format("rg-%s", namePrefix), RG_NAME_MAX_LENGTH);
-        final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class).peek(r -> Objects.isNull(sub) || r.getSubscriptionId().equals(sub.getId()));
+        final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
+            .peek(r -> Objects.isNull(sub) ? subs.stream().anyMatch(s -> s.getId().equals(r.getSubscriptionId())) : r.getSubscriptionId().equals(sub.getId()));
         final Subscription subscription = Optional.ofNullable(sub).orElseGet(() -> Optional.ofNullable(historyRg).map(AzResource::getSubscription).orElse(null));
         final ResourceGroupConfig group = Optional.ofNullable(historyRg).map(ResourceGroupConfig::fromResource).orElseGet(() -> ResourceGroupConfig.builder().subscriptionId(sub.getId()).name(rgName).region(region).build());
 

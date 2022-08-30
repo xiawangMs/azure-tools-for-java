@@ -41,7 +41,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     public static final String MONGO_COLLECTION_ACTIONS = "actions.cosmos.mongo_collection";
     public static final String CASSANDRA_TABLE_ACTIONS = "actions.cosmos.cassandra_table";
 
-    public static final Action.Id<CosmosDBAccount> OPEN_DATABASE_TOOL = Action.Id.of("cosmos.open_database_tool");
+    public static final Action.Id<CosmosDBAccount> OPEN_DATABASE_TOOL = Action.Id.of("cosmos.open_database_tools");
     public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("cosmos.open_data_explorer.account");
     public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("cosmos.copy_connection_string.account");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_COSMOS_SERVICE = Action.Id.of("group.create_cosmos_db_account");
@@ -49,7 +49,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open with Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tool.account", ((AzResource<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tools.account", ((AzResource<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof CosmosDBAccount && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<CosmosDBAccount> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");

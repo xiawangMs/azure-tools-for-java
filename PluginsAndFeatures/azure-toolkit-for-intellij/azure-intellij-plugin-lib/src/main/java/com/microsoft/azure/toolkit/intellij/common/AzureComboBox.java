@@ -57,10 +57,9 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
     private static final int DEBOUNCE_DELAY = 500;
     private final TailingDebouncer reloader;
-    private AzureComboBoxEditor loadingSpinner;
-    private AzureComboBoxEditor inputEditor;
+    private AzureComboBoxEditor myEditor;
     private boolean valueNotSet = true;
-    private boolean isRefreshing = false;
+    private boolean loading = false;
     protected Object value;
     protected boolean enabled = true;
     @Getter
@@ -92,10 +91,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     }
 
     protected void init() {
-        this.loadingSpinner = new AzureComboBoxLoadingSpinner();
-        this.inputEditor = new AzureComboBoxEditor();
+        this.myEditor = new AzureComboBoxEditor();
         this.setEditable(true);
-        this.toggleLoadingSpinner(false);
+        this.setEditor(this.myEditor);
+        this.setLoading(false);
         this.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(@Nonnull final JList<? extends T> l, final T t, final int i, final boolean b,
@@ -140,6 +139,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             });
             this.valueNotSet = false;
             this.value = val;
+            if (Objects.nonNull(this.value)) {
+                final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(value.getClass());
+                history.push((T) value);
+            }
             this.refreshValue();
         });
     }
@@ -174,10 +177,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             if (this.value instanceof AzureComboBox.ItemReference) {
                 items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
             } else if (items.contains(this.value)) {
-                this.doSetValue((T) this.value);
+                super.setSelectedItem(items.get(items.indexOf(this.value))); // set the equivalent item in the list as selected.
             } else if (this.value instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) this.value).isDraftForCreating()) {
                 super.addItem((T) this.value);
-                this.doSetValue((T) this.value);
+                super.setSelectedItem(this.value);
             } else {
                 super.setSelectedItem(null);
             }
@@ -203,13 +206,6 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         //noinspection unchecked
         final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(items.get(0).getClass());
         return history.peek();
-    }
-
-    protected void doSetValue(final T value) {
-        //noinspection unchecked
-        final LRUStack<T> history = (LRUStack<T>) CacheManager.getUsageHistory(value.getClass());
-        history.push(value);
-        super.setSelectedItem(value);
     }
 
     @Override
@@ -264,15 +260,11 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     }
 
     protected void setLoading(final boolean loading) {
+        this.loading = loading;
         SwingUtilities.invokeLater(() -> {
-            this.toggleLoadingSpinner(loading);
+            this.myEditor.rerender();
             this.repaint();
         });
-    }
-
-    private void toggleLoadingSpinner(boolean b) {
-        this.isRefreshing = b;
-        this.setEditor(b ? this.loadingSpinner : this.inputEditor);
     }
 
     @Override
@@ -280,7 +272,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         this.enabled = b;
         super.setEnabled(b);
         if (b) {
-            this.toggleLoadingSpinner(this.isRefreshing);
+            this.setLoading(this.loading);
         } else {
             this.setEditor(null);
         }
@@ -288,7 +280,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
 
     @Override
     public boolean isEnabled() {
-        return !isRefreshing && (this.enabled || super.isEnabled());
+        return !this.loading && (this.enabled || super.isEnabled());
     }
 
     protected String getItemText(Object item) {
@@ -375,6 +367,9 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             if (!AzureComboBox.this.isPopupVisible()) {
                 this.editor.setText(getItemText(item));
             }
+            if (item == null && AzureComboBox.this.loading) {
+                this.editor.setText("Refreshing...");
+            }
         }
 
         @Override
@@ -394,23 +389,14 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
 
         @Nullable
         protected List<Extension> getExtensions() {
+            if (AzureComboBox.this.loading) {
+                return List.of(Extension.create(new AnimatedIcon.Default(), "Loading...", null));
+            }
             return AzureComboBox.this.getExtensions();
         }
-    }
 
-    class AzureComboBoxLoadingSpinner extends AzureComboBoxEditor {
-
-        @Override
-        public void setItem(Object item) {
-            // do nothing: item can not be set on loading
-            super.setItem(item);
-            if (item == null) {
-                this.editor.setText("Refreshing...");
-            }
-        }
-
-        protected List<Extension> getExtensions() {
-            return List.of(Extension.create(new AnimatedIcon.Default(), "Loading...", null));
+        public void rerender() {
+            ((ExtendableTextField) this.getEditorComponent()).setExtensions(this.getExtensions());
         }
     }
 
@@ -446,7 +432,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         }
 
         private JTextField getEditorComponent() {
-            return (JTextField) inputEditor.getEditorComponent();
+            return (JTextField) myEditor.getEditorComponent();
         }
     }
 
