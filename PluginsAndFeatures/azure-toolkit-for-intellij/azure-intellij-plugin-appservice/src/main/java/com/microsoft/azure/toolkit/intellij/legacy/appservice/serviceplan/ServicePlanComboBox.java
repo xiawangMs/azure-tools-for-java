@@ -19,6 +19,8 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -44,6 +46,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     private final List<AppServicePlanDraft> localItems = new ArrayList<>();
     private OperatingSystem os;
     private Region region;
+    @Setter
+    private ResourceGroup resourceGroup;
 
     private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.WEB_APP_PRICING);
     private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
@@ -169,8 +173,10 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     private void showServicePlanCreationPopup() {
-        final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.os, this.region, pricingTierList, defaultPricingTier);
+        final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.resourceGroup, pricingTierList, defaultPricingTier);
         dialog.setOkActionListener((plan) -> {
+            plan.setRegion(region);
+            plan.setOperatingSystem(os);
             this.localItems.add(0, plan);
             dialog.close();
             final List<AppServicePlan> items = this.getItems();
