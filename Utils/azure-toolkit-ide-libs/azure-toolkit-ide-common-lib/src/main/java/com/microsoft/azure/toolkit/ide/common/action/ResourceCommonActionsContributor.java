@@ -121,7 +121,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .enabled(s -> s instanceof AzResource);
         final Action<AzResource<?, ?, ?>> openPortalUrlAction = new Action<>(OPEN_PORTAL_URL, openPortalUrl, openPortalUrlView);
         openPortalUrlAction.setShortcuts("control alt O");
-        am.registerAction(OPEN_PORTAL_URL, openPortalUrlAction);
+        am.registerAction(OPEN_PORTAL_URL, openPortalUrlAction.setAuthRequired(false));
 
         // register commands
         final Action<String> action = new Action<>(OPEN_URL, (s) -> {
@@ -163,7 +163,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         final ActionView.Builder openReferenceBookView = new ActionView.Builder("View Azure SDK")
                 .title((s) -> OperationBundle.description("common.open_azure_reference_book"));
-        am.registerAction(OPEN_AZURE_REFERENCE_BOOK, new Action<>(OPEN_AZURE_REFERENCE_BOOK, openReferenceBookView));
+        am.registerAction(OPEN_AZURE_REFERENCE_BOOK, new Action<>(OPEN_AZURE_REFERENCE_BOOK, openReferenceBookView).setAuthRequired(false));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", AzureIcons.Action.CREATE.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> {
@@ -196,7 +196,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             }
         }, pinView);
         pinAction.setShortcuts("F11");
-        am.registerAction(ResourceCommonActionsContributor.PIN, pinAction);
+        am.registerAction(ResourceCommonActionsContributor.PIN, pinAction.setAuthRequired(false));
     }
 
     @Override

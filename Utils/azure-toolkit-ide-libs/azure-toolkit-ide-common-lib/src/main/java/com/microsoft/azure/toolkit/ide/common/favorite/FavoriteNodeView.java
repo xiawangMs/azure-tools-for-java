@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -45,8 +44,7 @@ public class FavoriteNodeView implements NodeView {
     @Override
     public String getDescription() {
         final AzResource<?, ?, ?> r = view.getResource();
-        final List<Subscription> subscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
-        if (!subscriptions.contains(r.getSubscription())) {
+        if (!r.getSubscription().isSelected()) {
             return String.format("(%s)", r.getSubscription().getName());
         }
         if (r instanceof AbstractAzResource &&
@@ -101,8 +99,7 @@ public class FavoriteNodeView implements NodeView {
     @Override
     public boolean isEnabled() {
         final AzResource<?, ?, ?> r = view.getResource();
-        final List<Subscription> subscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
-        if (!subscriptions.contains(r.getSubscription())) {
+        if (!r.getSubscription().isSelected()) {
             return false;
         }
         if (r instanceof AbstractAzResource &&
