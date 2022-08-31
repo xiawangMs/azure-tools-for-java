@@ -18,13 +18,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
-    private final List<VirtualMachine> draftItems = new ArrayList<>();
+    private final List<VirtualMachine> draftItems = new LinkedList<>();
     private Subscription subscription;
 
     @Override
@@ -42,6 +43,15 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Override
+    public void setValue(VirtualMachine val) {
+        if (val.isDraftForCreating() && !this.draftItems.contains(val)) {
+            this.draftItems.add(0, val);
+        }
+        this.reloadItems();
+        super.setValue(val);
     }
 
     @Nullable
@@ -84,11 +94,7 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
     private void showVirtualMachineCreationPopup() {
         final VMCreationDialog dialog = new VMCreationDialog(null);
         dialog.setOkActionListener((vm) -> {
-            this.draftItems.add(0, vm);
             dialog.close();
-            final List<VirtualMachine> items = new ArrayList<>(this.getItems());
-            items.add(0, vm);
-            this.setItems(items);
             this.setValue(vm);
         });
         dialog.show();

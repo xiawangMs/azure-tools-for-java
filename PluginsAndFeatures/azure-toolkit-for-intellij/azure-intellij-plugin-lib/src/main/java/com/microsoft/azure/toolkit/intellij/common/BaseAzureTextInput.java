@@ -10,6 +10,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -69,7 +70,7 @@ public class BaseAzureTextInput<T> extends ExtendableTextField
             }
             this.addExtension(extension);
             this.validationExtension = extension;
-        });
+        }, AzureTask.Modality.ANY);
     }
 
     @Override
