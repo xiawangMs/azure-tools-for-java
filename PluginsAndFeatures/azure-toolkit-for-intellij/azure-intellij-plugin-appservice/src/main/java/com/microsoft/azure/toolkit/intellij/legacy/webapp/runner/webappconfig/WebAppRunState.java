@@ -63,7 +63,7 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
-    private static final String LIBS_ROOT = "/home/site/libs/";
+    private static final String LIBS_ROOT = "/home/site/wwwroot/libs/";
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String CATALINA_OPTS = "CATALINA_OPTS";
     private File artifact;
@@ -126,7 +126,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         }
         if (file == null) {
             AzureMessager.getMessager().info(AzureString.format("Uploading java agent to web app %s", deployTarget.getName()));
-            deployTarget.deploy(DeployType.JAR_LIB, javaAgent, targetPath);
+            deployTarget.deploy(DeployType.STATIC, javaAgent, targetPath);
         } else {
             AzureMessager.getMessager().info(AzureString.format("Skip upload java agent as file with same name already exists"));
         }

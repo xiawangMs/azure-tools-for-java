@@ -39,7 +39,7 @@ public class TriggerFunctionTask implements Task {
     @Override
     @AzureOperation(name = "guidance.trigger_function", type = AzureOperation.Type.SERVICE)
     public void execute() throws Exception {
-        final String functionId = (String) context.getParameter(FUNCTION_ID);
+        final String functionId = Objects.requireNonNull((String) context.getParameter(FUNCTION_ID), "Failed to get the id of function created in tasks");
         final String trigger = (String) context.getParameter(TRIGGER);
         final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(functionId);
         final List<FunctionEntity> functionEntities = Objects.requireNonNull(functionApp, String.format("failed to find function with id (%s) in Azure",
