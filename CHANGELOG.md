@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.68.0](#3680)
   - [3.67.0](#3670)
   - [3.66.0](#3660)
   - [3.65.0](#3650)
@@ -85,6 +86,32 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+## 3.68.0
+### Added
+- Added support for resource management of `Azure Cosmos DB accounts` in Azure Explorer.
+- Added support for resource connection to `Azure Cosmos DB accounts`.
+- Added support for creating data source of the Mongo and Cassandra API for `Azure Cosmos DB` from both Azure Explorer and `Database` tool window (`IntelliJ IDEA Ultimate Edition` only).
+- Added support for connecting an `Azure Virtual Machine` using SSH directly from an `Azure Virtual Machine` resource node in Azure Explorer.
+- Added support for browsing files of an `Azure Virtual Machine` from an `Azure Virtual Machine` resource node in Azure Explorer (`IntelliJ IDEA Ultimate Edition` only).
+- Added support for adding dependencies to current local project from `Azure SDK reference book`.
+- Added support for jumping to corresponding Azure SDK page in `Azure SDK reference book` from Azure Explorer nodes.
+- Added support for configuring environment variables when deploy artifacts to an `Azure Web App`.
+- Added support for Java 17 for `Azure Functions`.
+- Added support for refreshing items (when needed) of combobox components at place.
+
+### Changed
+- Default values of most input components in Azure resource creation/deployment dialogs are now learnt from history usage records.
+- Local meta-data files of Azure SDK reference book is updated to latest.
+
+### Fixed
+- Loading spring apps take more time than normal.
+- Creating resources shows repeatedly in ComboBox components sometimes.
+- Stopped Azure Function app won't be the default app in deploy dialog.
+- App settings of a newly deployed Azure Function app won't be updated in Properties view until sign-out and sign-in again.
+- Validation error message doesn't popup when hovering on the input components.
+- [#6790](https://github.com/microsoft/azure-tools-for-java/issues/6790): Uncaught Exception com.intellij.serviceContainer.AlreadyDisposedException: Already disposed: Project(*) (disposed)
+- [#6784](https://github.com/microsoft/azure-tools-for-java/issues/6784): Uncaught Exception com.intellij.openapi.util.TraceableDisposable$DisposalException: Library LibraryId(*) already disposed
+- [#6813](https://github.com/microsoft/azure-tools-for-java/issues/6813): Uncaught Exception com.microsoft.azure.toolkit.lib.common.operation.OperationException: setup run configuration for Azure Functions
 
 ## 3.67.0
 ### Added
