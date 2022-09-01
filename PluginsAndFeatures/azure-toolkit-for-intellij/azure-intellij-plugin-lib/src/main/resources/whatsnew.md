@@ -6,13 +6,13 @@
 - Added support for resource management of `Azure Cosmos DB accounts` in Azure Explorer.
 - Added support for resource connection to `Azure Cosmos DB accounts`.
 - Added support for creating data source of the Mongo and Cassandra API for `Azure Cosmos DB` from both Azure Explorer and `Database` tool window (`IntelliJ IDEA Ultimate Edition` only).     
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.datasource.gif" alt="screenshot of 'cosmos datasource'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.datasource.gif" alt="screenshot of 'cosmos datasource'" width="1200"/>
 - Added support for connecting an `Azure Virtual Machine` using SSH directly from an `Azure Virtual Machine` resource node in Azure Explorer.
 - Added support for browsing files of an `Azure Virtual Machine` from an `Azure Virtual Machine` resource node in Azure Explorer (`IntelliJ IDEA Ultimate Edition` only).      
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.vm.gif" alt="screenshot of 'virtual machine'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.vm.gif" alt="screenshot of 'virtual machine'" width="1200"/>
 - Added support for adding dependencies to current local project from `Azure SDK reference book`.
 - Added support for jumping to corresponding Azure SDK page in `Azure SDK reference book` from Azure Explorer nodes.      
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.sdk.gif" alt="screenshot of 'sdk reference book'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.sdk.gif" alt="screenshot of 'sdk reference book'" width="1200"/>
 - Added support for configuring environment variables when deploy artifacts to an `Azure Web App`.
 - Added support for Java 17 for `Azure Functions`.
 - Added support for refreshing items (when needed) of combobox components at place.
