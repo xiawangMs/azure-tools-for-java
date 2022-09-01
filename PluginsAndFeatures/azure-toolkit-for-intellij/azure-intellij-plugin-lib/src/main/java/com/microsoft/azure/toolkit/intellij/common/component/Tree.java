@@ -128,7 +128,6 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
-        @AzureOperation(name = "common.refresh_view.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
         public void refreshView() {
             synchronized (this.tree) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
