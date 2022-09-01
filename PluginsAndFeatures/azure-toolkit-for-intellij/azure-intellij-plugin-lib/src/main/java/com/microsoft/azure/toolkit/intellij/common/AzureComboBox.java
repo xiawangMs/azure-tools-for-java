@@ -267,11 +267,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     public void setEnabled(boolean b) {
         this.enabled = b;
         super.setEnabled(b);
-        if (b) {
-            this.setLoading(this.loading);
-        } else {
-            this.setEditor(null);
-        }
+        this.setLoading(this.loading);
     }
 
     @Override
@@ -385,6 +381,9 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
 
         @Nullable
         protected List<Extension> getExtensions() {
+            if (!AzureComboBox.this.enabled) {
+                return Collections.emptyList();
+            }
             if (AzureComboBox.this.loading) {
                 return List.of(Extension.create(new AnimatedIcon.Default(), "Loading...", null));
             }
