@@ -93,7 +93,8 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
             return new Node<>(account)
                     .view(new CosmosDBAccountLabelView<>(account))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .actions(CosmosActionsContributor.ACCOUNT_ACTIONS);
+                    .actions(CosmosActionsContributor.ACCOUNT_ACTIONS)
+                    .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL);
         } else if (data instanceof MongoDatabase) {
             final MongoDatabase mongoDatabase = (MongoDatabase) data;
             return new Node<>(mongoDatabase)
@@ -119,20 +120,23 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
             return new Node<>(table)
                     .view(new AzureResourceLabelView<>(table))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .actions(CosmosActionsContributor.SQL_CONTAINER_ACTIONS);
+                    .actions(CosmosActionsContributor.SQL_CONTAINER_ACTIONS)
+                    .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL);
         } else if (data instanceof CassandraKeyspace) {
             final CassandraKeyspace cassandraKeyspace = (CassandraKeyspace) data;
             return new Node<>(cassandraKeyspace)
                     .view(new AzureResourceLabelView<>(cassandraKeyspace))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(CosmosActionsContributor.CASSANDRA_KEYSPACE_ACTIONS)
+                    .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                     .addChildren(keyspace -> keyspace.tables().list(), (table, keyspaceNode) -> this.createNode(table, keyspaceNode, manager));
         } else if (data instanceof CassandraTable) {
             final CassandraTable table = (CassandraTable) data;
             return new Node<>(table)
                     .view(new AzureResourceLabelView<>(table))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .actions(CosmosActionsContributor.CASSANDRA_TABLE_ACTIONS);
+                    .actions(CosmosActionsContributor.CASSANDRA_TABLE_ACTIONS)
+                    .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL);
         }
         return null;
     }
@@ -163,9 +167,10 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
                     Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown") : account.getStatus(), COSMOS_ICON_PROVIDER);
         }
 
-        @Nonnull
+        @Nullable
         private static AzureIcon.Modifier getAPIModifier(@Nonnull CosmosDBAccount resource) {
-            return new AzureIcon.Modifier(StringUtils.lowerCase(Objects.requireNonNull(resource.getKind()).getValue()), AzureIcon.ModifierLocation.BOTTOM_LEFT);
+            final DatabaseAccountKind kind = resource.getKind();
+            return Objects.isNull(kind) ? null : new AzureIcon.Modifier(StringUtils.lowerCase(kind.getValue()), AzureIcon.ModifierLocation.BOTTOM_LEFT);
         }
     }
 }

@@ -41,6 +41,7 @@ import java.util.Set;
 @SuperBuilder(toBuilder = true)
 public abstract class AppServiceConfig {
     protected static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
+    protected static final int APP_SERVICE_NAME_MAX_LENGTH = 60;
     protected static final int RG_NAME_MAX_LENGTH = 90;
     protected static final int SP_NAME_MAX_LENGTH = 40;
     @Builder.Default

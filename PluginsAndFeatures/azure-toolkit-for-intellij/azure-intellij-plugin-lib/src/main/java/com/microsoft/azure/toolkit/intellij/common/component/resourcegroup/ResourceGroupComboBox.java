@@ -26,6 +26,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +34,12 @@ import java.util.stream.Collectors;
 
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private Subscription subscription;
-    private final List<ResourceGroup> draftItems = new ArrayList<>();
+    private final List<ResourceGroup> draftItems = new LinkedList<>();
+
+    @Override
+    public String getLabel() {
+        return "Resource Group";
+    }
 
     @Override
     protected String getItemText(final Object item) {
@@ -58,6 +64,15 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
             return;
         }
         this.reloadItems();
+    }
+
+    @Override
+    public void setValue(ResourceGroup val) {
+        if (val.isDraftForCreating() && !this.draftItems.contains(val)) {
+            this.draftItems.add(0, val);
+        }
+        this.reloadItems();
+        super.setValue(val);
     }
 
     @Nullable
@@ -111,11 +126,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private void showResourceGroupCreationPopup() {
         final ResourceGroupCreationDialog dialog = new ResourceGroupCreationDialog(this.subscription);
         dialog.setOkActionListener((group) -> {
-            this.draftItems.add(0, group);
             dialog.close();
-            final List<ResourceGroup> items = new ArrayList<>(this.getItems());
-            items.add(0, group);
-            this.setItems(items);
             this.setValue(group);
         });
         dialog.show();

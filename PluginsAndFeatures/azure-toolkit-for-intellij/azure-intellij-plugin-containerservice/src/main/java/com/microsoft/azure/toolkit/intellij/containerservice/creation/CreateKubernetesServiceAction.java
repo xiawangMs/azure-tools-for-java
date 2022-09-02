@@ -58,7 +58,7 @@ public class CreateKubernetesServiceAction {
 
         final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
         final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
-            .peek(r -> Objects.isNull(historySub) || r.getSubscriptionId().equals(historySub.getId()));
+            .peek(r -> Objects.isNull(historySub) ? subs.stream().anyMatch(s -> s.getId().equals(r.getSubscriptionId())) : r.getSubscriptionId().equals(historySub.getId()));
         final ResourceGroup group = Optional.ofNullable(resourceGroup)
             .or(() -> Optional.ofNullable(historyRg))
             .orElse(az(AzureResources.class).groups(subs.get(0).getId())

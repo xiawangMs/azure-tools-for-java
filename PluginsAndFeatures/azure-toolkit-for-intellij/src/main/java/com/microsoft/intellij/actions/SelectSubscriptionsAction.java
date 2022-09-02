@@ -53,6 +53,6 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
         manager.runLater(() -> {
             final SubscriptionsDialog dialog = new SubscriptionsDialog(project);
             dialog.select(selected -> manager.runOnPooledThread(() -> Azure.az(AzureAccount.class).account().setSelectedSubscriptions(selected)));
-        }, AzureTask.Modality.ANY);
+        });
     }
 }

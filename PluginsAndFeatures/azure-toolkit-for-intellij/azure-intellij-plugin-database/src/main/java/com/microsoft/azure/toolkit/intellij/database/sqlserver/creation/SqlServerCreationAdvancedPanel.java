@@ -67,6 +67,8 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     }
 
     private void init() {
+        this.subscriptionComboBox.setRequired(true);
+        this.resourceGroupComboBox.setRequired(true);
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
         serverNameTextField.setSubscription(config.getSubscription());

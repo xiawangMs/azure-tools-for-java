@@ -86,7 +86,7 @@ public class CreateFunctionAppAction {
             }
         });
         CacheManager.getUsageHistory(FunctionAppConfig.class).push(config);
-        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
+        return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle().doOnSuccess(app -> {
             AzureMessager.getMessager().success(message("function.create.success.message", app.name()), message("function.create.success.title"));
         });
     }
