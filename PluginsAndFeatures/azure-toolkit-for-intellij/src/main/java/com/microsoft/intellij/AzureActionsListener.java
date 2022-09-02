@@ -5,7 +5,6 @@
 
 package com.microsoft.intellij;
 
-import com.azure.core.implementation.ReflectionUtilsApi;
 import com.azure.core.implementation.http.HttpClientProviders;
 import com.azure.core.management.AzureEnvironment;
 import com.google.gson.Gson;
@@ -99,8 +98,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             HttpClientProviders.createInstance();
             Azure.az(AzureAccount.class);
             final Logger logger = Logger.getInstance(AzureActionsListener.class);
-            final int version = ReflectionUtilsApi.INSTANCE.getJavaImplementationMajorVersion();
-            log.warn("ReflectionUtilsApi.INSTANCE.getJavaImplementationMajorVersion(): " + version);
             Hooks.onErrorDropped(ex -> {
                 Throwable cause = findExceptionInExceptionChain(ex, Arrays.asList(InterruptedException.class, UnknownHostException.class));
                 if (cause instanceof InterruptedException) {

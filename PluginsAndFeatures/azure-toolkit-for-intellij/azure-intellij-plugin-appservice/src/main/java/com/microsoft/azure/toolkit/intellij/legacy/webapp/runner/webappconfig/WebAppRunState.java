@@ -63,7 +63,7 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
-    private static final String LIBS_ROOT = "/home/site/libs/";
+    private static final String LIBS_ROOT = "/home/site/wwwroot/libs/";
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String CATALINA_OPTS = "CATALINA_OPTS";
     private File artifact;
@@ -126,7 +126,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         }
         if (file == null) {
             AzureMessager.getMessager().info(AzureString.format("Uploading java agent to web app %s", deployTarget.getName()));
-            deployTarget.deploy(DeployType.JAR_LIB, javaAgent, targetPath);
+            deployTarget.deploy(DeployType.STATIC, javaAgent, targetPath);
         } else {
             AzureMessager.getMessager().info(AzureString.format("Skip upload java agent as file with same name already exists"));
         }
@@ -154,7 +154,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         if (deployTarget instanceof WebApp) {
             processHandler.setText("Updating application settings...");
             final WebAppDraft draft = (WebAppDraft) deployTarget.update();
-            webAppConfiguration.getAppSettingsToRemove().forEach(draft::removeAppSetting);
+            Optional.ofNullable(webAppConfiguration.getAppSettingsToRemove()).ifPresent(keys -> keys.forEach(draft::removeAppSetting));
             draft.setAppSettings(applicationSettings);
             draft.updateIfExist();
             processHandler.setText("Update application settings successfully.");
@@ -162,7 +162,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
             processHandler.setText("Updating deployment slot application settings...");
             final WebAppDeploymentSlotDraft update = (WebAppDeploymentSlotDraft) deployTarget.update();
             update.setAppSettings(applicationSettings);
-            webAppConfiguration.getAppSettingsToRemove().forEach(update::removeAppSetting);
+            Optional.ofNullable(webAppConfiguration.getAppSettingsToRemove()).ifPresent(keys -> keys.forEach(update::removeAppSetting));
             update.updateIfExist();
             processHandler.setText("Update deployment slot application settings successfully.");
         }

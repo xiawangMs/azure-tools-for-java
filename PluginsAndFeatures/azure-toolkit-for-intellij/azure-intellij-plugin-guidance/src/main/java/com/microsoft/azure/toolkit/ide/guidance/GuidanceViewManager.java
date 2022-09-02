@@ -34,8 +34,9 @@ public class GuidanceViewManager {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             assert toolWindow != null;
-            toolWindow.setAvailable(true);
             toolWindow.activate(() -> {
+                toolWindow.setAvailable(true);
+                toolWindow.show();
                 final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
                 if (Objects.nonNull(guidanceView)) {
                     final Course course = new Course(courseConfig, project);
@@ -52,6 +53,7 @@ public class GuidanceViewManager {
             assert toolWindow != null;
             toolWindow.activate(() -> {
                 toolWindow.setAvailable(true);
+                toolWindow.show();
                 final GuidanceView guidanceView = GuidanceViewFactory.getGuidanceView(project);
                 if (Objects.nonNull(guidanceView)) {
                     guidanceView.showCoursesView();

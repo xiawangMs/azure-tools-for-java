@@ -1,7 +1,0 @@
-<idea-plugin>
-    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <actions implementation="com.microsoft.azure.toolkit.intellij.database.mysql.IntellijMySqlActionsContributorForUltimate"/>
-        <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributorForUltimate"/>
-        <actions implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.IntellijSqlServerActionsContributorForUltimate"/>
-    </extensions>
-</idea-plugin>

@@ -13,7 +13,4 @@
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountTypeFactory" order="first"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeFactory" order="first"/>
     </extensions>
-    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <actions implementation="com.microsoft.azure.toolkit.intellij.cosmos.IntelliJCosmosActionsContributorForUltimate"/>
-    </extensions>
 </idea-plugin>

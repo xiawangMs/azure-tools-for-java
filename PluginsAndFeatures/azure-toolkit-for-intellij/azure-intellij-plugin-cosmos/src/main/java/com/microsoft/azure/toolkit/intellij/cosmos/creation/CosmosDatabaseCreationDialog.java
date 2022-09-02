@@ -54,10 +54,10 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         txtThroughputRu.setMinValue(400);
         txtThroughputRu.setMaxValue(1000000);
         txtThroughputRu.setValue(400);
-        txtThroughputRu.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
+        txtThroughputRu.addValidator(() -> validateThroughputIncrements(txtThroughputRu, 100));
         txtMaxThroughput.setMinValue(1000);
         txtMaxThroughput.setValue(4000);
-        txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtMaxThroughput));
+        txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtMaxThroughput, 1000));
 
         autoscaleRadioButton.setSelected(true);
     }
@@ -65,12 +65,13 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
     private AzureValidationInfo validateDatabaseName() {
             final String value = txtName.getValue();
             return StringUtils.endsWith(value, StringUtils.SPACE) || StringUtils.containsAny(value, "\\", "/","#", "?", "%") ?
-                    AzureValidationInfo.error("Database name not end with space nor contains characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
+                    AzureValidationInfo.error("Database name should not end with space nor contain characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
     }
 
-    private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input) {
+    private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input, @Nonnull final int unit) {
         final Integer value = input.getValue();
-        return Objects.nonNull(value) && value % 100 == 0 ? AzureValidationInfo.success(input) : AzureValidationInfo.error("Throughput must be in multiples of 100", input);
+        return Objects.nonNull(value) && value % unit == 0 ? AzureValidationInfo.success(input) :
+                AzureValidationInfo.error(String.format("Throughput must be in multiples of %d", unit), input);
     }
 
     private void toggleThroughputStatus() {

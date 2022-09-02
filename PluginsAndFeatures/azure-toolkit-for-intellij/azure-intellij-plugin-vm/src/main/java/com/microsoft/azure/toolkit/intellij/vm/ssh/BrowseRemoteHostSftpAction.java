@@ -64,7 +64,7 @@ public class BrowseRemoteHostSftpAction {
                         .checkCanAuthenticate(true);
                 AzureTaskManager.getInstance().runLater(callback);
             } catch (final SshException e) {
-                AzureMessager.getMessager().error(e, title.toString());
+                AzureMessager.getMessager().error(e);
             }
         });
         task.setBackgroundable(false);

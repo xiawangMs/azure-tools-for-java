@@ -29,7 +29,7 @@ public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final String machineName = vm.getName();
         final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
-        AzureTaskManager.getInstance().runInBackground(terminalTitle, () -> {
+        AzureTaskManager.getInstance().runLater(terminalTitle, () -> {
             // create a new terminal tab
             final TerminalView terminalView = TerminalView.getInstance(project);
             final ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, terminalTitle);

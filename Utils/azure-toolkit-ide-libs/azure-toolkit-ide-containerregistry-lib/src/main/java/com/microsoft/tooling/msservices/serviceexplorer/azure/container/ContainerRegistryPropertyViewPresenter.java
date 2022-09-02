@@ -5,6 +5,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
@@ -153,7 +155,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listTags(registry
                     .getLoginServerUrl(), setting.getUsername(), setting.getPassword(), repo, query);
             updatePaginationInfo(isNextPage, Type.TAG, responseMap.get(HEADER_LINK));
-            Tag tag = JsonUtils.fromJson(responseMap.get(BODY), Tag.class);
+            Tag tag = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(responseMap.get(BODY), Tag.class);
             return tag.getTags();
         })
                 .subscribeOn(getSchedulerProvider().io())

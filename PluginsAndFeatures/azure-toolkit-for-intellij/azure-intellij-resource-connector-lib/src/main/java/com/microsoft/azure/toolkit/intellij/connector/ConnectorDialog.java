@@ -177,7 +177,6 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.setResourceDefinition(resource.getDefinition());
             //noinspection unchecked
             this.resourcePanel.setValue(resource);
-            this.resourceTypeSelector.setEnabled(false);
         } else {
             ResourceManager.getDefinitions(RESOURCE).stream().findFirst().ifPresent(this::setResourceDefinition);
         }
@@ -188,7 +187,6 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.setConsumerDefinition(consumer.getDefinition());
             //noinspection unchecked
             this.consumerPanel.setValue(consumer);
-            this.consumerTypeSelector.setEnabled(false);
         } else {
             ResourceManager.getDefinitions(CONSUMER).stream().findFirst().ifPresent(this::setConsumerDefinition);
         }

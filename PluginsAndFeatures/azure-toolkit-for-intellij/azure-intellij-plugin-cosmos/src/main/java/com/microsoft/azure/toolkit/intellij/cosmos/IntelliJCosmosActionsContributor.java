@@ -5,11 +5,18 @@
 
 package com.microsoft.azure.toolkit.intellij.cosmos;
 
+import com.intellij.database.autoconfig.DataSourceDetector;
+import com.intellij.database.autoconfig.DataSourceRegistry;
+import com.intellij.database.psi.DbPsiFacade;
+import com.intellij.database.view.ui.DataSourceManagerDialog;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.cosmos.CosmosActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.cosmos.connection.CassandraCosmosDBAccountResourceDefinition;
@@ -17,10 +24,13 @@ import com.microsoft.azure.toolkit.intellij.cosmos.connection.MongoCosmosDBAccou
 import com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDatabaseAction;
+import com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
@@ -42,9 +52,9 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
+import static com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID;
 import static com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccountDraft.Config.getDefaultConfig;
 import static com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig.getDefaultDatabaseConfig;
-
 
 public class IntelliJCosmosActionsContributor implements IActionsContributor {
     @Override
@@ -89,6 +99,31 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
                 (ICosmosDatabaseDraft<?, ?>) account.keySpaces().getOrDraft(config.getName(), account.getResourceGroupName());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CassandraCosmosDBAccount, (Object r, AnActionEvent e) ->
                 CreateCosmosDatabaseAction.create(e.getProject(), (CassandraCosmosDBAccount) r, cassandraDraftSupplier, getDefaultDatabaseConfig()));
+
+        final BiConsumer<CosmosDBAccount, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), c);
+        am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount || r instanceof CassandraCosmosDBAccount, openDatabaseHandler);
+    }
+
+    @AzureOperation(name = "cosmos.open_database_tools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
+    private void openDatabaseTool(Project project, CosmosDBAccount account) {
+        final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
+        final String DATABASE_PLUGIN_NOT_INSTALLED = "\"Database tools and SQL\" plugin is not installed.";
+        final String NOT_SUPPORT_ERROR_ACTION = "\"Database tools and SQL\" plugin is only provided in IntelliJ Ultimate edition.";
+        if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
+            throw new AzureToolkitRuntimeException(DATABASE_PLUGIN_NOT_INSTALLED, NOT_SUPPORT_ERROR_ACTION, IntellijActionsContributor.TRY_ULTIMATE);
+        }
+        AzureTaskManager.getInstance().runLater(() -> {
+            final DataSourceRegistry registry = new DataSourceRegistry(project);
+            final com.intellij.database.Dbms dbms =
+                account instanceof MongoCosmosDBAccount ? Dbms.AZ_COSMOS_MONGO :
+                    account instanceof CassandraCosmosDBAccount ? Dbms.AZ_COSMOS_CASSANDRA :
+                        com.intellij.database.Dbms.UNKNOWN;
+            final DataSourceDetector.Builder builder = registry.getBuilder()
+                .withDbms(dbms)
+                .withJdbcAdditionalProperty(KEY_COSMOS_ACCOUNT_ID, account.getId())
+                .commit();
+            DataSourceManagerDialog.showDialog(DbPsiFacade.getInstance(project), registry);
+        });
     }
 
     private <T extends AzResource<?, ?, ?>> void openResourceConnector(@Nonnull final T resource, @Nonnull final AzureServiceResource.Definition<T> definition, Project project) {

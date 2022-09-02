@@ -101,13 +101,17 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     }
 
     private static Location<PsiMethod> getAzureFunctionMethods(final Location<?> location) {
-        for (Iterator<Location<PsiMethod>> iterator = location.getAncestors(PsiMethod.class, false); iterator.hasNext();) {
-            final Location<PsiMethod> methodLocation = iterator.next();
-            if (FunctionUtils.isFunctionClassAnnotated(methodLocation.getPsiElement())) {
-                return methodLocation;
+        try {
+            for (Iterator<Location<PsiMethod>> iterator = location.getAncestors(PsiMethod.class, false); iterator.hasNext(); ) {
+                final Location<PsiMethod> methodLocation = iterator.next();
+                if (FunctionUtils.isFunctionClassAnnotated(methodLocation.getPsiElement())) {
+                    return methodLocation;
+                }
             }
+            return null;
+        } catch (Throwable e) {
+            return null;
         }
-        return null;
     }
 
     private Module findModule(FunctionRunConfiguration configuration, Module contextModule) {
