@@ -79,7 +79,7 @@ public class WebAppDeploymentSlotsNode extends Node<WebAppDeploymentSlotModule> 
 
         public void onEvent(AzureEvent event) {
             final Object source = event.getSource();
-            if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.webApp.id())) {
+            if (source instanceof AzResource && ((AzResource<?, ?>) source).id().equals(this.webApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }

@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 
 import javax.annotation.Nonnull;
 
-public class GenericResourceLabelView<T extends AbstractAzResource<?, ?, ?>> extends AzureResourceLabelView<T> {
+public class GenericResourceLabelView<T extends AbstractAzResource<?, ?>> extends AzureResourceLabelView<T> {
 
     private final ResourceId resourceId;
 

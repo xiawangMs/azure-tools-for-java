@@ -83,7 +83,7 @@ public class AzureExplorer extends Tree {
 
     public static void refreshAll() {
         AzureExplorer.manager.getRoots().stream().filter(r -> r instanceof AbstractAzResourceModule)
-            .forEach(r -> ((AbstractAzResourceModule<?, ?, ?>) r).refresh());
+            .forEach(r -> ((AbstractAzResourceModule<?, ?>) r).refresh());
         Favorites.getInstance().refresh();
     }
 
@@ -120,8 +120,8 @@ public class AzureExplorer extends Tree {
         }
 
         private static <U> U createGenericNode(Object o) {
-            final var view = new GenericResourceLabelView<>((AbstractAzResource<?, ?, ?>) o);
-            return (U) new Node<>((AbstractAzResource<?, ?, ?>) o).view(view)
+            final var view = new GenericResourceLabelView<>((AbstractAzResource<?, ?>) o);
+            return (U) new Node<>((AbstractAzResource<?, ?>) o).view(view)
                 .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                 .actions(GenericResourceActionsContributor.GENERIC_RESOURCE_ACTIONS);
         }

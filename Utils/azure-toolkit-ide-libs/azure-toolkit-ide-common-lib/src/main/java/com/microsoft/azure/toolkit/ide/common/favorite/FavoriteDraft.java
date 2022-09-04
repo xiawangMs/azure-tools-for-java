@@ -16,14 +16,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite, AbstractAzResource<?, ?, ?>> {
+public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite, AbstractAzResource<?, ?>> {
     @Getter
     @Setter
     private boolean committed;
     @Getter
     @Nullable
     private final Favorite origin;
-    private AbstractAzResource<?, ?, ?> resource;
+    private AbstractAzResource<?, ?> resource;
 
     FavoriteDraft(@Nonnull String resourceId, @Nonnull Favorites module) {
         super(resourceId, module);
@@ -47,7 +47,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
         params = {"this.getName()", "this.getResourceTypeName()"},
         type = AzureOperation.Type.SERVICE
     )
-    public AbstractAzResource<?, ?, ?> createResourceInAzure() {
+    public AbstractAzResource<?, ?> createResourceInAzure() {
         Favorites.getInstance().favorites.add(0, resource.getId().toLowerCase());
         Favorites.getInstance().persist();
         return this.resource;
@@ -55,7 +55,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
 
     @Nonnull
     @Override
-    public AbstractAzResource<?, ?, ?> updateResourceInAzure(@Nonnull AbstractAzResource<?, ?, ?> origin) {
+    public AbstractAzResource<?, ?> updateResourceInAzure(@Nonnull AbstractAzResource<?, ?> origin) {
         throw new AzureToolkitRuntimeException("not supported");
     }
 
@@ -64,11 +64,11 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
         return false;
     }
 
-    public void setResource(AbstractAzResource<?, ?, ?> resource) {
+    public void setResource(AbstractAzResource<?, ?> resource) {
         this.resource = resource;
     }
 
-    public AbstractAzResource<?, ?, ?> getResource() {
+    public AbstractAzResource<?, ?> getResource() {
         //noinspection unchecked,rawtypes
         return Optional.ofNullable(this.resource).orElseGet(() -> (AbstractAzResource) super.getResource());
     }

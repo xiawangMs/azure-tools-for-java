@@ -32,7 +32,7 @@ public class FavoriteNodeView implements NodeView {
         if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return "";
         }
-        final AbstractAzResource<?, ?, ?> resource = (AbstractAzResource<?, ?, ?>) view.getResource();
+        final AbstractAzResource<?, ?> resource = (AbstractAzResource<?, ?>) view.getResource();
         final ResourceId id = ResourceId.fromString(resource.getId());
         final Subscription subs = Azure.az(AzureAccount.class).account().getSubscription(id.subscriptionId());
         final String rg = id.resourceGroupName();
@@ -43,12 +43,12 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public String getDescription() {
-        final AzResource<?, ?, ?> r = view.getResource();
+        final AzResource<?, ?> r = view.getResource();
         if (!r.getSubscription().isSelected()) {
             return String.format("(%s)", r.getSubscription().getName());
         }
         if (r instanceof AbstractAzResource &&
-            ((AbstractAzResource<?, ?, ?>) r).isDraftForCreating() &&
+            ((AbstractAzResource<?, ?>) r).isDraftForCreating() &&
             !Objects.equals(r.getStatus(), AzResource.Status.CREATING)) {
             return AzResource.Status.DELETED;
         }
@@ -98,12 +98,12 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public boolean isEnabled() {
-        final AzResource<?, ?, ?> r = view.getResource();
+        final AzResource<?, ?> r = view.getResource();
         if (!r.getSubscription().isSelected()) {
             return false;
         }
         if (r instanceof AbstractAzResource &&
-            ((AbstractAzResource<?, ?, ?>) r).isDraftForCreating() &&
+            ((AbstractAzResource<?, ?>) r).isDraftForCreating() &&
             !Objects.equals(r.getStatus(), AzResource.Status.CREATING)) {
             return false;
         }

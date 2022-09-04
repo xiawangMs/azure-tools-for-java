@@ -46,7 +46,7 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
     @Override
     public Map<String, String> initEnv(AzureServiceResource<MongoDatabase> data, Project project) {
         final MongoDatabase database = data.getData();
-        final CosmosDBAccount account = database.getParent();
+        final CosmosDBAccount account = (CosmosDBAccount) database.getParent();
         final HashMap<String, String> env = new HashMap<>();
         env.put(String.format("%s_DATABASE", Connection.ENV_PREFIX), database.getName());
         env.put(String.format("%s_CONNECTION_STRING", Connection.ENV_PREFIX), account.listConnectionStrings().getPrimaryConnectionString());

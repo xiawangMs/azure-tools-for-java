@@ -46,7 +46,7 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
     @Override
     public Map<String, String> initEnv(AzureServiceResource<SqlDatabase> data, Project project) {
         final SqlDatabase database = data.getData();
-        final CosmosDBAccount account = database.getParent();
+        final CosmosDBAccount account = (CosmosDBAccount) database.getParent();
         final HashMap<String, String> env = new HashMap<>();
         env.put(String.format("%s_ENDPOINT", Connection.ENV_PREFIX), account.getDocumentEndpoint());
         env.put(String.format("%s_KEY", Connection.ENV_PREFIX), account.listKeys().getPrimaryMasterKey());

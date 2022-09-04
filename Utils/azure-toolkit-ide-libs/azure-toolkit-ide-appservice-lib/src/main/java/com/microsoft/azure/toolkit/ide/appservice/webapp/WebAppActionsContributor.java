@@ -108,7 +108,7 @@ public class WebAppActionsContributor implements IActionsContributor {
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_DEPLOYMENT_SLOTS, refreshAction);
 
-        final Consumer<WebAppDeploymentSlot> swap = slot -> slot.getParent().swap(slot.getName());
+        final Consumer<WebAppDeploymentSlot> swap = slot -> ((WebApp) slot.getParent()).swap(slot.getName());
         final ActionView.Builder swapView = new ActionView.Builder("Swap With Production")
             .title(s -> Optional.ofNullable(s).map(r -> description("webapp.swap_deployment.deployment|app",
                 ((WebAppDeploymentSlot) s).getName(), ((WebAppDeploymentSlot) s).getParent().getName())).orElse(null))
@@ -123,19 +123,19 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<AzResource<?, ?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase &&
+        final BiPredicate<AzResource<?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase &&
             StringUtils.equals(r.getStatus(), AzResource.Status.STOPPED);
-        final BiConsumer<AzResource<?, ?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
+        final BiConsumer<AzResource<?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
         am.registerHandler(ResourceCommonActionsContributor.START, startCondition, startHandler);
 
-        final BiPredicate<AzResource<?, ?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase &&
+        final BiPredicate<AzResource<?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase &&
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
-        final BiConsumer<AzResource<?, ?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).stop();
+        final BiConsumer<AzResource<?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).stop();
         am.registerHandler(ResourceCommonActionsContributor.STOP, stopCondition, stopHandler);
 
-        final BiPredicate<AzResource<?, ?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase &&
+        final BiPredicate<AzResource<?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase &&
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
-        final BiConsumer<AzResource<?, ?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
+        final BiConsumer<AzResource<?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
     }
 

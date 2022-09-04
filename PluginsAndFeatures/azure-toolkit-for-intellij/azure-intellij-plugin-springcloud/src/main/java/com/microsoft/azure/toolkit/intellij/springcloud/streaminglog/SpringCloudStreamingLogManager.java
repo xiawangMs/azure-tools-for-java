@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import lombok.SneakyThrows;
 import org.apache.http.HttpException;
 import org.apache.http.client.utils.URIBuilder;
@@ -90,7 +91,7 @@ public class SpringCloudStreamingLogManager {
         if (limitBytes > 0) {
             endpoint.addParameter("limitBytes", String.valueOf(limitBytes));
         }
-        final String password = app.getParent().getTestKey();
+        final String password = ((SpringCloudCluster) app.getParent()).getTestKey();
         final String userPass = "primary:" + password;
         final String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes()));
         final HttpURLConnection connection = (HttpURLConnection) endpoint.build().toURL().openConnection();

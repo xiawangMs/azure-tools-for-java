@@ -28,7 +28,7 @@ public class FocusResourceInAzureExplorerTask implements Task {
     @AzureOperation(name = "guidance.focus_resource", type = AzureOperation.Type.SERVICE)
     public void execute() {
         final String resourceId = (String) context.getParameter(RESOURCE_ID);
-        final AbstractAzResource<?, ?, ?> resource = Objects.requireNonNull(Azure.az().getById(resourceId), String.format("failed to get resource with id (%s) in Azure", resourceId));
+        final AbstractAzResource<?, ?> resource = Objects.requireNonNull(Azure.az().getById(resourceId), String.format("failed to get resource with id (%s) in Azure", resourceId));
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? this.context.getProject() : null;
         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
         AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(resource, event);

@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
+public class Favorites extends AbstractAzResourceModule<Favorite, AbstractAzResource<?, ?>> {
     private static final String FAVORITE_ICON = AzureIcons.Common.FAVORITE.getIconPath();
     private static final String FAVORITE_GROUP = "{favorites_group}";
     @Getter
@@ -87,7 +87,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Nonnull
     @Override
-    protected Stream<AbstractAzResource<?, ?, ?>> loadResourcesFromAzure() {
+    protected Stream<AbstractAzResource<?, ?>> loadResourcesFromAzure() {
         final Account account = Azure.az(AzureAccount.class).account();
         final String user = account.getUsername();
         final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
@@ -103,12 +103,12 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             }
         }
         return this.favorites.stream().map(id -> this.loadResourceFromAzure(id, FAVORITE_GROUP)).filter(Objects::nonNull)
-            .map(c -> ((AbstractAzResource<?, ?, ?>) c));
+            .map(c -> ((AbstractAzResource<?, ?>) c));
     }
 
     @Nullable
     @Override
-    protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
+    protected AbstractAzResource<?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
         if (this.favorites.contains(name.toLowerCase())) {
             return Azure.az().getById(name);
         }
@@ -134,7 +134,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Nonnull
     @Override
-    protected Favorite newResource(@Nonnull AbstractAzResource<?, ?, ?> remote) {
+    protected Favorite newResource(@Nonnull AbstractAzResource<?, ?> remote) {
         return new Favorite(remote, this);
     }
 
@@ -146,7 +146,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Nonnull
     @Override
-    protected AzResource.Draft<Favorite, AbstractAzResource<?, ?, ?>> newDraftForCreate(@Nonnull String name, @Nullable String resourceGroup) {
+    protected AzResource.Draft<Favorite, AbstractAzResource<?, ?>> newDraftForCreate(@Nonnull String name, @Nullable String resourceGroup) {
         return new FavoriteDraft(name, this);
     }
 
@@ -166,7 +166,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         this.refresh();
     }
 
-    public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
+    public synchronized void pin(@Nonnull AbstractAzResource<?, ?> resource) {
         if (this.exists(resource.getId())) {
             final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());
             AzureMessager.getMessager().warning(message);

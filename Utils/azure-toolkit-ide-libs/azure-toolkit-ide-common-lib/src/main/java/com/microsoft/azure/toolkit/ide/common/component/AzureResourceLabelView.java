@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 
-public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements NodeView {
+public class AzureResourceLabelView<T extends AzResource<?, ?>> implements NodeView {
 
     @Nonnull
     @Getter
@@ -72,8 +72,8 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         final String type = event.getType();
         final Object source = event.getSource();
         if (source instanceof AzResource &&
-            ((AzResource<?, ?, ?>) source).getId().equals(this.resource.getId()) &&
-            ((AzResource<?, ?, ?>) source).getName().equals(this.resource.getName())) {
+            ((AzResource<?, ?>) source).getId().equals(this.resource.getId()) &&
+            ((AzResource<?, ?>) source).getName().equals(this.resource.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             if (StringUtils.equals(type, "resource.refreshed.resource")) {
                 this.refreshViewInner.debounce();

@@ -48,8 +48,8 @@ public class CreateSpringCloudAppAction {
         AzureTaskManager.getInstance().runInBackground(OperationBundle.description("springcloud.create_app.app", config.getAppName()), () -> {
             final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
             final SpringCloudDeployment deployment = task.execute();
-            CacheManager.getUsageHistory(SpringCloudCluster.class).push(deployment.getParent().getParent());
-            CacheManager.getUsageHistory(SpringCloudApp.class).push(deployment.getParent());
+            CacheManager.getUsageHistory(SpringCloudCluster.class).push((SpringCloudCluster) deployment.getParent().getParent());
+            CacheManager.getUsageHistory(SpringCloudApp.class).push((SpringCloudApp) deployment.getParent());
             final boolean hasArtifact = Optional.ofNullable(config.getDeployment())
                 .map(SpringCloudDeploymentConfig::getArtifact)
                 .map(IArtifact::getFile).isPresent();

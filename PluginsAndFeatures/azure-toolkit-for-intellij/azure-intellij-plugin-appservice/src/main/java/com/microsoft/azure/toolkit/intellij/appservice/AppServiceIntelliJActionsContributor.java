@@ -107,14 +107,14 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             AzureTaskManager.getInstance().runLater(() -> new SSHIntoWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.SSH_INTO_WEBAPP, isAppService, sshHandler);
 
-        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> deployWebAppHandler = (c, e) -> AzureTaskManager
+        final BiConsumer<AzResource<?, ?>, AnActionEvent> deployWebAppHandler = (c, e) -> AzureTaskManager
             .getInstance().runLater(() -> new DeployWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof WebApp, deployWebAppHandler);
 
         final BiConsumer<Object, AnActionEvent> createWebAppHandler = (c, e) -> CreateWebAppAction.openDialog(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureWebApp, createWebAppHandler);
 
-        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
+        final BiConsumer<AzResource<?, ?>, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
             .getInstance().runLater(() -> new DeployFunctionAppAction((FunctionApp) c, e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof FunctionApp, deployFunctionAppHandler);
 

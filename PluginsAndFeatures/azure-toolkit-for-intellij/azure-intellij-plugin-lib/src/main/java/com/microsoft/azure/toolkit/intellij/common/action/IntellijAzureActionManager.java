@@ -133,7 +133,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
             final IView.Label view = this.action.getView(source);
             final boolean visible;
-            if (source instanceof AbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired()) {
+            if (source instanceof AbstractAzResource && !((AbstractAzResource<?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired()) {
                 visible = false;
             } else {
                 visible = Objects.nonNull(view) && view.isEnabled() && Objects.nonNull(action.getHandler(source, e));

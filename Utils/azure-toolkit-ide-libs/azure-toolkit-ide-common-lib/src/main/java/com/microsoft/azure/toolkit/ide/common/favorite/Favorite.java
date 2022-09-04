@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Favorite extends AbstractAzResource<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
+public class Favorite extends AbstractAzResource<Favorite, AbstractAzResource<?, ?>> {
     public static final String RG = "FAVORITES_RESOURCE_GROUP";
 
     protected Favorite(@Nonnull String resourceId, @Nonnull Favorites module) {
@@ -29,7 +29,7 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
         super(origin);
     }
 
-    protected Favorite(@Nonnull AbstractAzResource<?, ?, ?> remote, @Nonnull Favorites module) {
+    protected Favorite(@Nonnull AbstractAzResource<?, ?> remote, @Nonnull Favorites module) {
         // favorite's name is exactly the id of the resource.
         super(remote.getId(), remote.getResourceGroupName(), module);
     }
@@ -39,19 +39,19 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
         return this.remoteOptional().isPresent();
     }
 
-    public AbstractAzResource<?, ?, ?> getResource() {
+    public AbstractAzResource<?, ?> getResource() {
         return this.getRemote();
     }
 
     @Nonnull
     @Override
-    public List<AbstractAzResourceModule<?, Favorite, ?>> getSubModules() {
+    public List<AbstractAzResourceModule<?, ?>> getSubModules() {
         return Collections.emptyList();
     }
 
     @Nonnull
     @Override
-    public String loadStatus(AbstractAzResource<?, ?, ?> remote) {
+    public String loadStatus(AbstractAzResource<?, ?> remote) {
         return Optional.of(remote).filter(AbstractAzResource::exists).map(r -> Status.RUNNING).orElse(Status.DELETED);
     }
 }

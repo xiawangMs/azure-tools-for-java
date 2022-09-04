@@ -88,7 +88,7 @@ public class FunctionsNode extends Node<FunctionAppDeploymentSlotModule> {
 
         public void onEvent(AzureEvent event) {
             final Object source = event.getSource();
-            if (source instanceof AzResource && ((AzResource<?, ?, ?>) source).id().equals(this.functionApp.id())) {
+            if (source instanceof AzResource && ((AzResource<?, ?>) source).id().equals(this.functionApp.id())) {
                 AzureTaskManager.getInstance().runLater(this::refreshChildren);
             }
         }
