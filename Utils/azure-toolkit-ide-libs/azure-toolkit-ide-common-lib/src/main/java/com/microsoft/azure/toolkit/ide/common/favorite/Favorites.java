@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.ide.common.favorite;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
@@ -37,9 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,10 +44,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
-public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
+public class Favorites extends AbstractAzResourceModule {
     private static final String FAVORITE_ICON = AzureIcons.Common.FAVORITE.getIconPath();
     private static final String FAVORITE_GROUP = "{favorites_group}";
     @Getter
@@ -76,18 +71,17 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Nonnull
     @Override
-    public synchronized List<Favorite> list() {
+    public synchronized List<AbstractAzResource<?, ?, ?>> list() {
         if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return Collections.emptyList();
         }
-        final List<Favorite> result = new LinkedList<>(super.list());
+        final List<AbstractAzResource<?, ?, ?>> result = super.list();
         result.sort(Comparator.comparing(item -> this.favorites.indexOf(item.getName().toLowerCase())));
         return result;
     }
 
-    @Nonnull
     @Override
-    protected Stream<AbstractAzResource<?, ?, ?>> loadResourcesFromAzure() {
+    protected void reloadResources() {
         final Account account = Azure.az(AzureAccount.class).account();
         final String user = account.getUsername();
         final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
@@ -102,52 +96,63 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 this.favorites = new LinkedList<>();
             }
         }
-        return this.favorites.stream().map(id -> this.loadResourceFromAzure(id, FAVORITE_GROUP)).filter(Objects::nonNull)
-            .map(c -> ((AbstractAzResource<?, ?, ?>) c));
+        this.favorites.stream().filter(id -> this.favorites.contains(id.toLowerCase()))
+            .map(id -> Azure.az().getById(id)).filter(Objects::nonNull)
+            .forEach(f -> this.addResourceToLocal(f.getId(), f));
     }
 
     @Nullable
     @Override
-    protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
-        if (this.favorites.contains(name.toLowerCase())) {
-            return Azure.az().getById(name);
-        }
-        return null;
+    protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String resourceId, @Nullable String resourceGroup) {
+        throw new AzureToolkitRuntimeException("not supported operation.");
     }
 
     @Override
-    @SneakyThrows
-    protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
-        final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
+    protected void deleteResourceFromAzure(@Nonnull String resourceId) {
         this.favorites.remove(resourceId.toLowerCase());
         this.persist();
     }
 
+    protected void addResourceToAzure(@Nonnull String resourceId) {
+        this.favorites.add(0, resourceId.toLowerCase());
+        this.persist();
+    }
+
+    public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
+        if (this.exists(resource.getId())) {
+            final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());
+            AzureMessager.getMessager().warning(message);
+            return;
+        }
+        this.addResourceToLocal(resource.getId(), resource);
+        this.addResourceToAzure(resource.getId());
+    }
+
+    public synchronized void unpin(@Nonnull String resourceId) {
+        this.deleteResourceFromLocal(resourceId);
+        this.deleteResourceFromAzure(resourceId);
+    }
+
     @Nonnull
     @Override
     @SneakyThrows
-    public String toResourceId(@Nonnull String resourceName, @Nullable String resourceGroup) {
-        final String encoded = URLEncoder.encode(resourceName, StandardCharsets.UTF_8.name());
-        final String template = "/subscriptions/%s/resourceGroups/%s/providers/AzureToolkits.Favorite/favorites/%s";
-        return String.format(template, AzResource.NONE.getName(), AzResource.NONE.getName(), encoded);
+    public String toResourceId(@Nonnull String resourceId, @Nullable String resourceGroup) {
+        return resourceId;
     }
 
     @Nonnull
     @Override
-    protected Favorite newResource(@Nonnull AbstractAzResource<?, ?, ?> remote) {
-        return new Favorite(remote, this);
+    protected AbstractAzResource<?, ?, ?> newResource(@Nonnull Object r) {
+        if (r instanceof AbstractAzResource) {
+            return (AbstractAzResource<?, ?, ?>) r;
+        }
+        throw new AzureToolkitRuntimeException("not supported operation.");
     }
 
     @Nonnull
     @Override
-    protected Favorite newResource(@Nonnull String name, @Nullable String resourceGroupName) {
-        throw new AzureToolkitRuntimeException("not supported");
-    }
-
-    @Nonnull
-    @Override
-    protected AzResource.Draft<Favorite, AbstractAzResource<?, ?, ?>> newDraftForCreate(@Nonnull String name, @Nullable String resourceGroup) {
-        return new FavoriteDraft(name, this);
+    protected AbstractAzResource<?, ?, ?> newResource(@Nonnull String name, @Nullable String resourceGroupName) {
+        throw new AzureToolkitRuntimeException("not supported operation.");
     }
 
     @Nonnull
@@ -164,21 +169,6 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         this.clear();
         this.persist();
         this.refresh();
-    }
-
-    public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
-        if (this.exists(resource.getId())) {
-            final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());
-            AzureMessager.getMessager().warning(message);
-            return;
-        }
-        final FavoriteDraft draft = this.create(resource.getId(), FAVORITE_GROUP);
-        draft.setResource(resource);
-        draft.createIfNotExist();
-    }
-
-    public void unpin(@Nonnull String resourceId) {
-        this.delete(resourceId, FAVORITE_GROUP);
     }
 
     public void persist() {
@@ -210,7 +200,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         return new Node<>(Favorites.getInstance(), rootView).lazy(false)
             .actions(new ActionGroup(unpinAllAction, "---", ResourceCommonActionsContributor.REFRESH))
             .addChildren(Favorites::list, (o, parent) -> {
-                final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
+                final Node<?> node = manager.createNode(o, parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
                 if (node.view() instanceof AzureResourceLabelView) {
                     node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
                 }

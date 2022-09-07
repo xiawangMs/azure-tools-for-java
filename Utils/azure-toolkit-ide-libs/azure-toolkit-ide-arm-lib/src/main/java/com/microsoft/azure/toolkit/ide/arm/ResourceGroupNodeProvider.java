@@ -16,7 +16,6 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
-import com.microsoft.azure.toolkit.lib.resource.GenericResource;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import javax.annotation.Nonnull;
@@ -60,7 +59,7 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
                     .view(new AzureModuleLabelView<>(module, "Deployments", AzureIcons.Resources.DEPLOYMENT_MODULE.getIconPath()))
                     .actions(DeploymentActionsContributor.DEPLOYMENTS_ACTIONS)
                     .addChildren(AbstractAzResourceModule::list, (d, mn) -> manager.createNode(d, mn, ViewType.APP_CENTRIC)))
-                .addChildren(group -> group.genericResources().list().stream().map(GenericResource::toConcreteResource)
+                .addChildren(group -> ((List<AbstractAzResource<?, ?, ?>>) group.genericResources().list()).stream()
                     .map(r -> manager.createNode(r, parent, ViewType.APP_CENTRIC))
                     .sorted(Comparator.comparing(r -> ((Node<?>) r).view() instanceof GenericResourceLabelView)
                         .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).data()).getFullResourceType())
