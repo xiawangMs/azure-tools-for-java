@@ -69,11 +69,22 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                 .withUuidUserAgent()
                 .post(url, entity, null, null, ClusterConfiguration.class);
     }
+    private Observable<ClusterConfiguration> getClusterConfigurationRequestFormNewAPI(
+            @NotNull final String clusterId) {
+        String managementURI = Azure.az(AzureCloud.class).getOrDefault().getResourceManagerEndpoint();
+        String url = URI.create(managementURI)
+                .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
+        StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
+        entity.setContentType("application/json");
+        return getHttp()
+                .withUuidUserAgent()
+                .post(url, entity, null, null, ClusterConfiguration.class);
+    }
 
     public Observable<Boolean> isProbeGetConfigurationSucceed(final ClusterRawInfo clusterRawInfo) {
         String clusterId = clusterRawInfo.getId();
 
-        return getClusterConfigurationRequest(clusterId)
+        return getClusterConfigurationRequestFormNewAPI(clusterId)
                 .map(clusterConfiguration -> {
                     if (isClusterConfigurationValid(clusterRawInfo, clusterConfiguration)) {
                         setRoleType(HDInsightUserRoleType.OWNER);
