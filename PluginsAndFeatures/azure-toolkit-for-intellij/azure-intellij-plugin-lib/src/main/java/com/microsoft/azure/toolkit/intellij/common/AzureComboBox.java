@@ -245,7 +245,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         SwingUtilities.invokeLater(() -> {
             final DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) this.getModel();
             model.removeAllElements();
-            model.addAll(items);
+            model.addAll(ObjectUtils.firstNonNull(items, Collections.emptyList()));
             this.refreshValue();
         });
     }
