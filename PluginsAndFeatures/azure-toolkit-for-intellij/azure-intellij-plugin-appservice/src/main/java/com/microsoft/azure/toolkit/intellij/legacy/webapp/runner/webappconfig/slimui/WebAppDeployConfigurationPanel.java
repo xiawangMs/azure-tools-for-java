@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -251,6 +252,10 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                 .ifPresent(artifact -> comboBoxArtifact.setArtifact(artifact));
         // web app
         Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> {
+            if (!Azure.az(AzureAccount.class).account().getTenantIds().contains(webApp.getSubscriptionId())) {
+                comboBoxWebApp.setValue((WebAppConfig) null);
+                return;
+            }
             comboBoxWebApp.setConfigModel(webApp);
             comboBoxWebApp.setValue(new AzureComboBox.ItemReference<>(item -> WebAppConfig.isSameApp(item, webApp)));
             appSettingsTable.setAppService(webApp);
