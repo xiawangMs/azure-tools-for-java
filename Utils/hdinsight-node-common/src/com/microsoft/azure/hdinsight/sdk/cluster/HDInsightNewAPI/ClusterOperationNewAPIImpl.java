@@ -58,7 +58,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                 .get(url, null, null, Map.class);
     }
 
-    private Observable<ClusterConfiguration> getClusterConfigurationRequest(
+    private Observable<ClusterConfiguration> getClusterConfigurationFromManagementEndpoint(
             @NotNull final String clusterId) {
         String managementURI = Azure.az(AzureCloud.class).getOrDefault().getManagementEndpoint();
         String url = URI.create(managementURI)
@@ -69,7 +69,8 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                 .withUuidUserAgent()
                 .post(url, entity, null, null, ClusterConfiguration.class);
     }
-    private Observable<ClusterConfiguration> getClusterConfigurationRequestFormNewAPI(
+
+    private Observable<ClusterConfiguration> getClusterConfigurationFromResourceManagerEndpoint(
             @NotNull final String clusterId) {
         String managementURI = Azure.az(AzureCloud.class).getOrDefault().getResourceManagerEndpoint();
         String url = URI.create(managementURI)
@@ -84,7 +85,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     public Observable<Boolean> isProbeGetConfigurationSucceed(final ClusterRawInfo clusterRawInfo) {
         String clusterId = clusterRawInfo.getId();
 
-        return getClusterConfigurationRequestFormNewAPI(clusterId)
+        return getClusterConfigurationFromResourceManagerEndpoint(clusterId)
                 .map(clusterConfiguration -> {
                     if (isClusterConfigurationValid(clusterRawInfo, clusterConfiguration)) {
                         setRoleType(HDInsightUserRoleType.OWNER);
@@ -175,7 +176,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
         try {
             switch (roleType) {
                 case OWNER:
-                    return getClusterConfigurationRequest(clusterId)
+                    return getClusterConfigurationFromManagementEndpoint(clusterId)
                             // As you can see, the response class is
                             // com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterConfiguration.
                             // However, if we want to override method getClusterConfiguration, the method return type should be
