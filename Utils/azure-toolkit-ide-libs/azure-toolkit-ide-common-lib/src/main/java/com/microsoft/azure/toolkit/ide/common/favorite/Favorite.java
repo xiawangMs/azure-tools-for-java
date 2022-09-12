@@ -22,6 +22,12 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
         super(resourceId, ResourceId.fromString(resourceId).resourceGroupName(), module);
     }
 
+    @Override
+    public void invalidateCache() {
+        this.getResource().invalidateCache();
+        super.invalidateCache();
+    }
+
     /**
      * copy constructor
      */
