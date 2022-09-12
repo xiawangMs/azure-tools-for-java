@@ -76,7 +76,7 @@ public class AzureModule extends AzureRefreshableNode {
         AzureEventBus.on("account.subscription_changed.account", accountListener);
         AzureEventBus.on("account.logged_out.account", accountListener);
         AzureEventBus.on("account.account.restoring_auth", accountListener);
-        handleSubscriptionChange();
+        this.updateNodeNameAfterLoading();
     }
 
     private synchronized static String composeName() {
@@ -98,6 +98,11 @@ public class AzureModule extends AzureRefreshableNode {
             DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
         }
         return BASE_MODULE_NAME;
+    }
+
+    @Override
+    protected void updateNodeNameAfterLoading() {
+        this.setName(composeName());
     }
 
     public void setHdInsightModule(@NotNull HDInsightRootModule rootModule) {
@@ -179,9 +184,9 @@ public class AzureModule extends AzureRefreshableNode {
         return project;
     }
 
-    private void handleSubscriptionChange() {
+    private synchronized void handleSubscriptionChange() {
         setName(composeName());
-        for (Node child : getChildNodes()) {
+        for (final Node child : getChildNodes()) {
             child.removeAllChildNodes();
         }
         Optional.ofNullable(this.clearResourcesListener).ifPresent(Runnable::run);
