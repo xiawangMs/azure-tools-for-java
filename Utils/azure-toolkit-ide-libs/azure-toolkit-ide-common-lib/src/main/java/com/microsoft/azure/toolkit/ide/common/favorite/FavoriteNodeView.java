@@ -99,7 +99,7 @@ public class FavoriteNodeView implements NodeView {
     @Override
     public boolean isEnabled() {
         final AzResource<?, ?, ?> r = view.getResource();
-        if (!r.getSubscription().isSelected()) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || !r.getSubscription().isSelected()) {
             return false;
         }
         if (r instanceof AbstractAzResource &&
