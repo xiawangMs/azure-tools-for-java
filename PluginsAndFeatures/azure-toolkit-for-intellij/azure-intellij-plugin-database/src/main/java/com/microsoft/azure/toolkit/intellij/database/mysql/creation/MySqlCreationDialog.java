@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.database.mysql.creation;
 
 import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
@@ -117,5 +118,16 @@ public class MySqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
         config.setAdminPassword(StringUtils.EMPTY);
         config.setVersion("5.7"); // default to 11
         return config;
+    }
+
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        final List<ValidationInfo> res = super.doValidateAll();
+        if (advancedMode) {
+            res.addAll(advanced.doValidateAll());
+        } else {
+            res.addAll(basic.doValidateAll());
+        }
+        return res;
     }
 }
