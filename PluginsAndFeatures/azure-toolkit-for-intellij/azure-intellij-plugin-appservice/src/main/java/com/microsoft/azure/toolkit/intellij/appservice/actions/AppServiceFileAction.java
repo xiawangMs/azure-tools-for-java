@@ -184,6 +184,10 @@ public class AppServiceFileAction {
 
     @SneakyThrows
     public void saveAppServiceFile(@NotNull AppServiceFile file, @Nullable Project project, @Nullable File dest) {
+        if (!file.getApp().getFormalStatus().isRunning()) {
+            AzureMessager.getMessager().warning(AzureString.format("Can not download files for app service with status %s", file.getApp().getStatus()));
+            return;
+        }
         final Action<Void> retry = Action.retryFromFailure((() -> this.saveAppServiceFile(file, project, dest)));
         final File destFile = Objects.isNull(dest) ? FileChooser.showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {
