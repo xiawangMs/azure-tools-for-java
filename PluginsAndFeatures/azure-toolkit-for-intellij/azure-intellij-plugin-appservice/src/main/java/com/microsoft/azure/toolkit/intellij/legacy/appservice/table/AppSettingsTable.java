@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -24,19 +25,19 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AppSettingsTable extends JBTable {
-    @Getter
-    protected final Set<String> appSettingsKeyToRemove = new HashSet<>();
+
     protected final AppSettingModel appSettingModel = new AppSettingModel();
     protected AppServiceConfig config;
+    @Getter
+    protected boolean loading = false;
 
     public AppSettingsTable() {
         super();
@@ -46,33 +47,11 @@ public class AppSettingsTable extends JBTable {
         this.setAutoscrolls(true);
         this.setMinimumSize(new Dimension(-1, 150));
         this.setPreferredScrollableViewportSize(null);
+        this.resetEmptyText();
     }
 
     public int addRequiredAppSettings(@Nonnull final String key, final String value) {
         return appSettingModel.addAppSettings(key, value);
-    }
-
-    public void setAppService(@Nonnull final AppServiceConfig config) {
-        final Map<String, String> values = this.getAppSettings();
-        if (AppServiceConfig.isSameApp(config, this.config)) {
-            return;
-        }
-        this.config = config;
-        AzureTaskManager.getInstance().runInBackground("Loading application settings", () -> {
-            this.getEmptyText().setText(CommonConst.LOADING_TEXT);
-            this.setEnabled(false);
-            this.clear();
-            final Map<String, String> remoteAppSettings = StringUtils.isNoneBlank(config.getResourceId()) ?
-                    ((AppServiceAppBase<?, ?, ?>) Objects.requireNonNull(Azure.az(AzureAppService.class).getById(config.getResourceId()))).getAppSettings() : Collections.emptyMap();
-            AzureTaskManager.getInstance().runLater(() -> {
-                AppSettingsTable.this.setAppSettings(remoteAppSettings);
-                Optional.ofNullable(config.getAppSettingsToRemove()).ifPresent(set -> set.forEach(this::removeAppSettings));
-                AppSettingsTable.this.addAppSettings(config.getAppSettings());
-                this.getEmptyText().setText("No app setting configured");
-                this.getEmptyText().appendLine("New app setting", SimpleTextAttributes.LINK_ATTRIBUTES, ignore -> addAppSettings());
-                this.setEnabled(true);
-            }, AzureTask.Modality.ANY);
-        });
     }
 
     public void addAppSettings() {
@@ -85,7 +64,6 @@ public class AppSettingsTable extends JBTable {
     }
 
     public void addAppSettings(@Nonnull String key, String value) {
-        appSettingsKeyToRemove.remove(key);
         final int index = appSettingModel.addAppSettings(key, value);
         this.refresh();
         scrollToRow(index);
@@ -95,13 +73,12 @@ public class AppSettingsTable extends JBTable {
         if (MapUtils.isEmpty(appSettingMap)) {
             return;
         }
-        appSettingMap.entrySet().forEach(entry -> addAppSettings(entry.getKey(), entry.getValue()));
+        appSettingMap.forEach((key, value) -> addAppSettings(key, value));
         this.refresh();
         scrollToRow(0);
     }
 
     public void removeAppSettings(int row) {
-        appSettingsKeyToRemove.add(appSettingModel.getAppSettingsKey(row));
         appSettingModel.removeAppSettings(row);
         this.refresh();
     }
@@ -117,6 +94,34 @@ public class AppSettingsTable extends JBTable {
     public void removeAppSettings(@Nonnull String key) {
         final int row = appSettingModel.getAppSettingsRow(key);
         this.removeAppSettings(row);
+    }
+
+    public void loadAppSettings(@Nonnull Supplier<Map<String, String>> supplier) {
+        this.setLoading(true);
+        AzureTaskManager.getInstance().runInBackground("Loading application settings", () -> {
+            try {
+                final Map<String, String> appSettings = supplier.get();
+                AzureTaskManager.getInstance().runLater(() -> AppSettingsTable.this.setAppSettings(appSettings), AzureTask.Modality.ANY);
+            } finally {
+                AzureTaskManager.getInstance().runLater(() -> AppSettingsTable.this.setLoading(false), AzureTask.Modality.ANY);
+            }
+        });
+    }
+
+    private void setLoading(boolean isLoading) {
+        this.loading = isLoading;
+        this.setEnabled(!isLoading);
+        if (isLoading) {
+            this.clear();
+            this.getEmptyText().setText(CommonConst.LOADING_TEXT);
+        } else {
+            this.resetEmptyText();
+        }
+    }
+
+    private void resetEmptyText() {
+        this.getEmptyText().setText("No app setting configured");
+        this.getEmptyText().appendLine("New app setting", SimpleTextAttributes.LINK_ATTRIBUTES, ignore -> addAppSettings());
     }
 
     public void setAppSettings(@Nullable final Map<String, String> appSettingMap) {

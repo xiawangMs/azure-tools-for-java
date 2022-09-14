@@ -31,12 +31,13 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.*;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -95,7 +96,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (StringUtils.isAllEmpty(configuration.getWebAppId(), configuration.getWebAppName())) {
             return;
         }
-        Map<String, String> appSettings = Collections.emptyMap();
+        Map<String, String> appSettings = ObjectUtils.firstNonNull(configuration.getApplicationSettings(), new HashMap<>());
         if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
             this.appSettingsKey = configuration.getAppSettingsKey();
             appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey);
