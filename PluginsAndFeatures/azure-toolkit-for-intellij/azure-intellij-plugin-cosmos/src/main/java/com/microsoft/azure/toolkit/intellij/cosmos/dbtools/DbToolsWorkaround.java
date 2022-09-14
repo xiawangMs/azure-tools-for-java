@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
-import com.intellij.database.dataSource.DatabaseDriver;
 import com.intellij.database.dataSource.DatabaseDriverImpl;
 import com.intellij.database.dataSource.DatabaseDriverManager;
 import com.intellij.database.dataSource.DatabaseDriverManagerImpl;
@@ -17,6 +16,7 @@ import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jdom.Element;
 
@@ -47,24 +47,28 @@ public class DbToolsWorkaround extends PreloadingActivity {
 
     private static void loadMongoDriver() {
         final DatabaseDriverManager manager = DatabaseDriverManager.getInstance();
-        final DatabaseDriver oldDriver = manager.getDriver(COSMOS_MONGO_DRIVER_ID);
-        if (Objects.isNull(oldDriver) || !"Azure Cosmos DB API for MongoDB".equals(oldDriver.getName())) { // remove if old driver is not user defined.
+        final DatabaseDriverImpl oldDriver = (DatabaseDriverImpl) manager.getDriver(COSMOS_MONGO_DRIVER_ID);
+        final boolean legacy = Optional.ofNullable(oldDriver).map(DatabaseDriverImpl::getUrlTemplates)
+            .flatMap(ts -> ts.stream().findFirst())
+            .filter(t -> StringUtils.containsIgnoreCase(t.getTemplate(), "retrywrites"))
+            .isEmpty();
+        if (legacy) { // remove if old driver is not user defined.
             Optional.ofNullable(oldDriver).ifPresent(manager::removeDriver);
             addAsUserDriver(COSMOS_MONGO_DRIVER_CONFIG);
         } else {
-            ((DatabaseDriverImpl) oldDriver).setIcon(IntelliJAzureIcons.getIcon(COSMOS_MONGO_ICON));
+            oldDriver.setIcon(IntelliJAzureIcons.getIcon(COSMOS_MONGO_ICON));
         }
     }
 
     private static void loadCassandraDriver() {
         final DatabaseDriverManager manager = DatabaseDriverManager.getInstance();
-        final DatabaseDriver oldDriver = manager.getDriver(COSMOS_CASSANDRA_DRIVER_ID);
+        final DatabaseDriverImpl oldDriver = (DatabaseDriverImpl) manager.getDriver(COSMOS_CASSANDRA_DRIVER_ID);
         if (Registry.is("azure.toolkit.cosmos_cassandra.dbtools.enabled")) {
             if (Objects.isNull(oldDriver) || !"Azure Cosmos DB API for Cassandra".equals(oldDriver.getName())) { // remove if old driver is not user defined.
                 Optional.ofNullable(oldDriver).ifPresent(manager::removeDriver);
                 addAsUserDriver(COSMOS_CASSANDRA_DRIVER_CONFIG);
             } else {
-                ((DatabaseDriverImpl) oldDriver).setIcon(IntelliJAzureIcons.getIcon(COSMOS_CASSANDRA_ICON));
+                oldDriver.setIcon(IntelliJAzureIcons.getIcon(COSMOS_CASSANDRA_ICON));
             }
         } else {
             Optional.ofNullable(oldDriver).ifPresent(manager::removeDriver);
