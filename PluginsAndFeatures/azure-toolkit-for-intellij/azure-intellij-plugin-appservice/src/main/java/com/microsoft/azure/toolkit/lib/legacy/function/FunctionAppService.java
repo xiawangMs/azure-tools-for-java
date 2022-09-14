@@ -82,8 +82,10 @@ public class FunctionAppService {
                 .resourceId(functionApp.getId())
                 .name(functionApp.getName())
                 .region(functionApp.getRegion())
+                .runtime(functionApp.getRuntime())
                 .resourceGroup(ResourceGroupConfig.fromResource(functionApp.getResourceGroup()))
                 .subscription(functionApp.getSubscription())
+                .appSettings(functionApp.getAppSettings())
                 .servicePlan(AppServicePlanConfig.fromResource(functionApp.getAppServicePlan())).build();
     }
 

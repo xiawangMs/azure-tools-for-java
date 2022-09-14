@@ -13,6 +13,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox;
@@ -22,6 +23,10 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.Function
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.CommonConst;
@@ -30,20 +35,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 
-public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements FunctionDeployMvpView {
-
-    private final FunctionDeployViewPresenter<FunctionDeploymentPanel> presenter;
+public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> {
 
     private JPanel pnlRoot;
     private HyperlinkLabel lblCreateFunctionApp;
@@ -54,15 +60,12 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JLabel lblFunction;
     private JLabel lblAppSettings;
     private FunctionAppSettingsTable appSettingsTable;
-    private FunctionAppConfig appSettingsFunctionApp;
     private String appSettingsKey = UUID.randomUUID().toString();
     private Module previousModule = null;
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
         $$$setupUI$$$();
-        this.presenter = new FunctionDeployViewPresenter<>();
-        this.presenter.onAttachView(this);
 
         cbFunctionModule.setRenderer(new ListCellRendererWrapper<>() {
             @Override
@@ -87,19 +90,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     public void disposeEditor() {
-        presenter.onDetachView();
-    }
 
-    @Override
-    public void beforeFillAppSettings() {
-        appSettingsTable.getEmptyText().setText(CommonConst.LOADING_TEXT);
-        appSettingsTable.clear();
-    }
-
-    @Override
-    public void fillAppSettings(Map<String, String> appSettings) {
-        appSettingsTable.getEmptyText().setText(CommonConst.EMPTY_TEXT);
-        appSettingsTable.setAppSettings(appSettings);
     }
 
     @NotNull
@@ -142,8 +133,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
         if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
-            appSettingsFunctionApp = configuration.getConfig();
-            functionAppComboBox.setValue(new AzureComboBox.ItemReference<>(item -> FunctionAppConfig.isSameApp(item, configuration.getConfig())));
+            functionAppComboBox.setValue(configuration.getConfig());
             functionAppComboBox.setConfigModel(configuration.getConfig());
         }
         this.previousModule = configuration.getModule();
@@ -165,27 +155,35 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
 
         functionAppComboBox = new FunctionAppComboBox(project);
-        functionAppComboBox.addActionListener(event -> onSelectFunctionApp());
+        functionAppComboBox.addValueChangedListener((AzureFormInput.AzureValueChangeBiListener<FunctionAppConfig>) this::onSelectFunctionApp);
         functionAppComboBox.reloadItems();
     }
 
-    private void onSelectFunctionApp() {
+    private void onSelectFunctionApp(final FunctionAppConfig value, final FunctionAppConfig before) {
         final FunctionAppConfig model = getSelectedFunctionApp();
-        if (model == null) {
+        if (value == null) {
             return;
-        } else if (StringUtils.isEmpty(model.getResourceId())) { // For new create function or template model from configuration
-            if (appSettingsFunctionApp != null && StringUtils.isNotEmpty(appSettingsFunctionApp.getResourceId())) {
-                // Clear app settings table when user first choose create new function app
-                this.fillAppSettings(Collections.emptyMap());
-            }
-        } else { // For existing Functions
-            if (!FunctionAppConfig.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {
-                // Do not refresh if selected function app is not changed except create run configuration from azure explorer
-                this.beforeFillAppSettings();
-                presenter.loadAppSettings(Azure.az(AzureFunctions.class).functionApp(model.getResourceId()));
-            }
         }
-        appSettingsFunctionApp = model;
+        this.loadAppSettings(value, before);
+    }
+
+    private synchronized void loadAppSettings(@Nonnull FunctionAppConfig value, @Nullable FunctionAppConfig before) {
+        final FunctionAppConfig rawValue = functionAppComboBox.getRawValue() instanceof FunctionAppConfig ? (FunctionAppConfig) functionAppComboBox.getRawValue() : value;
+        if (Objects.isNull(before) && value != rawValue) {
+            // when reset from configuration, leverage app settings from configuration
+            if (StringUtils.isEmpty(rawValue.getResourceId()) && StringUtils.isNotEmpty(value.getResourceId())) {
+                // if draft has been created, merge local configuration with remote
+                appSettingsTable.loadAppSettings(() -> loadDraftAppSettings(rawValue));
+            }
+        } else if (!Objects.equals(value, before)) {
+            appSettingsTable.loadAppSettings(() -> StringUtils.isEmpty(value.getResourceId()) ?
+                    value.getAppSettings() : Azure.az(AzureFunctions.class).functionApp(value.getResourceId()).getAppSettings());
+        }
+    }
+
+    private Map<String, String> loadDraftAppSettings(FunctionAppConfig value) {
+        final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApps(value.getSubscriptionId()).get(value.getName(), value.getResourceGroupName());
+        return functionApp != null && functionApp.exists() ? MapUtils.putAll(functionApp.getAppSettings(), value.getAppSettings().entrySet().toArray()) : value.getAppSettings();
     }
 
     private FunctionAppConfig getSelectedFunctionApp() {
