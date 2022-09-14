@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.68.1](#3681)
   - [3.68.0](#3680)
   - [3.67.0](#3670)
   - [3.66.0](#3660)
@@ -86,6 +87,16 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.68.1
+### Fixed
+- Fixed the data modification failure issue of `Azure Cosmos DB API for MongoDB` Data Sources.
+
+### Changed
+- Added feature toggle for creating Data Source of `Azure Cosmos DB API for Cassandra`, the toggle is **off** by default.
+  - Support for opening `Azure Cosmos DB API for Cassandra` with `Database and SQL tools` plugin from `Azure Explorer` is disabled by default.
+  - Support for creating Data Source of the `Azure Cosmos DB API for Cassandra` from `Database and SQL tools` plugin is disabled by default.
+
 ## 3.68.0
 ### Added
 - Added support for resource management of `Azure Cosmos DB accounts` in Azure Explorer.

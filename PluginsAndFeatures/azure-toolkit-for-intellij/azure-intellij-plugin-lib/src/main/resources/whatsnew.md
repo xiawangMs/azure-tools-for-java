@@ -1,5 +1,13 @@
 <!-- Version: 3.68.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.68.1
+### Fixed
+- Fixed the data modification failure issue of `Azure Cosmos DB API for MongoDB` Data Sources.
+
+### Changed
+- Added feature toggle for creating Data Source of `Azure Cosmos DB API for Cassandra`, the toggle is **off** by default.
+  - Support for opening `Azure Cosmos DB API for Cassandra` with `Database and SQL tools` plugin from `Azure Explorer` is disabled by default.
+  - Support for creating Data Source of the `Azure Cosmos DB API for Cassandra` from `Database and SQL tools` plugin is disabled by default.
 
 ## 3.68.0
 ### Added
