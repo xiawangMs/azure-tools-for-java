@@ -11,10 +11,11 @@ import lombok.Data;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 public class IntelliJWebAppSettingModel extends WebAppSettingModel {
-    private String appSettingsKey;
+    private String appSettingsKey = UUID.randomUUID().toString();
     private Map<String,String> appSettings;
     private Set<String> appSettingsToRemove;
     private AzureArtifactType azureArtifactType;

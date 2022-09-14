@@ -45,9 +45,10 @@ import java.util.UUID;
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> {
     private JPanel pnlRoot;
     private WebAppDeployConfigurationPanel pnlDeployment;
-    private String appSettingsKey = UUID.randomUUID().toString();
+    private String appSettingsKey;
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project, false);
+        this.appSettingsKey = webAppConfiguration.getAppSettingsKey();
         $$$setupUI$$$();
     }
 
@@ -96,11 +97,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (StringUtils.isAllEmpty(configuration.getWebAppId(), configuration.getWebAppName())) {
             return;
         }
-        Map<String, String> appSettings = ObjectUtils.firstNonNull(configuration.getApplicationSettings(), new HashMap<>());
-        if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
-            this.appSettingsKey = configuration.getAppSettingsKey();
-            appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey);
-        }
+        this.appSettingsKey = configuration.getAppSettingsKey();
+        final Map<String, String> appSettings = ObjectUtils.firstNonNull(configuration.getApplicationSettings(), new HashMap<>());
         final Subscription subscription = new Subscription(configuration.getSubscriptionId());
         final Region region = StringUtils.isEmpty(configuration.getRegion()) ? null : Region.fromName(configuration.getRegion());
         final String rgName = configuration.getResourceGroup();
@@ -157,7 +155,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             configuration.setResourceGroup(webAppConfig.getResourceGroupName());
             configuration.setWebAppName(webAppConfig.getName());
             configuration.saveRuntime(webAppConfig.getRuntime());
-            FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, webAppConfig.getAppSettings());
             configuration.setApplicationSettings(webAppConfig.getAppSettings());
             configuration.setAppSettingsToRemove(webAppConfig.getAppSettingsToRemove());
             configuration.setCreatingNew(StringUtils.isEmpty(webAppConfig.getResourceId()));

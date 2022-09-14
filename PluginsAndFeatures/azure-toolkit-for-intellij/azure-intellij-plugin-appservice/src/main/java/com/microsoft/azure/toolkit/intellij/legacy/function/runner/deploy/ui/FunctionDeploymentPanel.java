@@ -13,23 +13,18 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.CommonConst;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,11 +35,9 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -60,11 +53,12 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JLabel lblFunction;
     private JLabel lblAppSettings;
     private FunctionAppSettingsTable appSettingsTable;
-    private String appSettingsKey = UUID.randomUUID().toString();
+    private String appSettingsKey;
     private Module previousModule = null;
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
+        this.appSettingsKey = functionDeployConfiguration.getAppSettingsKey();
         $$$setupUI$$$();
 
         cbFunctionModule.setRenderer(new ListCellRendererWrapper<>() {
@@ -130,11 +124,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         }
         if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
             this.appSettingsKey = configuration.getAppSettingsKey();
-            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
         }
         if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
             functionAppComboBox.setValue(configuration.getConfig());
             functionAppComboBox.setConfigModel(configuration.getConfig());
+            appSettingsTable.setAppSettings(configuration.getConfig().getAppSettings());
         }
         this.previousModule = configuration.getModule();
         selectModule(previousModule);
@@ -142,11 +136,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
-        FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
-        // save app settings storage key instead of real value
         configuration.setAppSettingsKey(appSettingsKey);
         Optional.ofNullable((Module) cbFunctionModule.getSelectedItem()).ifPresent(configuration::saveTargetModule);
-        Optional.ofNullable(functionAppComboBox.getValue()).ifPresent(configuration::saveConfig);
+        Optional.ofNullable(functionAppComboBox.getValue())
+                .map(value -> value.toBuilder().appSettings(appSettingsTable.getAppSettings()).build())
+                .ifPresent(configuration::saveConfig);
     }
 
     private void createUIComponents() {
@@ -177,7 +171,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             }
         } else if (!Objects.equals(value, before)) {
             appSettingsTable.loadAppSettings(() -> StringUtils.isEmpty(value.getResourceId()) ?
-                    value.getAppSettings() : Azure.az(AzureFunctions.class).functionApp(value.getResourceId()).getAppSettings());
+                    value.getAppSettings() : Objects.requireNonNull(Azure.az(AzureFunctions.class).functionApp(value.getResourceId())).getAppSettings());
         }
     }
 
