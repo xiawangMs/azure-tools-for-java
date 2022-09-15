@@ -56,8 +56,8 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
     @Override
     public Map<String, String> initEnv(Project project) {
         final T resource = this.getData();
-        if (!resource.exists()) {
-            throw new AzureToolkitRuntimeException(String.format("'%s' doesn't exist.", resource));
+        if (resource == null || !resource.exists()) {
+            throw new AzureToolkitRuntimeException(String.format("%s '%s' does not exist.", this.id.resourceType(), this.getName()));
         }
         return this.definition.initEnv(this, project);
     }
