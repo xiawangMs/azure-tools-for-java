@@ -284,7 +284,7 @@
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-common</artifactId>
-                <version>3.2.3</version>
+                <version>3.2.4</version>
                 <exclusions>
                     <exclusion><!--WS-2018-0629-->
                         <groupId>com.fasterxml.woodstox</groupId>
