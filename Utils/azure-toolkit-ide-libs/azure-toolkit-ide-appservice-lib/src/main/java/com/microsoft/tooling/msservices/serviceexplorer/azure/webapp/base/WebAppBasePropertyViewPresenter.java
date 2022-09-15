@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -81,11 +82,10 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         final PricingTier pricingTier = plan.getPricingTier();
         propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
-        final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
-        if (javaVersion != null && ObjectUtils.notEqual(javaVersion, JavaVersion.OFF)) {
-            propertyMap.put(KEY_JAVA_VERSION, javaVersion.getValue());
-            propertyMap.put(KEY_JAVA_CONTAINER, runtime.getWebContainer().getValue());
-        }
+        final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(JavaVersion.OFF);
+        final WebContainer webContainer = Optional.ofNullable(runtime).map(Runtime::getWebContainer).orElse(WebContainer.JAVA_OFF);
+        propertyMap.put(KEY_JAVA_VERSION, Objects.equals(javaVersion, JavaVersion.OFF) ? null : javaVersion.getValue());
+        propertyMap.put(KEY_JAVA_CONTAINER, Objects.equals(webContainer, WebContainer.JAVA_OFF) ? null : webContainer.getValue());
         propertyMap.put(KEY_OPERATING_SYS, Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null));
         propertyMap.put(KEY_APP_SETTING, appSettingsMap);
 
