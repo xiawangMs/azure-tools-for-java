@@ -33,8 +33,7 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppConfig> {
     protected void createResource() {
         final FunctionAppCreationDialog functionAppCreationDialog = new FunctionAppCreationDialog(project);
         functionAppCreationDialog.setOkActionListener(functionAppConfig -> {
-            FunctionAppComboBox.this.addItem(functionAppConfig);
-            FunctionAppComboBox.this.setSelectedItem(functionAppConfig);
+            FunctionAppComboBox.this.setValue(functionAppConfig);
             AzureTaskManager.getInstance().runLater(functionAppCreationDialog::close);
         });
         functionAppCreationDialog.showAndGet();

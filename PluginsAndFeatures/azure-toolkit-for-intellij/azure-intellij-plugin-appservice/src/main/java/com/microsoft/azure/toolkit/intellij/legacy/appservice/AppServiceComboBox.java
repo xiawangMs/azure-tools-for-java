@@ -27,12 +27,15 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
+    private List<T> localItems = new LinkedList<>();
 
     protected Project project;
 
@@ -45,10 +48,21 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         this.setRenderer(new AppComboBoxRender());
     }
 
+    @Override
+    public void setValue(T val) {
+        if (isDraftResource(val) && !this.localItems.contains(val)) {
+            this.localItems.add(0, val);
+        }
+        this.reloadItems();
+        super.setValue(val);
+    }
+
     @Nonnull
     @Override
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
+        this.localItems = this.localItems.stream().filter(l -> !items.contains(l)).collect(Collectors.toList());
+        items.addAll(this.localItems);
         final boolean isConfigResourceCreated = !isDraftResource(configModel) ||
             items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
         if (isConfigResourceCreated) {

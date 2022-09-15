@@ -43,8 +43,7 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppConfig> {
         final WebAppCreationDialog webAppCreationDialog = new WebAppCreationDialog(project);
         webAppCreationDialog.setDeploymentVisible(false);
         webAppCreationDialog.setOkActionListener(webAppConfig -> {
-            WebAppComboBox.this.addItem(webAppConfig);
-            WebAppComboBox.this.setSelectedItem(webAppConfig);
+            WebAppComboBox.this.setValue(webAppConfig);
             AzureTaskManager.getInstance().runLater(webAppCreationDialog::close);
         });
         webAppCreationDialog.show();
