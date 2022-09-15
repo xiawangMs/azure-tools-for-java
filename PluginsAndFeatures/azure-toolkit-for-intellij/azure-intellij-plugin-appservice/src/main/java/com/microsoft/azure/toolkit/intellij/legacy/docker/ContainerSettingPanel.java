@@ -24,6 +24,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
+import java.util.Optional;
 
 public class ContainerSettingPanel implements ContainerSettingView {
 
@@ -42,6 +43,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
 
     private static final String SELECT_REGISTRY = "<Select Container Registry>";
     private static final String LOADING = "<Loading...>";
+    private ContainerRegistry containerRegistryFromConfiguration = null;
 
     private final Project project;
 
@@ -156,6 +158,17 @@ public class ContainerSettingPanel implements ContainerSettingView {
         dockerFilePathTextField.setText(path);
     }
 
+    public void setContainerRegistry(ContainerRegistry curItem) {
+        this.containerRegistryFromConfiguration = curItem;
+    }
+
+    public ContainerRegistry getContainerRegistry() {
+        final Object selectedItem = cbContainerRegistry.getSelectedItem();
+        if (selectedItem instanceof ContainerRegistry) {
+            return (ContainerRegistry) selectedItem;
+        }
+        return null;
+    }
     private void disableWidgets() {
         txtServerUrl.setEnabled(false);
         txtUserName.setEnabled(false);
@@ -187,6 +200,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         for (final ContainerRegistry registry : registries) {
             model.addElement(registry);
         }
+        Optional.ofNullable(this.containerRegistryFromConfiguration).ifPresent(c -> cbContainerRegistry.setSelectedItem(c));
     }
 
     @Override
