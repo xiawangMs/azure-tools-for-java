@@ -36,6 +36,10 @@ public class GuidanceView extends SimpleToolWindowPanel {
         pnlCourse.setCourse(course);
     }
 
+    public CourseView getPnlCourse() {
+        return this.pnlCourse;
+    }
+
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     void $$$setupUI$$$() {
     }

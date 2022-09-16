@@ -25,4 +25,9 @@
                 text="Getting Started" description="Show Azure getting started tutorials" icon="/icons/Common/get_start.svg">
         </action>
     </actions>
+    <projectListeners>
+        <listener
+                class="com.microsoft.azure.toolkit.ide.guidance.GuidanceToolWindowListener"
+                topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+    </projectListeners>
 </idea-plugin>

@@ -16,10 +16,7 @@ import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH;
 import static com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL;
 import static com.intellij.uiDesigner.core.GridConstraints.FILL_NONE;
 
@@ -124,5 +120,11 @@ public class SummaryPanel extends JPanel {
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     void $$$setupUI$$$() {
+    }
+
+    public void updateDefaultButton() {
+        if (this.focused) {
+            Optional.ofNullable(defaultButton).ifPresent(button -> Optional.ofNullable(getRootPane()).ifPresent(pane -> pane.setDefaultButton(button)));
+        }
     }
 }

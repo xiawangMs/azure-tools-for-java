@@ -63,6 +63,10 @@ public class CourseView {
         fillPhase(course);
     }
 
+    public JPanel getPhasesPanel() {
+        return this.phasesPanel;
+    }
+
     private void fillPhase(@Nonnull Course course) {
         this.phasesPanel.removeAll();
         final List<Phase> phases = course.getPhases();
