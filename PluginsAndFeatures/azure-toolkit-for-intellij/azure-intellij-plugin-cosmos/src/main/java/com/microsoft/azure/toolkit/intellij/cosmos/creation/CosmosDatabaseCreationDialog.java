@@ -12,7 +12,10 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -26,7 +29,7 @@ import java.util.Optional;
 public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> implements AzureForm<DatabaseConfig> {
     private JPanel pnlRoot;
     private AzureTextInput txtName;
-    private JRadioButton autoscaleRadioButton;
+    private JRadioButton autoScaleRadioButton;
     private JRadioButton manualRadioButton;
     private JLabel lblThroughputRu;
     private JLabel lblMaxThroughput;
@@ -34,10 +37,14 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
     private AzureIntegerInput txtMaxThroughput;
 
     private final Project project;
+    private final AbstractAzResourceModule<?, CosmosDBAccount, ?> module;
 
-    public CosmosDatabaseCreationDialog(@Nullable Project project) {
+    public CosmosDatabaseCreationDialog(@Nullable Project project, @Nonnull CosmosDBAccount account) {
         super(project);
         this.project = project;
+        assert CollectionUtils.isNotEmpty(account.getSubModules());
+        this.module = account.getSubModules().get(0);
+        this.setTitle(String.format("Create %s", module.getResourceTypeName()));
         $$$setupUI$$$();
         this.init();
     }
@@ -46,11 +53,11 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         super.init();
 
         final ButtonGroup buttonGroup = new ButtonGroup();
-        buttonGroup.add(autoscaleRadioButton);
+        buttonGroup.add(autoScaleRadioButton);
         buttonGroup.add(manualRadioButton);
-        autoscaleRadioButton.addItemListener(e -> toggleThroughputStatus());
+        autoScaleRadioButton.addItemListener(e -> toggleThroughputStatus());
         manualRadioButton.addItemListener(e -> toggleThroughputStatus());
-        txtName.addValidator(() -> validateDatabaseName());
+        txtName.addValidator(this::validateDatabaseName);
         txtThroughputRu.setMinValue(400);
         txtThroughputRu.setMaxValue(1000000);
         txtThroughputRu.setValue(400);
@@ -59,7 +66,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         txtMaxThroughput.setValue(4000);
         txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtMaxThroughput, 1000));
 
-        autoscaleRadioButton.setSelected(true);
+        autoScaleRadioButton.setSelected(true);
     }
 
     private AzureValidationInfo validateDatabaseName() {
@@ -68,16 +75,16 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
                     AzureValidationInfo.error("Database name should not end with space nor contain characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
     }
 
-    private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input, @Nonnull final int unit) {
+    private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input, final int unit) {
         final Integer value = input.getValue();
         return Objects.nonNull(value) && value % unit == 0 ? AzureValidationInfo.success(input) :
                 AzureValidationInfo.error(String.format("Throughput must be in multiples of %d", unit), input);
     }
 
     private void toggleThroughputStatus() {
-        lblMaxThroughput.setVisible(autoscaleRadioButton.isSelected());
-        txtMaxThroughput.setVisible(autoscaleRadioButton.isSelected());
-        txtMaxThroughput.setRequired(autoscaleRadioButton.isSelected());
+        lblMaxThroughput.setVisible(autoScaleRadioButton.isSelected());
+        txtMaxThroughput.setVisible(autoScaleRadioButton.isSelected());
+        txtMaxThroughput.setRequired(autoScaleRadioButton.isSelected());
         lblThroughputRu.setVisible(manualRadioButton.isSelected());
         txtThroughputRu.setVisible(manualRadioButton.isSelected());
         txtThroughputRu.setRequired(manualRadioButton.isSelected());
@@ -102,7 +109,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
     public DatabaseConfig getValue() {
         final DatabaseConfig result = new DatabaseConfig();
         result.setName(txtName.getValue());
-        if (autoscaleRadioButton.isSelected()) {
+        if (autoScaleRadioButton.isSelected()) {
             result.setMaxThroughput(txtMaxThroughput.getValue());
         } else if (manualRadioButton.isSelected()) {
             result.setThroughput(txtThroughputRu.getValue());
@@ -117,7 +124,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
             manualRadioButton.setSelected(true);
             txtThroughputRu.setValue(data.getThroughput());
         } else {
-            autoscaleRadioButton.setSelected(true);
+            autoScaleRadioButton.setSelected(true);
             Optional.ofNullable(data.getMaxThroughput()).ifPresent(value -> txtMaxThroughput.setValue(value));
         }
     }

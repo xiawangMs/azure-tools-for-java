@@ -8,7 +8,6 @@ import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDatabaseDraft;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig;
@@ -23,7 +22,7 @@ public class CreateCosmosDatabaseAction {
                                                           @Nonnull BiFunction<T, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> draftSupplier,
                                                           @Nullable final DatabaseConfig data) {
         AzureTaskManager.getInstance().runLater(() -> {
-            final CosmosDatabaseCreationDialog dialog = new CosmosDatabaseCreationDialog(project);
+            final CosmosDatabaseCreationDialog dialog = new CosmosDatabaseCreationDialog(project, account);
             if (Objects.nonNull(data)) {
                 dialog.getForm().setValue(data);
             }
