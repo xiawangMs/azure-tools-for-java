@@ -147,7 +147,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
             model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd});
         }
         if (model.getRowCount() <= 0) {
-            table.getEmptyText().setText("No subscriptions with such name found");
+            table.getEmptyText().setText("No subscriptions");
         }
     }
 
