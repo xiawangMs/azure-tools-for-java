@@ -43,7 +43,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
-    private final List<AppServicePlan> localItems = new LinkedList<>();
+    private final List<AppServicePlan> draftItems = new LinkedList<>();
     private OperatingSystem os;
     private Region region;
     @Setter
@@ -95,9 +95,10 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     @Override
-    public void setValue(AppServicePlan val) {
-        if (val.isDraftForCreating() && !this.localItems.contains(val)) {
-            this.localItems.add(0, val);
+    public void setValue(@Nullable AppServicePlan val) {
+        if (Objects.nonNull(val) && val.isDraftForCreating()) {
+            this.draftItems.remove(val);
+            this.draftItems.add(0, val);
         }
         this.reloadItems();
         super.setValue(val);
@@ -140,8 +141,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     protected List<AppServicePlan> loadItems() {
         final List<AppServicePlan> plans = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
-            if (CollectionUtils.isNotEmpty(this.localItems)) {
-                plans.addAll(this.localItems.stream()
+            if (CollectionUtils.isNotEmpty(this.draftItems)) {
+                plans.addAll(this.draftItems.stream()
                     .filter(p -> this.subscription.equals(p.getSubscription()))
                     .collect(Collectors.toList()));
             }

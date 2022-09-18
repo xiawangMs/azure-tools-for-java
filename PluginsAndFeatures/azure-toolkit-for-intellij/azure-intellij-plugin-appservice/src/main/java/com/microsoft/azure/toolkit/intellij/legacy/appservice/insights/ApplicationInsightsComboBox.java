@@ -21,6 +21,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsightsConfig> {
+    private final List<ApplicationInsightsConfig> draftItems = new LinkedList<>();
 
     private Subscription subscription;
 
@@ -45,11 +47,13 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
     }
 
     @Override
-    public void setValue(final ApplicationInsightsConfig insightsConfig) {
-        if (insightsConfig != null && insightsConfig.isNewCreate() && !getItems().contains(insightsConfig)) {
-            addItem(insightsConfig);
+    public void setValue(final ApplicationInsightsConfig val) {
+        if (val != null && val.isNewCreate()) {
+            this.draftItems.remove(val);
+            this.draftItems.add(0, val);
         }
-        super.setValue(insightsConfig);
+        this.reloadItems();
+        super.setValue(val);
     }
 
     @Nonnull
@@ -60,14 +64,13 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends ApplicationInsightsConfig> loadItems() {
-        final List<ApplicationInsightsConfig> newItems =
-            getItems().stream().filter(ApplicationInsightsConfig::isNewCreate).collect(Collectors.toList());
+        // TODO: @hanxiao implementation of `ApplicationInsightsConfig` is not correct, may cause bug here.
         final List<ApplicationInsightsConfig> existingItems =
             subscription == null ? Collections.emptyList() :
                 Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).list().stream()
                     .map(instance -> new ApplicationInsightsConfig(instance.getName(), instance.getInstrumentationKey()))
                     .collect(Collectors.toList());
-        return ListUtils.union(newItems, existingItems);
+        return ListUtils.union(this.draftItems, existingItems);
     }
 
     @Override
@@ -101,9 +104,8 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
         final CreateApplicationInsightsDialog dialog = new CreateApplicationInsightsDialog();
         dialog.pack();
         if (dialog.showAndGet()) {
-            ApplicationInsightsConfig config = ApplicationInsightsConfig.builder().newCreate(true).name(dialog.getApplicationInsightsName()).build();
-            addItem(config);
-            setSelectedItem(config);
+            final ApplicationInsightsConfig config = ApplicationInsightsConfig.builder().newCreate(true).name(dialog.getApplicationInsightsName()).build();
+            this.setValue(config);
         }
     }
 }

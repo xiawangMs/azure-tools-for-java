@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
-    private List<T> localItems = new LinkedList<>();
+    private List<T> draftItems = new LinkedList<>();
 
     protected Project project;
 
@@ -50,8 +50,9 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
 
     @Override
     public void setValue(T val) {
-        if (isDraftResource(val) && !this.localItems.contains(val)) {
-            this.localItems.add(0, val);
+        if (isDraftResource(val)) {
+            this.draftItems.remove(val);
+            this.draftItems.add(0, val);
         }
         this.reloadItems();
         super.setValue(val);
@@ -61,8 +62,8 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     @Override
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
-        this.localItems = this.localItems.stream().filter(l -> !items.contains(l)).collect(Collectors.toList());
-        items.addAll(this.localItems);
+        this.draftItems = this.draftItems.stream().filter(l -> !items.contains(l)).collect(Collectors.toList());
+        items.addAll(this.draftItems);
         final boolean isConfigResourceCreated = !isDraftResource(configModel) ||
             items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
         if (isConfigResourceCreated) {
