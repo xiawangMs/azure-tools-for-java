@@ -165,7 +165,8 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         this.txtMinNodeCount.setMaxValue(MAX_NODE_COUNT);
         this.txtMaxNodeCount.setMinValue(MIN_NODE_COUNT);
         this.txtMaxNodeCount.setMaxValue(MAX_NODE_COUNT);
-        this.txtMaxNodeCount.addValidator(this::validateMaxNodeCount);
+        this.txtMaxNodeCount.addValidator(() -> this.validateNodeCount(txtMaxNodeCount));
+        this.txtMinNodeCount.addValidator(() -> this.validateNodeCount(txtMinNodeCount));
 
         this.lblSubscription.setLabelFor(cbSubscription);
         this.lblResourceGroup.setLabelFor(cbResourceGroup);
@@ -239,22 +240,13 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         this.cbNodeSize.setRequired(true);
     }
 
-    public AzureValidationInfo validateMaxNodeCount() {
+    public AzureValidationInfo validateNodeCount(AzureFormInput inputField) {
         final Integer min = txtMinNodeCount.getValue();
         final Integer max = txtMaxNodeCount.getValue();
         if (ObjectUtils.allNotNull(min, max) && min > max) {
-            return AzureValidationInfo.error("Min node count is higher than max node count", txtMaxNodeCount);
+            return AzureValidationInfo.error("Min node count is higher than max node count", inputField);
         }
-        return AzureValidationInfo.success(txtMaxNodeCount);
-    }
-
-    public AzureValidationInfo validateMinNodeCount() {
-        final Integer min = txtMinNodeCount.getValue();
-        final Integer max = txtMaxNodeCount.getValue();
-        if (ObjectUtils.allNotNull(min, max) && min > max) {
-            return AzureValidationInfo.error("Min node count is higher than max node count", txtMinNodeCount);
-        }
-        return AzureValidationInfo.success(txtMinNodeCount);
+        return AzureValidationInfo.success(inputField);
     }
 
     private AzureValidationInfo validateKubernetesClusterName() {
