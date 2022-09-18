@@ -53,7 +53,7 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
 
     private static final String DUPLICATED_DEPLOYMENT_NAME = "A deployment with the same name already exists";
     private final Project project;
-    private final ResourceGroup initResourceGroup;
+    private final ResourceGroup initialResourceGroup;
 
     private JPanel contentPane;
     private JTextField rgNameTextFiled;
@@ -73,7 +73,7 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
     public CreateDeploymentDialog(@Nonnull final Project project, @Nullable ResourceGroup group) {
         super(project, false);
         this.project = project;
-        this.initResourceGroup = group;
+        this.initialResourceGroup = group;
         setModal(true);
         setTitle("Create Deployment");
 
@@ -200,8 +200,8 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
         final String sid = ((Subscription) subscriptionCombobox.getSelectedItem()).getId();
         resourceGroupCombobox.removeAllItems();
         Azure.az(AzureResources.class).groups(sid).list().forEach(g -> resourceGroupCombobox.addItem(g));
-        if (initResourceGroup.getSubscriptionId().equals(sid)) {
-            UIUtils.selectByText(resourceGroupCombobox, Objects.toString(initResourceGroup));
+        if (initialResourceGroup.getSubscriptionId().equals(sid)) {
+            UIUtils.selectByText(resourceGroupCombobox, Objects.toString(initialResourceGroup));
         }
     }
 
