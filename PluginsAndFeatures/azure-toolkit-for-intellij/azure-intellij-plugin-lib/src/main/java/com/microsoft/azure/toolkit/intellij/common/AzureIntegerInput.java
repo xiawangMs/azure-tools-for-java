@@ -23,6 +23,11 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
     @Setter
     private Integer maxValue;
 
+    private final String VALIDATION_MESSAGE_MIN = "Value should be >= %d";
+    private final String VALIDATION_MESSAGE_MAX = "Value should be <= %d";
+    private final String VALIDATION_MESSAGE_MIN_MAX = "Value should be in range [%d, %d]";
+
+
     public AzureIntegerInput() {
         super();
         this.addValidator(this::doValidateValue);
@@ -39,7 +44,15 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
         try {
             return Integer.parseInt(text);
         } catch (final Exception e) {
-            throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
+            if (Objects.nonNull(minValue) && Objects.nonNull(maxValue) && text.matches("[+-]?\\d+")) {
+                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MIN_MAX, minValue, maxValue));
+            } else if (Objects.nonNull(minValue) && text.matches("-\\d+")) {
+                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MIN, minValue));
+            } else if (Objects.nonNull(maxValue) && text.matches("[+]?\\d+")) {
+                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MAX, maxValue));
+            } else {
+                throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
+            }
         }
     }
 
@@ -54,11 +67,11 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
             return AzureValidationInfo.none(this);
         }
         if (Objects.nonNull(minValue) && Objects.nonNull(maxValue) && (value < minValue || value > maxValue)) {
-            return AzureValidationInfo.error(String.format("Value should be in range [%d, %d]", minValue, maxValue), this);
+            return AzureValidationInfo.error(String.format(VALIDATION_MESSAGE_MIN_MAX, minValue, maxValue), this);
         } else if (Objects.nonNull(minValue) && value < minValue) {
-            return AzureValidationInfo.error(String.format("Value should be >= %d", minValue), this);
+            return AzureValidationInfo.error(String.format(VALIDATION_MESSAGE_MIN, minValue), this);
         } else if (Objects.nonNull(maxValue) && value > maxValue) {
-            return AzureValidationInfo.error(String.format("Value should be <= %d", maxValue), this);
+            return AzureValidationInfo.error(String.format(VALIDATION_MESSAGE_MAX, maxValue), this);
         } else {
             return AzureValidationInfo.success(this);
         }
