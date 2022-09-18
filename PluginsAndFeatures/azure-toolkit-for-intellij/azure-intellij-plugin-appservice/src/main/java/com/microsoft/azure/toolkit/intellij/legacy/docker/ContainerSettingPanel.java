@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingView;
@@ -43,7 +44,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
 
     private static final String SELECT_REGISTRY = "<Select Container Registry>";
     private static final String LOADING = "<Loading...>";
-    private ContainerRegistry containerRegistryFromConfiguration = null;
+    private PushImageRunModel.ContainerRegistryPair containerRegistryFromConfiguration = null;
 
     private final Project project;
 
@@ -159,7 +160,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         dockerFilePathTextField.setText(path);
     }
 
-    public void setContainerRegistry(ContainerRegistry curItem) {
+    public void setContainerRegistry(PushImageRunModel.ContainerRegistryPair curItem) {
         this.containerRegistryFromConfiguration = curItem;
     }
 
@@ -207,7 +208,9 @@ public class ContainerSettingPanel implements ContainerSettingView {
         for (final ContainerRegistry registry : registries) {
             model.addElement(registry);
         }
-        Optional.ofNullable(this.containerRegistryFromConfiguration).ifPresent(c -> cbContainerRegistry.setSelectedItem(c));
+        Optional.ofNullable(this.containerRegistryFromConfiguration).flatMap(pair -> registries.stream()
+                .filter(c -> c.getName().equals(pair.getName()) && c.getResourceGroupName().equals(pair.getResourceGroupName()))
+                .findAny()).ifPresent(curItem -> this.cbContainerRegistry.setSelectedItem(curItem));
     }
 
     @Override

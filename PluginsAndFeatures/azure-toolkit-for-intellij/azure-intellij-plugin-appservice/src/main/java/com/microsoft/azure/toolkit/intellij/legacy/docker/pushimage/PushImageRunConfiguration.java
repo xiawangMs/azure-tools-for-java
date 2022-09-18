@@ -53,8 +53,6 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
     private static final int REPO_LENGTH = 255;
 
     private final PushImageRunModel dataModel;
-    private ContainerRegistry containerRegistry;
-
 
     protected PushImageRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -185,11 +183,13 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
         dataModel.setPrivateRegistryImageSetting(privateRegistryImageSetting);
     }
 
-    public ContainerRegistry getContainerRegistry() {
-        return this.containerRegistry;
+    public PushImageRunModel.ContainerRegistryPair getContainerRegistry() {
+        return this.dataModel.getContainerRegistryPair();
     }
 
     public void setContainerRegistry(ContainerRegistry containerRegistry) {
-        this.containerRegistry = containerRegistry;
+        this.dataModel.setContainerRegistryPair(
+                this.dataModel.new ContainerRegistryPair(containerRegistry.getName(), containerRegistry.getResourceGroupName())
+        );
     }
 }
