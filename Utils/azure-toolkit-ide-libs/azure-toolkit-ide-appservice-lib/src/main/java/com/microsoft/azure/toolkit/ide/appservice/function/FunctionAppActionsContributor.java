@@ -125,7 +125,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createFunctionView = new ActionView.Builder("Function App")
             .title(s -> Optional.ofNullable(s).map(r -> description("function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(GROUP_CREATE_FUNCTION, createFunctionView));
     }
 

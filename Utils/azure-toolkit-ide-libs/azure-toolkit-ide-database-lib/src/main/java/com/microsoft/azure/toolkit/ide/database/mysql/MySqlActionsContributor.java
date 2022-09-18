@@ -43,7 +43,7 @@ public class MySqlActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createServerView = new ActionView.Builder("MySQL server")
             .title(s -> Optional.ofNullable(s).map(r -> description("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_MYSQL, new Action<>(GROUP_CREATE_MYSQL, createServerView));
     }
 

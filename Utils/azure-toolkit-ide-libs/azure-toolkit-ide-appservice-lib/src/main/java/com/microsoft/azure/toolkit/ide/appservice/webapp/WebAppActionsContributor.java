@@ -117,7 +117,7 @@ public class WebAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createWebAppView = new ActionView.Builder("Web App")
             .title(s -> Optional.ofNullable(s).map(r -> description("webapp.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_WEBAPP, new Action<>(GROUP_CREATE_WEBAPP, createWebAppView));
     }
 

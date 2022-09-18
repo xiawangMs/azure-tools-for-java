@@ -81,7 +81,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         final ActionView.Builder createInsightView = new ActionView.Builder("Application Insights")
                 .title(s -> Optional.ofNullable(s).map(r ->
                         description("group.create_applicationinsights.group", ((ResourceGroup) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ResourceGroup);
+                .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_APPLICATIONINSIGHT, new Action<>(GROUP_CREATE_APPLICATIONINSIGHT, createInsightView));
     }
 
