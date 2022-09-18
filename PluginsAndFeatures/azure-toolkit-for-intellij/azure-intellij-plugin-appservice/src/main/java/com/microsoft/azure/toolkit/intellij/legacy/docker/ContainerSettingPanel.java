@@ -78,6 +78,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 if (e.getItem() instanceof String) {
                     enableWidgets();
+                    clearCredential();
                     return;
                 }
                 if (e.getItem() instanceof ContainerRegistry) {
@@ -179,6 +180,12 @@ public class ContainerSettingPanel implements ContainerSettingView {
         txtServerUrl.setEnabled(true);
         txtUserName.setEnabled(true);
         passwordField.setEnabled(true);
+    }
+
+    private void clearCredential() {
+        txtServerUrl.setText("");
+        txtUserName.setText("");
+        passwordField.setText("");
     }
 
     @Override
