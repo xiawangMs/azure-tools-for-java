@@ -30,7 +30,9 @@ public class ResourceGroupNameTextField extends AzureTextInput {
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
-        this.validateValueAsync();
+        if (this.getValidationInfo() != null) {
+            this.validateValueAsync();
+        }
     }
 
     public AzureValidationInfo doValidateValue() {
