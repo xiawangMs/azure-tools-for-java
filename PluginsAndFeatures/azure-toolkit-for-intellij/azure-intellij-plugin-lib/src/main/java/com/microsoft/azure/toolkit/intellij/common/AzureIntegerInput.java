@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
 
@@ -44,12 +45,9 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
         try {
             return Integer.parseInt(text);
         } catch (final Exception e) {
-            if (Objects.nonNull(minValue) && Objects.nonNull(maxValue) && text.matches("[+-]?\\d+")) {
-                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MIN_MAX, minValue, maxValue));
-            } else if (Objects.nonNull(minValue) && text.matches("-\\d+")) {
-                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MIN, minValue));
-            } else if (Objects.nonNull(maxValue) && text.matches("[+]?\\d+")) {
-                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MAX, maxValue));
+            if (text.matches("[+-]?\\d+")) {
+                throw new AzureToolkitRuntimeException(String.format(VALIDATION_MESSAGE_MIN_MAX,
+                        Optional.ofNullable(minValue).orElse(Integer.MIN_VALUE), Optional.ofNullable(maxValue).orElse(Integer.MAX_VALUE)));
             } else {
                 throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
             }
