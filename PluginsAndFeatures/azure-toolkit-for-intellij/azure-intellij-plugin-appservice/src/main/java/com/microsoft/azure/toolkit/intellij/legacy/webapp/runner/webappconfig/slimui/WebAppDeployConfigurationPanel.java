@@ -252,7 +252,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                 .ifPresent(artifact -> comboBoxArtifact.setArtifact(artifact));
         // web app
         Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> {
-            if (!Azure.az(AzureAccount.class).account().getTenantIds().contains(webApp.getSubscriptionId())) {
+            if (Azure.az(AzureAccount.class).account().getSubscriptions().stream().noneMatch(s -> s.getId().equals(webApp.getSubscriptionId()))) {
                 comboBoxWebApp.setValue((WebAppConfig) null);
                 return;
             }
