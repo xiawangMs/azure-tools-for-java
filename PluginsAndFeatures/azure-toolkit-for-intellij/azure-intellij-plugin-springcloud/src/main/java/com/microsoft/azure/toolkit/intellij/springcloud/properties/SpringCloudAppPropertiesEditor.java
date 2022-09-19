@@ -63,18 +63,18 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
 
     @Override
     protected void rerender() {
+        this.formConfig.updateForm(this.draft);
+        this.panelInstances.setApp(this.draft);
         AzureTaskManager.getInstance().runLater(() -> {
             this.lblSubscription.setText(this.draft.getSubscription().getName());
             this.lblCluster.setText(this.draft.getParent().getName());
             this.lblApp.setText(this.draft.getName());
-            AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.draft));
-            AzureTaskManager.getInstance().runOnPooledThread((() -> {
-                this.refreshToolbar();
-                final SpringCloudAppConfig config = SpringCloudAppConfig.fromApp(this.draft);
-                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setValue(config));
-            }));
-            this.panelInstances.setApp(this.draft);
         });
+        AzureTaskManager.getInstance().runOnPooledThread((() -> {
+            this.refreshToolbar();
+            final SpringCloudAppConfig config = SpringCloudAppConfig.fromApp(this.draft);
+            AzureTaskManager.getInstance().runLater(() -> this.formConfig.setValue(config));
+        }));
     }
 
     private void initListeners() {
