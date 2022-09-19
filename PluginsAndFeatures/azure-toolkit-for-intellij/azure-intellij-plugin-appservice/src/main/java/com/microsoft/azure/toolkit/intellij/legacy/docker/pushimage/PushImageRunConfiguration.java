@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushImageRunModel> {
     // TODO: move to util
@@ -188,6 +189,10 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
     }
 
     public void setContainerRegistry(ContainerRegistry containerRegistry) {
-        this.dataModel.setContainerRegistryId(containerRegistry.getId());
+        if (Objects.nonNull(containerRegistry)) {
+            this.dataModel.setContainerRegistryId(containerRegistry.getId());
+        } else {
+            this.dataModel.setContainerRegistryId(null);
+        }
     }
 }

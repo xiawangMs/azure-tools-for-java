@@ -13,12 +13,12 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingView;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -164,6 +164,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         this.containerRegistryFromConfiguration = curItem;
     }
 
+    @Nullable
     public ContainerRegistry getContainerRegistry() {
         final Object selectedItem = cbContainerRegistry.getSelectedItem();
         if (selectedItem instanceof ContainerRegistry) {
