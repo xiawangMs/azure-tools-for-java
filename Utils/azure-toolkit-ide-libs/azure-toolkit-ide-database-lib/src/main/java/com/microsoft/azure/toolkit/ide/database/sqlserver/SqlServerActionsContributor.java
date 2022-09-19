@@ -43,7 +43,7 @@ public class SqlServerActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createServerView = new ActionView.Builder("SQL Server")
             .title(s -> Optional.ofNullable(s).map(r -> description("sqlserver.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_SQLSERVER, new Action<>(GROUP_CREATE_SQLSERVER, createServerView));
     }
 

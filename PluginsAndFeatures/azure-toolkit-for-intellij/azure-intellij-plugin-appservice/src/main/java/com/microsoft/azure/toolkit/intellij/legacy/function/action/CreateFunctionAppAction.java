@@ -9,7 +9,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -33,7 +32,6 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateFunctionAppAction {
@@ -86,8 +84,6 @@ public class CreateFunctionAppAction {
             }
         });
         CacheManager.getUsageHistory(FunctionAppConfig.class).push(config);
-        return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle().doOnSuccess(app -> {
-            AzureMessager.getMessager().success(message("function.create.success.message", app.name()), message("function.create.success.title"));
-        });
+        return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
     }
 }

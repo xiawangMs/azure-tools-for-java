@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,6 +21,11 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
 
     @Getter
     private IDatabaseServer<T> server;
+
+    @Override
+    public String getLabel() {
+        return "Database";
+    }
 
     public void setServer(IDatabaseServer<T> server) {
         if (Objects.equals(server, this.server)) {
@@ -52,7 +56,7 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
     @Nonnull
     @Override
     protected List<? extends T> loadItems() {
-        if (Objects.isNull(server) || !StringUtils.equalsIgnoreCase("READY", server.getStatus())) {
+        if (Objects.isNull(server)) {
             return new ArrayList<>();
         }
         return server.listDatabases();

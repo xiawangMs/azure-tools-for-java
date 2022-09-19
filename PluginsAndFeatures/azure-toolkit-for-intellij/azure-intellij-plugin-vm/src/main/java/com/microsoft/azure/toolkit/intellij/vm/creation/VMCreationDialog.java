@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.vm.creation;
 
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
@@ -75,7 +76,7 @@ import java.util.stream.Stream;
 public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implements AzureForm<VirtualMachineDraft> {
     public static final String SSH_PUBLIC_KEY_DESCRIPTION = "<html> Provide an RSA public key file in the single-line format (starting with \"ssh-rsa\") or " +
         "the multi-line PEM format. <p/> You can generate SSH keys using ssh-keygen on Linux and OS X, or PuTTYGen on Windows. </html>";
-    public static final String SELECT_CERT_TITLE = "Select Cert for Your VM";
+    public static final String SELECT_CERT_TITLE = "Select SSH public key";
     private static final String VIRTUAL_MACHINE_CREATION_DIALOG_TITLE = "Create Virtual Machine";
     private JTabbedPane tabbedPane;
     private JPanel rootPane;
@@ -194,8 +195,10 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         cbResourceGroup.addItemListener(this::onResourceGroupChanged);
         cbVirtualNetwork.addItemListener(this::onNetworkChanged);
         cbImage.addItemListener(this::onImageChanged);
+        // initialize cert file select
+        final FileChooserDescriptor pub = FileChooserDescriptorFactory.createSingleFileDescriptor("pub");
         txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
-            project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+            project, pub, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
 
         unifyComponentsStyle();
     }

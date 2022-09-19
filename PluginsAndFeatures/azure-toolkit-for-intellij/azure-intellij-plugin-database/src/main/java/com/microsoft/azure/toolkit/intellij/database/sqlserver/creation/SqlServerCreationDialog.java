@@ -113,7 +113,7 @@ public class SqlServerCreationDialog extends AzureDialog<DatabaseServerConfig> {
         final DatabaseServerConfig config = new DatabaseServerConfig("sqlserver-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
         config.setResourceGroup(Optional.ofNullable(historyRg).orElse(rg));
-        config.setAdminName(System.getProperty("user.name"));
+        config.setAdminName(Optional.ofNullable(System.getProperty("user.name")).map(n -> n.replaceAll("[^A-Za-z0-9 ]", "")).orElse(null));
         config.setAdminPassword(StringUtils.EMPTY);
         return config;
     }

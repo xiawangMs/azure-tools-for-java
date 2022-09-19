@@ -113,7 +113,7 @@ public class MySqlCreationDialog extends AzureDialog<DatabaseServerConfig> {
         final DatabaseServerConfig config = new DatabaseServerConfig("mysql-" + defaultNameSuffix, region);
         config.setSubscription(subscription);
         config.setResourceGroup(Optional.ofNullable(historyRg).orElse(rg));
-        config.setAdminName(System.getProperty("user.name"));
+        config.setAdminName(Optional.ofNullable(System.getProperty("user.name")).map(n -> n.replaceAll("[^A-Za-z0-9 ]", "")).orElse(null));
         config.setAdminPassword(StringUtils.EMPTY);
         config.setVersion("5.7"); // default to 11
         return config;

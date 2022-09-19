@@ -77,7 +77,7 @@ public class CosmosActionsContributor implements IActionsContributor {
         final ActionView.Builder createClusterView = new ActionView.Builder("Azure Cosmos DB")
                 .title(s -> Optional.ofNullable(s).map(r ->
                         description("group.create_cosmos_db_account.group", ((ResourceGroup) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ResourceGroup);
+                .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_COSMOS_SERVICE, new Action<>(GROUP_CREATE_COSMOS_SERVICE, createClusterView));
 
     }

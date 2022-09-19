@@ -66,8 +66,8 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
             this.lblApp.setText(this.draft.getName());
             AzureTaskManager.getInstance().runLater(() -> this.formConfig.updateForm(this.draft));
             AzureTaskManager.getInstance().runOnPooledThread((() -> {
-                final SpringCloudAppConfig config = SpringCloudAppConfig.fromApp(this.draft);
                 this.refreshToolbar();
+                final SpringCloudAppConfig config = SpringCloudAppConfig.fromApp(this.draft);
                 AzureTaskManager.getInstance().runLater(() -> this.formConfig.setValue(config));
             }));
             this.panelInstances.setApp(this.draft);
@@ -96,7 +96,7 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
         this.restartButton.addActionListener(e -> tm.runInBackground(restartTitle, this.draft::restart));
         final String saveTitle = String.format("Saving updates of app(%s)", this.draft.name());
         this.saveButton.addActionListener(e -> tm.runInBackground(saveTitle, this::save));
-        this.formConfig.setDataChangedListener((data) -> this.refreshToolbar());
+        this.formConfig.setDataChangedListener((data) -> AzureTaskManager.getInstance().runOnPooledThread(this::refreshToolbar));
     }
 
     @Nonnull
@@ -150,25 +150,33 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
     }
 
     private void refreshToolbar() {
-        AzureTaskManager.getInstance().runOnPooledThread((() -> {
-            // get status from app instead of draft since status of draft is not correct
-            final String status = this.app.getStatus();
-            final boolean modified = this.isModified();
-            if (StringUtils.equalsIgnoreCase(status, AzResource.Status.INACTIVE)) {
-                AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.getName()), null);
+        // get status from app instead of draft since status of draft is not correct
+        final String status = this.app.getStatus();
+        final AzResourceBase.FormalStatus formalStatus = this.app.getFormalStatus();
+        if (StringUtils.equalsIgnoreCase(status, AzResource.Status.INACTIVE)) {
+            AzureMessager.getMessager().warning(String.format("App(%s) has no active deployment", this.app.getName()), null);
+        }
+        final AzureTaskManager manager = AzureTaskManager.getInstance();
+        manager.runLater(() -> {
+            final boolean normal = formalStatus.isRunning() || formalStatus.isStopped();
+            this.setEnabled(normal);
+            if (normal) {
+                manager.runOnPooledThread(() -> {
+                    final boolean modified = this.isModified(); // checking modified is slow
+                    manager.runLater(() -> {
+                        this.resetButton.setVisible(modified);
+                        this.saveButton.setEnabled(modified);
+                    });
+                });
+            } else {
+                this.resetButton.setVisible(false);
+                this.saveButton.setEnabled(false);
             }
-            AzureTaskManager.getInstance().runLater(() -> {
-                final AzResourceBase.FormalStatus formalStatus = this.app.getFormalStatus();
-                final boolean normal = formalStatus.isRunning() || formalStatus.isStopped();
-                this.setEnabled(normal);
-                this.resetButton.setVisible(modified && normal);
-                this.saveButton.setEnabled(modified && normal);
-                this.startButton.setEnabled(formalStatus.isStopped());
-                this.stopButton.setEnabled(formalStatus.isRunning());
-                this.restartButton.setEnabled(formalStatus.isRunning());
-                this.deleteButton.setEnabled(!formalStatus.isWriting());
-            });
-        }));
+            this.startButton.setEnabled(formalStatus.isStopped());
+            this.stopButton.setEnabled(formalStatus.isRunning());
+            this.restartButton.setEnabled(formalStatus.isRunning());
+            this.deleteButton.setEnabled(!formalStatus.isWriting());
+        });
     }
 
     @Nonnull

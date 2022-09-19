@@ -40,7 +40,7 @@ public class RedisActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createRedisView = new ActionView.Builder("Redis Cache")
             .title(s -> Optional.ofNullable(s).map(r -> description("redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_REDIS, new Action<>(GROUP_CREATE_REDIS, createRedisView));
     }
 

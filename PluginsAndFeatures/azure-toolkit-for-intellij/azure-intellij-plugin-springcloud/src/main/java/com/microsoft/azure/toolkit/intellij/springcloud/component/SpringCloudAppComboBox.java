@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private SpringCloudCluster cluster;
-    private final List<SpringCloudApp> localItems = new LinkedList<>();
+    private final List<SpringCloudApp> draftItems = new LinkedList<>();
 
     @Override
     protected String getItemText(final Object item) {
@@ -58,11 +58,12 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     }
 
     @Override
-    public void setValue(SpringCloudApp val) {
-        if (val.isDraftForCreating() && !this.localItems.contains(val)) {
-            this.localItems.add(0, val);
+    public void setValue(@Nullable SpringCloudApp val) {
+        if (Objects.nonNull(val) && val.isDraftForCreating()) {
+            this.draftItems.remove(val);
+            this.draftItems.add(0, val);
+            this.reloadItems();
         }
-        this.reloadItems();
         super.setValue(val);
     }
 
@@ -83,8 +84,8 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     protected List<? extends SpringCloudApp> loadItems() {
         final List<SpringCloudApp> apps = new ArrayList<>();
         if (Objects.nonNull(this.cluster)) {
-            if (!this.localItems.isEmpty()) {
-                apps.addAll(this.localItems.stream().filter(a -> a.getParent().getName().equals(this.cluster.getName())).collect(Collectors.toList()));
+            if (!this.draftItems.isEmpty()) {
+                apps.addAll(this.draftItems.stream().filter(a -> a.getParent().getName().equals(this.cluster.getName())).collect(Collectors.toList()));
             }
             apps.addAll(cluster.apps().list());
         }

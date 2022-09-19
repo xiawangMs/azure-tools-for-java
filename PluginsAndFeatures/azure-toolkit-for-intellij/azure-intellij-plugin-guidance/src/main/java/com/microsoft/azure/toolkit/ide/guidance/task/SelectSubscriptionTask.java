@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.ide.guidance.task;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -28,7 +29,7 @@ public class SelectSubscriptionTask implements Task {
     @Override
     public void prepare() {
         this.accountListener = new AzureEventBus.EventListener(ignore ->
-                AzureTaskManager.getInstance().runOnPooledThread(this::selectSubscription));
+            AzureTaskManager.getInstance().runOnPooledThread(this::selectSubscription));
         AzureEventBus.on("account.subscription_changed.account", accountListener);
     }
 
@@ -45,11 +46,17 @@ public class SelectSubscriptionTask implements Task {
     }
 
     private void selectSubscription() {
-        final List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
-        assert CollectionUtils.isNotEmpty(selectedSubscriptions) : "there is no subscription in your account";
+        final Account account = Azure.az(AzureAccount.class).account();
+        final List<Subscription> subscriptions = account.getSubscriptions();
+        assert CollectionUtils.isNotEmpty(subscriptions) : "there are no subscriptions in your account";
+        List<Subscription> selectedSubscriptions = account.getSelectedSubscriptions();
+        if (selectedSubscriptions.isEmpty()) {
+            account.setSelectedSubscriptions(List.of(subscriptions.get(0).getId()));
+            selectedSubscriptions = account.getSelectedSubscriptions();
+        }
         final Subscription subscription = selectedSubscriptions.get(0);
         context.applyResult(SUBSCRIPTION_ID, subscription.getId());
-        AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
+        AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription \"%s [%s]\"", subscription.getName(), subscription.getId()));
     }
 
     @Override
