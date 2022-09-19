@@ -1,7 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.view;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -61,10 +60,6 @@ public class CourseView {
         this.guidanceIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
         this.titleLabel.setText(course.getTitle());
         fillPhase(course);
-    }
-
-    public JPanel getPhasesPanel() {
-        return this.phasesPanel;
     }
 
     private void fillPhase(@Nonnull Course course) {
