@@ -47,7 +47,6 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
 public class FunctionAppConfig extends AppServiceConfig {
     public static final Runtime DEFAULT_RUNTIME = Runtime.FUNCTION_WINDOWS_JAVA8;
