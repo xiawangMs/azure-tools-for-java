@@ -78,7 +78,7 @@ public class Context {
             final Template tpl = engine.createTemplate(template);
             return tpl.make(bindings).toString()
                     .replace("null", "") // for not exists values, engine will render them as null, remove them in the final result
-                    .replace("  ", " "); // remove extra spaces
+                    .replace("\\s+", StringUtils.SPACE); // remove extra spaces
         } catch (final Exception e) {
             return StringUtils.EMPTY;
         }

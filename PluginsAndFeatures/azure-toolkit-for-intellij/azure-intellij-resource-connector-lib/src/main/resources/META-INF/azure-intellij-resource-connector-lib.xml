@@ -39,6 +39,6 @@
             icon="/icons/connector/connect.svg"
             description="To consume azure resources in your project"/>
         <action class="com.microsoft.azure.toolkit.intellij.connector.actions.OpenResourceConnectionExplorerAction" id="AzureToolkit.OpenResourceConnectionExplorerAction"
-                text="Open Azure Resource Connection Explorer" description="Open Azure Resource Connection Explorer" icon="/icons/Common/AzureResourceConnector.svg"/>
+                text="Open Azure Resource Connections Explorer" description="Open Azure Resource Connection Explorer" icon="/icons/Common/AzureResourceConnector.svg"/>
     </actions>
 </idea-plugin>
