@@ -65,7 +65,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
 
     public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId, @Nullable final String slotName) {
         final String appName = ResourceId.fromString(appId).name();
-        final AzureString title = AzureString.format("load properties of App Service '{0}'", appName);
+        final AzureString title = AzureString.format("load properties of App Service '%s'", appName);
         AzureTaskManager.getInstance().runInBackground(title, () -> onLoadWebAppProperty(getWebAppBase(sid, appId, slotName)));
     }
 
