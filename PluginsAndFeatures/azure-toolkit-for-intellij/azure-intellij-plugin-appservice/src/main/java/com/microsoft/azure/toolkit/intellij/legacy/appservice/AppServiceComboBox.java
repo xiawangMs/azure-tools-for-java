@@ -16,7 +16,6 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
@@ -80,14 +79,17 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         config.setName(appService.getName());
         config.setRuntime(null);
         config.setSubscription(new com.microsoft.azure.toolkit.lib.common.model.Subscription(appService.getSubscriptionId()));
-        AzureTaskManager.getInstance()
-            .runOnPooledThreadAsObservable(new AzureTask<>(() -> {
+        AzureTaskManager.getInstance().runOnPooledThreadAsObservable(() -> {
+            try {
                 config.setResourceGroup(ResourceGroupConfig.fromResource(appService.getResourceGroup()));
                 config.setRuntime(appService.getRuntime());
                 config.setRegion(appService.getRegion());
                 config.setServicePlan(AppServicePlanConfig.fromResource(appService.getAppServicePlan()));
                 config.setAppSettings(appService.getAppSettings());
-            })).subscribe();
+            } catch (final Throwable ignored) {
+                config.setSubscription(null);
+            }
+        }).subscribe();
         return config;
     }
 
@@ -130,7 +132,8 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         @Override
         public void customize(JList<? extends AppServiceConfig> list, AppServiceConfig app, int index, boolean isSelected, boolean cellHasFocus) {
             if (app != null) {
-                final boolean isJavaApp = Optional.ofNullable(app.getRuntime()).map(Runtime::getJavaVersion)
+                final boolean isJavaApp = Optional.of(app).filter(a -> Objects.nonNull(a.getSubscription()))
+                    .map(AppServiceConfig::getRuntime).map(Runtime::getJavaVersion)
                     .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF)).orElse(false);
                 setEnabled(isJavaApp);
                 setFocusable(isJavaApp);
@@ -150,6 +153,9 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
             final String runtime = appServiceModel.getRuntime() == null ?
                 "Loading:" : WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
             final String resourceGroup = Optional.ofNullable(appServiceModel.getResourceGroupName()).orElse(StringUtils.EMPTY);
+            if (Objects.isNull(appServiceModel.getSubscription())) {
+                return String.format("<html><div>[DELETED] %s</div></html>", appServiceName);
+            }
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
                 appServiceName, runtime, resourceGroup);
         }

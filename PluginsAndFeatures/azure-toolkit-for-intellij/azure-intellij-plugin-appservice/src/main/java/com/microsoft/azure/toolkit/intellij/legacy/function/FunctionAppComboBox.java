@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppConfig> {
@@ -48,6 +49,7 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppConfig> {
     protected List<FunctionAppConfig> loadAppServiceModels() {
         return Azure.az(AzureFunctions.class).functionApps().parallelStream()
             .map(functionApp -> convertAppServiceToConfig(FunctionAppConfig::new, functionApp))
+            .filter(a -> Objects.nonNull(a.getSubscription()))
             .sorted((app1, app2) -> app1.getName().compareToIgnoreCase(app2.getName()))
             .collect(Collectors.toList());
     }
