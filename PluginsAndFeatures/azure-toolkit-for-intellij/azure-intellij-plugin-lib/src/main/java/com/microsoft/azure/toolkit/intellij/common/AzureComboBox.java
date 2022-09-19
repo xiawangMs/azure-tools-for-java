@@ -163,7 +163,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         });
     }
 
-    private void refreshValue() {
+    protected void refreshValue() {
         if (this.valueNotSet) {
             if (this.getItemCount() > 0 && this.getSelectedIndex() != 0) {
                 super.setSelectedItem(this.getDefaultValue());

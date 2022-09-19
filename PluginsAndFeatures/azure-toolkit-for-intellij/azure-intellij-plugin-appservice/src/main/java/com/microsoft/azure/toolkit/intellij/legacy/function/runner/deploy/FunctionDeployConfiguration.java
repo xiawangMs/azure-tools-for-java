@@ -123,12 +123,12 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         if (operatingSystem == OperatingSystem.DOCKER) {
             throw new ConfigurationException(message("function.validate_deploy_configuration.dockerRuntime"));
         }
-        if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
-            throw new ConfigurationException(message("function.validate_deploy_configuration.invalidRuntime"));
-        }
         if (functionAppConfig.getServicePlan() == null) {
             // Service plan could be null as lazy loading, throw exception in this case
             throw new ConfigurationException(message("function.validate_deploy_configuration.loading"));
+        }
+        if (javaVersion == null || Objects.equals(javaVersion, JavaVersion.OFF)) {
+            throw new ConfigurationException(message("function.validate_deploy_configuration.invalidRuntime"));
         }
     }
 
