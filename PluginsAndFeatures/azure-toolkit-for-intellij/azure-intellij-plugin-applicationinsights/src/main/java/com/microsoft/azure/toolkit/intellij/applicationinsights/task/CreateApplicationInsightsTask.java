@@ -40,10 +40,10 @@ public class CreateApplicationInsightsTask implements Task {
                 "`name` is required to create application insights");
         final Subscription subscription = Optional.ofNullable((String) context.getParameter(SUBSCRIPTION_ID))
                 .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
-                .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get subscription to create application insight"));
+                .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get subscription to create application insights"));
         final ResourceGroup resourceGroup = Optional.ofNullable((String) context.getParameter(RESOURCE_GROUP))
                 .map(rg -> Azure.az(AzureResources.class).groups(subscription.getId()).get(rg, rg))
-                .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get resource group to create application insight"));
+                .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get resource group to create application insights"));
         final Region region = resourceGroup.getRegion();
         final ApplicationInsightDraft applicationInsightDraft = Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId())
                 .create(name, resourceGroup.getName());

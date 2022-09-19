@@ -10,9 +10,11 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
@@ -33,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -296,7 +299,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         txtMaximumPrice.setVisible(enableAzureSpotInstance);
         txtMaximumPrice.setRequired(enableAzureSpotInstance);
         if (enableAzureSpotInstance) {
-            txtMaximumPrice.setValidator(this::validateMaximumPricing);
+            txtMaximumPrice.addValidator(this::validateMaximumPricing);
         }
         txtMaximumPrice.validateValueAsync(); // trigger revalidate after reset validator
         txtMaximumPrice.onDocumentChanged(); // trigger revalidate after reset validator
@@ -323,10 +326,11 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         txtCertificate.setRequired(isSSH);
 
         passwordFieldInput.setRequired(!isSSH);
-        if (!isSSH) {
-            passwordFieldInput.setValidator(this::validatePassword);
-        }
         confirmPasswordFieldInput.setRequired(!isSSH);
+        if (!isSSH) {
+            passwordFieldInput.addValidator(this::validatePassword);
+            confirmPasswordFieldInput.addValidator(this::validateConfirmPassword);
+        }
     }
 
     private void createUIComponents() {
@@ -350,7 +354,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
 
         this.txtVisualMachineName = new AzureTextInput();
         this.txtVisualMachineName.setRequired(true);
-        this.txtVisualMachineName.setValidator(this::validateVirtualMachineName);
+        this.txtVisualMachineName.addValidator(this::validateVirtualMachineName);
 
         this.txtMaximumPrice = new AzureTextInput();
 
@@ -360,6 +364,18 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
 
         this.cbSubscription.reloadItems();
+    }
+
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        final List<ValidationInfo> res = super.doValidateAll();
+        if (rdoPassword.isSelected()) {
+            final AzureValidationInfo info = this.validateConfirmPassword();
+            if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
+                res.add(AzureFormInputComponent.toIntellijValidationInfo(info));
+            }
+        }
+        return res;
     }
 
     @Override
@@ -524,6 +540,12 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
             return AzureValidationInfo.error("Invalid virtual machine name. The name must start with a letter, " +
                 "contain only letters, numbers, and hyphens, and end with a letter or number.", txtVisualMachineName);
         }
+        final Subscription subscription = cbSubscription.getItem();
+        final ResourceGroup resourceGroup = cbResourceGroup.getItem();
+        if (Objects.nonNull(subscription) && Objects.nonNull(resourceGroup)
+                && Objects.nonNull(Azure.az(AzureCompute.class).forSubscription(subscription.getId()).getVirtualMachineModule().get(name, resourceGroup.getName()))) {
+            return AzureValidationInfo.error(AzureMessageBundle.message("vm.name.validate.exist", name).toString(), txtVisualMachineName);
+        }
         return AzureValidationInfo.success(txtVisualMachineName);
     }
 
@@ -544,6 +566,15 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
                 "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", passwordFieldInput);
         }
         return AzureValidationInfo.success(passwordFieldInput);
+    }
+
+    private AzureValidationInfo validateConfirmPassword() {
+        final String password = passwordFieldInput.getValue();
+        final String confirmPassword = confirmPasswordFieldInput.getValue();
+        if (!StringUtils.equals(confirmPassword, password)) {
+            return AzureValidationInfo.error("Password and confirm password must match.", confirmPasswordFieldInput);
+        }
+        return AzureValidationInfo.success(confirmPasswordFieldInput);
     }
 
     enum SecurityGroupPolicy {

@@ -14,6 +14,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
@@ -180,5 +181,13 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
 
     public void setPrivateRegistryImageSetting(PrivateRegistryImageSetting privateRegistryImageSetting) {
         dataModel.setPrivateRegistryImageSetting(privateRegistryImageSetting);
+    }
+
+    public String getContainerRegistryId() {
+        return this.dataModel.getContainerRegistryId();
+    }
+
+    public void setContainerRegistry(ContainerRegistry containerRegistry) {
+        this.dataModel.setContainerRegistryId(containerRegistry.getId());
     }
 }
