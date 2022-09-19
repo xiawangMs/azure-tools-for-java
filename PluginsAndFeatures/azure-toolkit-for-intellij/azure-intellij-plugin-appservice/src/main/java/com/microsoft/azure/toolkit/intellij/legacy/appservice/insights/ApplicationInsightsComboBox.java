@@ -51,8 +51,8 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
         if (val != null && val.isNewCreate()) {
             this.draftItems.remove(val);
             this.draftItems.add(0, val);
+            this.reloadItems();
         }
-        this.reloadItems();
         super.setValue(val);
     }
 
@@ -64,7 +64,6 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
         type = AzureOperation.Type.SERVICE
     )
     protected List<? extends ApplicationInsightsConfig> loadItems() {
-        // TODO: @hanxiao implementation of `ApplicationInsightsConfig` is not correct, may cause bug here.
         final List<ApplicationInsightsConfig> existingItems =
             subscription == null ? Collections.emptyList() :
                 Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).list().stream()

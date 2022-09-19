@@ -99,8 +99,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         if (Objects.nonNull(val) && val.isDraftForCreating()) {
             this.draftItems.remove(val);
             this.draftItems.add(0, val);
+            this.reloadItems();
         }
-        this.reloadItems();
         super.setValue(val);
     }
 

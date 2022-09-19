@@ -53,8 +53,8 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         if (isDraftResource(val)) {
             this.draftItems.remove(val);
             this.draftItems.add(0, val);
+            this.reloadItems();
         }
-        this.reloadItems();
         super.setValue(val);
     }
 
