@@ -47,9 +47,7 @@ public class FavoriteNodeView implements NodeView {
         if (!r.getSubscription().isSelected()) {
             return String.format("(%s)", r.getSubscription().getName());
         }
-        if (r instanceof AbstractAzResource &&
-            ((AbstractAzResource<?, ?, ?>) r).isDraftForCreating() &&
-            !Objects.equals(r.getStatus(), AzResource.Status.CREATING)) {
+        if (r instanceof AbstractAzResource && r.getFormalStatus().isDeleted()) {
             return AzResource.Status.DELETED;
         }
         return view.getDescription();
