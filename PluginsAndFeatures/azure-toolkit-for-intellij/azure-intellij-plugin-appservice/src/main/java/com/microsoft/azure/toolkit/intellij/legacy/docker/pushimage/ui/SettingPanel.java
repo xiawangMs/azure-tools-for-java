@@ -167,7 +167,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
             containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }
         containerSettingPanel.onListRegistries();
-        containerSettingPanel.setContainerRegistry(conf.getContainerRegistry());
+        containerSettingPanel.setContainerRegistry(conf.getContainerRegistryId());
     }
 
     @Override

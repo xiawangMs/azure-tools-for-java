@@ -183,13 +183,11 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
         dataModel.setPrivateRegistryImageSetting(privateRegistryImageSetting);
     }
 
-    public PushImageRunModel.ContainerRegistryPair getContainerRegistry() {
-        return this.dataModel.getContainerRegistryPair();
+    public String getContainerRegistryId() {
+        return this.dataModel.getContainerRegistryId();
     }
 
     public void setContainerRegistry(ContainerRegistry containerRegistry) {
-        this.dataModel.setContainerRegistryPair(
-                this.dataModel.new ContainerRegistryPair(containerRegistry.getName(), containerRegistry.getResourceGroupName())
-        );
+        this.dataModel.setContainerRegistryId(containerRegistry.getId());
     }
 }

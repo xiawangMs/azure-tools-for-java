@@ -44,7 +44,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
 
     private static final String SELECT_REGISTRY = "<Select Container Registry>";
     private static final String LOADING = "<Loading...>";
-    private PushImageRunModel.ContainerRegistryPair containerRegistryFromConfiguration = null;
+    private String containerRegistryFromConfiguration;
 
     private final Project project;
 
@@ -160,7 +160,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         dockerFilePathTextField.setText(path);
     }
 
-    public void setContainerRegistry(PushImageRunModel.ContainerRegistryPair curItem) {
+    public void setContainerRegistry(String curItem) {
         this.containerRegistryFromConfiguration = curItem;
     }
 
@@ -208,8 +208,8 @@ public class ContainerSettingPanel implements ContainerSettingView {
         for (final ContainerRegistry registry : registries) {
             model.addElement(registry);
         }
-        Optional.ofNullable(this.containerRegistryFromConfiguration).flatMap(pair -> registries.stream()
-                .filter(c -> c.getName().equals(pair.getName()) && c.getResourceGroupName().equals(pair.getResourceGroupName()))
+        Optional.ofNullable(this.containerRegistryFromConfiguration).flatMap(id -> registries.stream()
+                .filter(c -> c.getId().equals(id))
                 .findAny()).ifPresent(curItem -> this.cbContainerRegistry.setSelectedItem(curItem));
     }
 
