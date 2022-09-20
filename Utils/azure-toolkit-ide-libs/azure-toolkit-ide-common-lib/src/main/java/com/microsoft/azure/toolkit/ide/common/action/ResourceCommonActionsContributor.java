@@ -124,9 +124,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_PORTAL_URL, openPortalUrlAction.setAuthRequired(false));
 
         // register commands
+        final ActionView.Builder openUrlView = new ActionView.Builder("Open Url").title(url -> description("resource.open_url.url", url));
         final Action<String> action = new Action<>(OPEN_URL, (s) -> {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
-        });
+        }, openUrlView);
         action.setAuthRequired(false);
         am.registerAction(OPEN_URL, action);
 
