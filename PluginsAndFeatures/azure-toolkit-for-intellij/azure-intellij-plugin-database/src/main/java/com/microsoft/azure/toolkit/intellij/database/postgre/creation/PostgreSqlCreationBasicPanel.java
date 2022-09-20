@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.database.postgre.creation;
 
-import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
@@ -17,7 +15,6 @@ import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.database.mysql.creation.MySqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import lombok.Getter;
@@ -25,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +54,8 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
 
     private void init() {
         serverNameTextField.setSubscription(config.getSubscription());
-        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField, this.confirmPasswordFieldInput);
         serverNameTextField.addValidator(new BaseNameValidator(serverNameTextField, (sid, name) ->
             Azure.az(AzurePostgreSql.class).forSubscription(sid).checkNameAvailability(name)));
     }
@@ -117,15 +113,6 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
             confirmPasswordFieldInput
         };
         return Arrays.asList(inputs);
-    }
-
-    public List<ValidationInfo> doValidateAll() {
-        final List<ValidationInfo> res = new ArrayList<>();
-        final AzureValidationInfo info = confirmPasswordFieldInput.validateInternal(confirmPasswordFieldInput.getValue());
-        if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
-            res.add(AzureFormInputComponent.toIntellijValidationInfo(info));
-        }
-        return res;
     }
 
 }
