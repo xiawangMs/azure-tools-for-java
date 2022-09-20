@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.database.sqlserver.creation;
 
-import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
@@ -22,7 +20,6 @@ import com.microsoft.azure.toolkit.intellij.database.component.ConnectionSecurit
 import com.microsoft.azure.toolkit.intellij.database.mysql.creation.MySqlCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.database.DatabaseServerConfig;
 import com.microsoft.azure.toolkit.lib.sqlserver.AzureSqlServer;
@@ -32,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -73,8 +69,8 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     private void init() {
         this.subscriptionComboBox.setRequired(true);
         this.resourceGroupComboBox.setRequired(true);
-        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField, this.confirmPasswordFieldInput);
         serverNameTextField.setSubscription(config.getSubscription());
         regionComboBox.setItemsLoader(() ->
             Azure.az(AzureSqlServer.class).forSubscription(this.subscriptionComboBox.getValue().getId()).listSupportedRegions());
@@ -176,14 +172,5 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
             this.confirmPasswordFieldInput
         };
         return Arrays.asList(inputs);
-    }
-
-    public List<ValidationInfo> doValidateAll() {
-        final List<ValidationInfo> res = new ArrayList<>();
-        final AzureValidationInfo info = confirmPasswordFieldInput.validateInternal(confirmPasswordFieldInput.getValue());
-        if (info.getType() != AzureValidationInfo.Type.SUCCESS) {
-            res.add(AzureFormInputComponent.toIntellijValidationInfo(info));
-        }
-        return res;
     }
 }
