@@ -11,7 +11,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-postgre-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-database-lib:' + azureToolkitVersion
-    compile 'mysql:mysql-connector-java:8.0.25'
+    compile 'mysql:mysql-connector-java:8.0.29'
     compile 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
     compile 'org.postgresql:postgresql:42.4.1'
 
