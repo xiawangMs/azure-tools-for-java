@@ -37,7 +37,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .handle("https://" + appService.getHostName());
         final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser",  AzureIcons.Action.PORTAL.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> description("webapp.open_browser")).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase);
+            .enabled(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(OPEN_IN_BROWSER, new Action<>(OPEN_IN_BROWSER, openInBrowser, openInBrowserView));
 
         final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", AzureIcons.Action.LOG.getIconPath())
