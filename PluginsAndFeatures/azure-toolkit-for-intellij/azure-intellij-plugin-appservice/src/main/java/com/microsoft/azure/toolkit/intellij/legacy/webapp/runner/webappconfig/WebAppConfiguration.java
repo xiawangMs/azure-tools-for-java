@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfigura
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
@@ -58,8 +59,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Setter
     private Connection<?, ?> connection;
 
-    private String appSettingsKey;
-
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         this.webAppSettingModel = new IntelliJWebAppSettingModel();
@@ -79,6 +78,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Override
     public void setApplicationSettings(Map<String, String> env) {
         webAppSettingModel.setAppSettings(env);
+        FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), env);
     }
 
     @Override
@@ -113,6 +113,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         Optional.ofNullable(element.getChild(JAVA_VERSION))
                 .map(javaVersionElement -> javaVersionElement.getAttributeValue(JAVA_VERSION))
                 .ifPresent(webAppSettingModel::setWebAppJavaVersion);
+        Optional.ofNullable(this.getAppSettingsKey())
+                .ifPresent(key -> webAppSettingModel.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(getAppSettingsKey())));
     }
 
     @Override

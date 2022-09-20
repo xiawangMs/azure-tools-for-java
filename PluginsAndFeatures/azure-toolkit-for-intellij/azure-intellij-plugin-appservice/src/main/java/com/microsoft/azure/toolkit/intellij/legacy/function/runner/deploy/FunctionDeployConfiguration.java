@@ -154,6 +154,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public void saveConfig(FunctionAppConfig config) {
         functionDeployModel.setFunctionAppConfig(config);
+        FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), config.getAppSettings());
     }
 
     public void setAppSettingsKey(String appSettingsKey) {
@@ -169,6 +170,8 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         this.functionDeployModel = Optional.ofNullable(element.getChild("FunctionDeployModel"))
                 .map(e -> XmlSerializer.deserialize(e, FunctionDeployModel.class))
                 .orElseGet(FunctionDeployModel::new);
+        Optional.ofNullable(this.getAppSettingsKey())
+                .ifPresent(key -> functionDeployModel.getFunctionAppConfig().setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(getAppSettingsKey())));
     }
 
     @Override

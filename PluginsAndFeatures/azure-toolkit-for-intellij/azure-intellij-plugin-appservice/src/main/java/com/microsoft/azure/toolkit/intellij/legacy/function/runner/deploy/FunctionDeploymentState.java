@@ -44,9 +44,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -91,6 +93,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             functionApp = createFunctionApp(processHandler);
         } else {
             functionApp = Azure.az(AzureFunctions.class).functionApp(functionDeployConfiguration.getFunctionId());
+            assert functionApp != null : "Cannot find function app with id: " + functionDeployConfiguration.getFunctionId();
             updateApplicationSettings(functionApp);
         }
         stagingFolder = FunctionUtils.getTempStagingFolder();
@@ -113,23 +116,28 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
         processHandler.setText(message("function.create.hint.creating", functionDeployConfiguration.getAppName()));
         // Load app settings from security storage
         final FunctionAppConfig config = deployModel.getFunctionAppConfig();
-        config.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(functionDeployConfiguration.getAppSettingsKey()));
+        config.setAppSettings(functionDeployConfiguration.getAppSettings());
         // create function app
         functionApp = FunctionAppService.getInstance().createFunctionApp(config);
         // update run configuration
-        functionDeployConfiguration.setFunctionId(functionApp.id());
+        functionDeployConfiguration.setFunctionId(functionApp.getId());
+        functionDeployConfiguration.getConfig().setAppSettings(functionApp.getAppSettings());
         processHandler.setText(message("function.create.hint.created", functionDeployConfiguration.getAppName()));
         return functionApp;
     }
 
     private void updateApplicationSettings(FunctionApp deployTarget) {
-        final Map<String, String> applicationSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionDeployConfiguration.getAppSettingsKey());
+        final Map<String, String> applicationSettings = functionDeployConfiguration.getAppSettings();
+        final Set<String> appSettingsToRemove = Optional.ofNullable(deployTarget.getAppSettings())
+                .map(settings -> settings.keySet().stream().filter(key -> !applicationSettings.containsKey(key)).collect(Collectors.toSet()))
+                .orElseGet(Collections::emptySet);
         if (MapUtils.isEmpty(applicationSettings)) {
             return;
         }
         AzureMessager.getMessager().info("Updating application settings...");
         final FunctionAppDraft draft = (FunctionAppDraft) deployTarget.update();
         draft.setAppSettings(applicationSettings);
+        appSettingsToRemove.forEach(draft::removeAppSetting);
         draft.updateIfExist();
         AzureMessager.getMessager().info("Update application settings successfully.");
     }
@@ -219,7 +227,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             final AzureString message = count[0]++ == 0 ?
                     AzureString.fromString(SYNCING_TRIGGERS) : AzureString.format(SYNCING_TRIGGERS_WITH_RETRY, count[0], LIST_TRIGGERS_MAX_RETRY);
             azureMessager.info(message);
-            return Optional.ofNullable(functionApp.listFunctions(true))
+            return Optional.of(functionApp.listFunctions(true))
                     .filter(CollectionUtils::isNotEmpty)
                     .orElseThrow(() -> new AzureToolkitRuntimeException(NO_TRIGGERS_FOUNDED));
         }).subscribeOn(Schedulers.boundedElastic())

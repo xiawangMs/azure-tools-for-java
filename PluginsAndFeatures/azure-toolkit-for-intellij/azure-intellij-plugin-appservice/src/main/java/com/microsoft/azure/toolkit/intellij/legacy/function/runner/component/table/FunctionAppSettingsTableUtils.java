@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -142,7 +142,8 @@ public class FunctionAppSettingsTableUtils {
         if (jsonObject == null) {
             return new HashMap<>();
         }
-        return (Map<String, String>) jsonObject.get(LOCAL_SETTINGS_VALUES);
+        return ((Map<?, ?>) jsonObject.get(LOCAL_SETTINGS_VALUES)).entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString()));
     }
 
     public static void exportLocalSettingsJsonFile(File target, Map<String, String> appSettings) throws IOException {
