@@ -171,7 +171,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                             // However, if we want to override method getClusterConfiguration, the method return type should be
                             // com.microsoft.azure.hdinsight.sdk.cluster.ClusterConfiguration.
                             // Therefore, we need to convert the new API response to old API.
-                            .map(ClusterOperationNewAPIImpl::convertConfigurationToOldAPI)
+                                  .map(ClusterOperationNewAPIImpl::convertConfigurationToOldAPI)
                             .toBlocking()
                             .singleOrDefault(null);
                 case READER:
