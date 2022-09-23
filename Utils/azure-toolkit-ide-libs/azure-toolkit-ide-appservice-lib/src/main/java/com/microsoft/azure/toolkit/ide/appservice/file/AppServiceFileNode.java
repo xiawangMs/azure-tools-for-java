@@ -131,8 +131,12 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
         @Override
         public String getDescription() {
+            if (StringUtils.equalsAnyIgnoreCase(file.getPath(), SITE_WWWROOT, LOG_FILES)) {
+                return String.format("Type: %s", file.getMime());
+            }
             final String modifiedDateTime = formatDateTime(file.getMtime());
-            return file.getType() == AppServiceFile.Type.DIRECTORY ? String.format("Type: %s Date modified: %s", file.getMime(), modifiedDateTime) :
+            return file.getType() == AppServiceFile.Type.DIRECTORY ?
+                    String.format("Type: %s Date modified: %s", file.getMime(), modifiedDateTime) :
                     String.format("Type: %s Size: %s Date modified: %s", file.getMime(), FileUtils.byteCountToDisplaySize(file.getSize()), modifiedDateTime);
         }
 

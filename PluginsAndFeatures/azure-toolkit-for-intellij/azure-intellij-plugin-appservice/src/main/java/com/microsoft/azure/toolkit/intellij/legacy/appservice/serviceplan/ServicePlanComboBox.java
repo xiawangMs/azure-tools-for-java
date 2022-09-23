@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -43,7 +44,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
-    private final List<AppServicePlan> localItems = new LinkedList<>();
+    private final List<AppServicePlan> draftItems = new LinkedList<>();
     private OperatingSystem os;
     private Region region;
     @Setter
@@ -95,11 +96,12 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     @Override
-    public void setValue(AppServicePlan val) {
-        if (val.isDraftForCreating() && !this.localItems.contains(val)) {
-            this.localItems.add(0, val);
+    public void setValue(@Nullable AppServicePlan val) {
+        if (Objects.nonNull(val) && val.isDraftForCreating()) {
+            this.draftItems.remove(val);
+            this.draftItems.add(0, val);
+            this.reloadItems();
         }
-        this.reloadItems();
         super.setValue(val);
     }
 
@@ -140,8 +142,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     protected List<AppServicePlan> loadItems() {
         final List<AppServicePlan> plans = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
-            if (CollectionUtils.isNotEmpty(this.localItems)) {
-                plans.addAll(this.localItems.stream()
+            if (CollectionUtils.isNotEmpty(this.draftItems)) {
+                plans.addAll(this.draftItems.stream()
                     .filter(p -> this.subscription.equals(p.getSubscription()))
                     .collect(Collectors.toList()));
             }
@@ -149,10 +151,10 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
-                stream = stream.filter(p -> Objects.equals(p.getRegion(), this.region));
+                stream = stream.filter(p -> p instanceof AppServicePlanDraft || Objects.equals(p.getRegion(), this.region));
             }
             if (Objects.nonNull(this.os)) {
-                stream = stream.filter(p -> p.getOperatingSystem() == this.os);
+                stream = stream.filter(p -> p instanceof AppServicePlanDraft || p.getOperatingSystem() == this.os);
             }
             if (Objects.nonNull(this.servicePlanFilter)) {
                 stream = stream.filter(servicePlanFilter);

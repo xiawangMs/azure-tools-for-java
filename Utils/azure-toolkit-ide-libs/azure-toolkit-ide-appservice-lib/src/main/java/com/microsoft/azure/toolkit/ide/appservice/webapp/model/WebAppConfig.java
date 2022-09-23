@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.webapp.model;
 
-import com.azure.resourcemanager.resources.fluentcore.utils.ResourceManagerUtils;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
@@ -31,7 +30,6 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

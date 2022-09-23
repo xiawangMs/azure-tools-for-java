@@ -72,8 +72,8 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
     private void init() {
         this.subscriptionComboBox.setRequired(true);
         this.resourceGroupComboBox.setRequired(true);
-        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField, this.confirmPasswordFieldInput);
         serverNameTextField.setSubscription(config.getSubscription());
         regionComboBox.setItemsLoader(() ->
             Azure.az(AzurePostgreSql.class).forSubscription(this.subscriptionComboBox.getValue().getId()).listSupportedRegions());

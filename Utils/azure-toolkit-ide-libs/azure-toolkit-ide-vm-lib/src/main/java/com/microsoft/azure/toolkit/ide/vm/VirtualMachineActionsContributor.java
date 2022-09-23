@@ -50,7 +50,7 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createVmView = new ActionView.Builder("Virtual Machine")
             .title(s -> Optional.ofNullable(s).map(r -> description("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_VM, new Action<>(GROUP_CREATE_VM, createVmView));
     }
 

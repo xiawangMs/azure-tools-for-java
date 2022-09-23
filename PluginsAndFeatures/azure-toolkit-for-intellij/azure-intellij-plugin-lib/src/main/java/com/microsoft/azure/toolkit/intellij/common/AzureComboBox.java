@@ -51,6 +51,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -162,7 +163,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         });
     }
 
-    private void refreshValue() {
+    protected void refreshValue() {
         if (this.valueNotSet) {
             if (this.getItemCount() > 0 && this.getSelectedIndex() != 0) {
                 super.setSelectedItem(this.getDefaultValue());
@@ -243,7 +244,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         SwingUtilities.invokeLater(() -> {
             final DefaultComboBoxModel<T> model = (DefaultComboBoxModel<T>) this.getModel();
             model.removeAllElements();
-            model.addAll(items);
+            model.addAll(ObjectUtils.firstNonNull(items, Collections.emptyList()));
             this.refreshValue();
         });
     }
@@ -387,7 +388,11 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
             if (AzureComboBox.this.loading) {
                 return List.of(Extension.create(new AnimatedIcon.Default(), "Loading...", null));
             }
-            return AzureComboBox.this.getExtensions();
+            return AzureComboBox.this.getExtensions().stream()
+                .map(e -> Extension.create(e.getIcon(false), e.getIcon(true), e.getTooltip(), () -> {
+                    AzureComboBox.this.hidePopup(); // hide popup before action.
+                    e.getActionOnClick().run();
+                })).collect(Collectors.toList());
         }
 
         public void rerender() {

@@ -71,8 +71,8 @@ public class MySqlCreationAdvancedPanel extends JPanel implements AzureFormPanel
     private void init() {
         this.subscriptionComboBox.setRequired(true);
         this.resourceGroupComboBox.setRequired(true);
-        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
+        passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField, this.confirmPasswordFieldInput);
         serverNameTextField.setSubscription(config.getSubscription());
         regionComboBox.setItemsLoader(() ->
             Azure.az(AzureMySql.class).forSubscription(this.subscriptionComboBox.getValue().getId()).listSupportedRegions());

@@ -67,7 +67,7 @@ public class StorageActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createAccountView = new ActionView.Builder("Storage Account")
             .title(s -> Optional.ofNullable(s).map(r -> description("storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_ACCOUNT, new Action<>(GROUP_CREATE_ACCOUNT, createAccountView));
     }
 

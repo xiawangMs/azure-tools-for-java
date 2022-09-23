@@ -43,7 +43,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
 
         final ActionView.Builder createServerView = new ActionView.Builder("PostgreSQL server")
             .title(s -> Optional.ofNullable(s).map(r -> description("postgre.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup);
+            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_POSTGRE, new Action<>(GROUP_CREATE_POSTGRE, createServerView));
     }
 

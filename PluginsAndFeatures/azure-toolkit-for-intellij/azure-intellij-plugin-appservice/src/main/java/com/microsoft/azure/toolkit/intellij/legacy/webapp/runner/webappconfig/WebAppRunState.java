@@ -59,6 +59,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -147,6 +149,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
 
     private void updateApplicationSettings(AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
         final Map<String, String> applicationSettings = new HashMap<>(webAppConfiguration.getApplicationSettings());
+        final Set<String> appSettingsToRemove = webAppConfiguration.isCreatingNew() ? Collections.emptySet() : getAppSettingsToRemove(deployTarget, applicationSettings);
         applicationSettings.putAll(appSettingsForResourceConnection);
         if (MapUtils.isEmpty(applicationSettings)) {
             return;
@@ -154,7 +157,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         if (deployTarget instanceof WebApp) {
             processHandler.setText("Updating application settings...");
             final WebAppDraft draft = (WebAppDraft) deployTarget.update();
-            Optional.ofNullable(webAppConfiguration.getAppSettingsToRemove()).ifPresent(keys -> keys.forEach(draft::removeAppSetting));
+            Optional.ofNullable(appSettingsToRemove).ifPresent(keys -> keys.forEach(draft::removeAppSetting));
             draft.setAppSettings(applicationSettings);
             draft.updateIfExist();
             processHandler.setText("Update application settings successfully.");
@@ -162,10 +165,16 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
             processHandler.setText("Updating deployment slot application settings...");
             final WebAppDeploymentSlotDraft update = (WebAppDeploymentSlotDraft) deployTarget.update();
             update.setAppSettings(applicationSettings);
-            Optional.ofNullable(webAppConfiguration.getAppSettingsToRemove()).ifPresent(keys -> keys.forEach(update::removeAppSetting));
+            Optional.ofNullable(appSettingsToRemove).ifPresent(keys -> keys.forEach(update::removeAppSetting));
             update.updateIfExist();
             processHandler.setText("Update deployment slot application settings successfully.");
         }
+    }
+
+    private Set<String> getAppSettingsToRemove(final AppServiceAppBase<?, ?, ?> target, final Map<String, String> applicationSettings) {
+        return target.getAppSettings().keySet().stream()
+                .filter(key -> !applicationSettings.containsKey(key))
+                .collect(Collectors.toSet());
     }
 
     private boolean isDeployToSlot() {
@@ -284,19 +293,21 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
     }
 
     private void updateConfigurationDataModel(@NotNull AppServiceAppBase<?, ?, ?> app) {
-        webAppSettingModel.setCreatingNew(false);
+        webAppConfiguration.setCreatingNew(false);
         // todo: add flag to indicate create new slot or not
         if (app instanceof WebAppDeploymentSlot) {
-            webAppSettingModel.setSlotName(app.getName());
-            webAppSettingModel.setNewSlotConfigurationSource(AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION);
-            webAppSettingModel.setNewSlotName("");
-            webAppSettingModel.setWebAppId(((WebAppDeploymentSlot) app).getParent().getId());
+            webAppConfiguration.setSlotName(app.getName());
+            webAppConfiguration.setNewSlotConfigurationSource(AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION);
+            webAppConfiguration.setNewSlotName("");
+            webAppConfiguration.setWebAppId(((WebAppDeploymentSlot) app).getParent().getId());
         } else {
-            webAppSettingModel.setWebAppId(app.getId());
+            webAppConfiguration.setWebAppId(app.getId());
         }
-        webAppSettingModel.setWebAppName("");
-        webAppSettingModel.setResourceGroup("");
-        webAppSettingModel.setAppServicePlanName("");
-        webAppSettingModel.setAppServicePlanResourceGroupName("");
+        webAppConfiguration.setApplicationSettings(app.getAppSettings());
+        webAppConfiguration.setWebAppName(app.name());
+        webAppConfiguration.setWebAppName("");
+        webAppConfiguration.setResourceGroup("");
+        webAppConfiguration.setAppServicePlanName("");
+        webAppConfiguration.setAppServicePlanResourceGroupName("");
     }
 }

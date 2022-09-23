@@ -82,7 +82,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
     public SubscriptionsDialog(@Nonnull Project project) {
         super(project, true, IdeModalityType.PROJECT);
         this.project = project;
-        this.filter = new TailingDebouncer(this::updateTableView, 300);
+        this.filter = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(this::updateTableView, AzureTask.Modality.ANY), 300);
         this.updateSelectionInfo = new TailingDebouncer(this::updateSelectionInfoInner, 300);
         $$$setupUI$$$();
         setModal(true);
@@ -145,6 +145,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
             .collect(Collectors.toList());
         for (final SimpleSubscription sd : subs) {
             model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd});
+        }
+        if (model.getRowCount() <= 0) {
+            table.getEmptyText().setText("No subscriptions");
         }
     }
 

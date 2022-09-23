@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTableUtils;
@@ -26,12 +25,15 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.util.UIUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +43,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
@@ -51,8 +54,10 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -96,7 +101,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         super();
         this.project = project;
         $$$setupUI$$$();
-        comboBoxWebApp.addItemListener(ignore -> onSelectWebApp());
+        comboBoxWebApp.addValueChangedListener((AzureValueChangeBiListener<WebAppConfig>) this::onWebAppChanged);
         comboBoxArtifact.addItemListener(e -> chkToRoot.setVisible(isAbleToDeployToRoot(comboBoxArtifact.getValue())));
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
@@ -142,13 +147,32 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         slotDecorator.setContentComponent(pnlSlot);
     }
 
-    private void onSelectWebApp() {
-        final WebAppConfig value = comboBoxWebApp.getValue();
+    private void onWebAppChanged(final WebAppConfig value, final WebAppConfig before) {
         if (value == null) {
             return;
         }
         this.loadDeploymentSlot(value);
-        this.appSettingsTable.setAppService(value);
+        this.loadAppSettings(value, before);
+    }
+
+    private synchronized void loadAppSettings(@Nonnull WebAppConfig value, @Nullable WebAppConfig before) {
+        final WebAppConfig rawValue = comboBoxWebApp.getRawValue() instanceof WebAppConfig ? (WebAppConfig) comboBoxWebApp.getRawValue() : value;
+        if (Objects.isNull(before) && value != rawValue) {
+            // when reset from configuration, leverage app settings from configuration
+            if (StringUtils.isEmpty(rawValue.getResourceId()) && StringUtils.isNotEmpty(value.getResourceId())) {
+                // if draft has been created, merge local configuration with remote
+                appSettingsTable.loadAppSettings(() -> loadDraftAppSettings(rawValue));
+            }
+        } else if (!Objects.equals(value, before)) {
+            appSettingsTable.loadAppSettings(() -> StringUtils.isEmpty(value.getResourceId()) ?
+                    value.getAppSettings() : Azure.az(AzureWebApp.class).webApp(value.getResourceId()).getAppSettings());
+        }
+    }
+
+    // merge local app settings with remote if draft web app has been created
+    private Map<String, String> loadDraftAppSettings(WebAppConfig value) {
+        final WebApp webApp = Azure.az(AzureWebApp.class).webApps(value.getSubscriptionId()).get(value.getName(), value.getResourceGroupName());
+        return webApp != null && webApp.exists() ? MapUtils.putAll(webApp.getAppSettings(), value.getAppSettings().entrySet().toArray()) : value.getAppSettings();
     }
 
     private void setComboBoxDefaultValue(JComboBox<?> comboBox, Object value) {
@@ -251,9 +275,13 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                 .ifPresent(artifact -> comboBoxArtifact.setArtifact(artifact));
         // web app
         Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> {
+            if (Azure.az(AzureAccount.class).account().getSubscriptions().stream().noneMatch(s -> s.getId().equals(webApp.getSubscriptionId()))) {
+                comboBoxWebApp.setValue((WebAppConfig) null);
+                return;
+            }
             comboBoxWebApp.setConfigModel(webApp);
-            comboBoxWebApp.setValue(new AzureComboBox.ItemReference<>(item -> WebAppConfig.isSameApp(item, webApp)));
-            appSettingsTable.setAppService(webApp);
+            comboBoxWebApp.setValue(webApp);
+            appSettingsTable.setAppSettings(webApp.getAppSettings());
             toggleSlotPanel(webApp.getDeploymentSlot() != null);
             Optional.ofNullable(webApp.getDeploymentSlot()).ifPresent(slot -> {
                 chkDeployToSlot.setSelected(true);
@@ -286,14 +314,8 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                 DeploymentSlotConfig.builder().newCreate(false).name(Objects.toString(cbxSlotName.getSelectedItem(), null)).build() :
                 DeploymentSlotConfig.builder().newCreate(true).name(txtNewSlotName.getText())
                         .configurationSource(Objects.toString(cbxSlotConfigurationSource.getSelectedItem(), null)).build() : null;
-        final WebAppConfig webAppConfig = comboBoxWebApp.getValue();
-        if (webAppConfig != null) {
-            if (appSettingsTable.isEnabled()) {
-                webAppConfig.setAppSettings(appSettingsTable.getAppSettings());
-                webAppConfig.setAppSettingsToRemove(appSettingsTable.getAppSettingsKeyToRemove());
-            }
-            webAppConfig.setDeploymentSlot(slotConfig);
-        }
+        final WebAppConfig webAppConfig = Optional.ofNullable(comboBoxWebApp.getValue()).map(value ->
+                value.toBuilder().appSettings(appSettingsTable.getAppSettings()).deploymentSlot(slotConfig).build()).orElse(null);
         return WebAppDeployRunConfigurationModel.builder()
                 .webAppConfig(webAppConfig)
                 .artifactConfig(artifactConfig)
