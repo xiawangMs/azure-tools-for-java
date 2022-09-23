@@ -567,7 +567,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
             return AzureValidationInfo.error(String.format(INVALID_LENGTH_MESSAGE, nameMaxLen), txtUserName);
         }
         // validate special character
-        if (!VM_USER_NAME_PATTERN.matcher(name).find()) {
+        if (!VM_USER_NAME_PATTERN.matcher(name).matches()) {
             return AzureValidationInfo.error(INVALID_ALPHANUMERIC_MESSAGE, txtUserName);
         }
         // validate reserved words
