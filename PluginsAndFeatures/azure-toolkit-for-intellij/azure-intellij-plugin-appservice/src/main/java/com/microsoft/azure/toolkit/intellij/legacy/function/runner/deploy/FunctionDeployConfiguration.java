@@ -180,4 +180,9 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
                 .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"appSettings".equalsIgnoreCase(accessor.getName())))
                 .ifPresent(element::addContent);
     }
+
+    public void setAppSettings(Map<String, String> appSettings) {
+        functionDeployModel.getFunctionAppConfig().setAppSettings(appSettings);
+        FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), appSettings);
+    }
 }
