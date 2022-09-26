@@ -78,16 +78,14 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
     }
 
     public String getResourceType() {
-        final ResourceId parent = this.id.parent();
-        final AbstractAzResource<?, ?, ?> parentResource = Azure.az().getById(parent.id());
-        if (Objects.isNull(parentResource)) {
-            return id.resourceType();
-        }
-        return parentResource.getSubModules().stream()
-                .filter(module -> StringUtils.equals(module.getName(), this.id.resourceType()))
-                .findFirst()
-                .map(AzResourceModule::getResourceTypeName)
-                .orElseGet(id::resourceType);
+        final AbstractAzResource<?, ?, ?> parent = Optional.ofNullable(this.id.parent())
+                .map(parentId -> Azure.az().getById(parentId.id())).orElse(null);
+        return Objects.isNull(parent) ? id.resourceType() :
+                parent.getSubModules().stream()
+                        .filter(module -> StringUtils.equals(module.getName(), this.id.resourceType()))
+                        .findFirst()
+                        .map(AzResourceModule::getResourceTypeName)
+                        .orElseGet(id::resourceType);
     }
 
     @Override
