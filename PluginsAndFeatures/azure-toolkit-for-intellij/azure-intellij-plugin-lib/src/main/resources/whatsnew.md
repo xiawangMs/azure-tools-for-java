@@ -24,7 +24,7 @@
 - [#4725](https://github.com/microsoft/azure-tools-for-java/issues/4725): Misaligned label in Web App property view
 - [#301](https://github.com/microsoft/azure-tools-for-java/issues/301): Should validate username when creating a VM
 - [#106](https://github.com/microsoft/azure-tools-for-java/issues/106): azureSettings file in WebApps shouldn't be created by default
-- Other bugs recorded in [Azure DevOps](https://dev.azure.com/mseng/VSJava/_sprints/backlog/Java%20Azure%20Tooling/VSJava/CY2022/2022-09)
+- Other bugs.
 
 ## 3.68.1
 ### Fixed
