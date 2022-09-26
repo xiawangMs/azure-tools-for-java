@@ -65,7 +65,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JLabel lblAppSettings;
     private JCheckBox chkSlot;
     private DeploymentSlotComboBox cbDeploymentSlot;
-    private JLabel lblDeploymentSlot;
     private FunctionAppSettingsTable appSettingsTable;
     private String appSettingsKey;
     private String appSettingsResourceId;
@@ -91,6 +90,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         lblModule.setLabelFor(cbFunctionModule);
         lblFunction.setLabelFor(functionAppComboBox);
         lblAppSettings.setLabelFor(appSettingsTable);
+        final JLabel lblDeploymentSlot = new JLabel("Deployment Slot:");
         lblDeploymentSlot.setLabelFor(cbDeploymentSlot);
         fillModules();
     }
