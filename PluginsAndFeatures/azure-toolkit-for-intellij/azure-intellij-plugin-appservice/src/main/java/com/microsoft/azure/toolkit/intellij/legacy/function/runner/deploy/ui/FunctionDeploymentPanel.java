@@ -66,8 +66,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JCheckBox chkSlot;
     private DeploymentSlotComboBox cbDeploymentSlot;
     private JLabel lblDeploymentSlot;
-    private JCheckBox checkBox1;
-    private DeploymentSlotComboBox deploymentSlotComboBox1;
     private FunctionAppSettingsTable appSettingsTable;
     private String appSettingsKey;
     private String appSettingsResourceId;

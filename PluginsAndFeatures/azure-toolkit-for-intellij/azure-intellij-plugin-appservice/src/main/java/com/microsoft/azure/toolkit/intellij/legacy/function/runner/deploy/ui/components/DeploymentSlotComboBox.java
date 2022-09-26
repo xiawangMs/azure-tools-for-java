@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.IDeploymentSlotModule;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -92,7 +91,7 @@ public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> 
         if (module == null) {
             return Collections.emptyList();
         }
-        final List<DeploymentSlotConfig> result = module.listDeploymentSlots().stream().map(slot ->
+        final List<DeploymentSlotConfig> result = module.list().stream().map(slot ->
                 DeploymentSlotConfig.builder().name(slot.getName()).build()).collect(Collectors.toList());
         this.draftItems.stream().filter(config -> !result.contains(config)).forEach(result::add);
         return result;
