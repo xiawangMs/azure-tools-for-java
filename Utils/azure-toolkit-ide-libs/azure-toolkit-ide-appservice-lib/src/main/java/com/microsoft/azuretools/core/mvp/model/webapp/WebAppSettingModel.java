@@ -39,6 +39,7 @@ public class WebAppSettingModel {
     private String newSlotConfigurationSource;
     // create related
     private String webAppName = "";
+    private boolean creatingResGrp = false;
     private String resourceGroup = "";
     private boolean creatingAppServicePlan = false;
     private String appServicePlanName = "";
@@ -97,6 +98,7 @@ public class WebAppSettingModel {
             result.put(TelemetryConstants.SUBSCRIPTIONID, getSubscriptionId());
             result.put(TelemetryConstants.CREATE_NEWWEBAPP, String.valueOf(isCreatingNew()));
             result.put(TelemetryConstants.CREATE_NEWASP, String.valueOf(isCreatingAppServicePlan()));
+            result.put(TelemetryConstants.CREATE_NEWRG, String.valueOf(isCreatingResGrp()));
             result.put(TelemetryConstants.FILETYPE, FilenameUtils.getExtension(getTargetName()));
             result.put(TelemetryConstants.PRICING_TIER, pricing);
             result.put(TelemetryConstants.REGION, region);
