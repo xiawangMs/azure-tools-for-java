@@ -24,7 +24,16 @@
 - [#4725](https://github.com/microsoft/azure-tools-for-java/issues/4725): Misaligned label in Web App property view
 - [#301](https://github.com/microsoft/azure-tools-for-java/issues/301): Should validate username when creating a VM
 - [#106](https://github.com/microsoft/azure-tools-for-java/issues/106): azureSettings file in WebApps shouldn't be created by default
+- No response when click on Open `Azure Storage Expolrer for storage` while the computer does not install Azure Storage Explorer.
+- The shortcut keys for the browser and expansion are the same.
+- All the roles of the HDInsight cluster are reader.
+- Local console and Livy console run failed.
+- Job view page: The two links in the job view page open the related pages very slowly.
+- Click on Job node, show IDE error occurred.
 - Other bugs.
+
+### Changed
+- Remove menu `Submit Apache Spark Application`
 
 ## 3.68.1
 ### Fixed
