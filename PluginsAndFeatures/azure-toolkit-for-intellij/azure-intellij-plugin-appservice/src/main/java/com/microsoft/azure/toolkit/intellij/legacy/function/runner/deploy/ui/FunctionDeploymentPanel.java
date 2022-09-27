@@ -24,14 +24,13 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.ui.com
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
-import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
-import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,12 +38,10 @@ import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.event.ItemEvent;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -85,7 +82,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             }
         });
         functionAppComboBox.setRequired(true);
-        chkSlot.addItemListener(e -> onSelectSlot());
+        chkSlot.addItemListener(e -> onSlotCheckBoxChanged());
 
         lblModule.setLabelFor(cbFunctionModule);
         lblFunction.setLabelFor(functionAppComboBox);
@@ -202,24 +199,23 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             return;
         }
         // disable slot for draft function
+        this.chkSlot.setEnabled(StringUtils.isNotEmpty(value.getResourceId()));
         if (StringUtils.isEmpty(value.getResourceId())) {
             this.chkSlot.setSelected(false);
         }
-        this.chkSlot.setEnabled(StringUtils.isNotEmpty(value.getResourceId()));
-        this.toggleDeploymentSlot(chkSlot.isSelected());
         this.cbDeploymentSlot.setAppService(value.getResourceId());
         if (!this.chkSlot.isSelected()) {
             loadAppSettings(getResourceId(value, null));
         }
     }
 
-    private void loadAppSettings(@Nonnull final String resourceId) {
+    private void loadAppSettings(@Nullable final String resourceId) {
         if (StringUtils.equalsIgnoreCase(resourceId, this.appSettingsResourceId) && MapUtils.isNotEmpty(this.appSettingsTable.getAppSettings())) {
             return;
         }
         this.appSettingsResourceId = resourceId;
         this.appSettingsTable.loadAppSettings(() -> {
-            final AbstractAzResource<?, ?, ?> resource = Azure.az().getById(resourceId);
+            final AbstractAzResource<?, ?, ?> resource = StringUtils.isBlank(resourceId) ? null : Azure.az().getById(resourceId);
             return resource instanceof AppServiceAppBase<?, ?, ?> ? ((AppServiceAppBase<?, ?, ?>) resource).getAppSettings() : Collections.emptyMap();
         });
     }
@@ -247,10 +243,14 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         }
     }
 
-    private void onSelectSlot() {
+    private void onSlotCheckBoxChanged() {
         toggleDeploymentSlot(chkSlot.isSelected());
-        if (!chkSlot.isSelected() && functionAppComboBox.getValue() != null) {
-            // reload app settings for function app
+        final FunctionAppConfig function = functionAppComboBox.getValue();
+        final DeploymentSlotConfig slot = cbDeploymentSlot.getValue();
+        // reload app settings when switch slot configuration
+        if (chkSlot.isSelected() && ObjectUtils.allNotNull(function, slot)) {
+            loadAppSettings(getResourceId(functionAppComboBox.getValue(), slot));
+        } else if (!chkSlot.isSelected() && Objects.nonNull(function)) {
             loadAppSettings(getResourceId(functionAppComboBox.getValue(), null));
         }
     }
@@ -269,12 +269,15 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 .filter(Objects::nonNull).collect(Collectors.toList());
     }
 
+    @Nullable
     private String getResourceId(@Nonnull FunctionAppConfig config, @Nullable DeploymentSlotConfig slotConfig) {
         if (Objects.isNull(slotConfig)) {
             return StringUtils.isNoneBlank(config.getResourceId()) ? config.getResourceId() :
                     Azure.az(AzureFunctions.class).functionApps(config.getSubscriptionId()).getOrTemp(config.getName(), config.getResourceGroupName()).getId();
         } else {
-            return Azure.az(AzureFunctions.class).functionApp(config.getResourceId()).slots().getOrTemp(slotConfig.getName(), null).getId();
+            return Optional.ofNullable(Azure.az(AzureFunctions.class).functionApp(config.getResourceId()))
+                    .map(func -> func.slots().getOrTemp(slotConfig.getName(), null).getId())
+                    .orElse(null);
         }
     }
 
