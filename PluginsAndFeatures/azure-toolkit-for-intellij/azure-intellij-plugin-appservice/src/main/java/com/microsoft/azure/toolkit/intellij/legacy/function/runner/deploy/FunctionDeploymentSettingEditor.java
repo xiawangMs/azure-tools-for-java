@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingsEditor;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.ui.FunctionDeploymentPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Objects;
 
@@ -33,6 +34,7 @@ public class FunctionDeploymentSettingEditor extends AzureSettingsEditor<Functio
                 .filter(i -> !i.isValid())
                 .findAny().orElse(null);
         if (Objects.nonNull(error)) {
+            mainPanel.validateAllInputsAsync().subscribeOn(Schedulers.boundedElastic()).subscribe(ignore -> this.fireEditorStateChanged());
             final String message = error.getType() == AzureValidationInfo.Type.PENDING ? "Validating..." : error.getMessage();
             throw new ConfigurationException(message);
         }
