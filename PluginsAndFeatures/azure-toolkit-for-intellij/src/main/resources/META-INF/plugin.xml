@@ -74,7 +74,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-cosmos.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
-  <!-- uncomment to enable plugin in all products
+  <!-- uncomment  to enable plugin in all products
   <depends>com.intellij.modules.lang</depends>
   -->
   <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
