@@ -14,6 +14,7 @@ import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.DeploymentSlotConfig;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
@@ -25,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -45,12 +45,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 
-public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> {
+public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements AzureFormPanel<FunctionDeployConfiguration> {
 
     private JPanel pnlRoot;
     private HyperlinkLabel lblCreateFunctionApp;
@@ -66,9 +65,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private String appSettingsKey;
     private String appSettingsResourceId;
     private Module previousModule = null;
+    private final FunctionDeployConfiguration configuration;
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
+        this.configuration = functionDeployConfiguration;
         this.appSettingsKey = StringUtils.firstNonBlank(functionDeployConfiguration.getAppSettingsKey(), UUID.randomUUID().toString());
         $$$setupUI$$$();
 
@@ -261,12 +262,21 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         cbDeploymentSlot.validateValueAsync();
     }
 
-    // todo: @hanli migrate to AzureFormInput
-    public List<AzureValidationInfo> getAllValidationInfos(final boolean revalidateIfNone) {
-        final List<AzureFormInput<?>> inputs = Arrays.asList(functionAppComboBox, cbDeploymentSlot);
-        return inputs.stream()
-                .map(input -> input.getValidationInfo(revalidateIfNone))
-                .filter(Objects::nonNull).collect(Collectors.toList());
+    @Override
+    public void setValue(FunctionDeployConfiguration data) {
+        resetFromConfig(data);
+    }
+
+    @Override
+    public FunctionDeployConfiguration getValue() {
+        final FunctionDeployConfiguration result = new FunctionDeployConfiguration(configuration.getProject(), configuration.getFactory(), configuration.getName());
+        apply(result);
+        return result;
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return Arrays.asList(functionAppComboBox, cbDeploymentSlot);
     }
 
     @Nullable
@@ -279,9 +289,5 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                     .map(func -> func.slots().getOrTemp(slotConfig.getName(), null).getId())
                     .orElse(null);
         }
-    }
-
-    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
-    void $$$setupUI$$$() {
     }
 }
