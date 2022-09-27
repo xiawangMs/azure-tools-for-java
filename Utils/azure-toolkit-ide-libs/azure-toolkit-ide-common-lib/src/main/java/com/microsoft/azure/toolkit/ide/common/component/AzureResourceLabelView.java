@@ -90,8 +90,9 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         tm.runOnPooledThread(() -> {
             this.icon = iconProvider.getIcon(this.resource);
-            this.description = descriptionLoader.apply(this.resource);
-            this.enabled = !this.resource.getFormalStatus().isDeleted();
+            final boolean deleted = this.resource.getFormalStatus().isDeleted();
+            this.enabled = !deleted;
+            this.description = deleted ? AzResource.Status.DELETED : descriptionLoader.apply(this.resource);
             tm.runLater(this::refreshView);
         });
     }
