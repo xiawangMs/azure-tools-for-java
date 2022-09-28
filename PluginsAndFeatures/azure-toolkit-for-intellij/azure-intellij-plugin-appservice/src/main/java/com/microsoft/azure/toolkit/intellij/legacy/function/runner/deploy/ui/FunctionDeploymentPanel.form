@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="4" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="604" height="220"/>
+      <xy x="20" y="20" width="604" height="133"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -53,18 +53,6 @@
           <text value="Module: "/>
         </properties>
       </component>
-      <component id="56e9e" class="javax.swing.JLabel" binding="lblDeploymentSlot">
-        <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="-1" height="24"/>
-            <preferred-size width="-1" height="24"/>
-            <maximum-size width="-1" height="24"/>
-          </grid>
-        </constraints>
-        <properties>
-          <text value="Deployment Slot:"/>
-        </properties>
-      </component>
       <component id="760ca" class="com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox" binding="functionAppComboBox" custom-create="true">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -73,21 +61,10 @@
       </component>
       <component id="35551" class="com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.ui.components.DeploymentSlotComboBox" binding="cbDeploymentSlot" custom-create="true">
         <constraints>
-          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <visible value="true"/>
-        </properties>
-      </component>
-      <component id="60952" class="javax.swing.JCheckBox" binding="chkSlot">
-        <constraints>
-          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <contentAreaFilled value="true"/>
-          <hideActionText value="false"/>
-          <horizontalTextPosition value="4"/>
-          <text value="Deploy To Slot"/>
         </properties>
       </component>
       <component id="2bbdf" class="javax.swing.JComboBox" binding="cbFunctionModule">
@@ -95,6 +72,17 @@
           <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
+      </component>
+      <component id="60952" class="javax.swing.JCheckBox" binding="chkSlot">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <contentAreaFilled value="true"/>
+          <hideActionText value="false"/>
+          <horizontalTextPosition value="4"/>
+          <text value="Deploy to Slot:"/>
+        </properties>
       </component>
     </children>
   </grid>

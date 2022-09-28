@@ -70,7 +70,7 @@ public class ResourceConnectionExplorer extends Tree {
             final MessageBusConnection connection = project.getMessageBus().connect();
             connection.subscribe(CONNECTIONS_REFRESHED, () -> this.view().refreshChildren());
             connection.subscribe(CONNECTION_CHANGED, (p, conn, action) -> {
-                this.view().refreshChildren(true);
+                this.view().refreshChildren();
             });
         }
     }
