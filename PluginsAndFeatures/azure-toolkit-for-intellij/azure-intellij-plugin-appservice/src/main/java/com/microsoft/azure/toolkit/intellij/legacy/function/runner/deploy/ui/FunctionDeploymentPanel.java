@@ -188,11 +188,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         }
         toggleDeploymentSlot(chkSlot.isSelected());
         if (chkSlot.isSelected()) {
-            if (value.isNewCreate()) {
-                appSettingsTable.clear();
-            } else {
-                loadAppSettings(getResourceId(functionAppComboBox.getValue(), value));
-            }
+            loadAppSettings(getResourceId(Objects.requireNonNull(functionAppComboBox.getValue()), value), value.isNewCreate());
         }
     }
 
@@ -208,17 +204,17 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         toggleDeploymentSlot(chkSlot.isSelected());
         this.cbDeploymentSlot.setAppService(value.getResourceId());
         if (!this.chkSlot.isSelected()) {
-            loadAppSettings(getResourceId(value, null));
+            loadAppSettings(getResourceId(value, null), StringUtils.isEmpty(value.getResourceId()));
         }
     }
 
-    private void loadAppSettings(@Nullable final String resourceId) {
+    private void loadAppSettings(@Nullable final String resourceId, final boolean isNewResource) {
         if (StringUtils.equalsIgnoreCase(resourceId, this.appSettingsResourceId) && MapUtils.isNotEmpty(this.appSettingsTable.getAppSettings())) {
             return;
         }
         this.appSettingsResourceId = resourceId;
         this.appSettingsTable.loadAppSettings(() -> {
-            final AbstractAzResource<?, ?, ?> resource = StringUtils.isBlank(resourceId) ? null : Azure.az().getById(resourceId);
+            final AbstractAzResource<?, ?, ?> resource = StringUtils.isBlank(resourceId) || isNewResource ? null : Azure.az().getById(resourceId);
             return resource instanceof AppServiceAppBase<?, ?, ?> ? ((AppServiceAppBase<?, ?, ?>) resource).getAppSettings() : Collections.emptyMap();
         });
     }
@@ -252,9 +248,9 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         final DeploymentSlotConfig slot = cbDeploymentSlot.getValue();
         // reload app settings when switch slot configuration
         if (chkSlot.isSelected() && ObjectUtils.allNotNull(function, slot)) {
-            loadAppSettings(getResourceId(functionAppComboBox.getValue(), slot));
+            loadAppSettings(getResourceId(functionAppComboBox.getValue(), slot), slot.isNewCreate());
         } else if (!chkSlot.isSelected() && Objects.nonNull(function)) {
-            loadAppSettings(getResourceId(functionAppComboBox.getValue(), null));
+            loadAppSettings(getResourceId(functionAppComboBox.getValue(), null), StringUtils.isEmpty(function.getResourceId()));
         }
     }
 
