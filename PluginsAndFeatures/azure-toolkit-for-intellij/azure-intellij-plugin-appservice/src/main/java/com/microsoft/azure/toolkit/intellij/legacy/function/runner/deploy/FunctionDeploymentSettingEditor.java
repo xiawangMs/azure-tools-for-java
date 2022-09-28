@@ -11,15 +11,19 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingsEditor;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.ui.FunctionDeploymentPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class FunctionDeploymentSettingEditor extends AzureSettingsEditor<FunctionDeployConfiguration> {
 
     private final FunctionDeploymentPanel mainPanel;
     private final FunctionDeployConfiguration functionDeployConfiguration;
+
+    private final TailingDebouncer debouncer = new TailingDebouncer(this::updateValidationInfo, 1000);
 
     public FunctionDeploymentSettingEditor(Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
@@ -34,10 +38,20 @@ public class FunctionDeploymentSettingEditor extends AzureSettingsEditor<Functio
                 .filter(i -> !i.isValid())
                 .findAny().orElse(null);
         if (Objects.nonNull(error)) {
-            mainPanel.validateAllInputsAsync().subscribeOn(Schedulers.boundedElastic()).subscribe(ignore -> this.fireEditorStateChanged());
+            this.debouncer.debounce();
             final String message = error.getType() == AzureValidationInfo.Type.PENDING ? "Validating..." : error.getMessage();
             throw new ConfigurationException(message);
         }
+    }
+
+    private void updateValidationInfo() {
+        this.mainPanel.validateAllInputsAsync()
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(info -> {
+                    if (info.isValid()) {
+                        this.fireEditorStateChanged();
+                    }
+                });
     }
 
     @Override
