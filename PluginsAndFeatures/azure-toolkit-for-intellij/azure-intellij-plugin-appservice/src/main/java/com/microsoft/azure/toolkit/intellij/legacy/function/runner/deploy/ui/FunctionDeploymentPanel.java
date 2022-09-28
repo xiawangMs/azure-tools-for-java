@@ -186,6 +186,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         if (value == null) {
             return;
         }
+        toggleDeploymentSlot(chkSlot.isSelected());
         if (chkSlot.isSelected()) {
             if (value.isNewCreate()) {
                 appSettingsTable.clear();
@@ -204,6 +205,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         if (StringUtils.isEmpty(value.getResourceId())) {
             this.chkSlot.setSelected(false);
         }
+        toggleDeploymentSlot(chkSlot.isSelected());
         this.cbDeploymentSlot.setAppService(value.getResourceId());
         if (!this.chkSlot.isSelected()) {
             loadAppSettings(getResourceId(value, null));
