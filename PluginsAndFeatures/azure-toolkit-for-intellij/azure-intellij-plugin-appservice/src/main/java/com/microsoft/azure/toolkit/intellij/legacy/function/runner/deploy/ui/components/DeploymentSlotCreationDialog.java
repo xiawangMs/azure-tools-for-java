@@ -69,6 +69,7 @@ public class DeploymentSlotCreationDialog extends AzureDialog<DeploymentSlotConf
         return DeploymentSlotConfig.builder()
                 .name(txtName.getValue())
                 .configurationSource(source)
+                .newCreate(true)
                 .build();
     }
 
