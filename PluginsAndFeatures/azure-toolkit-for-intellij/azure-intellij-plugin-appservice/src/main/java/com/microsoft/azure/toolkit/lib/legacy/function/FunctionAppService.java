@@ -17,14 +17,13 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.task.DeployFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.gradle.internal.impldep.com.google.api.client.repackaged.com.google.common.base.Objects;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -88,7 +87,7 @@ public class FunctionAppService {
         }
         final Map<String, String> applicationSettings = config.getAppSettings();
         final FunctionAppBase<?, ?, ?> target = config.getDeploymentSlot() == null ? Azure.az(AzureFunctions.class).functionApp(config.getResourceId())
-                : Azure.az(AzureFunctions.class).functionApp(config.getResourceId()).slots().get(config.getDeploymentSlot().getName(), null);
+                : Objects.requireNonNull(Azure.az(AzureFunctions.class).functionApp(config.getResourceId())).slots().get(config.getDeploymentSlot().getName(), null);
         return target == null || !target.exists() ? Collections.emptySet() : Optional.ofNullable(target.getAppSettings())
                 .map(settings -> settings.keySet().stream().filter(key -> !applicationSettings.containsKey(key)).collect(Collectors.toSet()))
                 .orElseGet(Collections::emptySet);

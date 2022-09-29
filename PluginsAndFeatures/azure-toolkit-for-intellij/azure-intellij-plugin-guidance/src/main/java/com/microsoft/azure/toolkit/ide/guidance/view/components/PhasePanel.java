@@ -144,10 +144,14 @@ public class PhasePanel extends JPanel {
     class ConsoleTextMessager implements IAzureMessager {
         @Override
         public boolean show(IAzureMessage message) {
-            final String content = message.getContent();
-            PhasePanel.this.isOutputBlank = StringUtils.isBlank(content);
-            PhasePanel.this.outputPanel.setText(content);
-            PhasePanel.this.updateView(PhasePanel.this.phase.getStatus(), PhasePanel.this.detailsPanel.isVisible());
+            try {
+                final String content = message.getContent();
+                PhasePanel.this.isOutputBlank = StringUtils.isBlank(content);
+                PhasePanel.this.outputPanel.setText(content);
+                PhasePanel.this.updateView(PhasePanel.this.phase.getStatus(), PhasePanel.this.detailsPanel.isVisible());
+            } catch (RuntimeException e) {
+                // swallow exception when update output panel
+            }
             return true;
         }
     }

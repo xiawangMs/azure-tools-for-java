@@ -142,16 +142,18 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
             this.appSettingsKey = configuration.getAppSettingsKey();
         }
-        Optional.ofNullable(configuration.getConfig()).ifPresent(config -> {
-            this.functionAppComboBox.setValue(config);
-            this.functionAppComboBox.setConfigModel(config);
-            this.chkSlot.setSelected(config.getDeploymentSlot() != null);
-            this.toggleDeploymentSlot(config.getDeploymentSlot() != null);
-            this.appSettingsResourceId = StringUtils.isAllEmpty(config.getResourceId(), config.getName()) ? null :
-                    getResourceId(config, config.getDeploymentSlot());
-            Optional.ofNullable(config.getDeploymentSlot()).ifPresent(cbDeploymentSlot::setValue);
-            Optional.ofNullable(config.getAppSettings()).ifPresent(appSettingsTable::setAppSettings);
-        });
+        Optional.ofNullable(configuration.getConfig())
+                .filter(config -> !StringUtils.isAllEmpty(config.getResourceId(), config.getName()))
+                .ifPresent(config -> {
+                    this.functionAppComboBox.setValue(config);
+                    this.functionAppComboBox.setConfigModel(config);
+                    this.chkSlot.setSelected(config.getDeploymentSlot() != null);
+                    this.toggleDeploymentSlot(config.getDeploymentSlot() != null);
+                    this.appSettingsResourceId = StringUtils.isAllEmpty(config.getResourceId(), config.getName()) ? null :
+                            getResourceId(config, config.getDeploymentSlot());
+                    Optional.ofNullable(config.getDeploymentSlot()).ifPresent(cbDeploymentSlot::setValue);
+                    Optional.ofNullable(config.getAppSettings()).ifPresent(appSettingsTable::setAppSettings);
+                });
         this.previousModule = configuration.getModule();
         selectModule(previousModule);
     }
