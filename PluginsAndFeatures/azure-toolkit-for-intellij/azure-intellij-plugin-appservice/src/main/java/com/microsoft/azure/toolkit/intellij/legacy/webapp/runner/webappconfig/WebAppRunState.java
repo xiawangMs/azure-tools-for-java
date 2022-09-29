@@ -41,6 +41,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.RunProcessHandler;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -138,7 +139,8 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
         final WebContainer webContainer = Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer();
         final String javaOptsParameter = (webContainer == WebContainer.JAVA_SE || webContainer == WebContainer.JBOSS_7) ? JAVA_OPTS : CATALINA_OPTS;
-        final String javaOpts = applicationSettings.get(javaOptsParameter);
+        final String javaOpts = Optional.ofNullable(webAppConfiguration.getApplicationSettings())
+                .map(settings -> settings.get(javaOptsParameter)).orElse(StringUtils.EMPTY);
         final String javaAgentValue = String.format("-javaagent:%s", targetPath);
         if (StringUtils.contains(javaOpts, javaAgentValue)) {
             return;
@@ -148,7 +150,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
     }
 
     private void updateApplicationSettings(AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
-        final Map<String, String> applicationSettings = new HashMap<>(webAppConfiguration.getApplicationSettings());
+        final Map<String, String> applicationSettings = new HashMap<>(ObjectUtils.firstNonNull(webAppConfiguration.getApplicationSettings(), Collections.emptyMap()));
         final Set<String> appSettingsToRemove = webAppConfiguration.isCreatingNew() ? Collections.emptySet() : getAppSettingsToRemove(deployTarget, applicationSettings);
         applicationSettings.putAll(appSettingsForResourceConnection);
         if (MapUtils.isEmpty(applicationSettings)) {

@@ -193,6 +193,9 @@ public class FunctionUtils {
         type = AzureOperation.Type.TASK
     )
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
+        if (module == null) {
+            return new PsiMethod[0];
+        }
         final PsiClass functionNameClass = JavaPsiFacade.getInstance(module.getProject())
                                                         .findClass(AZURE_FUNCTION_ANNOTATION_CLASS,
                                                                    GlobalSearchScope.moduleWithLibrariesScope(module));
