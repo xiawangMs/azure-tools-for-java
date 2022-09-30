@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.task.DeployFunctionAppTask;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,7 +51,11 @@ public class FunctionAppService {
 
     public FunctionAppBase<?, ?, ?> createOrUpdateFunctionApp(final FunctionAppConfig config) {
         final CreateOrUpdateFunctionAppTask task = new CreateOrUpdateFunctionAppTask(convertToTaskConfig(config));
-        return task.execute();
+        final FunctionAppBase<?, ?, ?> execute = task.execute();
+        if (execute instanceof AzResource.Draft) {
+            ((AzResource.Draft<?, ?>) execute).reset();
+        }
+        return execute;
     }
 
     private com.microsoft.azure.toolkit.lib.appservice.config.FunctionAppConfig convertToTaskConfig(final FunctionAppConfig config) {
