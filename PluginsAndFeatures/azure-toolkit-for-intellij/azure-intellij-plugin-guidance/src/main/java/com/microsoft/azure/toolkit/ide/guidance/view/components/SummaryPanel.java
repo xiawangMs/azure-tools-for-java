@@ -55,6 +55,7 @@ public class SummaryPanel extends JPanel {
 
     @Override
     public void addNotify() {
+        super.addNotify();
         if (this.focused) {
             Optional.ofNullable(defaultButton).ifPresent(button -> Optional.ofNullable(getRootPane()).ifPresent(pane -> pane.setDefaultButton(button)));
         }

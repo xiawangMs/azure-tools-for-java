@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.IDeploymentSlotModule;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -71,7 +70,7 @@ public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> 
 
     private void createResource() {
         final List<DeploymentSlotConfig> existingSlots = this.getItems().stream()
-                .filter(config -> StringUtils.isNoneBlank(config.getConfigurationSource()))
+                .filter(config -> !config.isNewCreate())
                 .collect(Collectors.toList());
         final DeploymentSlotCreationDialog dialog = new DeploymentSlotCreationDialog(project, existingSlots);
         dialog.setOkActionListener(config -> {
@@ -93,7 +92,7 @@ public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> 
             return Collections.emptyList();
         }
         final List<DeploymentSlotConfig> result = module.list().stream().map(slot ->
-                DeploymentSlotConfig.builder().name(slot.getName()).build()).collect(Collectors.toList());
+                DeploymentSlotConfig.builder().name(slot.getName()).newCreate(false).build()).collect(Collectors.toList());
         this.draftItems.stream().filter(config -> !result.contains(config)).forEach(result::add);
         return result;
     }

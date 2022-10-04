@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import org.apache.commons.lang3.StringUtils;
 
@@ -59,6 +60,7 @@ public class FunctionAppCreationDialog extends ConfigDialog<FunctionAppConfig> {
         return contentPane;
     }
 
+    @ExceptionNotification
     private void createUIComponents() {
         // TODO: place custom component creation code here
         final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
