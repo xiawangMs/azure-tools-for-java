@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,6 +62,7 @@ public class WebAppCreationDialog extends ConfigDialog<WebAppConfig> {
         return message("webapp.create.dialog.title");
     }
 
+    @ExceptionNotification
     private void createUIComponents() {
         // TODO: place custom component creation code here
         advancedForm = new WebAppConfigFormPanelAdvance(project);

@@ -9,12 +9,12 @@ import com.intellij.database.dataSource.DatabaseDriverImpl;
 import com.intellij.database.dataSource.DatabaseDriverManager;
 import com.intellij.database.dataSource.DatabaseDriverManagerImpl;
 import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -38,7 +38,7 @@ public class DbToolsWorkaround extends PreloadingActivity {
 
     @Override
     public void preload(@Nonnull ProgressIndicator indicator) {
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
             DbToolsWorkaround.makeAccountShowAtTop();
             loadMongoDriver();
             loadCassandraDriver();
