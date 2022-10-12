@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
@@ -11,6 +12,7 @@ import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Objects;
@@ -22,6 +24,7 @@ public class CoursePanel {
     private JLabel lblTitle;
     private JTextPane areaDescription;
     private JButton startButton;
+    private JPanel tagsPanel;
 
     private final Project project;
 
@@ -44,6 +47,12 @@ public class CoursePanel {
         this.areaDescription.setFont(JBFont.medium());
         this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
         this.areaDescription.setText(course.getDescription());
+        course.getTags().forEach(tag -> {
+            final JLabel label = new JLabel(tag);
+            final Border borderLine = new RoundBorder(JBColor.BLACK, 20);
+            label.setBorder(borderLine);
+            this.tagsPanel.add(label);
+        });
     }
 
     public void toggleSelectedStatus(final boolean isSelected) {
@@ -70,5 +79,6 @@ public class CoursePanel {
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.rootPanel = new RoundedPanel(5);
+        this.tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 10));
     }
 }
