@@ -28,7 +28,7 @@ public class ShowGettingStartAction extends AzureAnAction {
     @Override
     public void update(AnActionEvent e) {
         final boolean ifShowRedIcon = StringUtils.isEmpty(AzureStoreManager.getInstance().getIdeStore().getProperty(AzureConfigInitializer.NEW_FEATURE, GUIDANCE));
-        e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(ifShowRedIcon ? GET_START : GET_START_NEW));
+        e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(ifShowRedIcon ? GET_START_NEW : GET_START));
     }
 
 }

@@ -37,6 +37,6 @@ public class GetStartAction extends NodeAction {
     @Override
     public AzureIcon getIconSymbol() {
         final boolean ifShowRedIcon = StringUtils.isEmpty(AzureStoreManager.getInstance().getIdeStore().getProperty(AzureConfigInitializer.NEW_FEATURE, GUIDANCE));
-        return ifShowRedIcon ? AzureIcons.Common.GET_START : AzureIcons.Common.GET_START_NEW;
+        return ifShowRedIcon ? AzureIcons.Common.GET_START_NEW : AzureIcons.Common.GET_START;
     }
 }
