@@ -49,7 +49,6 @@ public class CoursePanel {
         this.startButton.setVisible(false);
         this.startButton.addActionListener(e -> openGuidance());
         this.areaDescription.setFont(JBFont.medium());
-        this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
         this.areaDescription.setText(course.getDescription());
         course.getTags().forEach(tag -> this.tagsPanel.add(decorateTagLabel(tag)));
     }
@@ -83,7 +82,8 @@ public class CoursePanel {
         final Border borderLine = new RoundedLineBorder(new JBColor(12895428, 6185056), 2);
         final Border margin = JBUI.Borders.empty(0, 6);
         label.setBorder(new CompoundBorder(borderLine, margin));
-        label.setBackground(new JBColor(JBColor.WHITE.getRGB(), 5001298));
+        label.setOpaque(true);
+        label.setBackground(new JBColor(16777215, 5001298));
         label.setFont(JBFont.regular().lessOn(2));
         return label;
     }
