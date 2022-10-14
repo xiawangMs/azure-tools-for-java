@@ -83,7 +83,6 @@ public class CoursePanel {
         final Border borderLine = new RoundedLineBorder(new JBColor(12895428, 6185056), 2);
         final Border margin = JBUI.Borders.empty(0, 6);
         label.setBorder(new CompoundBorder(borderLine, margin));
-        label.setOpaque(true);
         label.setBackground(new JBColor(JBColor.WHITE.getRGB(), 5001298));
         label.setFont(JBFont.regular().lessOn(2));
         return label;
