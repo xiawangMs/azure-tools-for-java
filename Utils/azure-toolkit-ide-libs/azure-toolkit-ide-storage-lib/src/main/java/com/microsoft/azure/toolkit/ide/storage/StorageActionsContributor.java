@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -34,6 +35,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string");
     public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("group.create_storage_account");
+    public static final Action.Id<StorageFile> OPEN_FILE = Action.Id.of("storage.open_file");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -64,6 +66,11 @@ public class StorageActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(COPY_PRIMARY_KEY, copyPrimaryKey, copyPrimaryView);
         am.registerAction(COPY_PRIMARY_KEY, copyPrimaryKeyAction);
+
+        final ActionView.Builder openFileView = new ActionView.Builder("Open in Editor")
+            .title(s -> Optional.ofNullable(s).map(r -> description("storage.open_file.file", ((StorageFile) r).getName())).orElse(null))
+            .enabled(s -> s instanceof StorageFile);
+        am.registerAction(OPEN_FILE, new Action<>(OPEN_FILE, openFileView));
 
         final ActionView.Builder createAccountView = new ActionView.Builder("Storage Account")
             .title(s -> Optional.ofNullable(s).map(r -> description("storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
