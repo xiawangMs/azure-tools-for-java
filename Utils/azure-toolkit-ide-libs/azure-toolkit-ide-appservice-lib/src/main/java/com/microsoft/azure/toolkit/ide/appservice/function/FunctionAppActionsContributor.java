@@ -12,16 +12,15 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDeploymentSlot;
-import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDeploymentSlotModule;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.Optional;
@@ -42,6 +41,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.function.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.function.deployment_slot";
 
+    public static final Action.Id<FunctionAppBase<?,?,?>> ENABLE_REMOTE_DEBUGGING = Action.Id.of("function.enable_remote_debugging");
+    public static final Action.Id<FunctionAppBase<?,?,?>> DISABLE_REMOTE_DEBUGGING = Action.Id.of("function.disable_remote_debugging");
+    public static final Action.Id<FunctionAppBase<?,?,?>> REMOTE_DEBUGGING = Action.Id.of("function.remote_debugging");
     public static final Action.Id<FunctionAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("function.swap_deployment_slot");
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("function.refresh_functions");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("function.trigger_function");
@@ -78,6 +80,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.RESTART,
             ResourceCommonActionsContributor.DELETE,
             "---",
+            FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING,
+            FunctionAppActionsContributor.DISABLE_REMOTE_DEBUGGING,
+            FunctionAppActionsContributor.REMOTE_DEBUGGING,
             AppServiceActionsContributor.START_STREAM_LOG,
             AppServiceActionsContributor.STOP_STREAM_LOG
             // todo: add profile actions like log streaming
@@ -97,6 +102,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.RESTART,
                 ResourceCommonActionsContributor.DELETE,
                 "---",
+                FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING,
+                FunctionAppActionsContributor.DISABLE_REMOTE_DEBUGGING,
+                FunctionAppActionsContributor.REMOTE_DEBUGGING,
                 AppServiceActionsContributor.START_STREAM_LOG,
                 AppServiceActionsContributor.STOP_STREAM_LOG
         );
@@ -162,6 +170,21 @@ public class FunctionAppActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> description("function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_FUNCTION, new Action<>(GROUP_CREATE_FUNCTION, createFunctionView));
+
+        final ActionView.Builder enableRemoteDebuggingView = new ActionView.Builder("Enable Remote Debugging")
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.enable_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
+                .enabled(s -> s instanceof FunctionAppBase<?,?,?> && ((AzResourceBase) s).getFormalStatus().isRunning());
+        am.registerAction(ENABLE_REMOTE_DEBUGGING, new Action<>(ENABLE_REMOTE_DEBUGGING, enableRemoteDebuggingView));
+
+        final ActionView.Builder disableRemoteDebuggingView = new ActionView.Builder("Disable Remote Debugging")
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.disable_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
+                .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning());
+        am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
+
+        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
+                .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning());
+        am.registerAction(REMOTE_DEBUGGING, new Action<>(REMOTE_DEBUGGING, attachDebuggerView));
     }
 
     @Override

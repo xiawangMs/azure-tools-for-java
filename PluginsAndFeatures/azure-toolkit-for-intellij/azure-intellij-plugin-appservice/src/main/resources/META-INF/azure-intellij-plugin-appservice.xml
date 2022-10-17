@@ -26,6 +26,7 @@
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionLocalRunner"/>
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppRunner"/>
 
+        <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionPortForwardingTaskProvider" id="PortForwardingTaskProviderId"/>
         <facetType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.facet.FunctionsFacetType"/>
         <moduleBuilder builderClass="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionsModuleBuilder"/>
         <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.FunctionRunConfigurationProducer"/>
