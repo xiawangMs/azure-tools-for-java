@@ -56,7 +56,7 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AbstractAzService<?, ?>
-                || r instanceof AzResourceModule<?, ?> || r instanceof AbstractAzResource<?, ?, ?>;
+                || r instanceof AzResourceModule<?> || r instanceof AbstractAzResource<?, ?, ?>;
         final BiConsumer<Object, AnActionEvent> handler = (c, e) ->
                 OpenReferenceBookAction.openSdkReferenceBook(e.getProject(), getFeatureFromSource(c));
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK, condition, handler);
@@ -66,8 +66,8 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
     private static String getFeatureFromSource(@Nonnull Object source) {
         if (source instanceof AbstractAzService<?, ?>) {
             return SERVICE_FEATURE_MAP.get(((AbstractAzService<?, ?>) source).getFullResourceType());
-        } else if (source instanceof AzResourceModule<?, ?>) {
-            return SERVICE_FEATURE_MAP.get(((AzResourceModule<?, ?>) source).getFullResourceType());
+        } else if (source instanceof AzResourceModule<?>) {
+            return SERVICE_FEATURE_MAP.get(((AzResourceModule<?>) source).getFullResourceType());
         } else if (source instanceof AbstractAzResource<?, ?, ?>) {
             return SERVICE_FEATURE_MAP.get(((AbstractAzResource<?, ?, ?>) source).getFullResourceType());
         }

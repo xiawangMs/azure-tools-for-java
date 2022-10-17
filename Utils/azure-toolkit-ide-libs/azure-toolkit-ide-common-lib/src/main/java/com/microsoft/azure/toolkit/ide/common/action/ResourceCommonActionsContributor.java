@@ -179,7 +179,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 } else if (r instanceof AzService) {
                     name = ((AzService) r).getName();
                 } else if (r instanceof AzResourceModule) {
-                    name = ((AzResourceModule<?, ?>) r).getResourceTypeName();
+                    name = ((AzResourceModule<?>) r).getResourceTypeName();
                 }
                 return description("resource.create_resource.type", name);
             }).orElse(null)).enabled(s -> s instanceof AzService || s instanceof AzResourceModule ||
