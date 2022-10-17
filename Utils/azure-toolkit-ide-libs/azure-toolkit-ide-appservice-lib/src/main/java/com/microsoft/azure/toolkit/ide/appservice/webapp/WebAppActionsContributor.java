@@ -112,19 +112,19 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<AzResource<?, ?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase &&
+        final BiPredicate<AzResource<?, ?>, Object> startCondition = (r, e) -> r instanceof AppServiceAppBase &&
             StringUtils.equals(r.getStatus(), AzResource.Status.STOPPED);
-        final BiConsumer<AzResource<?, ?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
+        final BiConsumer<AzResource<?, ?>, Object> startHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).start();
         am.registerHandler(ResourceCommonActionsContributor.START, startCondition, startHandler);
 
-        final BiPredicate<AzResource<?, ?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase &&
+        final BiPredicate<AzResource<?, ?>, Object> stopCondition = (r, e) -> r instanceof AppServiceAppBase &&
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
-        final BiConsumer<AzResource<?, ?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).stop();
+        final BiConsumer<AzResource<?, ?>, Object> stopHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).stop();
         am.registerHandler(ResourceCommonActionsContributor.STOP, stopCondition, stopHandler);
 
-        final BiPredicate<AzResource<?, ?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase &&
+        final BiPredicate<AzResource<?, ?>, Object> restartCondition = (r, e) -> r instanceof AppServiceAppBase &&
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
-        final BiConsumer<AzResource<?, ?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
+        final BiConsumer<AzResource<?, ?>, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
     }
 

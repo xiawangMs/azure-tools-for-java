@@ -43,7 +43,7 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public String getDescription() {
-        final AzResource<?, ?, ?> r = view.getResource();
+        final AzResource<?, ?> r = view.getResource();
         if (!r.getSubscription().isSelected()) {
             return String.format("(%s)", r.getSubscription().getName());
         }

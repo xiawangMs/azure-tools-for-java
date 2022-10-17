@@ -37,7 +37,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
     private AzureIntegerInput txtMaxThroughput;
 
     private final Project project;
-    private final AbstractAzResourceModule<?, CosmosDBAccount, ?> module;
+    private final AbstractAzResourceModule<?, ?, ?> module;
 
     public CosmosDatabaseCreationDialog(@Nullable Project project, @Nonnull CosmosDBAccount account) {
         super(project);
