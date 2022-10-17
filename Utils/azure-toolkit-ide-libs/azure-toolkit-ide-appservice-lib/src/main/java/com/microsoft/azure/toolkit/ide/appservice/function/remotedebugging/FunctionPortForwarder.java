@@ -60,4 +60,5 @@ public class FunctionPortForwarder extends AbstractPortForwarder {
         final String password = publishingProfile.getGitPassword();
         return Credentials.basic(username, password);
     }
+
 }

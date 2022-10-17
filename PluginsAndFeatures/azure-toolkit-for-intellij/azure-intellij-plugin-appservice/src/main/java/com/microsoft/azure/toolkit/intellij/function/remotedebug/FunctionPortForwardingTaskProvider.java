@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.ide.appservice.function.remotedebugging.Funct
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.channels.ServerSocketChannel;
 import java.util.Objects;
 
 public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<FunctionPortForwardingTaskProvider.FunctionPortForwarderBeforeRunTask> {
@@ -77,9 +81,14 @@ public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<Fu
 
         public boolean startPortForwarding(int localPort) {
             if (this.config instanceof RemoteConfiguration) {
-                this.forwarder = new FunctionPortForwarder(target);
-                AzureTaskManager.getInstance().runOnPooledThread(() ->  this.forwarder.startForward(localPort));
-                return true;
+                try {
+                    this.forwarder = new FunctionPortForwarder(target);
+                    final ServerSocketChannel bind = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
+                    AzureTaskManager.getInstance().runOnPooledThread(() ->  this.forwarder.startForward(bind));
+                    return true;
+                } catch (IOException e) {
+                    AzureMessager.getMessager().error(e);
+                }
             }
             return false;
         }

@@ -35,7 +35,7 @@ public class SpringPortForwarder extends AbstractPortForwarder {
         final String[] scopes = ScopeUtil.resourceToScopes(account.getEnvironment().getManagementEndpoint());
         final TokenRequestContext request = new TokenRequestContext().addScopes(scopes);
         final String accessToken = account.getTokenCredential(appInstance.getSubscriptionId()).getToken(request).block().getToken();
-        final String url = String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteUrl(), appInstance.getParent().getParent().getRemoteDebuggingPort());
+        final String url = appInstance.getRemoteDebuggingUrl();
         return new WebSocketBuilder(httpClient).uri(url).header("Authorization", String.format("Bearer %s", accessToken));
     }
 
