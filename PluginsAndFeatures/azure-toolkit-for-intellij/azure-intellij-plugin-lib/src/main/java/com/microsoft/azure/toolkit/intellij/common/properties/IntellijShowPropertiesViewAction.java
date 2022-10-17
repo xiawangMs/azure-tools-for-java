@@ -31,25 +31,25 @@ public class IntellijShowPropertiesViewAction {
 
     private static String getFileTypeName(@Nonnull AzResourceBase resource) {
         if (resource instanceof AzResource) {
-            return getNewFileTypeName((AzResource<?, ?>) resource);
+            return getNewFileTypeName((AzResource) resource);
         }
         return String.format("%s_FILE_TYPE", resource.getClass().getSimpleName().toUpperCase());
     }
 
     private static Icon getFileTypeIcon(@Nonnull AzResourceBase resource) {
         if (resource instanceof AzResource) {
-            return IntelliJAzureIcons.getIcon(getNewFileTypeIcon((AzResource<?, ?>) resource));
+            return IntelliJAzureIcons.getIcon(getNewFileTypeIcon((AzResource) resource));
         }
         return IntelliJAzureIcons.getIcon(String.format("/icons/%s.svg", resource.getClass().getSimpleName().toLowerCase()));
     }
 
     @Nonnull
-    private static String getNewFileTypeIcon(AzResource<?, ?> resource) {
+    private static String getNewFileTypeIcon(AzResource resource) {
         return String.format("/icons/%s/default.svg", resource.getFullResourceType());
     }
 
     @Nonnull
-    private static String getNewFileTypeName(AzResource<?, ?> resource) {
+    private static String getNewFileTypeName(AzResource resource) {
         return resource.getFullResourceType().replaceAll("/", ".");
     }
 }

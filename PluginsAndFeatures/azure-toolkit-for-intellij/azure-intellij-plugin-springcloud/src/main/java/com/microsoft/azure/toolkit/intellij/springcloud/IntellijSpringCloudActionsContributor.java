@@ -53,8 +53,8 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
     }
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
-        final BiPredicate<AzResource<?, ?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
-        final BiConsumer<AzResource<?, ?>, AnActionEvent> handler = (c, e) -> {
+        final BiPredicate<AzResource, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
+        final BiConsumer<AzResource, AnActionEvent> handler = (c, e) -> {
             final Project project = Objects.requireNonNull(e.getProject());
             DeploySpringCloudAppAction.deploy((SpringCloudApp) c, project);
         };

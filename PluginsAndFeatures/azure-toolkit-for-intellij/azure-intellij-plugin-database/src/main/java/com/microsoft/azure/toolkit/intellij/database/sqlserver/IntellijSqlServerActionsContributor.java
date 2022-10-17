@@ -45,7 +45,7 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateSqlServerAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<AzResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MicrosoftSqlServer,
+        am.<AzResource, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MicrosoftSqlServer,
             (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 final MicrosoftSqlServer server = (MicrosoftSqlServer) o;
@@ -63,7 +63,7 @@ public class IntellijSqlServerActionsContributor implements IActionsContributor 
         };
         am.registerHandler(SqlServerActionsContributor.GROUP_CREATE_SQLSERVER, (r, e) -> true, groupCreateServerHandler);
 
-        final BiConsumer<AzResource<?, ?>, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MicrosoftSqlServer) c);
+        final BiConsumer<AzResource, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MicrosoftSqlServer) c);
         am.registerHandler(SqlServerActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
     }
 

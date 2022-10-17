@@ -32,19 +32,19 @@ public class IntelliJVMActionsContributor implements IActionsContributor {
         final BiConsumer<Object, AnActionEvent> createHandler = (c, e) -> CreateVirtualMachineAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
-        final BiPredicate<AzResource<?, ?>, AnActionEvent> startCondition = (r, e) -> r instanceof VirtualMachine &&
+        final BiPredicate<AzResource, AnActionEvent> startCondition = (r, e) -> r instanceof VirtualMachine &&
             StringUtils.equals(r.getStatus(), AzResource.Status.STOPPED);
-        final BiConsumer<AzResource<?, ?>, AnActionEvent> startHandler = (c, e) -> ((VirtualMachine) c).start();
+        final BiConsumer<AzResource, AnActionEvent> startHandler = (c, e) -> ((VirtualMachine) c).start();
         am.registerHandler(ResourceCommonActionsContributor.START, startCondition, startHandler);
 
-        final BiPredicate<AzResource<?, ?>, AnActionEvent> stopCondition = (r, e) -> r instanceof VirtualMachine &&
+        final BiPredicate<AzResource, AnActionEvent> stopCondition = (r, e) -> r instanceof VirtualMachine &&
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
-        final BiConsumer<AzResource<?, ?>, AnActionEvent> stopHandler = (c, e) -> ((VirtualMachine) c).stop();
+        final BiConsumer<AzResource, AnActionEvent> stopHandler = (c, e) -> ((VirtualMachine) c).stop();
         am.registerHandler(ResourceCommonActionsContributor.STOP, stopCondition, stopHandler);
 
-        final BiPredicate<AzResource<?, ?>, AnActionEvent> restartCondition = (r, e) -> r instanceof VirtualMachine &&
+        final BiPredicate<AzResource, AnActionEvent> restartCondition = (r, e) -> r instanceof VirtualMachine &&
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
-        final BiConsumer<AzResource<?, ?>, AnActionEvent> restartHandler = (c, e) -> ((VirtualMachine) c).restart();
+        final BiConsumer<AzResource, AnActionEvent> restartHandler = (c, e) -> ((VirtualMachine) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
 
         final BiConsumer<ResourceGroup, AnActionEvent> groupCreateVmHandler = (r, e) -> {

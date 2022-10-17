@@ -61,7 +61,7 @@ public class AppServiceDeploymentSlotsNodeView implements NodeView {
 
     public void onEvent(AzureEvent event) {
         final Object source = event.getSource();
-        if (source instanceof AzResource && ((AzResource<?, ?>) source).id().equals(this.app.getId())) {
+        if (source instanceof AzResource && ((AzResource) source).id().equals(this.app.getId())) {
             AzureTaskManager.getInstance().runLater(this::refreshChildren);
         }
     }
