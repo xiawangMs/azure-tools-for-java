@@ -80,7 +80,7 @@ public class SpringCloudAppEnableDebuggingAction {
 
     private static Action<?> generateDebugAction(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final Action<SpringCloudApp> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.REMOTE_DEBUGGING_APP);
-        return new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Debug")) {
+        return new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Start Debug")) {
             @Override
             public void handle(Object source, Object e) {
                 remoteDebuggingAction.handle(app, e);
