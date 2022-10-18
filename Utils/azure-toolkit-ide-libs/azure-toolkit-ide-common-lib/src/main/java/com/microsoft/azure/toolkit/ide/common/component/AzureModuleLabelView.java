@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implements NodeView {
+public class AzureModuleLabelView<T extends AzResourceModule<?>> implements NodeView {
     @Nonnull
     @Getter
     private final T module;

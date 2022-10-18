@@ -51,7 +51,7 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
 
     @Nonnull
     @Override
-    public List<AbstractAzResourceModule<?, Favorite, ?>> getSubModules() {
+    public List<AbstractAzResourceModule<?, ?, ?>> getSubModules() {
         return Collections.emptyList();
     }
 
