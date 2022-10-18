@@ -33,6 +33,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -144,18 +145,29 @@ public class SpringCloudAppInstanceDebuggingAction {
     private static void showOpenUrlMessage(@Nonnull SpringCloudAppInstance appInstance) {
         final String attachSuccessMessage = "Debugger is attached to Azure Spring Apps app instance %s successfully";
         final SpringCloudApp app = appInstance.getParent().getParent();
-        AzureMessager.getMessager().success(String.format(attachSuccessMessage, appInstance.getName()), null,
-                new Action<>(Action.Id.of("springcloud.open_public_url_dialog"), new ActionView.Builder("Access Public Endpoint").enabled(s -> app.isPublicEndpointEnabled())) {
-                    @Override
-                    public void handle(Object source, Object e) {
-                        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getApplicationUrl());
-                    }
-                },
-                new Action<>(Action.Id.of("springcloud.open_test_url_dialog"), new ActionView.Builder("Access Test Endpoint")) {
-                    @Override
-                    public void handle(Object source, Object e) {
-                        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getTestUrl());
-                    }
-        });
+        AzureMessager.getMessager().success(String.format(attachSuccessMessage, appInstance.getName()), null, generateAccessPublicUrlAction(app), generateAccessTestUrlAction(app));
+    }
+
+    @Nullable
+    private static Action<?> generateAccessPublicUrlAction(@Nonnull SpringCloudApp app) {
+        if (app.isPublicEndpointEnabled()) {
+            return  new Action<>(Action.Id.of("springcloud.open_public_url_dialog"), new ActionView.Builder("Access Public Endpoint")) {
+                @Override
+                public void handle(Object source, Object e) {
+                    AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getApplicationUrl());
+                }
+            };
+        }
+        return null;
+    }
+
+
+    private static Action<?> generateAccessTestUrlAction(@Nonnull SpringCloudApp app) {
+        return new Action<>(Action.Id.of("springcloud.open_test_url_dialog"), new ActionView.Builder("Access Test Endpoint")) {
+            @Override
+            public void handle(Object source, Object e) {
+                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getTestUrl());
+            }
+        };
     }
 }
