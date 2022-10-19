@@ -31,7 +31,6 @@ import java.util.List;
 public class SpringCloudAppEnableDebuggingAction {
     private static final String FAILED_TITLE = "Failed to %s remote debugging";
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app %s.";
-    private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app %s.";
     private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?";
     private static final String CONFIRM_DIALOG_TITLE = "%s Remote Debugging";
     private static final String SUCCESS_MESSAGE = "Remote debugging is %sd for app %s successfully";
@@ -79,8 +78,8 @@ public class SpringCloudAppEnableDebuggingAction {
     }
 
     private static Action<?> generateDebugAction(@Nonnull SpringCloudApp app, @Nullable Project project) {
-        final Action<SpringCloudApp> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.REMOTE_DEBUGGING_APP);
-        return new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Start Debug")) {
+        final Action<SpringCloudApp> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ATTACH_DEBUGGER_APP);
+        return new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Attach Debugger")) {
             @Override
             public void handle(Object source, Object e) {
                 remoteDebuggingAction.handle(app, e);

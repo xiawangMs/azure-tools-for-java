@@ -40,7 +40,7 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
     @Getter
     public Key<PortForwarderBeforeRunTask> id = ID;
     @Getter
-    public String name = String.format(NAME_TEMPLATE, "spring app instance");
+    public String name = String.format(NAME_TEMPLATE, "Spring App Instance");
     @Getter
     public Icon icon = ICON;
 

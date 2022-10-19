@@ -73,12 +73,12 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
     private void registerStreamLogActionHandler(AzureActionManager am) {
         final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogAction.startLogStreaming(c, e.getProject());
-        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
+        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG_APP, condition, handler);
     }
 
     private void registerStreamLogInstanceActionHandler(AzureActionManager am) {
         final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogManager.getInstance().showStreamingLog(e.getProject(), c.getParent().getParent(), c.getName());
-        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG_INSTANCE, (r, e) -> true, handler);
+        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, (r, e) -> true, handler);
     }
 
     private void registerEnableRemoteDebuggingHandler(AzureActionManager am) {
@@ -93,12 +93,12 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
 
     private void registerStartDebuggingHandler(AzureActionManager am) {
         final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebugging(c, e.getProject());
-        am.registerHandler(SpringCloudActionsContributor.REMOTE_DEBUGGING, (r, e) -> true, handler);
+        am.registerHandler(SpringCloudActionsContributor.ATTACH_DEBUGGER, (r, e) -> true, handler);
     }
 
     private void registerStartDebuggingAppHandler(AzureActionManager am) {
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebuggingApp(c, e.getProject());
-        am.registerHandler(SpringCloudActionsContributor.REMOTE_DEBUGGING_APP, (r, e) -> true, handler);
+        am.registerHandler(SpringCloudActionsContributor.ATTACH_DEBUGGER_APP, (r, e) -> true, handler);
     }
 
     @Override

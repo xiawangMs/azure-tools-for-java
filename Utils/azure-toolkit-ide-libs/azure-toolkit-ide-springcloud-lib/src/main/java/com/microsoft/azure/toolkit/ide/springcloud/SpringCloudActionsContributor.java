@@ -33,12 +33,12 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final String APP_INSTANCE_ACTIONS = "actions.springcould.appInstance";
     public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.open_public_url");
     public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url");
-    public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.stream_log");
-    public static final Action.Id<SpringCloudAppInstance> STREAM_LOG_INSTANCE = Action.Id.of("springcloud.stream_log_instance");
+    public static final Action.Id<SpringCloudApp> STREAM_LOG_APP = Action.Id.of("springcloud.stream_log");
+    public static final Action.Id<SpringCloudAppInstance> STREAM_LOG = Action.Id.of("springcloud.stream_log_instance");
     public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
     public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging");
-    public static final Action.Id<SpringCloudAppInstance> REMOTE_DEBUGGING = Action.Id.of("springcloud.remote_debug_instance");
-    public static final Action.Id<SpringCloudApp> REMOTE_DEBUGGING_APP = Action.Id.of("springcloud.remote_debug_app");
+    public static final Action.Id<SpringCloudAppInstance> ATTACH_DEBUGGER = Action.Id.of("springcloud.attach_debugger");
+    public static final Action.Id<SpringCloudApp> ATTACH_DEBUGGER_APP = Action.Id.of("springcloud.attach_debugger_app");
     public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
 
     @Override
@@ -62,12 +62,12 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", AzureIcons.Action.LOG.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.app", ((SpringCloudApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogView));
+        am.registerAction(STREAM_LOG_APP, new Action<>(STREAM_LOG_APP, streamLogView));
 
         final ActionView.Builder streamLogInstanceView = new ActionView.Builder("Streaming Log", AzureIcons.Action.LOG.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudAppInstance && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(STREAM_LOG_INSTANCE, new Action<>(STREAM_LOG_INSTANCE, streamLogInstanceView));
+        am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogInstanceView));
 
         final ActionView.Builder createClusterView = new ActionView.Builder("Spring Apps")
             .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
@@ -86,15 +86,15 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                         Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false));
         am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
 
-        final ActionView.Builder attachDebuggerToAppView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.remote_debug.app", ((SpringCloudApp) r).getName())).orElse(null))
+        final ActionView.Builder attachDebuggerToAppView = new ActionView.Builder("Attach Debugger", AzureIcons.Action.DEBUG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.attach_debugger.app", ((SpringCloudApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(REMOTE_DEBUGGING_APP, new Action<>(REMOTE_DEBUGGING_APP, attachDebuggerToAppView));
+        am.registerAction(ATTACH_DEBUGGER_APP, new Action<>(ATTACH_DEBUGGER_APP, attachDebuggerToAppView));
 
-        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.remote_debug.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
+        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Attach Debugger", AzureIcons.Action.DEBUG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.attach_debugger.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudAppInstance);
-        am.registerAction(REMOTE_DEBUGGING, new Action<>(REMOTE_DEBUGGING, attachDebuggerView));
+        am.registerAction(ATTACH_DEBUGGER, new Action<>(ATTACH_DEBUGGER, attachDebuggerView));
     }
 
     @Override
@@ -134,17 +134,17 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.RESTART,
             ResourceCommonActionsContributor.DELETE,
             "---",
-            SpringCloudActionsContributor.STREAM_LOG,
+            SpringCloudActionsContributor.STREAM_LOG_APP,
             SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING,
             SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING,
-            SpringCloudActionsContributor.REMOTE_DEBUGGING_APP
+            SpringCloudActionsContributor.ATTACH_DEBUGGER_APP
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
 
         final ActionGroup appInstanceGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
-                SpringCloudActionsContributor.REMOTE_DEBUGGING,
-                SpringCloudActionsContributor.STREAM_LOG_INSTANCE
+                SpringCloudActionsContributor.ATTACH_DEBUGGER,
+                SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);
 
