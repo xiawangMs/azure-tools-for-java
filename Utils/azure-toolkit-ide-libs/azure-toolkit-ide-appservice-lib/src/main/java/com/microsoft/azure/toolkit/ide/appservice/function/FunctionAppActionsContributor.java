@@ -181,7 +181,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
 
-        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
+        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Attach Debugger", AzureIcons.Action.DEBUG.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("function.remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(REMOTE_DEBUGGING, new Action<>(REMOTE_DEBUGGING, attachDebuggerView));
