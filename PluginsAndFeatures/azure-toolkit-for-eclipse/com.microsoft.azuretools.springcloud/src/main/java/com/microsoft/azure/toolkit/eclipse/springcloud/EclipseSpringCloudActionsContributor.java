@@ -58,7 +58,7 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
     private void registerLogStreamingActionHandler(AzureActionManager am) {
         final Predicate<SpringCloudApp> condition = (r) -> r instanceof SpringCloudApp;
         final Consumer<SpringCloudApp> handler = (c) -> SpringCloudLogStreamingHandler.startLogStreaming(c);
-        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
+        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG_APP, condition, handler);
     }
 
     public int getOrder() {
