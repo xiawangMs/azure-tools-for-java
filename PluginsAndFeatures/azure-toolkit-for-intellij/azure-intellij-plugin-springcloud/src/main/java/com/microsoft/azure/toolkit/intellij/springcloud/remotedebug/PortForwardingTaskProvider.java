@@ -30,7 +30,7 @@ import java.util.Objects;
 public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwardingTaskProvider.PortForwarderBeforeRunTask> {
     private static final String NAME_TEMPLATE = "Attach to %s";
     private static final Key<PortForwarderBeforeRunTask> ID = Key.create("PortForwardingTaskProviderId");
-    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.ATTACH);
+    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE_DEBUG);
     @Getter
     public Key<PortForwarderBeforeRunTask> id = ID;
     @Getter
