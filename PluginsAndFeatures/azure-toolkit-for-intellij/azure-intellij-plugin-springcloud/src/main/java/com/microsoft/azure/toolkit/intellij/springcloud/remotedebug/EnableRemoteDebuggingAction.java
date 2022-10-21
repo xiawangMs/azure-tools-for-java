@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
-import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstanceSelectionDialog;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -20,15 +19,12 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import org.apache.commons.collections.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
-public class SpringCloudAppEnableDebuggingAction {
+public class EnableRemoteDebuggingAction {
     private static final String FAILED_TITLE = "Failed to %s remote debugging";
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app %s.";
     private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?";
@@ -62,7 +58,7 @@ public class SpringCloudAppEnableDebuggingAction {
                     return;
                 }
                 if (isEnabled) {
-                    deployment.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
+                    deployment.enableRemoteDebugging(AttachDebuggerAction.getDefaultPort());
                     messager.success(String.format(SUCCESS_MESSAGE, action, app.getName()), null, generateDebugAction(app, project), generateLearnMoreAction());
                 } else {
                     deployment.disableRemoteDebugging();

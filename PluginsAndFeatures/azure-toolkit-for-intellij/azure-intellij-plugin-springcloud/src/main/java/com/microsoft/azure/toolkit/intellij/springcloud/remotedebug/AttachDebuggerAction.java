@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SpringCloudAppInstanceDebuggingAction {
+public class AttachDebuggerAction {
     private static final int DEFAULT_PORT = 5005;
     private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app %s.";
 
