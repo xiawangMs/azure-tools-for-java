@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.eclipse.springcloud.streaminglog;
 
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
