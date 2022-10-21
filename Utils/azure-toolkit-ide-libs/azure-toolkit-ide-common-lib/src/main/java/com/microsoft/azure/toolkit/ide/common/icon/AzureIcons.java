@@ -52,6 +52,8 @@ public final class AzureIcons {
         public static final AzureIcon SFTP = AzureIcon.builder().iconPath("/icons/action/sftp").build();
         public static final AzureIcon DEBUG = AzureIcon.builder().iconPath("icons/action/debug").build();
         public static final AzureIcon ATTACH = AzureIcon.builder().iconPath("icons/action/attach").build();
+        public static final AzureIcon UPLOAD = AzureIcon.builder().iconPath("/icons/action/upload").build();
+        public static final AzureIcon DOWNLOAD = AzureIcon.builder().iconPath("/icons/action/download").build();
     }
 
     public static final class MySQL {
@@ -150,6 +152,10 @@ public final class AzureIcons {
 
     public static final class StorageAccount {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/default.svg").build();
+        public static final AzureIcon CONTAINERS = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/containers/default.svg").build();
+        public static final AzureIcon SHARES = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/shares/default.svg").build();
+        public static final AzureIcon QUEUES = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/queues/default.svg").build();
+        public static final AzureIcon TABLES = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/blobs/default.svg").build();
     }
 
     public static final class VirtualMachine {
