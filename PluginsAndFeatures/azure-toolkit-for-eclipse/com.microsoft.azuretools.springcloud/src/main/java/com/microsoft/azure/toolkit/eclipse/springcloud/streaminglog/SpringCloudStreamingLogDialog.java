@@ -11,12 +11,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
-public class SpringCloudStreamingLogDialog extends AzureDialog<DeploymentInstance> {
+public class SpringCloudStreamingLogDialog extends AzureDialog<SpringCloudAppInstance> {
 
     private SpringCloudApp app;
     private SpringCloudLogStreamingComposite composite;
@@ -42,7 +42,7 @@ public class SpringCloudStreamingLogDialog extends AzureDialog<DeploymentInstanc
     }
 
     @Override
-    public AzureForm<DeploymentInstance> getForm() {
+    public AzureForm<SpringCloudAppInstance> getForm() {
         return composite;
     }
 

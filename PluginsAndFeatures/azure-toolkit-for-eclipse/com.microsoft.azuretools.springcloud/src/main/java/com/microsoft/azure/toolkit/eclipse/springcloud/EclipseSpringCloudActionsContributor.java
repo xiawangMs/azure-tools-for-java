@@ -50,8 +50,8 @@ public class EclipseSpringCloudActionsContributor implements IActionsContributor
     }
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
-        final Predicate<AzResource<?, ?, ?>> condition = (r) -> r instanceof SpringCloudApp;
-        final Consumer<AzResource<?, ?, ?>> handler = (c) -> DeploySpringCloudAppAction.deployToApp((SpringCloudApp) c);
+        final Predicate<AzResource> condition = (r) -> r instanceof SpringCloudApp;
+        final Consumer<AzResource> handler = (c) -> DeploySpringCloudAppAction.deployToApp((SpringCloudApp) c);
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, condition, handler);
     }
 

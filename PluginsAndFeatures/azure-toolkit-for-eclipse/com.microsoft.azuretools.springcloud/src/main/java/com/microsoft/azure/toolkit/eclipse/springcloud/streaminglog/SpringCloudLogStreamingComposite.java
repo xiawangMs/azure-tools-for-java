@@ -14,12 +14,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
-public class SpringCloudLogStreamingComposite extends Composite implements AzureForm<DeploymentInstance> {
+public class SpringCloudLogStreamingComposite extends Composite implements AzureForm<SpringCloudAppInstance> {
 
     private SpringCloudDeploymentComboBox springCloudDeploymentComboBox;
 
@@ -51,12 +51,12 @@ public class SpringCloudLogStreamingComposite extends Composite implements Azure
     }
 
     @Override
-    public DeploymentInstance getValue() {
+    public SpringCloudAppInstance getValue() {
         return springCloudDeploymentComboBox.getValue();
     }
 
     @Override
-    public void setValue(DeploymentInstance value) {
+    public void setValue(SpringCloudAppInstance value) {
         springCloudDeploymentComboBox.setValue(value);
     }
 
