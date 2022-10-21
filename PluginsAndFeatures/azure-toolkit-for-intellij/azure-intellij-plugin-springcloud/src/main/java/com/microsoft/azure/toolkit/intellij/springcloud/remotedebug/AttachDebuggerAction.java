@@ -19,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
+import com.microsoft.azure.toolkit.ide.springcloud.portforwarder.PortForwarder;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstanceSelectionDialog;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -84,7 +85,8 @@ public class AttachDebuggerAction {
                         final List<BeforeRunTask<?>> beforeRunTaskList = settings.getConfiguration().getBeforeRunTasks();
                         beforeRunTaskList.forEach(beforeRunTask -> {
                             if (beforeRunTask instanceof PortForwardingTaskProvider.PortForwarderBeforeRunTask) {
-                                ((PortForwardingTaskProvider.PortForwarderBeforeRunTask) beforeRunTask).getForwarder().stopForward();
+                                Optional.ofNullable(((PortForwardingTaskProvider.PortForwarderBeforeRunTask) beforeRunTask).getForwarder())
+                                        .ifPresent(PortForwarder::stopForward);
                             }
                         });
                     }

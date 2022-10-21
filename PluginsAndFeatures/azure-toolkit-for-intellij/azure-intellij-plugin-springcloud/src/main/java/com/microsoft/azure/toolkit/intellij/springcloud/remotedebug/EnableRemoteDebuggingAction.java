@@ -25,9 +25,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class EnableRemoteDebuggingAction {
+    private static final String REMOTE_DEBUGGING_DOCS = "https://aka.ms/asa-remotedebug";
     private static final String FAILED_TITLE = "Failed to %s remote debugging";
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app %s.";
-    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?";
+    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?<p>To learn more about remote debugging, please refer our <a href=\"%s\">wiki</a>";
     private static final String CONFIRM_DIALOG_TITLE = "%s Remote Debugging";
     private static final String SUCCESS_MESSAGE = "Remote debugging is %sd for app %s successfully";
 
@@ -45,7 +46,7 @@ public class EnableRemoteDebuggingAction {
         final String action = isEnabled ? "enable" : "disable";
         final AzureString title = isEnabled ? OperationBundle.description("springcloud.enable_remote_debugging.app", app.getName()) :
                 OperationBundle.description("springcloud.disable_remote_debugging.app", app.getName());
-        final boolean userInput = AzureMessager.getMessager().confirm(String.format(CONFIRM_MESSAGE, action, app.getName()),
+        final boolean userInput = AzureMessager.getMessager().confirm(String.format(CONFIRM_MESSAGE, action, app.getName(), REMOTE_DEBUGGING_DOCS),
                 String.format(CONFIRM_DIALOG_TITLE, Character.toUpperCase(action.charAt(0)) + action.substring(1)));
         if (!userInput) {
             return;
@@ -87,8 +88,7 @@ public class EnableRemoteDebuggingAction {
         return new Action<>(Action.Id.of("springcloud.learn_more_dialog"), new ActionView.Builder("Learn More")) {
             @Override
             public void handle(Object source, Object e) {
-                final String remoteDebuggingDocs = "https://aka.ms/asa-remotedebug";
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(remoteDebuggingDocs);
+                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(REMOTE_DEBUGGING_DOCS);
             }
         };
     }

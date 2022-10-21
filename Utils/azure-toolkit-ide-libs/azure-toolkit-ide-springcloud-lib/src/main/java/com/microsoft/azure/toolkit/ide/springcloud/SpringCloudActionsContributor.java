@@ -134,10 +134,11 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.RESTART,
             ResourceCommonActionsContributor.DELETE,
             "---",
-            SpringCloudActionsContributor.STREAM_LOG_APP,
             SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING,
             SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING,
-            SpringCloudActionsContributor.ATTACH_DEBUGGER_APP
+            SpringCloudActionsContributor.ATTACH_DEBUGGER_APP,
+            "---",
+            SpringCloudActionsContributor.STREAM_LOG_APP
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
 
