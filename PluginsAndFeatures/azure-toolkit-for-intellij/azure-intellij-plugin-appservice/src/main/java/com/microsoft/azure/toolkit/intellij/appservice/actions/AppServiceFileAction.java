@@ -4,19 +4,12 @@
  */
 package com.microsoft.azure.toolkit.intellij.appservice.actions;
 
-import com.intellij.ide.actions.RevealFileAction;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.FileChooser;
@@ -56,8 +49,6 @@ public class AppServiceFileAction {
     private static final String SAVE_CHANGES = "Do you want to save your changes?";
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
     private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
-    private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
-    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String FILE_HAS_BEEN_SAVED = "File %s has been saved to Azure";
 
     @AzureOperation(
@@ -156,7 +147,7 @@ public class AppServiceFileAction {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             file.getApp()
                 .getFileContent(file.getPath())
-                .doOnComplete(() -> notifyDownloadSuccess(file.getName(), destFile, project))
+                .doOnComplete(() -> VirtualFileActions.notifyDownloadSuccess(file.getName(), destFile, project))
                 .doOnTerminate(() -> IOUtils.closeQuietly(output, null))
                 .subscribe(bytes -> {
                     try {
@@ -170,30 +161,6 @@ public class AppServiceFileAction {
                 }, AppServiceFileAction::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
-    }
-
-    private void notifyDownloadSuccess(final String name, final File dest, final Project project) {
-        final String title = "File downloaded";
-        final File directory = dest.getParentFile();
-        final String message = String.format(SUCCESS_DOWNLOADING, name, directory.getAbsolutePath());
-        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
-        notification.addAction(new AnAction(RevealFileAction.getActionName()) {
-            @Override
-            public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
-                RevealFileAction.openFile(dest);
-            }
-        });
-        notification.addAction(new AnAction("Open In Editor") {
-            @Override
-            public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
-                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-                final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
-                if (Objects.nonNull(virtualFile)) {
-                    fileEditorManager.openFile(virtualFile, true, true);
-                }
-            }
-        });
-        Notifications.Bus.notify(notification);
     }
 
     private static void onRxException(Throwable e) {
