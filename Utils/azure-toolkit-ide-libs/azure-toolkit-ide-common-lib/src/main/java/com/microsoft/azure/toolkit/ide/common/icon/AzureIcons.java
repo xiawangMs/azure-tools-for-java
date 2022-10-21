@@ -12,6 +12,7 @@ public final class AzureIcons {
         public static final AzureIcon SIGN_IN = AzureIcon.builder().iconPath("/icons/Common/sign_in.svg").build();
         public static final AzureIcon SIGN_OUT = AzureIcon.builder().iconPath("/icons/Common/sign_out.svg").build();
         public static final AzureIcon GET_START = AzureIcon.builder().iconPath("/icons/Common/get_start.svg").build();
+        public static final AzureIcon GET_START_NEW = AzureIcon.builder().iconPath("/icons/Common/get_start_new.svg").build();
         public static final AzureIcon SELECT_SUBSCRIPTIONS = AzureIcon.builder().iconPath("/icons/Common/SelectSubscriptions.svg").build();
         public static final AzureIcon AZURE_ACTIVE_LOG = AzureIcon.builder().iconPath("/icons/Common/AzureActiveLog.svg").build();
         public static final AzureIcon AZURE_RESOURCE_CONNECTOR = AzureIcon.builder().iconPath("/icons/Common/AzureResourceConnector.svg").build();
