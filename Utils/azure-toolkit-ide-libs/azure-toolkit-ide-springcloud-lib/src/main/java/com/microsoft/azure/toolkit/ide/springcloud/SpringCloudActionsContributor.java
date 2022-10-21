@@ -129,14 +129,14 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             "---",
             ResourceCommonActionsContributor.DEPLOY,
             "---",
+            SpringCloudActionsContributor.ATTACH_DEBUGGER_APP,
+            SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING,
+            SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING,
+            "---",
             ResourceCommonActionsContributor.START,
             ResourceCommonActionsContributor.STOP,
             ResourceCommonActionsContributor.RESTART,
             ResourceCommonActionsContributor.DELETE,
-            "---",
-            SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING,
-            SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING,
-            SpringCloudActionsContributor.ATTACH_DEBUGGER_APP,
             "---",
             SpringCloudActionsContributor.STREAM_LOG_APP
         );
