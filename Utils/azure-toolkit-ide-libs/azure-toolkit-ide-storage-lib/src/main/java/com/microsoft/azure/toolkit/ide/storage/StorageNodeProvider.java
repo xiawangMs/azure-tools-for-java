@@ -7,12 +7,21 @@ package com.microsoft.azure.toolkit.ide.storage;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainer;
+import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
+import com.microsoft.azure.toolkit.lib.storage.queue.Queue;
+import com.microsoft.azure.toolkit.lib.storage.share.Share;
+import com.microsoft.azure.toolkit.lib.storage.table.Table;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +34,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class StorageNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Storage Account";
     private static final String ICON = AzureIcons.StorageAccount.MODULE.getIconPath();
+    public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
 
     @Nullable
     @Override
@@ -51,10 +61,54 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
             final StorageAccount account = (StorageAccount) data;
             return new Node<>(account)
                 .view(new AzureResourceLabelView<>(account))
+                .addChild(StorageAccount::getBlobContainerModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "BlobFile Containers"))
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
+                .addChild(StorageAccount::getShareModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "File Shares"))
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
+                .addChild(StorageAccount::getQueueModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "Queues"))
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
+                .addChild(StorageAccount::getTableModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "Tables"))
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .doubleClickAction(StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER)
                 .actions(StorageActionsContributor.ACCOUNT_ACTIONS);
+        } else if (data instanceof BlobContainer) {
+            final BlobContainer container = (BlobContainer) data;
+            return new Node<>(container)
+                .view(new AzureResourceLabelView<>(container))
+                .addChildren(c -> c.getSubFileModule().list(), (blob, p) -> this.createNode(blob, p, manager));
+        } else if (data instanceof Share) {
+            final Share share = (Share) data;
+            return new Node<>(share)
+                .view(new AzureResourceLabelView<>(share))
+                .addChildren(s -> s.getSubFileModule().list(), (file, p) -> this.createNode(file, p, manager));
+        } else if (data instanceof Queue) {
+            final Queue queue = (Queue) data;
+            return new Node<>(queue)
+                .view(new AzureResourceLabelView<>(queue));
+        } else if (data instanceof Table) {
+            final Table table = (Table) data;
+            return new Node<>(table)
+                .view(new AzureResourceLabelView<>(table));
+        } else if (data instanceof StorageFile) {
+            final StorageFile file = (StorageFile) data;
+            final Node<StorageFile> node = new Node<>(file).view(new NodeView.Static(file.getName(), getIconPath(file)));
+            if (file.isDirectory()) {
+                node.addChildren(f -> f.getSubFileModule().list(), (f, p) -> this.createNode(f, p, manager));
+            } else {
+                node.doubleClickAction(StorageActionsContributor.OPEN_FILE);
+            }
+            return node;
         }
         return null;
+    }
+
+    private static String getIconPath(StorageFile file) {
+        final String fileIconName = file.isDirectory() ? "folder" : FilenameUtils.getExtension(file.getName());
+        return FILE_EXTENSION_ICON_PREFIX + fileIconName;
     }
 }
