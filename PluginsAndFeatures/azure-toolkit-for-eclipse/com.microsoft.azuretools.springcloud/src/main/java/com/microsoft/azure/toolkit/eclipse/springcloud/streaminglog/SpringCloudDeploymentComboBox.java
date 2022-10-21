@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import org.eclipse.swt.widgets.Composite;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
 public class SpringCloudDeploymentComboBox extends AzureComboBox<SpringCloudAppInstance> {
 
@@ -45,7 +45,7 @@ public class SpringCloudDeploymentComboBox extends AzureComboBox<SpringCloudAppI
     @Override
     protected String getItemText(Object item) {
         return item instanceof SpringCloudAppInstance
-                ? ((SpringCloudAppInstance) item).name()
+                ? ((SpringCloudAppInstance) item).getName()
                 : super.getItemText(item);
     }
 

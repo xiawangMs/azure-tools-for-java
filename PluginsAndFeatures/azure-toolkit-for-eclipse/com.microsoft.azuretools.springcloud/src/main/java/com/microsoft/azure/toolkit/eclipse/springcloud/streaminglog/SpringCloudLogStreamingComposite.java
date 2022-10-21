@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Label;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
 public class SpringCloudLogStreamingComposite extends Composite implements AzureForm<SpringCloudAppInstance> {
 

@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Shell;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
 public class SpringCloudStreamingLogDialog extends AzureDialog<SpringCloudAppInstance> {
 

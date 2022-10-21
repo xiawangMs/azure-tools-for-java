@@ -50,7 +50,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     }
 
     public Observable<Map> getClusterCoreSiteRequest(@NotNull final String clusterId) throws IOException {
-        String managementURI = Azure.az(AzureCloud.class).getOrDefault().getManagementEndpoint();
+        String managementURI = Azure.az(AzureCloud.class).getOrDefault().getResourceManagerEndpoint();
         String url = URI.create(managementURI)
                 .resolve(clusterId.replaceAll("/+$", "") + "/configurations/core-site").toString();
         return getHttp()
@@ -164,7 +164,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
         try {
             switch (roleType) {
                 case OWNER:
-                    String managementURI = Azure.az(AzureCloud.class).getOrDefault().getManagementEndpoint();
+                    String managementURI = Azure.az(AzureCloud.class).getOrDefault().getResourceManagerEndpoint();
                     return getClusterConfigurationRequest(clusterId,managementURI)
                             // As you can see, the response class is
                             // com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterConfiguration.
