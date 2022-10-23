@@ -16,6 +16,8 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
@@ -43,7 +45,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final String TABLE_ACTIONS = "actions.storage.table";
     public static final String STORAGE_MODULE_ACTIONS = "actions.storage.module";
 
-    public static final Action.Id<StorageAccount> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer");
+    public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer");
     public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string");
     public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("group.create_storage_account");
@@ -61,11 +63,20 @@ public class StorageActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<StorageAccount> openAzureStorageExplorer = resource -> new OpenAzureStorageExplorerAction().openResource(resource);
+        final Consumer<AzResource> openAzureStorageExplorer = resource -> {
+            if (resource instanceof StorageAccount) {
+                new OpenAzureStorageExplorerAction().openResource((StorageAccount) resource);
+            } else if (resource instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) resource).getParent() instanceof StorageAccount) {
+                //noinspection unchecked
+                new OpenAzureStorageExplorerAction().openResource((AbstractAzResource<?, StorageAccount, ?>) resource);
+            } else {
+                AzureMessager.getMessager().warning("Only Azure Storages can be opened with Azure Storage Explorer.");
+            }
+        };
         final ActionView.Builder openAzureStorageExplorerView = new ActionView.Builder("Open Azure Storage Explorer")
-            .title(s -> Optional.ofNullable(s).map(r -> description("storage.open_azure_storage_explorer.account", ((StorageAccount) r).getName())).orElse(null))
-            .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
-        final Action<StorageAccount> openAzureStorageExplorerAction = new Action<>(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorer, openAzureStorageExplorerView);
+            .title(s -> Optional.ofNullable(s).map(r -> description("storage.open_azure_storage_explorer.account", ((AzResource) r).getName())).orElse(null))
+            .enabled(s -> (s instanceof StorageAccount && ((AzResource) s).getFormalStatus().isConnected()) || s instanceof AzResource);
+        final Action<AzResource> openAzureStorageExplorerAction = new Action<>(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorer, openAzureStorageExplorerView);
         openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
         am.registerAction(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorerAction);
 
@@ -165,10 +176,11 @@ public class StorageActionsContributor implements IActionsContributor {
         final ActionGroup accountActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.PIN,
             "---",
+            StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-            StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",
             StorageActionsContributor.COPY_CONNECTION_STRING,
             StorageActionsContributor.COPY_PRIMARY_KEY,
