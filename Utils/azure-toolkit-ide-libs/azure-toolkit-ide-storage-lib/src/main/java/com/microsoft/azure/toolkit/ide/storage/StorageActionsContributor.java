@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.blob.BlobFile;
 import com.microsoft.azure.toolkit.lib.storage.blob.IBlobFile;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 import com.microsoft.azure.toolkit.lib.storage.share.IShareFile;
@@ -56,6 +57,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final Action.Id<StorageFile> CREATE_DIRECTORY = Action.Id.of("storage.create_directory");
     public static final Action.Id<StorageFile> DOWNLOAD_FILE = Action.Id.of("storage.download_file");
     public static final Action.Id<StorageFile> UPLOAD_FILES = Action.Id.of("storage.upload_files");
+    public static final Action.Id<StorageFile> UPLOAD_FILE = Action.Id.of("storage.upload_file");
     public static final Action.Id<StorageFile> UPLOAD_FOLDER = Action.Id.of("storage.upload_folder");
     public static final Action.Id<StorageFile> COPY_FILE_URL = Action.Id.of("storage.copy_file_url");
     public static final Action.Id<StorageFile> COPY_FILE_SAS_URL = Action.Id.of("storage.copy_file_sas_url");
@@ -120,10 +122,15 @@ public class StorageActionsContributor implements IActionsContributor {
             .enabled(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory());
         am.registerAction(CREATE_DIRECTORY, new Action<>(CREATE_DIRECTORY, createDirView));
 
-        final ActionView.Builder uploadFileView = new ActionView.Builder("Upload Files", AzureIcons.Action.UPLOAD.getIconPath())
+        final ActionView.Builder uploadFilesView = new ActionView.Builder("Upload Files", AzureIcons.Action.UPLOAD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> description("storage.upload_files.dir", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory());
-        am.registerAction(UPLOAD_FILES, new Action<>(UPLOAD_FILES, uploadFileView));
+        am.registerAction(UPLOAD_FILES, new Action<>(UPLOAD_FILES, uploadFilesView));
+
+        final ActionView.Builder uploadFileView = new ActionView.Builder("Upload File", AzureIcons.Action.UPLOAD.getIconPath())
+            .title(s -> Optional.ofNullable(s).map(r -> description("storage.upload_file.file", ((StorageFile) r).getName())).orElse(null))
+            .enabled(s -> s instanceof BlobFile && !((StorageFile) s).isDirectory());
+        am.registerAction(UPLOAD_FILE, new Action<>(UPLOAD_FILE, uploadFileView));
 
         final ActionView.Builder uploadFolderView = new ActionView.Builder("Upload Folder", AzureIcons.Action.UPLOAD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> description("storage.upload_folder.dir", ((StorageFile) r).getName())).orElse(null))
@@ -206,6 +213,7 @@ public class StorageActionsContributor implements IActionsContributor {
             StorageActionsContributor.CREATE_DIRECTORY,
             "---",
             StorageActionsContributor.DOWNLOAD_FILE,
+            StorageActionsContributor.UPLOAD_FILE,
             "---",
             StorageActionsContributor.COPY_FILE_URL,
             StorageActionsContributor.COPY_FILE_SAS_URL,

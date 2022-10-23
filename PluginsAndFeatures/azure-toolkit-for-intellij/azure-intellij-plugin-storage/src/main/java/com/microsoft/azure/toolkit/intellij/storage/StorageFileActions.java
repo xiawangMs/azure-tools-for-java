@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.storage.blob.BlobFile;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobFileDraft;
 import com.microsoft.azure.toolkit.lib.storage.blob.IBlobFile;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
@@ -42,6 +43,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class StorageFileActions {
@@ -136,8 +138,9 @@ public class StorageFileActions {
             final FileChooserDescriptor descriptor = new FileChooserDescriptor(true, false, true, true, false, true);
             descriptor.setTitle("Choose Files to Upload");
             final VirtualFile[] files = FileChooser.chooseFiles(descriptor, project, null);
+            final AtomicInteger count = new AtomicInteger(0);
             for (final VirtualFile virtualFile : files) {
-                final AzureString title = OperationBundle.description("storage.upload_files.file|dir", virtualFile.getName(), file.getName());
+                final AzureString title = OperationBundle.description("storage.upload_files.source|dir", virtualFile.getName(), file.getName());
                 final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
                     final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                     indicator.setIndeterminate(true);
@@ -145,10 +148,37 @@ public class StorageFileActions {
                     final StorageFile.Draft<?, ?> draft = (StorageFile.Draft<?, ?>) module.create(virtualFile.getName(), "");
                     draft.setSourceFile(Paths.get(virtualFile.getPath()));
                     draft.createIfNotExist();
+                    count.incrementAndGet();
+                    if (count.get() == files.length) {
+                        AzureMessager.getMessager().success(AzureString.format("Successfully uploaded %d files to directory %s.", files.length, file.getName()));
+                    }
                 });
                 AzureTaskManager.getInstance().runInBackground(task);
             }
         });
+    }
+
+    public static void uploadToOverwriteContent(BlobFile file, Project project) {
+        if (AzureMessager.getMessager().confirm(AzureString.format("This will overwrite content of file (%s), are you sure to do this?", file.getName()))) {
+            AzureTaskManager.getInstance().runLater(() -> {
+                final FileChooserDescriptor descriptor = new FileChooserDescriptor(true, false, true, true, false, false);
+                descriptor.setTitle("Choose File to Upload");
+                final VirtualFile[] files = FileChooser.chooseFiles(descriptor, project, null);
+                if (files.length > 0) {
+                    final VirtualFile virtualFile = files[0];
+                    final AzureString title = OperationBundle.description("storage.upload_file.source|file", virtualFile.getName(), file.getName());
+                    final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
+                        final AbstractAzResourceModule<? extends StorageFile, ? extends StorageFile, ?> module = file.getSubFileModule();
+                        final BlobFileDraft draft = (BlobFileDraft) file.update();
+                        draft.setSourceFile(Paths.get(virtualFile.getPath()));
+                        draft.updateIfExist();
+                        final AzureString msg = AzureString.format("Successfully overwrite content of %s with that of file %s.", file.getName(), virtualFile.getName());
+                        AzureMessager.getMessager().success(msg);
+                    });
+                    AzureTaskManager.getInstance().runInBackground(task);
+                }
+            });
+        }
     }
 
     public static void uploadFolder(StorageFile file, Project project) {

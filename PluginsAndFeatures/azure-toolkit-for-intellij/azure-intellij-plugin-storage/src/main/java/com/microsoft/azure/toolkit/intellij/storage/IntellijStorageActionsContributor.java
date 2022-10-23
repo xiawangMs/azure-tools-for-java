@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainerModule;
+import com.microsoft.azure.toolkit.lib.storage.blob.BlobFile;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.queue.QueueModule;
 import com.microsoft.azure.toolkit.lib.storage.share.ShareModule;
@@ -55,6 +56,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
         am.registerHandler(StorageActionsContributor.CREATE_FILE, (file, e) -> StorageFileActions.createFile(file, ((AnActionEvent) e).getProject()));
         am.registerHandler(StorageActionsContributor.CREATE_DIRECTORY, (file, e) -> StorageFileActions.createDirectory(file, ((AnActionEvent) e).getProject()));
         am.registerHandler(StorageActionsContributor.UPLOAD_FILES, (file, e) -> StorageFileActions.uploadFiles(file, ((AnActionEvent) e).getProject()));
+        am.registerHandler(StorageActionsContributor.UPLOAD_FILE, (file, e) -> StorageFileActions.uploadToOverwriteContent((BlobFile) file, ((AnActionEvent) e).getProject()));
         am.registerHandler(StorageActionsContributor.DOWNLOAD_FILE, (file, e) -> StorageFileActions.downloadFile(file, ((AnActionEvent) e).getProject()));
         am.registerHandler(StorageActionsContributor.COPY_FILE_URL, (file, e) -> StorageFileActions.copyUrl(file, ((AnActionEvent) e).getProject()));
         am.registerHandler(StorageActionsContributor.COPY_FILE_SAS_URL, (file, e) -> StorageFileActions.copySasUrl(file, ((AnActionEvent) e).getProject()));
