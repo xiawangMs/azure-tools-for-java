@@ -177,7 +177,7 @@ public class StorageFileActions {
                     draft.createIfNotExist();
                     count.incrementAndGet();
                     if (count.get() == files.length) {
-                        AzureMessager.getMessager().success(AzureString.format("Successfully uploaded %d files to directory %s.", files.length, file.getName()));
+                        AzureMessager.getMessager().success(AzureString.format("Successfully uploaded %s file(s) to directory \"%s\".", files.length, file.getName()));
                     }
                 });
                 AzureTaskManager.getInstance().runInBackground(task);
