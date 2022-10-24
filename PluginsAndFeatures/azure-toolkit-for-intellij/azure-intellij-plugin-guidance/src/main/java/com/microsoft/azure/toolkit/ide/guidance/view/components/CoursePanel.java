@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.RoundedLineBorder;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
@@ -15,8 +14,6 @@ import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
@@ -34,6 +31,7 @@ public class CoursePanel {
 
     private final Project project;
     private boolean isStartedActionTriggered;
+    private final boolean showNewUIFlag = true;
     public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
             JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
@@ -55,7 +53,12 @@ public class CoursePanel {
         this.startButton.addActionListener(e -> openGuidance());
         this.areaDescription.setFont(JBFont.medium());
         this.areaDescription.setText(course.getDescription());
-        course.getTags().forEach(tag -> this.tagsPanel.add(decorateTagLabel(tag)));
+        this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
+        if (showNewUIFlag) {
+            this.course.getTags().forEach(tag -> this.tagsPanel.add(decorateTagButton(tag)));
+            this.startButton.setText("Try It");
+            this.areaDescription.setForeground(null);
+        }
     }
 
     public void toggleSelectedStatus(final boolean isSelected) {
@@ -64,7 +67,7 @@ public class CoursePanel {
         }
         this.startButton.setVisible(isSelected);
         this.setBackgroundColor(this.rootPanel, isSelected ? NOTIFICATION_BACKGROUND_COLOR : UIUtil.getLabelBackground());
-        if (isSelected) {
+        if (isSelected && showNewUIFlag) {
             Optional.ofNullable(this.getRootPanel().getRootPane()).ifPresent(pane -> pane.setDefaultButton(this.startButton));
         }
     }
@@ -86,15 +89,13 @@ public class CoursePanel {
         GuidanceViewManager.getInstance().openCourseView(project, course);
     }
 
-    private JLabel decorateTagLabel(String tag) {
-        final JLabel label = new JLabel(tag);
-        final Border borderLine = new RoundedLineBorder(new JBColor(12895428, 6185056), 2);
-        final Border margin = JBUI.Borders.empty(0, 6);
-        label.setBorder(new CompoundBorder(borderLine, margin));
-        label.setOpaque(true);
-        label.setBackground(new JBColor(16777215, 5001298));
-        label.setFont(JBFont.regular().lessOn(2));
-        return label;
+    private JButton decorateTagButton(String tag) {
+        final JButton button = new JButton(tag);
+        button.putClientProperty("styleTag", true);
+        button.setFont(JBFont.regular().lessOn(2));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        return button;
     }
 
     private void setBackgroundColor(@Nonnull final JPanel c, @Nonnull final Color color) {
@@ -107,6 +108,6 @@ public class CoursePanel {
         // TODO: place custom component creation code here
         this.rootPanel = new RoundedPanel(5);
         this.tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-8));
+        this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-10));
     }
 }

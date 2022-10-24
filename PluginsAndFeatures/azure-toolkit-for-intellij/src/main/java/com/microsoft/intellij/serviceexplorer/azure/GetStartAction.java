@@ -43,6 +43,6 @@ public class GetStartAction extends NodeAction {
             final String isActionTriggerVal = AzureStoreManager.getInstance().getIdeStore().getProperty(ShowGettingStartAction.GUIDANCE, ShowGettingStartAction.IS_ACTION_TRIGGERED);
             isActionTriggered = Optional.ofNullable(isActionTriggerVal).map(Boolean::getBoolean).orElse(false);
         }
-        return isActionTriggered ? AzureIcons.Common.GET_START_NEW : AzureIcons.Common.GET_START;
+        return isActionTriggered ? AzureIcons.Common.GET_START : AzureIcons.Common.GET_START_NEW;
     }
 }
