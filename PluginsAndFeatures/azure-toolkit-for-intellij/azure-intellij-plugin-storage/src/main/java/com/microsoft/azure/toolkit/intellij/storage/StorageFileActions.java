@@ -31,7 +31,6 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.storage.blob.BlobFile;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobFileDraft;
 import com.microsoft.azure.toolkit.lib.storage.blob.IBlobFile;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
@@ -186,7 +185,7 @@ public class StorageFileActions {
         });
     }
 
-    public static void uploadToOverwriteContent(BlobFile file, Project project) {
+    public static void uploadFile(StorageFile file, Project project) {
         if (AzureMessager.getMessager().confirm(AzureString.format("This will overwrite content of file (%s), are you sure to do this?", file.getName()))) {
             AzureTaskManager.getInstance().runLater(() -> {
                 final FileChooserDescriptor descriptor = new FileChooserDescriptor(true, false, true, true, false, false);
@@ -196,8 +195,8 @@ public class StorageFileActions {
                     final VirtualFile virtualFile = files[0];
                     final AzureString title = OperationBundle.description("storage.upload_file.source|file", virtualFile.getName(), file.getName());
                     final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
-                        final AbstractAzResourceModule<? extends StorageFile, ? extends StorageFile, ?> module = file.getSubFileModule();
-                        final BlobFileDraft draft = (BlobFileDraft) file.update();
+                        @SuppressWarnings("rawtypes")
+                        final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
                         draft.setSourceFile(Paths.get(virtualFile.getPath()));
                         draft.updateIfExist();
                         final AzureString msg = AzureString.format("Successfully overwrite content of %s with that of file %s.", file.getName(), virtualFile.getName());

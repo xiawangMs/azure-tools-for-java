@@ -129,7 +129,7 @@ public class StorageActionsContributor implements IActionsContributor {
 
         final ActionView.Builder uploadFileView = new ActionView.Builder("Upload File", AzureIcons.Action.UPLOAD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> description("storage.upload_file.file", ((StorageFile) r).getName())).orElse(null))
-            .enabled(s -> s instanceof BlobFile && !((StorageFile) s).isDirectory());
+            .enabled(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory());
         am.registerAction(UPLOAD_FILE, new Action<>(UPLOAD_FILE, uploadFileView));
 
         final ActionView.Builder uploadFolderView = new ActionView.Builder("Upload Folder", AzureIcons.Action.UPLOAD.getIconPath())
