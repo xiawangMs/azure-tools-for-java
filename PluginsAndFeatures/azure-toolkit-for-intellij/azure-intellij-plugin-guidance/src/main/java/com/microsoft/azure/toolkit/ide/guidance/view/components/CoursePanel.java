@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
-import com.microsoft.azure.toolkit.ide.guidance.view.ViewUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 
@@ -20,6 +19,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -34,6 +34,8 @@ public class CoursePanel {
 
     private final Project project;
     private boolean isStartedActionTriggered;
+    public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
+            JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
     public CoursePanel(@Nonnull final CourseConfig course, @Nonnull final Project project) {
         super();
@@ -61,7 +63,7 @@ public class CoursePanel {
             return;
         }
         this.startButton.setVisible(isSelected);
-        ViewUtils.setBackgroundColor(this.rootPanel, isSelected ? ViewUtils.NOTIFICATION_BACKGROUND_COLOR : UIUtil.getLabelBackground());
+        this.setBackgroundColor(this.rootPanel, isSelected ? NOTIFICATION_BACKGROUND_COLOR : UIUtil.getLabelBackground());
         if (isSelected) {
             Optional.ofNullable(this.getRootPanel().getRootPane()).ifPresent(pane -> pane.setDefaultButton(this.startButton));
         }
@@ -93,6 +95,12 @@ public class CoursePanel {
         label.setBackground(new JBColor(16777215, 5001298));
         label.setFont(JBFont.regular().lessOn(2));
         return label;
+    }
+
+    private void setBackgroundColor(@Nonnull final JPanel c, @Nonnull final Color color) {
+        c.setBackground(color);
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> setBackgroundColor((JPanel) child, color));
+        Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(child -> child.setBackground(color));
     }
 
     private void createUIComponents() {
