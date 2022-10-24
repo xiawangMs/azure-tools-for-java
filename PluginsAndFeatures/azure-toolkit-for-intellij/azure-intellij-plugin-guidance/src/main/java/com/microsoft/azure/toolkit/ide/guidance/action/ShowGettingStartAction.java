@@ -34,7 +34,7 @@ public class ShowGettingStartAction extends AzureAnAction {
     public void update(AnActionEvent e) {
         if (!isActionTriggered) {
             final String isActionTriggerVal = AzureStoreManager.getInstance().getIdeStore().getProperty(GUIDANCE, IS_ACTION_TRIGGERED);
-            isActionTriggered = Optional.ofNullable(isActionTriggerVal).map(Boolean::getBoolean).orElse(false);
+            isActionTriggered = Optional.ofNullable(isActionTriggerVal).map(Boolean::parseBoolean).orElse(false);
         }
         e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(isActionTriggered ? GET_START : GET_START_NEW));
     }
