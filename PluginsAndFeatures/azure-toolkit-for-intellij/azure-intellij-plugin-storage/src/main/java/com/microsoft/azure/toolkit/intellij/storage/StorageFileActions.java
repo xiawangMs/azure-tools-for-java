@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.storage;
 
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -14,6 +15,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
@@ -23,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
@@ -34,17 +37,16 @@ import com.microsoft.azure.toolkit.lib.storage.blob.IBlobFile;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class StorageFileActions {
 
@@ -55,24 +57,50 @@ public class StorageFileActions {
             AzureTaskManager.getInstance().runLater(() -> Messages.showWarningDialog(failure, "Open File"));
             return;
         }
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        final VirtualFile virtualFile = VirtualFileActions.getOrCreateVirtualFile(file.getId(), file.getName(), fileEditorManager);
-        final OutputStream output = virtualFile.getOutputStream(virtualFile);
-        final AzureString title = OperationBundle.description("storage.load_content.file", virtualFile.getName());
+        final AzureString title = OperationBundle.description("storage.load_content.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
-            file.download(output);
-            AzureTaskManager.getInstance().runLater(() -> {
-                final Consumer<String> contentSaver = content -> {
-                };
-                if (!VirtualFileActions.openFileInEditor(contentSaver, virtualFile, fileEditorManager)) {
-                    Messages.showWarningDialog(failure, "Open File");
-                }
-            });
-            IOUtils.closeQuietly(output, null);
+            final FileEditorManager manager = FileEditorManager.getInstance(project);
+            final VirtualFile vf = VirtualFileActions.getVirtualFile(file.getId(), manager);
+            if (Objects.nonNull(vf)) {
+                AzureTaskManager.getInstance().runLater(() -> manager.openFile(vf, true));
+            } else {
+                downloadAndOpen(file, project);
+            }
         });
         AzureTaskManager.getInstance().runInModal(task);
+    }
+
+    @SneakyThrows
+    private static void downloadAndOpen(StorageFile file, Project project) {
+        final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", file.getName());
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        final File temp = FileUtil.createTempFile("", file.getName(), true);
+        temp.delete();
+        file.download(Path.of(temp.getAbsolutePath()));
+        final VirtualFile virtualFile = VirtualFileActions.createVirtualFile(file.getId(), file.getName(), temp, fileEditorManager);
+        final Function<String, Boolean> onSave = content -> {
+            final AzureString title = OperationBundle.description("storage.save_content.file", file.getName());
+            AzureTaskManager.getInstance().runInBackground(title, () -> {
+                @SuppressWarnings("rawtypes")
+                final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
+                draft.setSourceFile(temp.toPath());
+                draft.commit();
+                AzureMessager.getMessager().success(AzureString.format("File %s has been saved to Azure", file.getName()));
+            });
+            return true;
+        };
+        final Runnable onClose = () -> {
+            if (Path.of(file.getPath()).toString().contains(Path.of(FileUtil.getTempDirectory()).toString())) {
+                WriteAction.run(() -> FileUtil.delete(temp));
+            }
+        };
+        AzureTaskManager.getInstance().runLater(() -> {
+            if (!VirtualFileActions.openFileInEditor(virtualFile, onSave, onClose, fileEditorManager)) {
+                Messages.showWarningDialog(failure, "Open File");
+            }
+        });
     }
 
     public static void createBlob(IBlobFile file, Project project) {
