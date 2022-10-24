@@ -6,7 +6,9 @@ import com.intellij.ui.RoundedLineBorder;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
+import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.ViewUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -31,6 +33,7 @@ public class CoursePanel {
     private JPanel tagsPanel;
 
     private final Project project;
+    private boolean isStartedActionTriggered;
 
     public CoursePanel(@Nonnull final CourseConfig course, @Nonnull final Project project) {
         super();
@@ -74,6 +77,10 @@ public class CoursePanel {
 
     @AzureOperation(name = "guidance.open_course.course", params = {"this.course.getTitle()"}, type = AzureOperation.Type.ACTION)
     public void openGuidance() {
+        if (!isStartedActionTriggered) {
+            isStartedActionTriggered = true;
+            AzureStoreManager.getInstance().getIdeStore().setProperty(ShowGettingStartAction.GUIDANCE, ShowGettingStartAction.IS_ACTION_TRIGGERED, String.valueOf(true));
+        }
         GuidanceViewManager.getInstance().openCourseView(project, course);
     }
 
