@@ -26,7 +26,6 @@ public final class AzureIcons {
         public static final AzureIcon SHOW_PROPERTIES = AzureIcon.builder().iconPath("/icons/Common/ShowProperties.svg").build();
         public static final AzureIcon APACHE_SPARK_FAILURE_DEBUG = AzureIcon.builder().iconPath("/icons/Common/ApacheSparkFailureDebug.svg").build();
         public static final AzureIcon FAVORITE = AzureIcon.builder().iconPath("/icons/Common/favorite.svg").build();
-        public static final AzureIcon DOCUMENT = AzureIcon.builder().iconPath("/icons/Common/document").build();
     }
 
     public static final class Action {
