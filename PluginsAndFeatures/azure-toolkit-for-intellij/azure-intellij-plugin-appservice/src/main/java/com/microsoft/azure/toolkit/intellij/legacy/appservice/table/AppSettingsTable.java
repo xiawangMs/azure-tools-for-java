@@ -61,6 +61,7 @@ public class AppSettingsTable extends JBTable {
 
     public void addAppSettings(@Nonnull String key, String value) {
         final int index = appSettingModel.addAppSettings(key, value);
+        appSettingModel.fireTableChanged();
         this.refresh();
         scrollToRow(index);
     }
@@ -69,7 +70,8 @@ public class AppSettingsTable extends JBTable {
         if (MapUtils.isEmpty(appSettingMap)) {
             return;
         }
-        appSettingMap.forEach((key, value) -> addAppSettings(key, value));
+        appSettingMap.forEach(appSettingModel::addAppSettings);
+        appSettingModel.fireTableChanged();
         this.refresh();
         scrollToRow(0);
     }

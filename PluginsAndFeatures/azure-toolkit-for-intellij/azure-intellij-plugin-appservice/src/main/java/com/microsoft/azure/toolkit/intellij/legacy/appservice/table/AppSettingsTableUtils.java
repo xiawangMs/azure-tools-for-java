@@ -50,7 +50,7 @@ public class AppSettingsTableUtils {
             appSettingsTable.filter(stringToFilter);
         });
         final JPanel panel = tableToolbarDecorator.createPanel();
-        tableToolbarDecorator.getActionsPanel().setToolbarLabel(searchTextField, ActionToolbarPosition.TOP);
+        tableToolbarDecorator.getActionsPanel().add(searchTextField, BorderLayout.WEST);
         return panel;
     }
 }
