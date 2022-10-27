@@ -109,7 +109,7 @@ public class AppSettingsTable extends JBTable {
     public void filter(String stringToFilter) {
         final RowFilter<AppSettingModel, Object> rf;
         try {
-            rf = RowFilter.regexFilter(stringToFilter);
+            rf = RowFilter.regexFilter("(?i)" + stringToFilter);
         } catch (final java.util.regex.PatternSyntaxException e) {
             return;
         }
