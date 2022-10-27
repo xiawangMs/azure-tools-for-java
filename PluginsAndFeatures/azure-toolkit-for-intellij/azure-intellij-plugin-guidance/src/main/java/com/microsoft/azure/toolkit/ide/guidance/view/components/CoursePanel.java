@@ -10,10 +10,13 @@ import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
@@ -55,7 +58,7 @@ public class CoursePanel {
         this.areaDescription.setText(course.getDescription());
         this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
         if (showNewUIFlag) {
-            this.course.getTags().forEach(tag -> this.tagsPanel.add(decorateTagButton(tag)));
+            this.course.getTags().forEach(tag -> this.tagsPanel.add(decorateTagLabel(tag)));
             this.startButton.setText("Try It");
             this.areaDescription.setForeground(null);
         }
@@ -89,13 +92,13 @@ public class CoursePanel {
         GuidanceViewManager.getInstance().openCourseView(project, course);
     }
 
-    private JButton decorateTagButton(String tag) {
-        final JButton button = new JButton(tag);
-        button.putClientProperty("styleTag", true);
-        button.setFont(JBFont.regular().lessOn(2));
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        return button;
+    private JLabel decorateTagLabel(String tag) {
+        final JLabel label = new JLabel(tag);
+        final Border borderLine = new TagLineBorder(new JBColor(12895428, 6185056), 2);
+        final Border margin = JBUI.Borders.empty(0, 6);
+        label.setBorder(new CompoundBorder(borderLine, margin));
+        label.setFont(JBFont.regular().lessOn(2));
+        return label;
     }
 
     private void setBackgroundColor(@Nonnull final JPanel c, @Nonnull final Color color) {
@@ -108,6 +111,6 @@ public class CoursePanel {
         // TODO: place custom component creation code here
         this.rootPanel = new RoundedPanel(5);
         this.tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-10));
+        this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-8));
     }
 }
