@@ -20,6 +20,7 @@ public class ProvideFeedbackAction extends AnAction implements DumbAware {
     @Override
     @AzureOperation(name = "common.provide_feedback", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent event) {
-        MonkeySurvey.openInIDE(Objects.requireNonNull(event.getProject()));
+        RateUs.popup(Objects.requireNonNull(event.getProject()));
+//        MonkeySurvey.openInIDE(Objects.requireNonNull(event.getProject()));
     }
 }
