@@ -34,7 +34,7 @@ public class CoursePanel {
 
     private final Project project;
     private boolean isStartedActionTriggered;
-    private final boolean showNewUIFlag = true;
+    private final boolean showNewUIFlag;
     public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
             JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
@@ -42,6 +42,7 @@ public class CoursePanel {
         super();
         this.course = course;
         this.project = project;
+        this.showNewUIFlag = Integer.parseInt(InstallationIdUtils.getHashMac(), 0, 1, 16) % 2 == 0;
         $$$setupUI$$$();
         init();
     }
