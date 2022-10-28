@@ -84,8 +84,8 @@ public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<Fu
                 try {
                     target.ping();
                     this.forwarder = new FunctionPortForwarder(target);
-                    final ServerSocketChannel bind = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
-                    AzureTaskManager.getInstance().runOnPooledThread(() -> this.forwarder.startForward(bind));
+                    this.forwarder.initLocalSocket(localPort);
+                    AzureTaskManager.getInstance().runOnPooledThread(() -> this.forwarder.startForward(localPort));
                     return true;
                 } catch (final IOException e) {
                     AzureMessager.getMessager().error(e);
