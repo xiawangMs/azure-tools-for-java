@@ -12,9 +12,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.wm.ex.WindowManagerEx;
-import com.intellij.openapi.wm.impl.IdeFrameImpl;
-import com.intellij.openapi.wm.impl.ProjectFrameHelper;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.NotificationBalloonRoundShadowBorderProvider;
@@ -26,6 +23,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.PositionTracker;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
+import com.microsoft.azure.toolkit.intellij.common.IdeUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -35,7 +33,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -47,7 +45,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class RateUs {
+public class RatePopup {
     public static final String SERVICE = "rate";
     public static final String RATED_AT = "rated_at";
     public static final String RATED_SCORE = "rated_score";
@@ -60,7 +58,6 @@ public class RateUs {
     public static final long DAYS = 24 * 60 * 60 * 1000L;
     public static final int MOST_TIMES = 5;
     private static Balloon balloon;
-    private final Project project;
 
     @Getter
     private JPanel contentPanel;
@@ -75,9 +72,8 @@ public class RateUs {
     private ActionLink notNow;
     private ActionLink featureLink;
 
-    public RateUs(Project project) {
+    public RatePopup() {
         super();
-        this.project = project;
         $$$setupUI$$$();
         init();
     }
@@ -97,7 +93,6 @@ public class RateUs {
     }
 
     private void initActions() {
-        this.marketplaceLink.setExternalLinkIcon();
         this.marketplaceLink.addActionListener(this::reviewInMarketplace);
         this.issueLink.addActionListener(this::reportIssue);
         this.featureLink.addActionListener(this::requestFeature);
@@ -130,7 +125,7 @@ public class RateUs {
 
     private void initStars() {
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        this.logo.setIcon(IconLoader.getIcon("/icons/Common/Azure.svg", RateUs.class));
+        this.logo.setIcon(IconLoader.getIcon("/icons/Common/Azure.svg", RatePopup.class));
         final float scale = 1.625f;
         final Icon outlined = IconUtil.scale(AllIcons.Nodes.NotFavoriteOnHover, this.contentPanel, scale);
         final Icon filled = IconUtil.scale(AllIcons.Nodes.Favorite, this.contentPanel, scale);
@@ -157,6 +152,7 @@ public class RateUs {
                     AzureMessager.getMessager().success("Thank you for the feedback!");
                     popDaysLater(-1);
                 } else {
+                    final Project project = IdeUtils.getProject();
                     MonkeySurvey.openInIDE(project, index + 1);
                     popDaysLater(180);
                 }
@@ -183,30 +179,33 @@ public class RateUs {
     void $$$setupUI$$$() {
     }
 
-    public static synchronized void tryPopup(@Nonnull Project project) {
+    public static synchronized boolean tryPopup(@Nullable Project project) {
         final int times = getPoppedTimes();
         if (times < MOST_TIMES) {
             final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
             final String strNextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER, "0");
             final long nextPopAfter = Long.parseLong(Objects.requireNonNull(strNextPopAfter));
             if (nextPopAfter >= 0 && System.currentTimeMillis() > nextPopAfter) {
-                popup(project);
+                final Timer timer = new Timer(10000, e -> popup(project));
+                timer.setRepeats(false);
+                timer.start();
             }
         }
+        return false;
     }
 
     @AzureOperation(name = "feedback.show_popup", type = AzureOperation.Type.ACTION)
-    public static synchronized void popup(@Nonnull Project project) {
-        if (RateUs.balloon == null || RateUs.balloon.isDisposed()) {
-            final JPanel rateUsPanel = new RateUs(project).getContentPanel();
-            RateUs.balloon = JBPopupFactory.getInstance().createBalloonBuilder(rateUsPanel)
+    public static synchronized boolean popup(@Nullable Project project) {
+        if (RatePopup.balloon == null || RatePopup.balloon.isDisposed()) {
+            final JPanel rateUsPanel = new RatePopup().getContentPanel();
+            RatePopup.balloon = JBPopupFactory.getInstance().createBalloonBuilder(rateUsPanel)
                 .setFadeoutTime(10000)
                 .setAnimationCycle(200)
                 .setShowCallout(false)
                 .setShadow(false)
-                .setBorderColor(ColorUtil.withAlpha(RateUs.BACKGROUND_COLOR, 0))
+                .setBorderColor(ColorUtil.withAlpha(RatePopup.BACKGROUND_COLOR, 0))
                 .setBorderInsets(JBUI.emptyInsets())
-                .setFillColor(ColorUtil.withAlpha(RateUs.BACKGROUND_COLOR, 0))
+                .setFillColor(ColorUtil.withAlpha(RatePopup.BACKGROUND_COLOR, 0))
                 .setHideOnClickOutside(false)
                 .setHideOnFrameResize(false)
                 .setHideOnKeyOutside(false)
@@ -223,8 +222,8 @@ public class RateUs {
         store.setProperty(SERVICE, POPPED_TIMES, String.valueOf(times));
         store.setProperty(SERVICE, NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DAYS));
 
-        final JFrame frame = ((JFrame) getWindow(project));
-        RateUs.balloon.show(new PositionTracker<>(frame.getRootPane()) {
+        final JFrame frame = ((JFrame) IdeUtils.getWindow(project));
+        RatePopup.balloon.show(new PositionTracker<>(frame.getRootPane()) {
             @Override
             public RelativePoint recalculateLocation(@NotNull Balloon balloon) {
                 final Dimension frameSize = frame.getSize();
@@ -232,6 +231,7 @@ public class RateUs {
                 return new RelativePoint(frame, new Point(frameSize.width - balloonSize.width / 2 - 37, frameSize.height - balloonSize.height / 2 - 60));
             }
         }, Balloon.Position.above);
+        return true;
     }
 
     private static void popDaysLater(int x) {
@@ -248,27 +248,5 @@ public class RateUs {
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
         final String strPoppedTimes = store.getProperty(SERVICE, POPPED_TIMES, "0");
         return Integer.parseInt(Objects.requireNonNull(strPoppedTimes));
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    private static Window getWindow(Project project) {
-        final WindowManagerEx manager = WindowManagerEx.getInstanceEx();
-        Window window = manager.suggestParentWindow(project);
-        if (window == null) {
-            window = manager.getMostRecentFocusedWindow();
-        }
-        if (window == null) {
-            for (final ProjectFrameHelper frameHelper : manager.getProjectFrameHelpers()) {
-                final IdeFrameImpl frame = frameHelper.getFrame();
-                if (frame != null && frame.isActive()) {
-                    window = frameHelper.getFrame();
-                    break;
-                }
-            }
-        }
-        if (window == null) {
-            window = JOptionPane.getRootFrame();
-        }
-        return window;
     }
 }
