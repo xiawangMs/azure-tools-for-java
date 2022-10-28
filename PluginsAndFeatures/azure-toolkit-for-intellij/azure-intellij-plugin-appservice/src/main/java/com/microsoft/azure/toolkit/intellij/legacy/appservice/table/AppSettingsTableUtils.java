@@ -49,6 +49,7 @@ public class AppSettingsTableUtils {
             final String stringToFilter = searchTextField.getText();
             appSettingsTable.filter(stringToFilter);
         });
+        appSettingsTable.setDefaultRenderer(Object.class, new HighLightedCellRenderer(searchTextField.getTextEditor()));
         final JPanel panel = tableToolbarDecorator.createPanel();
         tableToolbarDecorator.getActionsPanel().add(searchTextField, BorderLayout.WEST);
         return panel;
