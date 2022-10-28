@@ -34,7 +34,7 @@ import java.util.Objects;
 public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<FunctionPortForwardingTaskProvider.FunctionPortForwarderBeforeRunTask> {
     private static final String NAME_TEMPLATE = "Attach to %s";
     private static final Key<FunctionPortForwarderBeforeRunTask> ID = Key.create("FunctionPortForwardingTaskProviderId");
-    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.ATTACH);
+    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE_DEBUG);
     @Getter
     public Key<FunctionPortForwarderBeforeRunTask> id = ID;
     @Getter
@@ -87,7 +87,7 @@ public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<Fu
                     final ServerSocketChannel bind = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
                     AzureTaskManager.getInstance().runOnPooledThread(() -> this.forwarder.startForward(bind));
                     return true;
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     AzureMessager.getMessager().error(e);
                 }
             }
