@@ -46,13 +46,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class RatePopup {
-    public static final String SERVICE = "rate";
-    public static final String RATED_AT = "rated_at";
-    public static final String RATED_SCORE = "rated_score";
-    public static final String POPPED_AT = "popped_at";
-    public static final String POPPED_TIMES = "popped_times";
-    public static final String NEXT_POP_AFTER = "next_pop_after";
-
     public static final JBColor BACKGROUND_COLOR =
         JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
     public static final long DAYS = 24 * 60 * 60 * 1000L;
@@ -138,8 +131,8 @@ public class RatePopup {
             public void mouseClicked(MouseEvent e) {
                 final int index = ArrayUtils.indexOf(stars, star);
                 OperationContext.current().setTelemetryProperty("score", String.valueOf(index + 1));
-                store.setProperty(SERVICE, RATED_AT, String.valueOf(System.currentTimeMillis()));
-                store.setProperty(SERVICE, RATED_SCORE, String.valueOf(index + 1));
+                store.setProperty(RateManager.SERVICE, RateManager.RATED_AT, String.valueOf(System.currentTimeMillis()));
+                store.setProperty(RateManager.SERVICE, RateManager.RATED_SCORE, String.valueOf(index + 1));
                 if (index >= 3) {
                     AzureTaskManager.getInstance().runOnPooledThread(() -> {
                         final CompletableFuture<HttpResponse<String>> response = MonkeySurvey.send(index + 1);
@@ -183,7 +176,7 @@ public class RatePopup {
         final int times = getPoppedTimes();
         if (times < MOST_TIMES) {
             final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-            final String strNextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER, "0");
+            final String strNextPopAfter = store.getProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "0");
             final long nextPopAfter = Long.parseLong(Objects.requireNonNull(strNextPopAfter));
             if (nextPopAfter >= 0 && System.currentTimeMillis() > nextPopAfter) {
                 final Timer timer = new Timer(10000, e -> popup(project));
@@ -216,11 +209,11 @@ public class RatePopup {
                 .createBalloon();
         }
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        final String strTimes = store.getProperty(SERVICE, POPPED_TIMES, "0");
+        final String strTimes = store.getProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, "0");
         final int times = Integer.parseInt(Objects.requireNonNull(strTimes)) + 1;
-        store.setProperty(SERVICE, POPPED_AT, String.valueOf(System.currentTimeMillis()));
-        store.setProperty(SERVICE, POPPED_TIMES, String.valueOf(times));
-        store.setProperty(SERVICE, NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DAYS));
+        store.setProperty(RateManager.SERVICE, RateManager.POPPED_AT, String.valueOf(System.currentTimeMillis()));
+        store.setProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, String.valueOf(times));
+        store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DAYS));
 
         final JFrame frame = ((JFrame) IdeUtils.getWindow(project));
         RatePopup.balloon.show(new PositionTracker<>(frame.getRootPane()) {
@@ -238,15 +231,15 @@ public class RatePopup {
         balloon.hide();
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
         if (x == -1) {
-            store.setProperty(SERVICE, NEXT_POP_AFTER, "-1");
+            store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "-1");
         } else {
-            store.setProperty(SERVICE, NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + x * DAYS));
+            store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + x * DAYS));
         }
     }
 
     private static int getPoppedTimes() {
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        final String strPoppedTimes = store.getProperty(SERVICE, POPPED_TIMES, "0");
+        final String strPoppedTimes = store.getProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, "0");
         return Integer.parseInt(Objects.requireNonNull(strPoppedTimes));
     }
 }

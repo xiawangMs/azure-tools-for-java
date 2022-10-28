@@ -1,0 +1,13 @@
+resource.create_resource.resource|type:
+  resourceType: Microsoft.Web/sites
+  action: webapp.create_app.app
+  success: 2
+  failure: -3
+resource.update_resource.resource|type:
+  actions:
+    - webapp.deploy_artifact.app
+    - webapp.deploy_module.module
+    - function.deploy_app
+    - springcloud.deploy_app.app
+  success: 3
+  failure: -5
