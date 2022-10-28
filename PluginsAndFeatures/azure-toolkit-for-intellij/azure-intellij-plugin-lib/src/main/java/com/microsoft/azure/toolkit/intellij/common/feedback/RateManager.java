@@ -73,7 +73,9 @@ public class RateManager {
         @Override
         public void runActivity(@Nonnull Project project) {
             final char c = InstallationIdUtils.getHashMac().toLowerCase().charAt(0);
-            OperationManager.getInstance().addListener(this);
+            if (Character.digit(c, 16) % 4 == 0) { // enabled for only 1/4
+                OperationManager.getInstance().addListener(this);
+            }
         }
 
         @Override
