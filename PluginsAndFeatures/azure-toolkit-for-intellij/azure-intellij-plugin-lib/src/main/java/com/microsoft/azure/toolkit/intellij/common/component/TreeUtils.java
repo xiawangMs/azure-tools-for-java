@@ -21,6 +21,7 @@ import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.AzService;
@@ -124,11 +125,19 @@ public class TreeUtils {
                             final JPopupMenu popupMenu = menu.getComponent();
                             popupMenu.show(tree, e.getX(), e.getY());
                         }
+                    } else if (node.inner.hasClickAction()) {
+                        final DataContext context = DataManager.getInstance().getDataContext(tree);
+                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
+                        node.inner.triggerClickAction(event);
                     } else if (e.getClickCount() == 2) {
                         final DataContext context = DataManager.getInstance().getDataContext(tree);
                         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
                         node.inner.triggerDoubleClickAction(event);
                     }
+                } else if (n instanceof Tree.LoadMoreNode && SwingUtilities.isLeftMouseButton(e)) {
+                    final DataContext context = DataManager.getInstance().getDataContext(tree);
+                    final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "azure.explorer", context);
+                    ((Tree.LoadMoreNode) n).getConsumer().accept(event);
                 }
                 super.mouseClicked(e);
             }
@@ -172,6 +181,12 @@ public class TreeUtils {
             return (IntellijAzureActionManager.ActionGroupWrapper) actions;
         }
         return new IntellijAzureActionManager.ActionGroupWrapper((ActionGroup) actions);
+    }
+
+    public static void renderLoadModeNode(JTree tree, @Nonnull Tree.LoadMoreNode node, boolean selected, @Nonnull SimpleColoredComponent renderer) {
+        renderer.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Action.REFRESH));
+        final SimpleTextAttributes attributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
+        renderer.append("Load More", attributes);
     }
 
     public static void renderMyTreeNode(JTree tree, @Nonnull Tree.TreeNode<?> node, boolean selected, @Nonnull SimpleColoredComponent renderer) {
