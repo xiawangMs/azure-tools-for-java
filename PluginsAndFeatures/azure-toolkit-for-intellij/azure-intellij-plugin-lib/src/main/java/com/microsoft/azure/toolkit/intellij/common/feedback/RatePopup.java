@@ -187,7 +187,7 @@ public class RatePopup {
         return false;
     }
 
-    @AzureOperation(name = "feedback.show_popup", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "feedback.show_popup", type = AzureOperation.Type.SERVICE)
     public static synchronized boolean popup(@Nullable Project project) {
         if (RatePopup.balloon == null || RatePopup.balloon.isDisposed()) {
             final JPanel rateUsPanel = new RatePopup().getContentPanel();

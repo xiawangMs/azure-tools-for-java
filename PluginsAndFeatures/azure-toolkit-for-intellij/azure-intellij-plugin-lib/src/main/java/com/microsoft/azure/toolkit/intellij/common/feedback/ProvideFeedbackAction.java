@@ -12,13 +12,12 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 public class ProvideFeedbackAction extends AnAction implements DumbAware {
     public static final Key<String> ID = new Key<>("ProvideFeedbackAction");
 
     @Override
-    @AzureOperation(name = "common.provide_feedback", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "feedback.open_monkey_survey", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent event) {
         RatePopup.popup(event.getProject());
 //        MonkeySurvey.openInIDE(Objects.requireNonNull(event.getProject()));

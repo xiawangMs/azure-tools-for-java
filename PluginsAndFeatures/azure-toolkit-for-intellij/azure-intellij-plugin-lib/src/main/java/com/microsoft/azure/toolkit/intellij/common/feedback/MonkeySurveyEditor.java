@@ -75,7 +75,7 @@ public class MonkeySurveyEditor extends BaseEditor implements DumbAware {
         pnlBrowser.setVisible(false);
     }
 
-    @AzureOperation(name = "common.complete_feedback", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "feedback.close_monkey_survey", type = AzureOperation.Type.ACTION)
     private void closeEditor() {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         fileEditorManager.closeFile(virtualFile);
@@ -119,7 +119,7 @@ public class MonkeySurveyEditor extends BaseEditor implements DumbAware {
     private CefRequestHandlerAdapter openLinkWithLocalBrowser() {
         return new CefRequestHandlerAdapter() {
             @Override
-            @AzureOperation(name = "common.feedback_browse", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "feedback.open_link_from_survey", type = AzureOperation.Type.ACTION)
             public boolean onBeforeBrowse(CefBrowser browser, CefFrame frame, CefRequest request, boolean user_gesture, boolean is_redirect) {
                 final String target = getBrowserTarget(request);
                 OperationContext.action().setTelemetryProperty(TARGET, target);
