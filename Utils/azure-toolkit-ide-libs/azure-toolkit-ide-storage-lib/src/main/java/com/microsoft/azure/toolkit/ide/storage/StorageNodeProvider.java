@@ -21,11 +21,14 @@ import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 import com.microsoft.azure.toolkit.lib.storage.queue.Queue;
 import com.microsoft.azure.toolkit.lib.storage.share.Share;
 import com.microsoft.azure.toolkit.lib.storage.table.Table;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
     private static final String NAME = "Storage Account";
     private static final String ICON = AzureIcons.StorageAccount.MODULE.getIconPath();
     public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Nullable
     @Override
@@ -81,14 +85,20 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
                 .actions(StorageActionsContributor.ACCOUNT_ACTIONS);
         } else if (data instanceof BlobContainer) {
             final BlobContainer container = (BlobContainer) data;
-            return new Node<>(container)
-                .view(new AzureResourceLabelView<>(container))
+            final AzureResourceLabelView<BlobContainer> view = new AzureResourceLabelView<>(container);
+            final StringBuilder tips = new StringBuilder();
+            Optional.ofNullable(container.getLastModified()).map(lm -> String.format("Date modified: %s", lm.format(DATE_TIME_FORMATTER))).ifPresent(tips::append);
+            view.setTips(tips.toString());
+            return new Node<>(container).view(view)
                 .actions(StorageActionsContributor.CONTAINER_ACTIONS)
                 .addChildren(c -> c.getSubFileModule().list(), (blob, p) -> this.createNode(blob, p, manager));
         } else if (data instanceof Share) {
             final Share share = (Share) data;
-            return new Node<>(share)
-                .view(new AzureResourceLabelView<>(share))
+            final AzureResourceLabelView<Share> view = new AzureResourceLabelView<>(share);
+            final StringBuilder tips = new StringBuilder();
+            Optional.ofNullable(share.getLastModified()).map(lm -> String.format("Date modified: %s", lm.format(DATE_TIME_FORMATTER))).ifPresent(tips::append);
+            view.setTips(tips.toString());
+            return new Node<>(share).view(view)
                 .actions(StorageActionsContributor.SHARE_ACTIONS)
                 .addChildren(s -> s.getSubFileModule().list(), (file, p) -> this.createNode(file, p, manager));
         } else if (data instanceof Queue) {
@@ -103,11 +113,18 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
                 .view(new AzureResourceLabelView<>(table));
         } else if (data instanceof StorageFile) {
             final StorageFile file = (StorageFile) data;
-            final Node<StorageFile> node = new Node<>(file).view(new AzureResourceLabelView<>(file, d -> "", StorageNodeProvider::getFileIcon));
+            final AzureResourceLabelView<StorageFile> view = new AzureResourceLabelView<>(file, d -> "", StorageNodeProvider::getFileIcon);
+            final Node<StorageFile> node = new Node<>(file).view(view);
             if (file.isDirectory()) {
+                final StringBuilder tips = new StringBuilder();
+                Optional.ofNullable(file.getCreationTime()).map(ct -> String.format("Date created: %s", ct.format(DATE_TIME_FORMATTER))).ifPresent(tips::append);
+                view.setTips(tips.toString());
                 node.actions(StorageActionsContributor.DIRECTORY_ACTIONS)
                     .addChildren(f -> f.getSubFileModule().list(), (f, p) -> this.createNode(f, p, manager));
             } else {
+                final StringBuilder tips = new StringBuilder().append(String.format("Size: %s", FileUtils.byteCountToDisplaySize(file.getSize())));
+                Optional.ofNullable(file.getLastModified()).map(lm -> String.format("Date modified: %s", lm.format(DATE_TIME_FORMATTER))).ifPresent(d -> tips.append(String.format(", %s", d)));
+                view.setTips(tips.toString());
                 node.actions(StorageActionsContributor.FILE_ACTIONS)
                     .doubleClickAction(StorageActionsContributor.OPEN_FILE);
             }
