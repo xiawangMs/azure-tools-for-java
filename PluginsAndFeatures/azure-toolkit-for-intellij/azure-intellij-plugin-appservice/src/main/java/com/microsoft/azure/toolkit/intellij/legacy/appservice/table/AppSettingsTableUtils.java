@@ -47,6 +47,7 @@ public class AppSettingsTableUtils {
                 .setMinimumSize(new Dimension(-1, 120))
                 .setToolbarPosition(ActionToolbarPosition.TOP);
         final SearchTextField searchTextField = new SearchTextField();
+        searchTextField.getTextEditor().addActionListener(e -> appSettingsTable.filter(e.getActionCommand()));
         searchTextField.addDocumentListener((TextDocumentListenerAdapter) () -> {
             final String stringToFilter = searchTextField.getText();
             appSettingsTable.filter(stringToFilter);
