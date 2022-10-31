@@ -63,26 +63,34 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
                 .addChildren(accounts, (account, storageNode) -> this.createNode(account, storageNode, manager));
         } else if (data instanceof StorageAccount) {
             final StorageAccount account = (StorageAccount) data;
-            return new Node<>(account)
-                .view(new AzureResourceLabelView<>(account))
-                .addChild(StorageAccount::getBlobContainerModule, (module, p) -> new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "Blob Containers"))
-                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
-                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
-                .addChild(StorageAccount::getShareModule, (module, p) -> new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "File Shares"))
-                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
-                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
-                .addChild(StorageAccount::getQueueModule, (module, p) -> new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "Queues"))
-                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
-                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
-                .addChild(StorageAccount::getTableModule, (module, p) -> new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "Tables"))
-                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
-                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)))
+            final Node<StorageAccount> node = new Node<>(account).view(new AzureResourceLabelView<>(account))
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(StorageActionsContributor.ACCOUNT_ACTIONS);
+            if (account.canHaveBlobs()) {
+                node.addChild(StorageAccount::getBlobContainerModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "Blob Containers"))
+                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)));
+            }
+            if (account.canHaveShares()) {
+                node.addChild(StorageAccount::getShareModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "File Shares"))
+                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)));
+            }
+            if (account.canHaveQueues()) {
+                node.addChild(StorageAccount::getQueueModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "Queues"))
+                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)));
+            }
+            if (account.canHaveTables()) {
+                node.addChild(StorageAccount::getTableModule, (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, "Tables"))
+                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)));
+            }
+            return node;
         } else if (data instanceof BlobContainer) {
             final BlobContainer container = (BlobContainer) data;
             final AzureResourceLabelView<BlobContainer> view = new AzureResourceLabelView<>(container);
