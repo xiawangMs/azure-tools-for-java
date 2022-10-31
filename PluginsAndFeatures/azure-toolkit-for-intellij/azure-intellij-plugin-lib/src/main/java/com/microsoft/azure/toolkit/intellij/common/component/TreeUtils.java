@@ -32,6 +32,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -206,8 +207,8 @@ public class TreeUtils {
             tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, null);
         }
         renderer.append(view.getLabel(), attributes);
-        renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES, true);
-        renderer.setToolTipText(Optional.ofNullable(view.getTips()).orElse(view.getLabel()));
+        renderer.append(Optional.ofNullable(view.getDescription()).filter(StringUtils::isNotBlank).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES, true);
+        renderer.setToolTipText(Optional.ofNullable(view.getTips()).filter(StringUtils::isNotBlank).orElse(view.getLabel()));
     }
 
     public static boolean isInAppCentricView(@Nonnull DefaultMutableTreeNode node) {
