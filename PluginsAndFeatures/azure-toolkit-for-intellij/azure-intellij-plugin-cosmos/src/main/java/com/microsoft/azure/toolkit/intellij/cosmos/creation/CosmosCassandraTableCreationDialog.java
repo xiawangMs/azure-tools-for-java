@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraKeyspace;
+import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraTable;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraTableDraft;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +25,8 @@ import java.util.List;
 
 public class CosmosCassandraTableCreationDialog extends AzureDialog<CassandraTableDraft.CassandraTableConfig> implements AzureForm<CassandraTableDraft.CassandraTableConfig> {
     public static final String TEMPLATE = "CREATE TABLE %s.%s";
+    public static final String PARTITION_KEY_PATTERN = "[a-zA-Z0-9_]+";
+
     private AzureTextInput txtTableId;
     private JTextArea textSchema;
     private JPanel pnlRoot;
@@ -48,10 +51,9 @@ public class CosmosCassandraTableCreationDialog extends AzureDialog<CassandraTab
         txtTableId.setRequired(true);
         txtTableId.addValidator(this::validateTableId);
         txtTableId.addValueChangedListener(value -> {
-            final String command = String.format(TEMPLATE, keyspace.getName(), value);
-            final String labelValue = command.length() > 50 ? command.substring(0, 47) + "..." : command;
-            lblCreateCommand.setText(labelValue);
-            lblCreateCommand.setToolTipText(command);
+            final String displayName = value.length() > 50 ? value.substring(0, 47) + "..." : value;
+            final String command = String.format(TEMPLATE, keyspace.getName(), displayName);
+            lblCreateCommand.setText(command);
         });
 
         lblTableId.setLabelFor(txtTableId);
@@ -69,8 +71,14 @@ public class CosmosCassandraTableCreationDialog extends AzureDialog<CassandraTab
         if (StringUtils.isNotEmpty(value) && value.length() > 48) {
             return AzureValidationInfo.error("Table id should be less than 48 characters.", txtTableId);
         }
-        return StringUtils.endsWith(value, StringUtils.SPACE) || StringUtils.containsAny(value, "\\", "/", "#", "?", "%", "-") ?
-                AzureValidationInfo.error("Table Id should not end with space nor contain characters '\\', '/', '#', '?', '%', '-'", txtTableId) : AzureValidationInfo.success(txtTableId);
+        if (!value.matches(PARTITION_KEY_PATTERN)) {
+            return AzureValidationInfo.error("Table id should only contain alpha-numeric characters and underscores.", txtTableId);
+        }
+        final CassandraTable cassandraTable = keyspace.tables().get(value, keyspace.getResourceGroupName());
+        if (cassandraTable != null) {
+            return AzureValidationInfo.error("Table with same id already exists.", txtTableId);
+        }
+        return AzureValidationInfo.success(txtTableId);
     }
 
     @Override
