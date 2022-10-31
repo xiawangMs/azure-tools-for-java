@@ -74,6 +74,9 @@ public class CosmosCassandraTableCreationDialog extends AzureDialog<CassandraTab
         if (!value.matches(PARTITION_KEY_PATTERN)) {
             return AzureValidationInfo.error("Table id should only contain alpha-numeric characters and underscores.", txtTableId);
         }
+        if (StringUtils.equalsAnyIgnoreCase(value, "table", "keyspace")) {
+            return AzureValidationInfo.error(String.format("'%s' should not be used as table name", value), txtTableId);
+        }
         final CassandraTable cassandraTable = keyspace.tables().get(value, keyspace.getResourceGroupName());
         if (cassandraTable != null) {
             return AzureValidationInfo.error("Table with same id already exists.", txtTableId);
