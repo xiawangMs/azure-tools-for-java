@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +49,6 @@ import java.util.concurrent.ExecutionException;
 public class RatePopup {
     public static final JBColor BACKGROUND_COLOR =
         JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
-    public static final long DAYS = 24 * 60 * 60 * 1000L;
     public static final int MOST_TIMES = 5;
     private static Balloon balloon;
 
@@ -213,7 +213,7 @@ public class RatePopup {
         final int times = Integer.parseInt(Objects.requireNonNull(strTimes)) + 1;
         store.setProperty(RateManager.SERVICE, RateManager.POPPED_AT, String.valueOf(System.currentTimeMillis()));
         store.setProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, String.valueOf(times));
-        store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DAYS));
+        store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
 
         final JFrame frame = ((JFrame) IdeUtils.getWindow(project));
         RatePopup.balloon.show(new PositionTracker<>(frame.getRootPane()) {
@@ -233,7 +233,7 @@ public class RatePopup {
         if (x == -1) {
             store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "-1");
         } else {
-            store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + x * DAYS));
+            store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + x * DateUtils.MILLIS_PER_DAY));
         }
     }
 
