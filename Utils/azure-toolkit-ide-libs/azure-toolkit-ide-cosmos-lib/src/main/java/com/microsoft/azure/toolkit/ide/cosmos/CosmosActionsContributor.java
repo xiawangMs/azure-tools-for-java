@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDocument;
 import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDocumentContainer;
-import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDocumentModule;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.awt.*;
@@ -46,17 +45,17 @@ public class CosmosActionsContributor implements IActionsContributor {
     public static final String COSMOS_DOCUMENT_ACTIONS = "actions.cosmos.sql_document";
 
     public static final Action.Id<CosmosDBAccount> OPEN_DATABASE_TOOL = Action.Id.of("cosmos.open_database_tools");
-    public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("cosmos.open_data_explorer.account");
-    public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("cosmos.copy_connection_string.account");
-    public static final Action.Id<ICosmosDocumentContainer<?>> IMPORT_DOCUMENT = Action.Id.of("cosmos.import_document.container");
-    public static final Action.Id<ICosmosDocument> OPEN_DOCUMENT = Action.Id.of("cosmos.open_document.document");
+    public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("cosmos.open_data_explorer");
+    public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("cosmos.copy_connection_string");
+    public static final Action.Id<ICosmosDocumentContainer<?>> IMPORT_DOCUMENT = Action.Id.of("cosmos.import_document");
+    public static final Action.Id<ICosmosDocument> OPEN_DOCUMENT = Action.Id.of("cosmos.open_document");
     public static final Action.Id<ICosmosDocumentContainer<?>> LOAD_MODE_DOCUMENT = Action.Id.of("cosmos.load_document");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_COSMOS_SERVICE = Action.Id.of("group.create_cosmos_db_account");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open with Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tools.account", ((AzResource) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tools_3rd_party.account", ((AzResource) r).getName())).orElse(null))
                 .enabled(s -> s instanceof CosmosDBAccount && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<CosmosDBAccount> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");

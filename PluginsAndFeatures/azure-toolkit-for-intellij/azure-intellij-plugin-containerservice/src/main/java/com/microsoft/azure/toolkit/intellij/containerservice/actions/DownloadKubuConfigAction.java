@@ -68,7 +68,7 @@ public class DownloadKubuConfigAction {
     // todo: remove duplicated with AppServiceFileAction
     private static Action<?> getOpenInExplorerAction(@Nonnull Project project, @Nonnull File file) {
         final ActionView.Builder view = new ActionView.Builder("Open in Explorer").enabled(ignore -> true);
-        final Action.Id<Void> id = Action.Id.of("common.open_in_explorer");
+        final Action.Id<Void> id = Action.Id.of("common.open_in_file_explorer");
         return new Action<>(id, ignore -> RevealFileAction.openFile(file), view);
     }
 

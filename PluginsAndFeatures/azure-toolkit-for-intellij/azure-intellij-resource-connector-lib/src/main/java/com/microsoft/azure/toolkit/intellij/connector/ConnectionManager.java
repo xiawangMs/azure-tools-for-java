@@ -130,7 +130,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
 
         @Override
         @ExceptionNotification
-        @AzureOperation(name = "connector.load_resource_connections", type = AzureOperation.Type.ACTION)
+        @AzureOperation(name = "connector.load_resource_connections", type = AzureOperation.Type.TASK)
         public void loadState(@NotNull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
                 final String name = connectionEle.getAttributeValue(FIELD_TYPE);
