@@ -95,7 +95,7 @@ public class CosmosActionsContributor implements IActionsContributor {
 
         final ActionView.Builder importDocumentView = new ActionView.Builder("Import Document")
                 .title(s -> Optional.ofNullable(s).map(r ->
-                        description("cosmos.import_document.container", ((ICosmosDocumentModule) r).getName())).orElse(null))
+                        description("cosmos.import_document.container", ((ICosmosDocumentContainer) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ICosmosDocumentContainer<?> && ((ICosmosDocumentContainer<?>) s).getFormalStatus().isConnected());
         am.registerAction(IMPORT_DOCUMENT, new Action<>(IMPORT_DOCUMENT, importDocumentView));
 
