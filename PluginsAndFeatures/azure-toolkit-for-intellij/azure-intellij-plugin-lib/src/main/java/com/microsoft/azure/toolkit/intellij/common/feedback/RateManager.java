@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
@@ -41,7 +42,6 @@ public class RateManager {
     private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/action-scores.yml";
     private static final Map<String, ScoreConfig> scores = loadScores();
     private static final AtomicInteger score = new AtomicInteger(0);
-    private static final int THRESHOLD = 10;
 
     private static Map<String, ScoreConfig> loadScores() {
         final ObjectMapper YML_MAPPER = new YAMLMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -55,8 +55,9 @@ public class RateManager {
 
     public static void addScore(int score) {
         final int total = RateManager.score.addAndGet(score);
-        if (total > THRESHOLD && RatePopup.tryPopup(null)) {
-            RateManager.score.set(THRESHOLD / 2);
+        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 15);
+        if (total > threshold && RatePopup.tryPopup(null)) {
+            RateManager.score.set(threshold / 2);
         }
         AzureStoreManager.getInstance().getIdeStore().setProperty(SERVICE, TOTAL_SCORE, String.valueOf(total));
     }
@@ -73,7 +74,8 @@ public class RateManager {
         @Override
         public void runActivity(@Nonnull Project project) {
             final char c = InstallationIdUtils.getHashMac().toLowerCase().charAt(0);
-            if (Character.digit(c, 16) % 4 == 0) { // enabled for only 1/4
+            final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
+            if (testMode || Character.digit(c, 16) % 4 == 0) { // enabled for only 1/4
                 OperationManager.getInstance().addListener(this);
             }
         }
