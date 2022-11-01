@@ -91,8 +91,9 @@ public class RateManager {
         public void runActivity(@Nonnull Project project) {
             final char c = InstallationIdUtils.getHashMac().toLowerCase().charAt(0);
             final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
-            if (testMode || Character.digit(c, 16) % 4 == 0) { // enabled for only 1/4
-                final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+            final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+            final String nextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER);
+            if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
                 final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
                 if (StringUtils.isBlank(nextRewindDate)) {
                     store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
