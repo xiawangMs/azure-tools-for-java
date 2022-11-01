@@ -72,7 +72,7 @@ public class StorageFileActions {
     }
 
     @SneakyThrows
-    private static void downloadAndOpen(StorageFile file, Project project) {
+    private static void downloadAndOpen(@Nonnull StorageFile file, Project project) {
         final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", file.getName());
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final File temp = FileUtil.createTempFile("", file.getName(), true);
@@ -86,7 +86,6 @@ public class StorageFileActions {
                 final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
                 draft.setSourceFile(temp.toPath());
                 draft.commit();
-                AzureMessager.getMessager().success(AzureString.format("File %s has been saved to Azure", file.getName()));
             });
             return true;
         };
@@ -124,8 +123,11 @@ public class StorageFileActions {
                 draft.setRelativePath(relativePath.toString());
                 draft.setDirectory(relativePath.getNameCount() > 1);
                 final AzureString title = OperationBundle.description("storage.create_blob.blob", draft.getPath());
-                AzureTaskManager.getInstance().runInBackground(title, draft::createIfNotExist);
-                openFileInEditor(current.getFile(relativePath.toString()), project);
+                final IBlobFile finalCurrent = current;
+                AzureTaskManager.getInstance().runInBackground(title, () -> {
+                    draft.createIfNotExist();
+                    openFileInEditor(finalCurrent.getFile(relativePath.toString()), project);
+                });
             });
             dialog.show();
         });
@@ -139,8 +141,10 @@ public class StorageFileActions {
                 final AbstractAzResourceModule<? extends StorageFile, ? extends StorageFile, ?> module = file.getSubFileModule();
                 final AzResource.Draft<? extends StorageFile, ?> draft = module.create(name, "");
                 final AzureString title = OperationBundle.description("storage.create_file.file", draft.getName());
-                AzureTaskManager.getInstance().runInBackground(title, draft::createIfNotExist);
-                openFileInEditor((StorageFile) draft, project);
+                AzureTaskManager.getInstance().runInBackground(title, () -> {
+                    draft.createIfNotExist();
+                    openFileInEditor((StorageFile) draft, project);
+                });
             });
             dialog.show();
         });
