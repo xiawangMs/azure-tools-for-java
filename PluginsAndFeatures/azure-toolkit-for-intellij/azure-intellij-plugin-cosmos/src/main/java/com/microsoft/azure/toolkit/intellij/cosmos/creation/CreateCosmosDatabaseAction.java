@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
 package com.microsoft.azure.toolkit.intellij.cosmos.creation;
 
 import com.intellij.openapi.project.Project;
@@ -34,7 +38,7 @@ public class CreateCosmosDatabaseAction {
         });
     }
 
-    @AzureOperation(name = "cosmos.create_database.database|account", params = {"config.getName(), account.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "cosmos.create_database.database|account", params = {"config.getName()", "account.getName()"}, type = AzureOperation.Type.ACTION)
     private static <T extends CosmosDBAccount> void doCreate(@Nonnull T account,
                                                              @Nonnull BiFunction<T, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> draftSupplier,
                                                              @Nullable final DatabaseConfig config) {

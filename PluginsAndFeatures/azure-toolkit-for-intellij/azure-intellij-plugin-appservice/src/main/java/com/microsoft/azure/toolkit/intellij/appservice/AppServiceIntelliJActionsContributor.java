@@ -18,6 +18,8 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor;
 import com.microsoft.azure.toolkit.intellij.appservice.actions.AppServiceFileAction;
 import com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePropertyViewAction;
+import com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionEnableRemoteDebuggingAction;
+import com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionRemoteDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.ProfileFlightRecordAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.SSHIntoWebAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StartStreamingLogsAction;
@@ -32,6 +34,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -112,14 +115,14 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             AzureTaskManager.getInstance().runLater(() -> new SSHIntoWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.SSH_INTO_WEBAPP, isAppService, sshHandler);
 
-        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> deployWebAppHandler = (c, e) -> AzureTaskManager
+        final BiConsumer<AzResource, AnActionEvent> deployWebAppHandler = (c, e) -> AzureTaskManager
             .getInstance().runLater(() -> new DeployWebAppAction((WebApp) c, e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof WebApp, deployWebAppHandler);
 
         final BiConsumer<Object, AnActionEvent> createWebAppHandler = (c, e) -> CreateWebAppAction.openDialog(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof AzureWebApp, createWebAppHandler);
 
-        final BiConsumer<AzResource<?, ?, ?>, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
+        final BiConsumer<AzResource, AnActionEvent> deployFunctionAppHandler = (c, e) -> AzureTaskManager
             .getInstance().runLater(() -> new DeployFunctionAppAction((FunctionApp) c, e.getProject()).execute());
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, (r, e) -> r instanceof FunctionApp, deployFunctionAppHandler);
 
@@ -185,6 +188,19 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                     .region(r.getRegion())
                     .resourceGroup(ResourceGroupConfig.fromResource(r)).build());
         am.registerHandler(WebAppActionsContributor.GROUP_CREATE_WEBAPP, (r, e) -> true, groupCreateWebAppHandler);
+
+        final BiPredicate<FunctionAppBase<?, ?, ?>, AnActionEvent> isFunction = (r, e) -> r instanceof FunctionAppBase<?, ?, ?>;
+        final BiConsumer<FunctionAppBase<?, ?, ?>, AnActionEvent> enableRemoteDebuggingHandler = (c, e) ->
+                FunctionEnableRemoteDebuggingAction.enableRemoteDebugging(c, e.getProject());
+        am.registerHandler(FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING, isFunction, enableRemoteDebuggingHandler);
+
+        final BiConsumer<FunctionAppBase<?, ?, ?>, AnActionEvent> disableRemoteDebuggingHandler = (c, e) ->
+                FunctionEnableRemoteDebuggingAction.disableRemoteDebugging(c, e.getProject());
+        am.registerHandler(FunctionAppActionsContributor.DISABLE_REMOTE_DEBUGGING, isFunction, disableRemoteDebuggingHandler);
+
+        final BiConsumer<FunctionAppBase<?, ?, ?>, AnActionEvent> remoteDebuggingHandler = (c, e) ->
+                FunctionRemoteDebuggingAction.startDebugging(c, e.getProject());
+        am.registerHandler(FunctionAppActionsContributor.REMOTE_DEBUGGING, isFunction, remoteDebuggingHandler);
     }
 
     @Override
