@@ -13,6 +13,7 @@ springcloud.create_app_in_azure.app:
     - springcloud.create_app.app
   success: 2
   failure: -3
+
 webapp.update_app_in_azure.app:
   actions:
     - webapp.deploy_artifact.app

@@ -13,12 +13,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import lombok.Data;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -26,6 +29,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,11 +41,22 @@ public class RateManager {
     public static final String POPPED_TIMES = "popped_times";
     public static final String NEXT_POP_AFTER = "next_pop_after";
     public static final String TOTAL_SCORE = "action_total_score";
+    public static final String NEXT_REWIND_DATE = "next_rewind_date";
 
-    private static final RateManager manager = new RateManager();
     private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/action-scores.yml";
-    private static final Map<String, ScoreConfig> scores = loadScores();
-    private static final AtomicInteger score = new AtomicInteger(0);
+    private final Map<String, ScoreConfig> scores;
+    private final AtomicInteger score = new AtomicInteger(0);
+
+    private RateManager() {
+        scores = loadScores();
+        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+        final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
+        score.set(totalScore);
+    }
+
+    public static RateManager getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
 
     private static Map<String, ScoreConfig> loadScores() {
         final ObjectMapper YML_MAPPER = new YAMLMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -53,21 +68,22 @@ public class RateManager {
         return Collections.emptyMap();
     }
 
-    public static void addScore(int score) {
-        final int total = RateManager.score.addAndGet(score);
+    public void addScore(int score) {
+        final int total = this.score.addAndGet(score);
         final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 15);
         if (total > threshold && RatePopup.tryPopup(null)) {
-            RateManager.score.set(threshold / 2);
+            this.score.set(threshold / 2);
         }
-        AzureStoreManager.getInstance().getIdeStore().setProperty(SERVICE, TOTAL_SCORE, String.valueOf(total));
+        this.persistScore();
     }
 
-    public static int getScore() {
-        return RateManager.score.get();
+    public synchronized int getScore() {
+        return score.get();
     }
 
-    public static void clearScore() {
-        RateManager.score.set(0);
+    private void persistScore() {
+        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+        store.setProperty(SERVICE, TOTAL_SCORE, "" + score.get());
     }
 
     public static class WhenToPopup implements StartupActivity, OperationListener {
@@ -76,28 +92,39 @@ public class RateManager {
             final char c = InstallationIdUtils.getHashMac().toLowerCase().charAt(0);
             final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
             if (testMode || Character.digit(c, 16) % 4 == 0) { // enabled for only 1/4
+                final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+                final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
+                if (StringUtils.isBlank(nextRewindDate)) {
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
+                } else if (Long.parseLong(nextRewindDate) > System.currentTimeMillis()) {
+                    final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
+                    store.setProperty(SERVICE, TOTAL_SCORE, totalScore / 2 + "");
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
+                }
                 OperationManager.getInstance().addListener(this);
             }
         }
 
         @Override
         public void afterReturning(Operation operation, Object source) {
-            final ScoreConfig config = scores.get(operation.getId());
+            final RateManager manager = RateManager.getInstance();
+            final ScoreConfig config = manager.scores.get(operation.getId());
             if (config != null) {
                 final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
                 if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
-                    RateManager.addScore(config.getSuccess());
+                    manager.addScore(config.getSuccess());
                 }
             }
         }
 
         @Override
         public void afterThrowing(Throwable e, Operation operation, Object source) {
-            final ScoreConfig config = scores.get(operation.getId());
+            final RateManager manager = RateManager.getInstance();
+            final ScoreConfig config = RateManager.getInstance().scores.get(operation.getId());
             if (config != null) {
                 final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
                 if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
-                    RateManager.addScore(config.getFailure());
+                    manager.addScore(config.getFailure());
                 }
             }
         }
@@ -108,5 +135,9 @@ public class RateManager {
         private String[] actions;
         private int success;
         private int failure;
+    }
+
+    private static class SingletonHolder {
+        public static final RateManager INSTANCE = new RateManager();
     }
 }
