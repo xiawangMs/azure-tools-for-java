@@ -170,12 +170,12 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder enableRemoteDebuggingView = new ActionView.Builder("Enable Remote Debugging")
                 .title(s -> Optional.ofNullable(s).map(r -> description("function.enable_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionAppBase<?,?,?> && ((AzResourceBase) s).getFormalStatus().isRunning());
+                .enabled(s -> s instanceof FunctionAppBase<?,?,?> && ((AzResourceBase) s).getFormalStatus().isRunning() && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled());
         am.registerAction(ENABLE_REMOTE_DEBUGGING, new Action<>(ENABLE_REMOTE_DEBUGGING, enableRemoteDebuggingView));
 
         final ActionView.Builder disableRemoteDebuggingView = new ActionView.Builder("Disable Remote Debugging")
                 .title(s -> Optional.ofNullable(s).map(r -> description("function.disable_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning());
+                .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning() && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled());
         am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
 
         final ActionView.Builder attachDebuggerView = new ActionView.Builder("Attach Debugger", AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
