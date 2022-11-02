@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.feedback;
 
+import com.azure.core.exception.HttpResponseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationManager;
@@ -85,6 +87,11 @@ public class RateManager {
         return score.get();
     }
 
+    public void clearScore() {
+        score.set(0);
+        this.persistScore();
+    }
+
     private void persistScore() {
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
         store.setProperty(SERVICE, TOTAL_SCORE, "" + score.get());
@@ -113,11 +120,15 @@ public class RateManager {
         @Override
         public void afterReturning(Operation operation, Object source) {
             final RateManager manager = RateManager.getInstance();
-            final ScoreConfig config = manager.scores.get(operation.getId());
-            if (config != null) {
-                final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
-                if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
-                    manager.addScore(config.getSuccess());
+            if (StringUtils.equalsIgnoreCase(operation.getType(), AzureOperation.Type.REQUEST.name()) ||
+                operation.getTarget() == AzureOperation.Target.PLATFORM ||
+                operation.getTarget() == AzureOperation.Target.AZURE) {
+                final ScoreConfig config = manager.scores.get(operation.getId());
+                if (config != null) {
+                    final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
+                    if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
+                        manager.addScore(config.getSuccess());
+                    }
                 }
             }
         }
@@ -125,12 +136,8 @@ public class RateManager {
         @Override
         public void afterThrowing(Throwable e, Operation operation, Object source) {
             final RateManager manager = RateManager.getInstance();
-            final ScoreConfig config = RateManager.getInstance().scores.get(operation.getId());
-            if (config != null) {
-                final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
-                if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
-                    manager.addScore(config.getFailure());
-                }
+            if (!(e instanceof HttpResponseException)) {
+                manager.clearScore();
             }
         }
     }
