@@ -41,9 +41,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.function.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.function.deployment_slot";
 
-    public static final Action.Id<FunctionAppBase<?,?,?>> ENABLE_REMOTE_DEBUGGING = Action.Id.of("function.enable_remote_debugging");
-    public static final Action.Id<FunctionAppBase<?,?,?>> DISABLE_REMOTE_DEBUGGING = Action.Id.of("function.disable_remote_debugging");
-    public static final Action.Id<FunctionAppBase<?,?,?>> REMOTE_DEBUGGING = Action.Id.of("function.remote_debugging");
+    public static final Action.Id<FunctionAppBase<?, ?, ?>> ENABLE_REMOTE_DEBUGGING = Action.Id.of("function.enable_remote_debugging");
+    public static final Action.Id<FunctionAppBase<?, ?, ?>> DISABLE_REMOTE_DEBUGGING = Action.Id.of("function.disable_remote_debugging");
+    public static final Action.Id<FunctionAppBase<?, ?, ?>> REMOTE_DEBUGGING = Action.Id.of("function.remote_debugging");
     public static final Action.Id<FunctionAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("function.swap_deployment_slot");
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("function.refresh_functions");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("function.trigger_function");
@@ -111,7 +111,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         );
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, slotActionGroup);
 
-        am.registerGroup(DEPLOYMENT_SLOTS_ACTIONS, new ActionGroup(REFRESH_DEPLOYMENT_SLOTS));
+        am.registerGroup(DEPLOYMENT_SLOTS_ACTIONS, new ActionGroup(ResourceCommonActionsContributor.REFRESH));
 
         am.registerGroup(FUNCTION_ACTION, new ActionGroup(FunctionAppActionsContributor.TRIGGER_FUNCTION,
                 FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER, FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT));
