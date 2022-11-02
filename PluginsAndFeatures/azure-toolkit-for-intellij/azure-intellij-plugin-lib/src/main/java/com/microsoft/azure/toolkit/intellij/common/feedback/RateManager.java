@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
@@ -70,8 +71,11 @@ public class RateManager {
         return Collections.emptyMap();
     }
 
+    @AzureOperation(name = "feedback.add_operation_score", type = AzureOperation.Type.TASK)
     public void addScore(int score) {
         final int total = this.score.addAndGet(score);
+        OperationContext.current().setTelemetryProperty("addScore", String.valueOf(score));
+        OperationContext.current().setTelemetryProperty("totalScore", String.valueOf(total));
         final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 30);
         if (total >= threshold) {
             if (RatePopup.tryPopup(null)) {
@@ -87,6 +91,7 @@ public class RateManager {
         return score.get();
     }
 
+    @AzureOperation(name = "feedback.clear_operation_score", type = AzureOperation.Type.TASK)
     public void clearScore() {
         score.set(0);
         this.persistScore();

@@ -176,6 +176,7 @@ public class RatePopup {
     void $$$setupUI$$$() {
     }
 
+    @AzureOperation(name = "feedback.try_popup_rating", type = AzureOperation.Type.TASK)
     public static synchronized boolean tryPopup(@Nullable Project project) {
         final int times = getPoppedTimes();
         if (times < MOST_TIMES) {
@@ -191,7 +192,7 @@ public class RatePopup {
         return false;
     }
 
-    @AzureOperation(name = "feedback.show_popup", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "feedback.show_popup_rating", type = AzureOperation.Type.TASK)
     public static synchronized void popup(@Nullable Project project) {
         if (RatePopup.balloon == null || RatePopup.balloon.isDisposed()) {
             final JPanel rateUsPanel = new RatePopup().getContentPanel();
