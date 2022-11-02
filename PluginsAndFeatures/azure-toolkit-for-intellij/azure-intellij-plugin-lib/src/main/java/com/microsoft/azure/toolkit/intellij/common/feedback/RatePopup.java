@@ -67,7 +67,7 @@ public class RatePopup {
     private ActionLink notNow;
     private ActionLink featureLink;
 
-    private static final TailingDebouncer popup = new TailingDebouncer(() -> popup(null), 15000);
+    private static final TailingDebouncer popup = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(() -> popup(null)), 15000);
 
     public RatePopup() {
         super();
