@@ -55,7 +55,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open with Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tools_3rd_party.account", ((AzResource) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tools.account", ((AzResource) r).getName())).orElse(null))
                 .enabled(s -> s instanceof CosmosDBAccount && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<CosmosDBAccount> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
@@ -63,7 +63,7 @@ public class CosmosActionsContributor implements IActionsContributor {
 
         final Consumer<CosmosDBAccount> copyConnectionString = resource -> {
             final String connectionString = resource.listConnectionStrings().getPrimaryConnectionString();
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(connectionString), null);
+            am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
             AzureMessager.getMessager().info("Connection string copied");
         };
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")

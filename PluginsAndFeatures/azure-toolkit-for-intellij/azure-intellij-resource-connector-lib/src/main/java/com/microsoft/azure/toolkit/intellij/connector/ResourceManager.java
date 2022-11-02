@@ -86,7 +86,7 @@ public interface ResourceManager {
 
         @Override
         @ExceptionNotification
-        @AzureOperation(name = "connector.persist_connection_resources", type = AzureOperation.Type.TASK)
+        @AzureOperation(name = "connector.persist_connection_resources", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
         public Element getState() {
             final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
             this.resources.forEach(resource -> {

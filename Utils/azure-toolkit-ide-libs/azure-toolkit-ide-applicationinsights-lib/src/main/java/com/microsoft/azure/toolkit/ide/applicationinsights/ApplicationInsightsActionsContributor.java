@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.common.action.*;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.awt.*;
@@ -35,7 +36,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<ApplicationInsight> copyConnectionStringConsumer = insight -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(insight.getConnectionString()), null);
+            am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(insight.getConnectionString());
             AzureMessager.getMessager().info("Connection string copied");
         };
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
@@ -45,7 +46,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         am.registerAction(CONNECTION_STRING, new Action<>(CONNECTION_STRING, copyConnectionStringConsumer, copyConnectionStringView));
 
         final Consumer<ApplicationInsight> copyInstrumentationKeyConsumer = insight -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(insight.getInstrumentationKey()), null);
+            am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(insight.getInstrumentationKey());
             AzureMessager.getMessager().info("Instrumentation key copied");
         };
         final ActionView.Builder copyInstrumentationKeyView = new ActionView.Builder("Copy Instrumentation Key")

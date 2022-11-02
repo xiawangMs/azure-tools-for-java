@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.common.feedback;
 
 import com.intellij.collaboration.ui.codereview.comment.RoundedPanel;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -21,9 +20,11 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.PositionTracker;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.intellij.common.IdeUtils;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -100,19 +101,19 @@ public class RatePopup {
 
     @AzureOperation(name = "feedback.report_issue", type = AzureOperation.Type.ACTION)
     private void reportIssue(ActionEvent e) {
-        BrowserUtil.open("https://aka.ms/azure-ij-new-issue");
+        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://aka.ms/azure-ij-new-issue");
         popDaysLater(90);
     }
 
     @AzureOperation(name = "feedback.request_feature", type = AzureOperation.Type.ACTION)
     private void requestFeature(ActionEvent e) {
-        BrowserUtil.open("https://aka.ms/azure-ij-new-feature");
+        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://aka.ms/azure-ij-new-feature");
         popDaysLater(90);
     }
 
     @AzureOperation(name = "feedback.review_marketplace", type = AzureOperation.Type.ACTION)
     private void reviewInMarketplace(ActionEvent e) {
-        BrowserUtil.open("https://aka.ms/azure-ij-new-review");
+        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://aka.ms/azure-ij-new-review");
         popDaysLater(-1);
     }
 

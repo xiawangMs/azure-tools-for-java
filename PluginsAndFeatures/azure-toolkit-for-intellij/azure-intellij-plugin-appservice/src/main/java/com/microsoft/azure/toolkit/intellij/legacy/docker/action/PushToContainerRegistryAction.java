@@ -18,6 +18,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.pushimage.PushImageRunConfiguration;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
@@ -65,6 +66,7 @@ public class PushToContainerRegistryAction {
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
+    @AzureOperation(name = "acr.run_push_image_configuration.config", params = {"settings.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openRunDialog(Project project, RunnerAndConfigurationSettings settings) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
