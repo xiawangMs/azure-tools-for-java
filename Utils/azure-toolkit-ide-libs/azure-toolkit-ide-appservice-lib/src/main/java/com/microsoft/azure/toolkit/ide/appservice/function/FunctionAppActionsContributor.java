@@ -93,7 +93,6 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         final ActionGroup slotActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                AppServiceActionsContributor.OPEN_IN_BROWSER,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 "---",
                 SWAP_DEPLOYMENT_SLOT,
