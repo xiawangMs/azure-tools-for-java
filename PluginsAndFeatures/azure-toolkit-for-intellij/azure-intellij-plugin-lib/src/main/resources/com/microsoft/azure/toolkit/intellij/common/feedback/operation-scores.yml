@@ -2,10 +2,10 @@ springcloud.start_debug_configuration.instance:
   success: 6
   failure: 0
 function.run_deploy_configuration.app:
-  success: 6
+  success: 1
   failure: 0
 webapp.run_deploy_configuration.app:
-  success: 6
+  success: 1
   failure: 0
 function.start_debug_configuration.app:
   success: 6
@@ -107,7 +107,7 @@ arm.create_deployment_in_azure.deployment:
   success: 4
   failure: 0
 arm.create_group_in_azure.rg:
-  success: 4
+  success: 1
   failure: 0
 storage.create_share_in_azure.share:
   success: 4
@@ -365,9 +365,6 @@ webapp.swap_slot_in_azure.app|slot:
   success: 1
   failure: 0
 ai.update_ai_in_azure.ai:
-  success: 1
-  failure: 0
-resource.check_name.name:
   success: 1
   failure: 0
 function.prepare_staging_folder:
