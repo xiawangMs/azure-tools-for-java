@@ -43,7 +43,7 @@ public class RateManager {
     public static final String TOTAL_SCORE = "action_total_score";
     public static final String NEXT_REWIND_DATE = "next_rewind_date";
 
-    private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/action-scores.yml";
+    private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/operation-scores.yml";
     private final Map<String, ScoreConfig> scores;
     private final AtomicInteger score = new AtomicInteger(0);
 
