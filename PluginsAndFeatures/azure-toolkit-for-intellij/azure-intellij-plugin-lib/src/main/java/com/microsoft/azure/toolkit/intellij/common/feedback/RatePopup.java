@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -65,6 +66,8 @@ public class RatePopup {
     private ActionLink marketplaceLink;
     private ActionLink notNow;
     private ActionLink featureLink;
+
+    private static final TailingDebouncer popup = new TailingDebouncer(() -> popup(null), 15000);
 
     public RatePopup() {
         super();
@@ -180,16 +183,16 @@ public class RatePopup {
             final String strNextPopAfter = store.getProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "0");
             final long nextPopAfter = Long.parseLong(Objects.requireNonNull(strNextPopAfter));
             if (nextPopAfter >= 0 && System.currentTimeMillis() > nextPopAfter) {
-                final Timer timer = new Timer(10000, e -> popup(project));
-                timer.setRepeats(false);
-                timer.start();
+                store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
+                popup.debounce();
+                return true;
             }
         }
         return false;
     }
 
     @AzureOperation(name = "feedback.show_popup", type = AzureOperation.Type.SERVICE)
-    public static synchronized boolean popup(@Nullable Project project) {
+    public static synchronized void popup(@Nullable Project project) {
         if (RatePopup.balloon == null || RatePopup.balloon.isDisposed()) {
             final JPanel rateUsPanel = new RatePopup().getContentPanel();
             RatePopup.balloon = JBPopupFactory.getInstance().createBalloonBuilder(rateUsPanel)
@@ -225,7 +228,6 @@ public class RatePopup {
                 return new RelativePoint(frame, new Point(frameSize.width - balloonSize.width / 2 - 37, frameSize.height - balloonSize.height / 2 - 60));
             }
         }, Balloon.Position.above);
-        return true;
     }
 
     private static void popDaysLater(int x) {
