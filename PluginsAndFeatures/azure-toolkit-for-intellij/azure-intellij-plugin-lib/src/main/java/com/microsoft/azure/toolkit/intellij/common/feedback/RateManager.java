@@ -72,7 +72,7 @@ public class RateManager {
 
     public void addScore(int score) {
         final int total = this.score.addAndGet(score);
-        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 15);
+        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 30);
         if (total >= threshold) {
             if (RatePopup.tryPopup(null)) {
                 this.score.set(threshold / 2);
