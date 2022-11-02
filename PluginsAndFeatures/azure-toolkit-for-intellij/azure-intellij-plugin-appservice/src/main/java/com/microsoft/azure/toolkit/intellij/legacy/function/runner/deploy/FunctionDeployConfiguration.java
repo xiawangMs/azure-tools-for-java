@@ -26,6 +26,9 @@ import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -189,6 +192,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public void setAppSettings(Map<String, String> appSettings) {
         functionDeployModel.getFunctionAppConfig().setAppSettings(appSettings);
+        functionDeployModel.setAppSettingsHash(DigestUtils.md5Hex(JsonUtils.toJson(appSettings)).toUpperCase());
         FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), appSettings);
     }
 }
