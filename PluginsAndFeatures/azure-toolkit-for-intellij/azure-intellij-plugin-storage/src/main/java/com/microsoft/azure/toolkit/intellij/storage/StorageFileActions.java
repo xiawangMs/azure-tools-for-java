@@ -239,7 +239,7 @@ public class StorageFileActions {
     public static void copyUrl(StorageFile file, Project project) {
         final String url = file.getUrl();
         CopyPasteManager.getInstance().setContents(new StringSelection(url));
-        AzureMessager.getMessager().success(AzureString.format("URL of %s copied to clipboard: %s", file.getName(), url), "URL Copied", openUrl(url));
+        AzureMessager.getMessager().success(AzureString.format("URL of %s copied to clipboard: %s", file.getName(), url));
     }
 
     @AzureOperation(name = "storage.copy_file_sas_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
@@ -247,7 +247,7 @@ public class StorageFileActions {
         final String url = file.getSasUrl();
         CopyPasteManager.getInstance().setContents(new StringSelection(url));
         final AzureString message = AzureString.format("SAS Token and URL of %s copied to clipboard: %s. SAS token will expire after %s day.", file.getName(), url, 1);
-        AzureMessager.getMessager().success(message, "SAS Token and URL copied", openUrl(url));
+        AzureMessager.getMessager().success(message, "SAS Token and URL copied");
     }
 
     private static Action<Void> openUrl(@Nonnull final String url) {
