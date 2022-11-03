@@ -28,7 +28,7 @@ public class EnableRemoteDebuggingAction {
     private static final String REMOTE_DEBUGGING_DOCS = "https://aka.ms/asa-remotedebug";
     private static final String FAILED_TITLE = "Failed to %s remote debugging";
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app %s.";
-    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?<p>To learn more about remote debugging, please refer our <a href=\"%s\">wiki</a>";
+    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?<p>To learn more about remote debugging, please refer to our <a href=\"%s\">wiki</a>";
     private static final String CONFIRM_DIALOG_TITLE = "%s Remote Debugging";
     private static final String SUCCESS_MESSAGE = "Remote debugging is %sd for app %s successfully";
 
