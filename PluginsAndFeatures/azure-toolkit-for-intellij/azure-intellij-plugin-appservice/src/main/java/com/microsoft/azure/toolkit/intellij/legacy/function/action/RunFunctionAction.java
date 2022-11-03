@@ -17,14 +17,14 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfigurationFactory;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.intellij.actions.RunConfigurationUtils;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,7 +38,6 @@ public class RunFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
-    @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
@@ -51,6 +50,7 @@ public class RunFunctionAction extends AzureAnAction {
         event.getPresentation().setEnabledAndVisible(FunctionUtils.isFunctionProject(event.getProject()));
     }
 
+    @AzureOperation(name = "function.run_app.module", params = {"module.getName()"}, type = AzureOperation.Type.ACTION)
     private void runConfiguration(Module module) {
         // todo: investigate when will module be null
         if (module == null) {

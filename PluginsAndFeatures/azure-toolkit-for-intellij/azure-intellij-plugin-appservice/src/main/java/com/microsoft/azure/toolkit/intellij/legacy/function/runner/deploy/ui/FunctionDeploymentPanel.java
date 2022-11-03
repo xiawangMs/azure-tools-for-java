@@ -165,7 +165,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         Optional.ofNullable((Module) cbFunctionModule.getSelectedItem()).ifPresent(configuration::saveTargetModule);
         Optional.ofNullable(functionAppComboBox.getValue())
                 .map(value -> value.toBuilder()
-                        .deploymentSlot(cbDeploymentSlot.getValue())
+                        .deploymentSlot(chkSlot.isSelected() ? cbDeploymentSlot.getValue() : null)
                         .appSettings(appSettingsTable.getAppSettings()).build())
                 .ifPresent(configuration::saveConfig);
     }

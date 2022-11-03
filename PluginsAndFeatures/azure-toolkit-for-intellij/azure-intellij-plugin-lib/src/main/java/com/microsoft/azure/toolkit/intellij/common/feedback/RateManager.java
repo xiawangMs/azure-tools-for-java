@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.feedback;
 
+import com.azure.core.exception.HttpResponseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +15,9 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
@@ -43,7 +46,7 @@ public class RateManager {
     public static final String TOTAL_SCORE = "action_total_score";
     public static final String NEXT_REWIND_DATE = "next_rewind_date";
 
-    private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/action-scores.yml";
+    private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/operation-scores.yml";
     private final Map<String, ScoreConfig> scores;
     private final AtomicInteger score = new AtomicInteger(0);
 
@@ -68,9 +71,12 @@ public class RateManager {
         return Collections.emptyMap();
     }
 
+    @AzureOperation(name = "feedback.add_operation_score", type = AzureOperation.Type.TASK)
     public void addScore(int score) {
         final int total = this.score.addAndGet(score);
-        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 15);
+        OperationContext.current().setTelemetryProperty("addScore", String.valueOf(score));
+        OperationContext.current().setTelemetryProperty("totalScore", String.valueOf(total));
+        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 30);
         if (total >= threshold) {
             if (RatePopup.tryPopup(null)) {
                 this.score.set(threshold / 2);
@@ -83,6 +89,12 @@ public class RateManager {
 
     public synchronized int getScore() {
         return score.get();
+    }
+
+    @AzureOperation(name = "feedback.rewind_operation_score_on_error", type = AzureOperation.Type.TASK)
+    public void rewindScore() {
+        score.set(score.get() / 2);
+        this.persistScore();
     }
 
     private void persistScore() {
@@ -100,11 +112,11 @@ public class RateManager {
             if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
                 final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
                 if (StringUtils.isBlank(nextRewindDate)) {
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 30 * DateUtils.MILLIS_PER_DAY));
                 } else if (Long.parseLong(nextRewindDate) > System.currentTimeMillis()) {
                     final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
                     store.setProperty(SERVICE, TOTAL_SCORE, totalScore / 2 + "");
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 30 * DateUtils.MILLIS_PER_DAY));
                 }
                 OperationManager.getInstance().addListener(this);
             }
@@ -113,11 +125,15 @@ public class RateManager {
         @Override
         public void afterReturning(Operation operation, Object source) {
             final RateManager manager = RateManager.getInstance();
-            final ScoreConfig config = manager.scores.get(operation.getId());
-            if (config != null) {
-                final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
-                if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
-                    manager.addScore(config.getSuccess());
+            if (StringUtils.equalsIgnoreCase(operation.getType(), AzureOperation.Type.REQUEST.name()) ||
+                operation.getTarget() == AzureOperation.Target.PLATFORM ||
+                operation.getTarget() == AzureOperation.Target.AZURE) {
+                final ScoreConfig config = manager.scores.get(operation.getId());
+                if (config != null) {
+                    final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
+                    if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
+                        manager.addScore(config.getSuccess());
+                    }
                 }
             }
         }
@@ -125,12 +141,8 @@ public class RateManager {
         @Override
         public void afterThrowing(Throwable e, Operation operation, Object source) {
             final RateManager manager = RateManager.getInstance();
-            final ScoreConfig config = RateManager.getInstance().scores.get(operation.getId());
-            if (config != null) {
-                final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);
-                if (ArrayUtils.isEmpty(config.getActions()) || Arrays.asList(config.getActions()).contains(actionId)) {
-                    manager.addScore(config.getFailure());
-                }
+            if (!(e instanceof HttpResponseException)) {
+                manager.rewindScore();
             }
         }
     }
