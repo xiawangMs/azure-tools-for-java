@@ -183,7 +183,6 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         return !webAppSettingModel.isCreatingNew() && webAppSettingModel.isDeployToSlot();
     }
 
-    @AzureOperation(name = "webapp.open_browser", type = AzureOperation.Type.ACTION)
     private void openWebAppInBrowser(String url, RunProcessHandler processHandler) {
         try {
             Desktop.getDesktop().browse(new URL(url).toURI());

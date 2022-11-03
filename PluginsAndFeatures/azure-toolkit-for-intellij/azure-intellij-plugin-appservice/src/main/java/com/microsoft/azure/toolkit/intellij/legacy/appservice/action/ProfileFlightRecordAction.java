@@ -14,7 +14,9 @@ import com.microsoft.azure.toolkit.intellij.legacy.appservice.jfr.RunFlightRecor
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -52,12 +54,7 @@ public class ProfileFlightRecordAction {
     }
 
     public void execute() {
-        EventUtil.executeWithLog(TelemetryConstants.WEBAPP, "start-flight-recorder", op -> {
-            op.trackProperty(TelemetryConstants.SUBSCRIPTIONID, subscriptionId);
-            final AzureString title = OperationBundle.description("appservice.profile_flight_recorder");
-            final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
-            AzureTaskManager.getInstance().runInBackground(task);
-        });
+        this.doProfileFlightRecorderAll();
     }
 
     private void doProfileFlightRecorderAll() {
@@ -65,13 +62,11 @@ public class ProfileFlightRecordAction {
             // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
             if (appService.getRuntime().getOperatingSystem() == OperatingSystem.DOCKER) {
                 final String message = message("webapp.flightRecord.error.notSupport.message", appService.name());
-                notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"), message);
-                return;
+                throw new AzureToolkitRuntimeException(message("webapp.flightRecord.error.notSupport.title"), message);
             }
             if (!StringUtils.equalsIgnoreCase(appService.getStatus(), "running")) {
                 final String message = message("webapp.flightRecord.error.notRunning.message", appService.name());
-                notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"), message);
-                return;
+                throw new AzureToolkitRuntimeException(message("webapp.flightRecord.error.notRunning.title"), message);
             }
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText(message("webapp.flightRecord.task.startProfileWebApp.title", appService.name()));
@@ -79,23 +74,20 @@ public class ProfileFlightRecordAction {
             AzureTaskManager.getInstance().runAndWait(() -> {
                 final FlightRecorderConfiguration config = collectFlightRecorderConfiguration();
                 if (Objects.isNull(config)) {
-                    AzureMessager.getMessager().warning(message("webapp.flightRecord.error.cancelled.message"),
-                            message("webapp.flightRecord.error.cancelled.title"));
+                    AzureMessager.getMessager().warning(message("webapp.flightRecord.error.cancelled.message"), message("webapp.flightRecord.error.cancelled.title"));
                     finishLatch.countDown();
                     return;
                 }
                 if (config.getDuration() <= 0) {
-                    notifyUserWithErrorMessage(message("webapp.flightRecord.error.invalidDuration.title"),
-                            message("webapp.flightRecord.error.invalidDuration.message"));
                     finishLatch.countDown();
+                    throw new AzureToolkitRuntimeException(message("webapp.flightRecord.error.invalidDuration.title"), message("webapp.flightRecord.error.invalidDuration.message"));
                 } else {
                     new Thread(() -> doProfileFlightRecorder(progressIndicator, config, finishLatch)).start();
                 }
             }, AzureTask.Modality.NONE);
             finishLatch.await();
         } catch (final Exception ex) {
-            notifyUserWithErrorMessage(
-                    message("webapp.flightRecord.error.profileFailed.title"), message("webapp.flightRecord.error.profileFailed.message") + ex.getMessage());
+            throw new AzureToolkitRuntimeException(message("webapp.flightRecord.error.profileFailed.title"), message("webapp.flightRecord.error.profileFailed.message") + ex.getMessage());
         }
     }
 
@@ -110,8 +102,8 @@ public class ProfileFlightRecordAction {
         return null;
     }
 
-    private void doProfileFlightRecorder(ProgressIndicator progressIndicator,
-                                         FlightRecorderConfiguration config, CountDownLatch latch) {
+    @AzureOperation(name = "appservice.profile_flight_recorder_in_azure", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    private void doProfileFlightRecorder(ProgressIndicator progressIndicator, FlightRecorderConfiguration config, CountDownLatch latch) {
         try {
             progressIndicator.setText(String.format(message("webapp.flightRecord.task.startProcessRecorder.title"), config.getPid(), config.getProcessName()));
             final File file = File.createTempFile("jfr-snapshot-" + appService.name() + "-", ".jfr");
@@ -135,19 +127,14 @@ public class ProfileFlightRecordAction {
                 progressIndicator.setText(message("webapp.flightRecord.hint.downloadingJfrDone"));
                 AzureMessager.getMessager().info(getActionOnJfrFile(file.getAbsolutePath()), message("webapp.flightRecord.hint.profileRecorderComplete"));
             } else {
-                notifyUserWithErrorMessage(message("webapp.flightRecord.error.jfrDownload.title"), message("webapp.flightRecord.error.jfrDownload.message"));
+                throw new AzureToolkitRuntimeException(message("webapp.flightRecord.error.jfrDownload.title"), message("webapp.flightRecord.error.jfrDownload.message"));
             }
 
         } catch (final IOException e) {
-            notifyUserWithErrorMessage(message("webapp.flightRecord.error.profileFlightRecorderFailed.title"),
-                    message("webapp.flightRecord.error.profileFlightRecorderFailed.message") + e.getMessage());
+            throw new AzureToolkitRuntimeException(message("webapp.flightRecord.error.profileFlightRecorderFailed.title"), e);
         } finally {
             latch.countDown();
         }
-    }
-
-    private void notifyUserWithErrorMessage(String title, String errorMessage) {
-        AzureMessager.getMessager().error(errorMessage, title);
     }
 
     private String getActionOnJfrFile(String filePath) {

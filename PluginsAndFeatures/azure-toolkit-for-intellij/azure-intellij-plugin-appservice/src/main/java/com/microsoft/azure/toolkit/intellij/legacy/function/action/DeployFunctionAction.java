@@ -36,7 +36,6 @@ public class DeployFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
-    @AzureOperation(name = "function.deploy_app", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         if (module == null) {
@@ -52,11 +51,8 @@ public class DeployFunctionAction extends AzureAnAction {
         event.getPresentation().setEnabledAndVisible(FunctionUtils.isFunctionProject(event.getProject()));
     }
 
+    @AzureOperation(name = "function.deploy_app.module", params = {"module.getName()"}, type = AzureOperation.Type.ACTION)
     private void runConfiguration(Module module) {
-        // todo: investigate when will module be null
-        if (module == null) {
-            return;
-        }
         final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = new FunctionDeploymentConfigurationFactory(configType);
