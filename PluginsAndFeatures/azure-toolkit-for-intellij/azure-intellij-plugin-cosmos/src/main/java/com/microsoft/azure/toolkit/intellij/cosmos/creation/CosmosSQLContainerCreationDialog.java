@@ -51,6 +51,11 @@ public class CosmosSQLContainerCreationDialog extends AzureDialog<SqlContainerDr
         txtContainerId.addValidator(this::validateContainerId);
         txtPartitionKey.setRequired(true);
         txtPartitionKey.addValidator(this::validatePartitionKey);
+        txtPartitionKey.addValueChangedListener(value -> {
+            if (!StringUtils.startsWith(value, "/")) {
+                txtPartitionKey.setValue("/" + value);
+            }
+        });
         pnlThroughput.setVisible(chkDedicatedThroughput.isSelected());
         chkDedicatedThroughput.addItemListener(e -> pnlThroughput.setVisible(chkDedicatedThroughput.isSelected()));
 
@@ -64,7 +69,7 @@ public class CosmosSQLContainerCreationDialog extends AzureDialog<SqlContainerDr
             return AzureValidationInfo.builder().input(txtContainerId).type(AzureValidationInfo.Type.ERROR).message("Container ID cannot be empty.").build();
         } else if (!value.matches(CONTAINER_ID_PATTERN)) {
             return AzureValidationInfo.error("Container names can only contain lowercase letters, numbers, or the dash (-) character, " +
-                    "it should between 3 and 63 characters long and must start with a lowercase letter or number", txtPartitionKey);
+                    "it should between 3 and 63 characters long and must start with a lowercase letter or number", txtContainerId);
         }
         final SqlContainer sqlContainer = database.containers().get(value, database.getResourceGroupName());
         if (sqlContainer != null) {
