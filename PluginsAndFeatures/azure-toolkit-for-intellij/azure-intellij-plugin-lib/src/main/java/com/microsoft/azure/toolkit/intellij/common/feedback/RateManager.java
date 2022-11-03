@@ -91,9 +91,9 @@ public class RateManager {
         return score.get();
     }
 
-    @AzureOperation(name = "feedback.clear_operation_score", type = AzureOperation.Type.TASK)
-    public void clearScore() {
-        score.set(0);
+    @AzureOperation(name = "feedback.rewind_operation_score_on_error", type = AzureOperation.Type.TASK)
+    public void rewindScore() {
+        score.set(score.get() / 2);
         this.persistScore();
     }
 
@@ -112,11 +112,11 @@ public class RateManager {
             if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
                 final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
                 if (StringUtils.isBlank(nextRewindDate)) {
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 30 * DateUtils.MILLIS_PER_DAY));
                 } else if (Long.parseLong(nextRewindDate) > System.currentTimeMillis()) {
                     final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
                     store.setProperty(SERVICE, TOTAL_SCORE, totalScore / 2 + "");
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 14 * DateUtils.MILLIS_PER_DAY));
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 30 * DateUtils.MILLIS_PER_DAY));
                 }
                 OperationManager.getInstance().addListener(this);
             }
@@ -142,7 +142,7 @@ public class RateManager {
         public void afterThrowing(Throwable e, Operation operation, Object source) {
             final RateManager manager = RateManager.getInstance();
             if (!(e instanceof HttpResponseException)) {
-                manager.clearScore();
+                manager.rewindScore();
             }
         }
     }
