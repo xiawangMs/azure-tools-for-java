@@ -117,6 +117,8 @@ public enum AppServiceStreamingLogManager {
                 AzureTaskManager.getInstance().runLater(() ->
                     StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, resourceId, logStreaming.getTitle(), consoleView)
                 );
+            } catch (final AzureToolkitRuntimeException e) {
+                throw e;
             } catch (final Throwable e) {
                 throw new AzureToolkitRuntimeException("failed to open streaming log", e, retry);
             }

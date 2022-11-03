@@ -87,6 +87,8 @@ public class DeploymentActions {
                     final String pattern = "Template of Resource {0} is successfully exported to file {1}.";
                     final AzureString msg = AzureString.format(pattern, deployment.getName(), file.getName());
                     AzureMessager.getMessager().success(msg, null, newOpenInEditorAction(file, project), newShowInExplorerAction(file));
+                } catch (final AzureToolkitRuntimeException e) {
+                    throw e;
                 } catch (final Throwable e) {
                     throw new AzureToolkitRuntimeException(String.format("failed to write template to file \"%s\"", file.getName()), e);
                 }
@@ -111,6 +113,8 @@ public class DeploymentActions {
                     final String pattern = "Parameters of Resource {0} is successfully exported to file {1}.";
                     final AzureString msg = AzureString.format(pattern, deployment.getName(), file.getName());
                     AzureMessager.getMessager().success(msg, null, newOpenInEditorAction(file, project), newShowInExplorerAction(file));
+                } catch (final AzureToolkitRuntimeException e) {
+                    throw e;
                 } catch (final Throwable e) {
                     throw new AzureToolkitRuntimeException(String.format("failed to write parameters to file \"%s\"", file.getName()), e);
                 }
