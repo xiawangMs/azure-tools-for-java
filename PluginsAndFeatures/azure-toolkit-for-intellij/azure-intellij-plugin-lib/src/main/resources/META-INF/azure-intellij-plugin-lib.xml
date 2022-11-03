@@ -17,7 +17,7 @@
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.common.feedback.MonkeySurveyEditorProvider"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.common.feedback.RateManager$WhenToPopup"/>
         <registryKey key="azure.toolkit.test.mode.enabled" description="Test mode" restartRequired="true" defaultValue="false"/>
-        <registryKey key="azure.toolkit.feedback.score.threshold" description="Score threshold to popup for rating" restartRequired="false" defaultValue="15"/>
+        <registryKey key="azure.toolkit.feedback.score.threshold" description="Score threshold to popup for rating" restartRequired="false" defaultValue="30"/>
     </extensions>
     <actions>
         <action id="Actions.WhatsNew"

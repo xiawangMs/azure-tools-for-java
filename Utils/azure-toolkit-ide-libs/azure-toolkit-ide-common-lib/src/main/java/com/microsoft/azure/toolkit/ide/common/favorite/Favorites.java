@@ -171,6 +171,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         this.refresh();
     }
 
+    @AzureOperation(name = "favorite.add_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
         if (this.exists(resource.getId())) {
             final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());
