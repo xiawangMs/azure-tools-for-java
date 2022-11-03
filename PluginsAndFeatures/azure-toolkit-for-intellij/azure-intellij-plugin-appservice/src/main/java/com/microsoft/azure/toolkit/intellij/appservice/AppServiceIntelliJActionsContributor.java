@@ -199,7 +199,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         am.registerHandler(FunctionAppActionsContributor.DISABLE_REMOTE_DEBUGGING, isFunction, disableRemoteDebuggingHandler);
 
         final BiConsumer<FunctionAppBase<?, ?, ?>, AnActionEvent> remoteDebuggingHandler = (c, e) ->
-                FunctionRemoteDebuggingAction.startDebugging(c, e.getProject());
+                AzureTaskManager.getInstance().runLater(() -> FunctionRemoteDebuggingAction.startDebugging(c, e.getProject()));
         am.registerHandler(FunctionAppActionsContributor.REMOTE_DEBUGGING, isFunction, remoteDebuggingHandler);
     }
 
