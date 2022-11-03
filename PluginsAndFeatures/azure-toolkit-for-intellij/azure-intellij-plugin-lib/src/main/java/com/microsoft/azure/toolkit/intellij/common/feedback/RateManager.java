@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationException;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
@@ -25,6 +26,7 @@ import lombok.Data;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -140,8 +142,12 @@ public class RateManager {
 
         @Override
         public void afterThrowing(Throwable e, Operation operation, Object source) {
+            if (e instanceof OperationException) {
+                return;
+            }
             final RateManager manager = RateManager.getInstance();
-            if (!(e instanceof HttpResponseException)) {
+            final Throwable cause = ExceptionUtils.getRootCause(e);
+            if (!(cause instanceof HttpResponseException || cause.getClass().getPackageName().contains("java.net"))) {
                 manager.rewindScore();
             }
         }
