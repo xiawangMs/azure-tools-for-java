@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common.fileexplorer;
 
 import com.intellij.AppTopics;
 import com.intellij.ide.actions.RevealFileAction;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
@@ -15,6 +16,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.fileEditor.impl.LoadTextUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolderBase;
@@ -57,12 +59,13 @@ public class VirtualFileActions {
         if (editors.length == 0) {
             throw new AzureToolkitRuntimeException(String.format("Failed to open file %s in editor. Try downloading it first and open it manually.", file.getName()));
         }
-        Arrays.stream(editors).filter(e -> e instanceof TextEditor).forEach(e -> addFileListeners(file, onSave, onClose, manager, e));
+        Arrays.stream(editors).filter(e -> e instanceof TextEditor).forEach(e -> addFileListeners(file, onSave, onClose, manager, (TextEditor) e));
     }
 
-    private static void addFileListeners(VirtualFile virtualFile, Function<? super String, Boolean> onSave, Runnable onClose, FileEditorManager manager, FileEditor editor) {
+    private static void addFileListeners(VirtualFile virtualFile, Function<? super String, Boolean> onSave, Runnable onClose, FileEditorManager manager, TextEditor editor) {
         final MessageBusConnection messageBusConnection = manager.getProject().getMessageBus().connect(editor);
-        ((TextEditor) editor).getEditor().getDocument().addDocumentListener(new DocumentListener() {
+        final Document editorDoc = editor.getEditor().getDocument();
+        editorDoc.addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(@Nonnull DocumentEvent event) {
                 virtualFile.putUserData(FILE_CHANGED, true);
@@ -71,7 +74,7 @@ public class VirtualFileActions {
         messageBusConnection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, new FileDocumentManagerListener() {
             @Override
             public void beforeDocumentSaving(@Nonnull Document document) {
-                if (Objects.equals(document, ((TextEditor) editor).getEditor().getDocument()) && Boolean.TRUE.equals(virtualFile.getUserData(FILE_CHANGED))) {
+                if (Objects.equals(document, editorDoc) && Boolean.TRUE.equals(virtualFile.getUserData(FILE_CHANGED))) {
                     if (onSave.apply(document.getText())) {
                         virtualFile.putUserData(FILE_CHANGED, false);
                     }
@@ -79,12 +82,14 @@ public class VirtualFileActions {
             }
         });
         messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
+            @SneakyThrows
             @Override
             public void beforeFileClosed(FileEditorManager source, VirtualFile file) {
                 try {
                     if (Objects.equals(file, virtualFile) && Boolean.TRUE.equals(virtualFile.getUserData(FILE_CHANGED))) {
                         if (AzureMessager.getMessager().confirm(SAVE_CHANGES, FILE_EDITING)) {
-                            final String content = ((TextEditor) editor).getEditor().getDocument().getText();
+                            final String content = editorDoc.getText();
+                            WriteAction.run(() -> LoadTextUtil.write(manager.getProject(), file, this, content, editorDoc.getModificationStamp()));
                             onSave.apply(content);
                         }
                         virtualFile.putUserData(FILE_CHANGED, false);
