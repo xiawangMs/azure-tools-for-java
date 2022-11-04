@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.70.0](#3700)
   - [3.69.0](#3690)
   - [3.68.1](#3681)
   - [3.68.0](#3680)
@@ -88,6 +89,15 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.70.0
+### Added
+- Added support for remote debugging of `Azure Spring Apps` in Azure Explorer.
+- Added support for remote debugging of `Azure Function Apps` in Azure Explorer.
+- Added support for data management of `Azure Storage Account` in Azure Explorer.
+- Added support for data management of `Azure Cosmos DB account` in Azure Explorer.
+- Added support for filtering app settings of `Azure Web App/ Function App` in Azure Explorer.
+
 ## 3.69.0
 ### Added
 - Users are able to deploy artifacts to Azure Functions Deployment Slot directly.

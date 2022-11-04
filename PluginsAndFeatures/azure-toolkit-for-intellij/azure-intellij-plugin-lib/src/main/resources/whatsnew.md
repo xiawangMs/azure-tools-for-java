@@ -1,6 +1,19 @@
 <!-- Version: 3.68.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.70.0
+### Added
+- Added support for remote debugging of `Azure Spring Apps` in Azure Explorer.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.springremotedebugging.gif" alt="screenshot of 'cosmos db account'" width="1200"/>
+- Added support for remote debugging of `Azure Function Apps` in Azure Explorer.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.functionremotedebugging.gif" alt="screenshot of 'cosmos db account'" width="1200"/>
+- Added support for data management of `Azure Storage Account` in Azure Explorer.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.storageaccount.png" alt="screenshot of 'cosmos db account'" width="1200"/>
+- Added support for data management of `Azure Cosmos DB account` in Azure Explorer.
+<img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.cosmosdb.png" alt="screenshot of 'cosmos db account'" width="1200"/>
+- Added support for filtering app settings of `Azure Web App/ Function App ` in Azure Explorer.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.filterappsettings.png" alt="screenshot of 'cosmos db account'" width="1200"/>
+
 ## 3.69.0
 ### Added
 - Users are able to deploy artifacts to Azure Functions Deployment Slot directly.
