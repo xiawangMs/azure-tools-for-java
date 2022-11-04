@@ -14,14 +14,17 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.util.Key;
+import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.microsoft.azure.toolkit.ide.appservice.function.remotedebugging.FunctionPortForwarder;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +36,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<FunctionPortForwardingTaskProvider.FunctionPortForwarderBeforeRunTask> {
     private static final String NAME_TEMPLATE = "Attach to %s";
@@ -73,10 +77,11 @@ public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<Fu
 
     @Getter
     @Setter
-    public static class FunctionPortForwarderBeforeRunTask extends BeforeRunTask<FunctionPortForwarderBeforeRunTask> implements PersistentStateComponent<String> {
+    public static class FunctionPortForwarderBeforeRunTask extends BeforeRunTask<FunctionPortForwarderBeforeRunTask>
+            implements PersistentStateComponent<FunctionPortForwarderConfig> {
         private final RunConfiguration config;
         private FunctionPortForwarder forwarder;
-        private String targetResourceId;
+        private FunctionPortForwarderConfig portForwarderConfig = new FunctionPortForwarderConfig();
 
         protected FunctionPortForwarderBeforeRunTask(RunConfiguration config) {
             super(ID);
@@ -84,33 +89,46 @@ public class FunctionPortForwardingTaskProvider extends BeforeRunTaskProvider<Fu
         }
 
         public void setTarget(FunctionAppBase<?, ?, ?> target) {
-            this.targetResourceId = target.getId();
+            this.portForwarderConfig.setResourceId(target.getId());
+        }
+
+        public String getTargetResourceId() {
+            return Optional.ofNullable(this.portForwarderConfig).map(FunctionPortForwarderConfig::getResourceId).orElse(null);
         }
 
         public boolean startPortForwarding(int localPort) {
-            if (this.config instanceof RemoteConfiguration && StringUtils.isNotEmpty(targetResourceId)) {
-                try {
-                    final FunctionAppBase<?,?,?> target = Azure.az(AzureFunctions.class).getById(this.targetResourceId);
-                    Objects.requireNonNull(target).ping();
-                    this.forwarder = new FunctionPortForwarder(target);
-                    this.forwarder.initLocalSocket(localPort);
-                    AzureTaskManager.getInstance().runOnPooledThread(() -> this.forwarder.startForward(localPort));
-                    return true;
-                } catch (final IOException e) {
-                    AzureMessager.getMessager().error(e);
-                }
+            if (this.config instanceof RemoteConfiguration && StringUtils.isNotEmpty(portForwarderConfig.getResourceId())) {
+                return AzureTaskManager.getInstance().runInBackgroundAsObservable(AzureString.format("Start port forward for remote debugging"), () -> {
+                    try {
+                        final FunctionAppBase<?, ?, ?> target = Azure.az(AzureFunctions.class).getById(portForwarderConfig.getResourceId());
+                        Objects.requireNonNull(target).ping();
+                        this.forwarder = new FunctionPortForwarder(target);
+                        this.forwarder.initLocalSocket(localPort);
+                        AzureTaskManager.getInstance().runOnPooledThread(() -> this.forwarder.startForward(localPort));
+                        return true;
+                    } catch (final IOException | RuntimeException e) {
+                        AzureMessager.getMessager().error(e);
+                        return false;
+                    }
+                }).toBlocking().last();
             }
             return false;
         }
 
         @Override
-        public String getState() {
-            return this.targetResourceId;
+        public FunctionPortForwarderConfig getState() {
+            return this.portForwarderConfig;
         }
 
         @Override
-        public void loadState(@NotNull String state) {
-            this.targetResourceId = state;
+        public void loadState(@NotNull FunctionPortForwarderConfig state) {
+            XmlSerializerUtil.copyBean(state, this.portForwarderConfig);
         }
+
+    }
+
+    @Data
+    public static class FunctionPortForwarderConfig {
+        private String resourceId;
     }
 }
