@@ -86,7 +86,11 @@ public class RateManager {
                 this.score.set(threshold);
             }
         }
-        this.persistScore();
+        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+        if (score > 0) {
+            store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
+        }
+        store.setProperty(SERVICE, TOTAL_SCORE, "" + this.score.get());
     }
 
     public synchronized int getScore() {
@@ -96,10 +100,6 @@ public class RateManager {
     @AzureOperation(name = "feedback.rewind_operation_score_on_error", type = AzureOperation.Type.TASK)
     public void rewindScore() {
         score.set(score.get() / 2);
-        this.persistScore();
-    }
-
-    private void persistScore() {
         final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
         store.setProperty(SERVICE, TOTAL_SCORE, "" + score.get());
     }
@@ -114,11 +114,10 @@ public class RateManager {
             if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
                 final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
                 if (StringUtils.isBlank(nextRewindDate)) {
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 30 * DateUtils.MILLIS_PER_DAY));
+                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
                 } else if (Long.parseLong(nextRewindDate) > System.currentTimeMillis()) {
                     final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
                     store.setProperty(SERVICE, TOTAL_SCORE, totalScore / 2 + "");
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 30 * DateUtils.MILLIS_PER_DAY));
                 }
                 OperationManager.getInstance().addListener(this);
             }
