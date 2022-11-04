@@ -4,6 +4,7 @@
 
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <actions implementation="com.microsoft.azure.toolkit.intellij.appservice.AppServiceIntelliJActionsContributor"/>
+        <guidanceTaskProvider implementation="com.microsoft.azure.toolkit.intellij.appservice.AppServiceTaskProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -29,6 +30,10 @@
     </extensions>
 
     <actions>
+        <action id="Actions.WebDeployAction" class="com.microsoft.azure.toolkit.intellij.legacy.webapp.action.WebDeployAction"
+                text="Deploy to Azure Web Apps" description="Deploy to Azure Web Apps"
+                icon="/icons/WebApp/Deploy.svg">
+        </action>
         <!-- Functions Start -->
         <action id="Actions.RunFunction" class="com.microsoft.azure.toolkit.intellij.legacy.function.action.RunFunctionAction"
                 text="Run Function" description="Run function project locally"

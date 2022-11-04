@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class FunctionDeploymentSettingEditor extends AzureSettingsEditor<FunctionDeployConfiguration> {
 

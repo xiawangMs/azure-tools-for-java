@@ -420,7 +420,7 @@ public class FunctionUtils {
         }
         if (!(annotation instanceof PsiAnnotation)) {
             throw new AzureExecutionException(
-                message("function.binding.error.parseFailed",
+                AzureBundle.message("function.binding.error.parseFailed",
                         PsiAnnotation.class.getCanonicalName(),
                         annotation.getClass().getCanonicalName()));
         }
