@@ -7,11 +7,18 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppPropertyViewProvider"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppDeploymentSlotPropertyViewProvider"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppPropertyViewProvider"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider"/>
+
         <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.docker.AzureDockerSupportConfigurationType"/>
         <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType"/>
+        <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType"/>
 
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentRunner"/>
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionLocalRunner"/>
+        <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppRunner"/>
 
         <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionPortForwardingTaskProvider" id="PortForwardingTaskProviderId"/>
 

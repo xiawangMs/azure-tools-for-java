@@ -12,15 +12,6 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppPropertyViewProvider"/>
-        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppDeploymentSlotPropertyViewProvider"/>
-        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppPropertyViewProvider"/>
-        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.DeploymentSlotPropertyViewProvider"/>
-
-        <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType"/>
-
-        <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppRunner"/>
-
         <facetType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.facet.FunctionsFacetType"/>
     </extensions>
 
