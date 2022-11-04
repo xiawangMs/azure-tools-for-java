@@ -14,7 +14,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureJavaRunConfigurationBase;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Paths;
 
-public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> {
+public class WebAppOnLinuxDeployConfiguration extends AzureJavaRunConfigurationBase<WebAppOnLinuxDeployModel> {
 
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
     private static final String MISSING_USERNAME = "Please specify Username.";

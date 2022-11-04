@@ -14,11 +14,11 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureJavaRunConfigurationBase;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushImageRunModel> {
+public class PushImageRunConfiguration extends AzureJavaRunConfigurationBase<PushImageRunModel> {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
