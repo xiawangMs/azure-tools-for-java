@@ -54,6 +54,7 @@ public class CosmosSQLContainerCreationDialog extends AzureDialog<SqlContainerDr
         txtPartitionKey.addValueChangedListener(value -> {
             if (!StringUtils.startsWith(value, "/")) {
                 txtPartitionKey.setValue("/" + value);
+                txtPartitionKey.setCaretPosition(value.length() + 1);
             }
         });
         pnlThroughput.setVisible(chkDedicatedThroughput.isSelected());
