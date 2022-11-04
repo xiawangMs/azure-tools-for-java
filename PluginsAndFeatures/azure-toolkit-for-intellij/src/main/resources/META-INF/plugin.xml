@@ -28,11 +28,11 @@
       <h3>3.70.0</h3>
       <h4>Added</h4>
       <ul>
-        <li>Added support for remote debugging of <code>Azure Spring Apps</code> in Azure Explorer.</li>
-        <li>Added support for remote debugging of <code>Azure Function Apps</code> in Azure Explorer.</li>
+        <li>Added support for remote debugging of <code>Azure Spring Apps</code>.</li>
+        <li>Added support for remote debugging of <code>Azure Function Apps</code>.</li>
         <li>Added support for data management of <code>Azure Storage Account</code> in Azure Explorer.</li>
         <li>Added support for data management of <code>Azure Cosmos DB account</code> in Azure Explorer.</li>
-        <li>Added support for filtering app settings of <code>Azure Web App/ Function App</code> in Azure Explorer.</li>
+        <li>Added support for filtering app settings of <code>Azure Web App/ Function App</code> in properties view and run configuration dialog.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

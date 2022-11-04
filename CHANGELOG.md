@@ -92,11 +92,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## 3.70.0
 ### Added
-- Added support for remote debugging of `Azure Spring Apps` in Azure Explorer.
-- Added support for remote debugging of `Azure Function Apps` in Azure Explorer.
+- Added support for remote debugging of `Azure Spring Apps`.
+- Added support for remote debugging of `Azure Function Apps`.
 - Added support for data management of `Azure Storage Account` in Azure Explorer.
 - Added support for data management of `Azure Cosmos DB account` in Azure Explorer.
-- Added support for filtering app settings of `Azure Web App/ Function App` in Azure Explorer.
+- Added support for filtering app settings of `Azure Web App/ Function App` in properties view and run configuration dialog.
 
 ## 3.69.0
 ### Added
