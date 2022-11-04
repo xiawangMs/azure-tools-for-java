@@ -78,7 +78,7 @@ public class RateManager {
         final int total = this.score.addAndGet(score);
         OperationContext.current().setTelemetryProperty("addScore", String.valueOf(score));
         OperationContext.current().setTelemetryProperty("totalScore", String.valueOf(total));
-        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 30);
+        final int threshold = Registry.intValue("azure.toolkit.feedback.score.threshold", 20);
         if (total >= threshold) {
             if (RatePopup.tryPopup(null)) {
                 this.score.set(threshold / 2);

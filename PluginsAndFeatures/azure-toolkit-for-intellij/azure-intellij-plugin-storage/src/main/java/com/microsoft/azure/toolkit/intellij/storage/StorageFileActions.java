@@ -86,7 +86,7 @@ public class StorageFileActions {
                 @SuppressWarnings("rawtypes")
                 final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
                 draft.setSourceFile(temp.toPath());
-                draft.commit();
+                draft.updateIfExist();
             });
             return true;
         };
