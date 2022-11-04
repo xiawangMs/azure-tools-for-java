@@ -117,6 +117,10 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         }
     }
 
+    public boolean isAlive() {
+        return this.alive.get();
+    }
+
     protected void request() {
         this.lock.lock();
         try {
