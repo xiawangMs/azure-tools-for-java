@@ -93,6 +93,8 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
             final Map<String, FunctionConfiguration> configMap =
                     FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, module, methods);
             operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
+        } catch (final AzureToolkitRuntimeException e) {
+            throw e;
         } catch (final Throwable e) {
             final String error = String.format("failed prepare staging folder[%s]", folder);
             throw new AzureToolkitRuntimeException(error, e);
