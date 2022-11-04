@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class DeployWebAppAction {
         this.webApp = webApp;
     }
 
+    @AzureOperation(name = "webapp.run_deploy_configuration.app", params = {"this.webApp.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public void execute() {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final RunnerAndConfigurationSettings settings = getRunConfigurationSettings(manager);

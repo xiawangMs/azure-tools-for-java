@@ -25,7 +25,7 @@ import java.util.Objects;
 
 public class FunctionEnableRemoteDebuggingAction {
     private static final String FAILED_TITLE = "Failed to %s remote debugging";
-    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s? <p>To learn more about configuration for remote debugging, please refer our <a href=\"https://aka.ms/func-remotedebug-intellij\">wiki</a>";
+    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s? <p>To learn more about configuration for remote debugging, please refer to our <a href=\"https://aka.ms/func-remotedebug-intellij\">wiki</a>";
     private static final String CONFIRM_DIALOG_TITLE = "%s Remote Debugging";
     private static final String SUCCESS_MESSAGE = "Remote debugging is %sd for app %s successfully";
 
@@ -75,6 +75,6 @@ public class FunctionEnableRemoteDebuggingAction {
 
     private static Action<?> generateDebugAction(@Nonnull FunctionAppBase<?, ?, ?> app, @Nullable Project project) {
         final Action<FunctionAppBase<?, ?, ?>> remoteDebuggingAction = AzureActionManager.getInstance().getAction(FunctionAppActionsContributor.REMOTE_DEBUGGING);
-        return new Action<>(Action.Id.of("function.start_remote_debugging.app"), (d, e) -> remoteDebuggingAction.handle(app, e), new ActionView.Builder("Attach Debugger"));
+        return new Action<>(Action.Id.of("function.start_remote_debugging"), (d, e) -> remoteDebuggingAction.handle(app, e), new ActionView.Builder("Attach Debugger"));
     }
 }

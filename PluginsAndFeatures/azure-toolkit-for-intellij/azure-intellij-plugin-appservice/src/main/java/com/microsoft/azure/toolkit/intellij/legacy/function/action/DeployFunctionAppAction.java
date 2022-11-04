@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.Functi
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class DeployFunctionAppAction {
         this.functionApp = functionApp;
     }
 
+    @AzureOperation(name = "function.run_deploy_configuration.app", params = {"this.functionApp.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public void execute() {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final RunnerAndConfigurationSettings settings = getRunConfigurationSettings(manager);

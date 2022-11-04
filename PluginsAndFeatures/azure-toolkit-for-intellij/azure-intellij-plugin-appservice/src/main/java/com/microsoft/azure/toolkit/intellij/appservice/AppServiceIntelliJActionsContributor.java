@@ -103,7 +103,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         am.registerHandler(AppServiceActionsContributor.PROFILE_FLIGHT_RECORD, isAppService, flightRecorderHandler);
 
         final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> startStreamingLogHandler = (c, e) ->
-            AzureTaskManager.getInstance().runLater(() -> new StartStreamingLogsAction(c, e.getProject()).execute());
+            new StartStreamingLogsAction(c, e.getProject()).execute();
         am.registerHandler(AppServiceActionsContributor.START_STREAM_LOG, isAppService, startStreamingLogHandler);
 
         final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> stopStreamingLogHandler = (c, e) ->
@@ -199,7 +199,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         am.registerHandler(FunctionAppActionsContributor.DISABLE_REMOTE_DEBUGGING, isFunction, disableRemoteDebuggingHandler);
 
         final BiConsumer<FunctionAppBase<?, ?, ?>, AnActionEvent> remoteDebuggingHandler = (c, e) ->
-                FunctionRemoteDebuggingAction.startDebugging(c, e.getProject());
+                AzureTaskManager.getInstance().runLater(() -> FunctionRemoteDebuggingAction.startDebugging(c, e.getProject()));
         am.registerHandler(FunctionAppActionsContributor.REMOTE_DEBUGGING, isFunction, remoteDebuggingHandler);
     }
 

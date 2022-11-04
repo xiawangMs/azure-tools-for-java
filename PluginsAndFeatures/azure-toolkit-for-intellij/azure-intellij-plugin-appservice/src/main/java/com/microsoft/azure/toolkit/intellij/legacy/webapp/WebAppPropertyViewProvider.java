@@ -9,7 +9,6 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePropertyViewAction;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +19,7 @@ public class WebAppPropertyViewProvider extends WebAppBasePropertyViewProvider {
     @NotNull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "webapp.create_app_properties_editor", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.create_app_properties_editor.app", params = {"virtualFile.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         String sid = virtualFile.getUserData(OpenAppServicePropertyViewAction.SUBSCRIPTION_ID);
         String id = virtualFile.getUserData(OpenAppServicePropertyViewAction.RESOURCE_ID);
