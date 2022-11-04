@@ -81,7 +81,7 @@ public class CosmosSQLContainerCreationDialog extends AzureDialog<SqlContainerDr
 
     private AzureValidationInfo validatePartitionKey() {
         final String value = txtPartitionKey.getValue();
-        if (StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(value) || StringUtils.equalsIgnoreCase(value, "/")) {
             return AzureValidationInfo.error("Partition key should not be empty", txtPartitionKey);
         } else if (!value.matches(PARTITION_KEY_PATTERN)) {
             return AzureValidationInfo.error("Partition key path accepts alphanumeric and underscore (_) characters. " +
