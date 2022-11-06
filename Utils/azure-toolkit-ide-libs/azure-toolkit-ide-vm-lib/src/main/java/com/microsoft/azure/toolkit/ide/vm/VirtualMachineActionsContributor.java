@@ -36,22 +36,22 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
         final ActionView.Builder addSshConfigView = new ActionView.Builder("Edit SSH Configuration", AzureIcons.Action.ADD.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> description("vm.add_ssh_config.vm", ((VirtualMachine) r).getName())).orElse(null))
             .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
-        am.registerAction(ADD_SSH_CONFIG, new Action<>(ADD_SSH_CONFIG, addSshConfigView));
+        am.registerAction(new Action<>(ADD_SSH_CONFIG, addSshConfigView));
 
         final ActionView.Builder connectSshView = new ActionView.Builder("Connect Using SSH", AzureIcons.Action.CONSOLE.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("vm.connect_using_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
-        am.registerAction(CONNECT_SSH, new Action<>(CONNECT_SSH, connectSshView));
+        am.registerAction(new Action<>(CONNECT_SSH, connectSshView));
 
         final ActionView.Builder sftpConnectionView = new ActionView.Builder("Browse Files Using SFTP", AzureIcons.Action.SFTP.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("vm.browse_files_sftp.vm", ((VirtualMachine) r).getName())).orElse(null))
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
-        am.registerAction(SFTP_CONNECTION, new Action<>(SFTP_CONNECTION, sftpConnectionView));
+        am.registerAction(new Action<>(SFTP_CONNECTION, sftpConnectionView));
 
         final ActionView.Builder createVmView = new ActionView.Builder("Virtual Machine")
             .title(s -> Optional.ofNullable(s).map(r -> description("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(GROUP_CREATE_VM, new Action<>(GROUP_CREATE_VM, createVmView));
+        am.registerAction(new Action<>(GROUP_CREATE_VM, createVmView));
     }
 
     @Override

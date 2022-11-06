@@ -39,12 +39,12 @@ public class MySqlActionsContributor implements IActionsContributor {
             .enabled(s -> s instanceof MySqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
-        am.registerAction(OPEN_DATABASE_TOOL, action);
+        am.registerAction(action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("MySQL server")
             .title(s -> Optional.ofNullable(s).map(r -> description("mysql.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(GROUP_CREATE_MYSQL, new Action<>(GROUP_CREATE_MYSQL, createServerView));
+        am.registerAction(new Action<>(GROUP_CREATE_MYSQL, createServerView));
     }
 
     public int getOrder() {

@@ -36,12 +36,12 @@ public class RedisActionsContributor implements IActionsContributor {
             .enabled(s -> s instanceof RedisCache && ((RedisCache) s).getFormalStatus().isRunning());
         final Action<AzResource> action = new Action<>(OPEN_EXPLORER, showExplorerView);
         action.setShortcuts(am.getIDEDefaultShortcuts().view());
-        am.registerAction(OPEN_EXPLORER, action);
+        am.registerAction(action);
 
         final ActionView.Builder createRedisView = new ActionView.Builder("Redis Cache")
             .title(s -> Optional.ofNullable(s).map(r -> description("redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(GROUP_CREATE_REDIS, new Action<>(GROUP_CREATE_REDIS, createRedisView));
+        am.registerAction(new Action<>(GROUP_CREATE_REDIS, createRedisView));
     }
 
     @Override

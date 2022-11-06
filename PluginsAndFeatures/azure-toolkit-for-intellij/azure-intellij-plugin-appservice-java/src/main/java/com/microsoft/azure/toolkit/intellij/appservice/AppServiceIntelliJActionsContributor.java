@@ -79,7 +79,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> openFileAction = new Action<>(APP_SERVICE_FILE_VIEW, openFileHandler, openFileView);
         openFileAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
-        am.registerAction(APP_SERVICE_FILE_VIEW, openFileAction);
+        am.registerAction(openFileAction);
 
         final BiConsumer<AppServiceFile, AnActionEvent> downloadFileHandler = (file, e) -> AzureTaskManager
             .getInstance().runLater(() -> new AppServiceFileAction().saveAppServiceFile(file, e.getProject(), null));
@@ -90,7 +90,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> downloadFileAction = new Action<>(APP_SERVICE_FILE_DOWNLOAD, downloadFileHandler, downloadFileView);
         downloadFileAction.setShortcuts("control alt D");
-        am.registerAction(APP_SERVICE_FILE_DOWNLOAD, downloadFileAction);
+        am.registerAction(downloadFileAction);
     }
 
     @Override

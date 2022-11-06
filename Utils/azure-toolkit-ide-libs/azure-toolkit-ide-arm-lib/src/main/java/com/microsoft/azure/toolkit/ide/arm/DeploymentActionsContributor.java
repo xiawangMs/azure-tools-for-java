@@ -51,15 +51,15 @@ public class DeploymentActionsContributor implements IActionsContributor {
         final Action<ResourceDeployment> exportParameterAction = new Action<>(EXPORT_PARAMETER, exportParameter);
         editAction.setShortcuts(am.getIDEDefaultShortcuts().view());
         exportTemplateAction.setShortcuts("control alt E");
-        am.registerAction(EDIT, editAction);
-        am.registerAction(UPDATE, new Action<>(UPDATE, updateDeployment));
-        am.registerAction(EXPORT_TEMPLATE, exportTemplateAction);
-        am.registerAction(EXPORT_PARAMETER, exportParameterAction);
+        am.registerAction(editAction);
+        am.registerAction(new Action<>(UPDATE, updateDeployment));
+        am.registerAction(exportTemplateAction);
+        am.registerAction(exportParameterAction);
 
         final ActionView.Builder createDeploymentView = new ActionView.Builder("Deployment")
             .title(s -> Optional.ofNullable(s).map(r -> description("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(GROUP_CREATE_DEPLOYMENT, new Action<>(GROUP_CREATE_DEPLOYMENT, createDeploymentView));
+        am.registerAction(new Action<>(GROUP_CREATE_DEPLOYMENT, createDeploymentView));
     }
 
     @Override

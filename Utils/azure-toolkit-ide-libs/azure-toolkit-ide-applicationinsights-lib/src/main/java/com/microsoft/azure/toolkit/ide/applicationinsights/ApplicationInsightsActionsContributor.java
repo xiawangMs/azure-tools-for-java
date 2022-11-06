@@ -43,7 +43,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 .title(s -> Optional.ofNullable(s).map(r -> description("ai.copy_instrumentation_key.ai",
                         ((ApplicationInsight) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
-        am.registerAction(CONNECTION_STRING, new Action<>(CONNECTION_STRING, copyConnectionStringConsumer, copyConnectionStringView));
+        am.registerAction(new Action<>(CONNECTION_STRING, copyConnectionStringConsumer, copyConnectionStringView));
 
         final Consumer<ApplicationInsight> copyInstrumentationKeyConsumer = insight -> {
             am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(insight.getInstrumentationKey());
@@ -53,7 +53,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 .title(s -> Optional.ofNullable(s).map(r -> description("ai.copy_instrumentation_key.ai",
                         ((ApplicationInsight) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
-        am.registerAction(INSTRUMENTATION_KEY, new Action<>(INSTRUMENTATION_KEY, copyInstrumentationKeyConsumer, copyInstrumentationKeyView));
+        am.registerAction(new Action<>(INSTRUMENTATION_KEY, copyInstrumentationKeyConsumer, copyInstrumentationKeyView));
 
         final Consumer<ApplicationInsight> applicationMapConsumer = insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
                 .handle(insight.getPortalUrl() + "/applicationMap");
@@ -61,7 +61,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 .title(s -> Optional.ofNullable(s).map(r -> description("ai.open_application_map.ai",
                         ((ApplicationInsight) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
-        am.registerAction(APPLICATION_MAP, new Action<>(APPLICATION_MAP, applicationMapConsumer, applicationMapView));
+        am.registerAction(new Action<>(APPLICATION_MAP, applicationMapConsumer, applicationMapView));
 
         final Consumer<ApplicationInsight> liveMetricsConsumer = insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
                 .handle(insight.getPortalUrl() + "/quickPulse");
@@ -69,7 +69,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 .title(s -> Optional.ofNullable(s).map(r -> description("ai.open_live_metrics.ai",
                         ((ApplicationInsight) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
-        am.registerAction(LIVE_METRICS, new Action<>(LIVE_METRICS, liveMetricsConsumer, liveMetricsView));
+        am.registerAction(new Action<>(LIVE_METRICS, liveMetricsConsumer, liveMetricsView));
 
         final Consumer<ApplicationInsight> transactionSearchConsumer = insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
                 .handle(insight.getPortalUrl() + "/searchV1");
@@ -77,13 +77,13 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
                 .title(s -> Optional.ofNullable(s).map(r -> description("ai.open_transaction_search.ai",
                         ((ApplicationInsight) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected());
-        am.registerAction(TRANSACTION_SEARCH, new Action<>(TRANSACTION_SEARCH, transactionSearchConsumer, transactionSearchView));
+        am.registerAction(new Action<>(TRANSACTION_SEARCH, transactionSearchConsumer, transactionSearchView));
 
         final ActionView.Builder createInsightView = new ActionView.Builder("Application Insights")
                 .title(s -> Optional.ofNullable(s).map(r ->
                         description("group.create_ai.group", ((ResourceGroup) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(GROUP_CREATE_APPLICATIONINSIGHT, new Action<>(GROUP_CREATE_APPLICATIONINSIGHT, createInsightView));
+        am.registerAction(new Action<>(GROUP_CREATE_APPLICATIONINSIGHT, createInsightView));
     }
 
     @Override

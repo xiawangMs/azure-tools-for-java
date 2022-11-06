@@ -52,7 +52,7 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> action = new Action<>(APP_SERVICE_DIRECTORY_REFRESH, refresh, refreshView);
         action.setShortcuts(am.getIDEDefaultShortcuts().refresh());
-        am.registerAction(APP_SERVICE_DIRECTORY_REFRESH, action);
+        am.registerAction(action);
     }
 
     public int getOrder() {

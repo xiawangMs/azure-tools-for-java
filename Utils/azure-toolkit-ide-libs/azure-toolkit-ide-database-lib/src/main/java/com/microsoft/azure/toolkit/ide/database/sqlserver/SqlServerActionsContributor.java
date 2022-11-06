@@ -39,12 +39,12 @@ public class SqlServerActionsContributor implements IActionsContributor {
             .enabled(s -> s instanceof MicrosoftSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
-        am.registerAction(OPEN_DATABASE_TOOL, action);
+        am.registerAction(action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("SQL Server")
             .title(s -> Optional.ofNullable(s).map(r -> description("sqlserver.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(GROUP_CREATE_SQLSERVER, new Action<>(GROUP_CREATE_SQLSERVER, createServerView));
+        am.registerAction(new Action<>(GROUP_CREATE_SQLSERVER, createServerView));
     }
 
     public int getOrder() {
