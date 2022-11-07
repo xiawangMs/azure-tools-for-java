@@ -26,10 +26,10 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.vm.service";
     public static final String VM_ACTIONS = "actions.vm.management";
 
-    public static final Action.Id<VirtualMachine> ADD_SSH_CONFIG = Action.Id.of("vm.add_ssh_configuration");
-    public static final Action.Id<VirtualMachine> CONNECT_SSH = Action.Id.of("vm.connect_ssh");
-    public static final Action.Id<VirtualMachine> SFTP_CONNECTION =  Action.Id.of("vm.browse_files_sftp");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_VM = Action.Id.of("group.create_vm");
+    public static final Action.Id<VirtualMachine> ADD_SSH_CONFIG = Action.Id.of("vm.add_ssh_config.vm");
+    public static final Action.Id<VirtualMachine> CONNECT_SSH = Action.Id.of("vm.connect_using_ssh.vm");
+    public static final Action.Id<VirtualMachine> SFTP_CONNECTION =  Action.Id.of("vm.browse_files_sftp.vm");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_VM = Action.Id.of("vm.create_vm.group");
 
     @Override
     public void registerActions(AzureActionManager am) {

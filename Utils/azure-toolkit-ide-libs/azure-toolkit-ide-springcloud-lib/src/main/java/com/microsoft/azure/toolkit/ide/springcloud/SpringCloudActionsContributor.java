@@ -31,15 +31,15 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
     public static final String SERVICE_ACTIONS = "actions.springcloud.service";
     public static final String APP_INSTANCE_ACTIONS = "actions.springcould.appInstance";
-    public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.open_public_url");
-    public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url");
-    public static final Action.Id<SpringCloudApp> STREAM_LOG_APP = Action.Id.of("springcloud.stream_log");
-    public static final Action.Id<SpringCloudAppInstance> STREAM_LOG = Action.Id.of("springcloud.stream_log_instance");
-    public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
-    public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging");
-    public static final Action.Id<SpringCloudAppInstance> ATTACH_DEBUGGER = Action.Id.of("springcloud.attach_debugger");
-    public static final Action.Id<SpringCloudApp> ATTACH_DEBUGGER_APP = Action.Id.of("springcloud.attach_debugger_app");
-    public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
+    public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.open_public_url.app");
+    public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url.app");
+    public static final Action.Id<SpringCloudApp> STREAM_LOG_APP = Action.Id.of("springcloud.open_stream_log.app");
+    public static final Action.Id<SpringCloudAppInstance> STREAM_LOG = Action.Id.of("springcloud.open_stream_log.instance");
+    public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging.app");
+    public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging.app");
+    public static final Action.Id<SpringCloudAppInstance> ATTACH_DEBUGGER = Action.Id.of("springcloud.attach_debugger.instance");
+    public static final Action.Id<SpringCloudApp> ATTACH_DEBUGGER_APP = Action.Id.of("springcloud.attach_debugger.app");
+    public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("springcloud.create_cluster.group");
 
     @Override
     public void registerActions(AzureActionManager am) {

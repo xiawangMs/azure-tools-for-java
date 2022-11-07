@@ -26,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor.REFRESH_DEPLOYMENT_SLOTS;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
@@ -41,19 +40,19 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.function.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.function.deployment_slot";
 
-    public static final Action.Id<FunctionAppBase<?, ?, ?>> ENABLE_REMOTE_DEBUGGING = Action.Id.of("function.enable_remote_debugging");
-    public static final Action.Id<FunctionAppBase<?, ?, ?>> DISABLE_REMOTE_DEBUGGING = Action.Id.of("function.disable_remote_debugging");
-    public static final Action.Id<FunctionAppBase<?, ?, ?>> REMOTE_DEBUGGING = Action.Id.of("function.remote_debugging");
-    public static final Action.Id<FunctionAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("function.swap_deployment_slot");
-    public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("function.refresh_functions");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("function.trigger_function");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("function.trigger_in_browser");
-    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client");
+    public static final Action.Id<FunctionAppBase<?, ?, ?>> ENABLE_REMOTE_DEBUGGING = Action.Id.of("function.enable_remote_debugging.app");
+    public static final Action.Id<FunctionAppBase<?, ?, ?>> DISABLE_REMOTE_DEBUGGING = Action.Id.of("function.disable_remote_debugging.app");
+    public static final Action.Id<FunctionAppBase<?, ?, ?>> REMOTE_DEBUGGING = Action.Id.of("function.start_remote_debugging.app");
+    public static final Action.Id<FunctionAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("function.swap_deployment.deployment|app");
+    public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("function.refresh_functions.app");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("function.trigger_func.trigger");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("function.trigger_func_in_browser.trigger");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_WITH_HTTP_CLIENT = Action.Id.of("function.trigger_function_with_http_client.trigger");
     public static final Action.Id<Object> DOWNLOAD_CORE_TOOLS = Action.Id.of("function.download_core_tools");
     public static final Action.Id<Object> CONFIG_CORE_TOOLS = Action.Id.of("function.config_core_tools");
     public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
 
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("group.create_function");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_FUNCTION = Action.Id.of("function.create_app.group");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -128,7 +127,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("function.refresh_funcs")).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("function.refresh_functions.app", ((FunctionApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionApp);
         final Action<FunctionApp> refreshAction = new Action<>(REFRESH_FUNCTIONS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());

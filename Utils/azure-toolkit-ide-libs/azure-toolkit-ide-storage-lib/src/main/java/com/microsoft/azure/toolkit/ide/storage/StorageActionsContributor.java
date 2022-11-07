@@ -46,22 +46,22 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final String TABLE_ACTIONS = "actions.storage.table";
     public static final String STORAGE_MODULE_ACTIONS = "actions.storage.module";
 
-    public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer");
-    public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string");
-    public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("group.create_storage_account");
+    public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("storage.open_azure_storage_explorer.account");
+    public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("storage.copy_connection_string.account");
+    public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("storage.copy_primary_key.account");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("storage.create_account.group");
 
-    public static final Action.Id<IBlobFile> CREATE_BLOB = Action.Id.of("storage.create_blob");
-    public static final Action.Id<StorageFile> OPEN_FILE = Action.Id.of("storage.open_file");
-    public static final Action.Id<StorageFile> CREATE_FILE = Action.Id.of("storage.create_file");
-    public static final Action.Id<StorageFile> CREATE_DIRECTORY = Action.Id.of("storage.create_directory");
-    public static final Action.Id<StorageFile> DOWNLOAD_FILE = Action.Id.of("storage.download_file");
-    public static final Action.Id<StorageFile> UPLOAD_FILES = Action.Id.of("storage.upload_files");
-    public static final Action.Id<StorageFile> UPLOAD_FILE = Action.Id.of("storage.upload_file");
-    public static final Action.Id<StorageFile> UPLOAD_FOLDER = Action.Id.of("storage.upload_folder");
-    public static final Action.Id<StorageFile> COPY_FILE_URL = Action.Id.of("storage.copy_file_url");
-    public static final Action.Id<StorageFile> COPY_FILE_SAS_URL = Action.Id.of("storage.copy_file_sas_url");
-    public static final Action.Id<StorageFile> DELETE_DIRECTORY = Action.Id.of("storage.delete_directory");
+    public static final Action.Id<IBlobFile> CREATE_BLOB = Action.Id.of("storage.create_blob.blob");
+    public static final Action.Id<StorageFile> OPEN_FILE = Action.Id.of("storage.open_file.file");
+    public static final Action.Id<StorageFile> CREATE_FILE = Action.Id.of("storage.create_file.file");
+    public static final Action.Id<StorageFile> CREATE_DIRECTORY = Action.Id.of("storage.create_directory.dir");
+    public static final Action.Id<StorageFile> DOWNLOAD_FILE = Action.Id.of("storage.download_file.file");
+    public static final Action.Id<StorageFile> UPLOAD_FILES = Action.Id.of("storage.upload_files.dir");
+    public static final Action.Id<StorageFile> UPLOAD_FILE = Action.Id.of("storage.upload_file.file");
+    public static final Action.Id<StorageFile> UPLOAD_FOLDER = Action.Id.of("storage.upload_folder.dir");
+    public static final Action.Id<StorageFile> COPY_FILE_URL = Action.Id.of("storage.copy_file_url.file");
+    public static final Action.Id<StorageFile> COPY_FILE_SAS_URL = Action.Id.of("storage.copy_file_sas_url.file");
+    public static final Action.Id<StorageFile> DELETE_DIRECTORY = Action.Id.of("storage.delete_directory.dir");
 
     @Override
     public void registerActions(AzureActionManager am) {
