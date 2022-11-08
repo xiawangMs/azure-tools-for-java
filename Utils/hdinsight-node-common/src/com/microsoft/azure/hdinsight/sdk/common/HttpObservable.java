@@ -252,8 +252,10 @@ public class HttpObservable implements ILogger {
                 SSLContext sslContext = new SSLContextBuilder()
                         .loadTrustMaterial(ts)
                         .build();
-
-                sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
+                sslSocketFactory = new SSLConnectionSocketFactory(
+                        sslContext,
+                        new String[] { "TLSv1.2", "TLSv1.3" },
+                        null,
                         HttpObservable.isSSLCertificateValidationDisabled()
                                 ? NoopHostnameVerifier.INSTANCE
                                 : new DefaultHostnameVerifier());
