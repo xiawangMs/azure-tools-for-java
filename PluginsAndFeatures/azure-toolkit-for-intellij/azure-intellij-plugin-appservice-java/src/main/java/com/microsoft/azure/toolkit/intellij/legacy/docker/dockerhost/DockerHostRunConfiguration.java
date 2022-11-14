@@ -14,7 +14,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureJavaRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Paths;
 
-public class DockerHostRunConfiguration extends AzureJavaRunConfigurationBase<DockerHostRunSetting> {
+public class DockerHostRunConfiguration extends AzureRunConfigurationBase<DockerHostRunSetting> {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "

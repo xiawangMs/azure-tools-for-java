@@ -20,14 +20,13 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureJavaRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
-import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -41,7 +40,7 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class FunctionDeployConfiguration extends AzureJavaRunConfigurationBase<FunctionDeployModel>
+public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
         implements RunProfileWithCompileBeforeLaunchOption {
 
     private FunctionDeployModel functionDeployModel;

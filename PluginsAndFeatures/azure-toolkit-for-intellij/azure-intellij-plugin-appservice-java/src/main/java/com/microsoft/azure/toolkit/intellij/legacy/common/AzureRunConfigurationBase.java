@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.legacy.common;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.execution.configurations.LocatableConfiguration;
 import com.intellij.execution.configurations.LocatableConfigurationBase;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase implements LocatableConfiguration {
     private boolean firstTimeCreated = true;
+    protected JavaRunConfigurationModule myModule;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -73,6 +75,10 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
+    }
+
+    public JavaRunConfigurationModule getConfigurationModule() {
+        return myModule;
     }
 
     protected void checkAzurePreconditions() throws ConfigurationException {
