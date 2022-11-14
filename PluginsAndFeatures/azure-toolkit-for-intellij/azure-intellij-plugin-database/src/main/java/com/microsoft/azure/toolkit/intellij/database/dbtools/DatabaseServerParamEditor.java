@@ -196,31 +196,27 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
             return;
         }
         this.updating = true;
-        // AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(combox::reloadItems);
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            this.jdbcUrl = server.getJdbcUrl();
-            final LocalDataSource dataSource = interchange.getDataSource();
-            final String host = jdbcUrl.getServerHost();
-            final String port = String.valueOf(jdbcUrl.getPort());
-            final String user = String.format("%s@%s", server.getAdminName(), server.getName());
-            this.text = jdbcUrl.toString();
-            AzureTaskManager.getInstance().runLater(() -> {
-                LocalDataSource.setUsername(dataSource, user);
-                this.setUsername(user);
-                interchange.putProperties(consumer -> {
-                    consumer.consume(KEY_DB_SERVER_ID, server.getId());
-                    consumer.consume("host", host);
-                    consumer.consume("user", user);
-                    consumer.consume("port", port);
-                    this.updating = false;
-                });
-            }, AzureTask.Modality.ANY);
-        });
+        this.jdbcUrl = server.getJdbcUrl();
+        this.text = jdbcUrl.toString();
+        interchange.putProperty(KEY_DB_SERVER_ID, server.getId());
+        final String user = String.format("%s@%s", server.getAdminName(), server.getName());
+        AzureTaskManager.getInstance().runLater(() -> {
+            LocalDataSource.setUsername(interchange.getDataSource(), user);
+            this.setUsername(user);
+            this.setJdbcUrl(jdbcUrl.toString());
+            this.updating = false;
+        }, AzureTask.Modality.ANY);
     }
 
     private void setUsername(String user) {
         final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
         model.setParameter("user", user);
+        model.commit(true);
+    }
+
+    private void setJdbcUrl(String url) {
+        final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
+        model.setUrl(url);
         model.commit(true);
     }
 
