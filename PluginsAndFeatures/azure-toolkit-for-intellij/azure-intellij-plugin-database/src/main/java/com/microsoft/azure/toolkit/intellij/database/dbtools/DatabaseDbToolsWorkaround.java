@@ -24,6 +24,7 @@ public class DatabaseDbToolsWorkaround extends PreloadingActivity {
             loadMySqlAzureTemplates();
             loadPostgreSqlAzureTemplates();
             loadSqlServerAzureTemplates();
+            loadAzureSqlDatabaseAzureTemplates();
         });
     }
 
@@ -43,7 +44,7 @@ public class DatabaseDbToolsWorkaround extends PreloadingActivity {
         final DatabaseDriverImpl driver = ((DatabaseDriverImpl) manager.getDriver("postgresql"));
         if (Objects.nonNull(driver)) {
             final List<UrlTemplate> templates = new LinkedList<>(driver.getUrlTemplates());
-            templates.removeIf(t -> t.getTemplate().contains(DatabaseServerTypeFactory.MYSQL));
+            templates.removeIf(t -> t.getTemplate().contains(DatabaseServerTypeFactory.POSTGRE));
             templates.add(0, new UrlTemplate("Azure", "jdbc:postgresql://[{host::localhost}[:{port::5432}]][/{database:database/[^?]+:postgres}?][/{account:az_postgre_server}?][\\?<&,user={user:param},password={password:param},{:identifier}={:param}>]"));
             driver.setURLTemplates(templates);
         }
@@ -54,8 +55,19 @@ public class DatabaseDbToolsWorkaround extends PreloadingActivity {
         final DatabaseDriverImpl driver = ((DatabaseDriverImpl) manager.getDriver("sqlserver.ms"));
         if (Objects.nonNull(driver)) {
             final List<UrlTemplate> templates = new LinkedList<>(driver.getUrlTemplates());
-            templates.removeIf(t -> t.getTemplate().contains(DatabaseServerTypeFactory.MYSQL));
+            templates.removeIf(t -> t.getTemplate().contains(DatabaseServerTypeFactory.SQLSERVER));
             templates.add(0, new UrlTemplate("Azure", "jdbc:sqlserver://{host:ssrp_host:localhost}[\\\\{instance:ssrp_instance}][:{port:ssrp_port}][/{account:az_sqlserver_server}?][;<;,user[Name]={user:param},password={password:param},database[Name]={database},{:identifier}={:param}>];?"));
+            driver.setURLTemplates(templates);
+        }
+    }
+
+    private static void loadAzureSqlDatabaseAzureTemplates() {
+        final DatabaseDriverManager manager = DatabaseDriverManager.getInstance();
+        final DatabaseDriverImpl driver = ((DatabaseDriverImpl) manager.getDriver("azure.ms"));
+        if (Objects.nonNull(driver)) {
+            final List<UrlTemplate> templates = new LinkedList<>(driver.getUrlTemplates());
+            templates.removeIf(t -> t.getTemplate().contains(DatabaseServerTypeFactory.SQLSERVER));
+            templates.add(0, new UrlTemplate("Azure", "jdbc:sqlserver://{host:host_ipv6:server.database.windows.net}[:{port::1433}][/{account:az_sqlserver_server}?][;<;,user[Name]={user:param},password={password:param},database[Name]={database},{:identifier}={:param}>];?"));
             driver.setURLTemplates(templates);
         }
     }
