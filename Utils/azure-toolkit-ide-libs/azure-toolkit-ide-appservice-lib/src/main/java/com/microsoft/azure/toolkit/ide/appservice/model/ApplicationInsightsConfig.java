@@ -29,15 +29,13 @@ public class ApplicationInsightsConfig {
     public ApplicationInsightsConfig(String name) {
         this.newCreate = true;
         this.name = name;
-        this.workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true)
-                .name(String.format("workspace-%s", name)).build();
+        this.workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true).build();
     }
 
     public ApplicationInsightsConfig(final String name, final String instrumentationKey) {
         this.newCreate = false;
         this.name = name;
         this.instrumentationKey = instrumentationKey;
-        this.workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true)
-                .name(String.format("workspace-%s", name)).build();
+        this.workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true).build();
     }
 }

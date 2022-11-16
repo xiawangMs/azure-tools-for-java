@@ -10,8 +10,8 @@ import com.microsoft.azure.toolkit.intellij.applicationinsights.creation.Workspa
 import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,13 +27,13 @@ public class CreateApplicationInsightsDialog extends AzureDialogWrapper {
     private JButton buttonOK;
     private String applicationInsightsName;
 
-    public CreateApplicationInsightsDialog(Subscription subscription, ResourceGroup resourceGroup) {
+    public CreateApplicationInsightsDialog(Subscription subscription, Region region) {
         super(false);
         setModal(true);
         setTitle("Create new Application Insights");
         getRootPane().setDefaultButton(buttonOK);
         workspaceComboBox.setSubscription(subscription);
-        workspaceComboBox.setResourceGroup(resourceGroup);
+        workspaceComboBox.setValue(LogAnalyticsWorkspaceConfig.createConfig(subscription, region));
         init();
     }
 
