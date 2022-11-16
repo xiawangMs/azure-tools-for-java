@@ -105,25 +105,4 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
                 .logAnalyticsWorkspaces(s.getId()).refresh());
         super.refreshItems();
     }
-
-    @Nonnull
-    @Override
-    protected List<ExtendableTextComponent.Extension> getExtensions() {
-        final List<ExtendableTextComponent.Extension> extensions = super.getExtensions();
-        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
-        final String tooltip = String.format("%s (%s)", message("workspace.create.tooltip"), KeymapUtil.getKeystrokeText(keyStroke));
-        final ExtendableTextComponent.Extension addEx = ExtendableTextComponent.Extension.create(AllIcons.General.Add, tooltip, this::showLoaAnalyticsWorkspaceCreationPopup);
-        this.registerShortcut(keyStroke, addEx);
-        extensions.add(addEx);
-        return extensions;
-    }
-
-    private void showLoaAnalyticsWorkspaceCreationPopup() {
-        final WorkspaceCreationDialog dialog = new WorkspaceCreationDialog(this.subscription, this.resourceGroup);
-        dialog.setOkActionListener((workspaceConfig) -> {
-            dialog.close();
-            this.setValue(workspaceConfig);
-        });
-        dialog.show();
-    }
 }
