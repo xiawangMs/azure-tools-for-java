@@ -17,7 +17,6 @@ public class GuidanceStartupListener implements StartupActivity {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        ExperimentationClient.init();
         final CourseConfig courseConfigFromWorkspace = GuidanceConfigManager.getInstance().getCourseConfigFromWorkspace(project);
         Optional.ofNullable(courseConfigFromWorkspace)
                 .ifPresent(config -> GuidanceViewManager.getInstance().openCourseView(project, courseConfigFromWorkspace));

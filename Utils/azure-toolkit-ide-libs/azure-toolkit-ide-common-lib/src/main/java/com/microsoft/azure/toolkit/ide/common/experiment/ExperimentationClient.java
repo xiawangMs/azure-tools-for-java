@@ -37,11 +37,17 @@ public class ExperimentationClient {
 
     @Nullable
     public static String getFeatureVariable(String featureFlagName) {
+        if (!isInited) {
+            init();
+        }
         return experimentationService.getFeatureVariable(featureFlagName);
     }
 
     @Nullable
     public static String getAssignmentContext() {
+        if (!isInited) {
+            init();
+        }
         return experimentationService.getAssignmentContext();
     }
 

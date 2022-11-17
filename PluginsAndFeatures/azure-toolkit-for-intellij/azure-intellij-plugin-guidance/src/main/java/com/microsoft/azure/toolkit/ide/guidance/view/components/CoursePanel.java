@@ -87,7 +87,6 @@ public class CoursePanel {
 
     @AzureOperation(name = "guidance.open_course.course", params = {"this.course.getTitle()"}, type = AzureOperation.Type.ACTION)
     public void openGuidance() {
-        OperationContext.action().setTelemetryProperty("AssignmentContext", ExperimentationClient.getAssignmentContext());
         if (!isStartedActionTriggered) {
             isStartedActionTriggered = true;
             AzureStoreManager.getInstance().getIdeStore().setProperty(ShowGettingStartAction.GUIDANCE, ShowGettingStartAction.IS_ACTION_TRIGGERED, String.valueOf(true));
