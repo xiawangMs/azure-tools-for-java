@@ -47,10 +47,10 @@ public class CoursesView {
 
     public CoursesView(@Nonnull Project project) {
         this.project = project;
+        this.showNewUIFlag = Boolean.parseBoolean(ExperimentationClient.getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName()));
         $$$setupUI$$$();
         init();
         JBList a;
-        this.showNewUIFlag = Boolean.parseBoolean(ExperimentationClient.getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName()));
     }
 
     private void init() {
