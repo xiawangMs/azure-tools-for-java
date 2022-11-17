@@ -16,7 +16,7 @@ public class ExperimentationClient {
     private static final String ASSIGNMENT_UNIT_ID = "clientId";
     private static final String AUDIENCE_FILTER_ID = "userstype";
     private static final String AUDIENCE_FILTER_VALUE = "intellij";
-    private static final String END_POINT = "https://default.exp-tas.com/exptas76/35ba1968-fb20-4963-95c7-4895bfa08731-vscjava/api/v1/tas";
+    private static final String END_POINT = "https://aka.ms/azure-ij-ab-exp";
     private static ExperimentationService experimentationService;
     private static boolean isInited = false;
 
