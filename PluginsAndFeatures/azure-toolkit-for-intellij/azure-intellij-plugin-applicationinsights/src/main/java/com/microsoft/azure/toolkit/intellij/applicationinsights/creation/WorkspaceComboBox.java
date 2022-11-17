@@ -47,9 +47,9 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         final String finalWorkspaceName = defaultWorkspaceName.length() > 64 ? defaultWorkspaceName.substring(0, 64) : defaultWorkspaceName;
         final Optional<LogAnalyticsWorkspaceConfig> item = this.getItems().stream()
                 .filter(config -> Objects.equals(config.getName(), finalWorkspaceName)).findFirst();
-        item.ifPresentOrElse(super::setValue,
-                () -> this.setValue(LogAnalyticsWorkspaceConfig.builder()
-                        .newCreate(true).name(finalWorkspaceName).subscriptionId(subscription.getId()).build()));
+        item.ifPresentOrElse(this::setValue,
+                () -> this.setValue(LogAnalyticsWorkspaceConfig.builder().newCreate(true)
+                        .name(finalWorkspaceName).subscriptionId(subscription.getId()).regionName(region.getName()).build()));
     }
 
     @Nullable
@@ -61,11 +61,11 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
 
     @Override
     public void setValue(LogAnalyticsWorkspaceConfig val) {
+        this.draftItems.clear();
         if (Objects.nonNull(val) && val.isNewCreate()) {
-            this.draftItems.clear();
             this.draftItems.add(0, val);
-            this.reloadItems();
         }
+        this.reloadItems();
         super.setValue(val);
     }
 
