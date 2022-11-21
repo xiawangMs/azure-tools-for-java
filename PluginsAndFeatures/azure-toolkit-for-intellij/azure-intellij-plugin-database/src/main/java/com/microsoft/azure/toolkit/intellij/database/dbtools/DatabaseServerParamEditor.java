@@ -85,10 +85,12 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         super(new SqlDbServerComboBox(clazz), interchange, FieldSize.LARGE, label);
         this.clazz = clazz;
         final SqlDbServerComboBox combox = this.getEditorComponent();
-        interchange.addPersistentProperty(KEY_DB_SERVER_ID);
         final String initialServerId = interchange.getProperty(KEY_DB_SERVER_ID);
         if (StringUtils.isNotBlank(initialServerId) && !initialServerId.equals(NONE)) {
+            interchange.putProperty(KEY_DB_SERVER_ID, NONE);
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialServerId)));
+        } else if (StringUtils.isNotBlank(interchange.getDataSource().getUsername())) {
+            combox.setValue((IDatabaseServer<?>) null);
         }
 
         interchange.addPropertyChangeListener((evt -> onPropertiesChanged(evt.getPropertyName(), evt.getNewValue())), this);
@@ -192,13 +194,11 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         this.server = server;
         if (server == null) {
             this.jdbcUrl = null;
-            interchange.putProperty(KEY_DB_SERVER_ID, NONE);
             return;
         }
         this.updating = true;
         this.jdbcUrl = server.getJdbcUrl();
         this.text = jdbcUrl.toString();
-        interchange.putProperty(KEY_DB_SERVER_ID, server.getId());
         final String user = String.format("%s@%s", server.getAdminName(), server.getName());
         AzureTaskManager.getInstance().runLater(() -> {
             LocalDataSource.setUsername(interchange.getDataSource(), user);
