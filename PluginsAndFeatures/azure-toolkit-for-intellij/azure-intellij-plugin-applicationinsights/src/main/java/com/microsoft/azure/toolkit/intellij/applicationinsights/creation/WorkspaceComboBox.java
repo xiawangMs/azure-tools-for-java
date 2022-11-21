@@ -5,9 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.applicationinsights.creation;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.openapi.keymap.KeymapUtil;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
@@ -15,24 +12,18 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalytic
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig> {
     private Subscription subscription;
-    @Setter
-    private ResourceGroup resourceGroup;
+    private Region region;
     private final List<LogAnalyticsWorkspaceConfig> draftItems = new LinkedList<>();
 
     public void setSubscription(Subscription subscription) {
@@ -47,6 +38,20 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         this.loadItems();
     }
 
+    public void setRegion(Region region) {
+        if (Objects.equals(region, this.region)) {
+            return;
+        }
+        this.region = region;
+        final String defaultWorkspaceName = String.format("DefaultWorkspace-%s-%s", subscription.getId(), region.getAbbreviation());
+        final String finalWorkspaceName = defaultWorkspaceName.length() > 64 ? defaultWorkspaceName.substring(0, 64) : defaultWorkspaceName;
+        final Optional<LogAnalyticsWorkspaceConfig> item = this.getItems().stream()
+                .filter(config -> Objects.equals(config.getName(), finalWorkspaceName)).findFirst();
+        item.ifPresentOrElse(this::setValue,
+                () -> this.setValue(LogAnalyticsWorkspaceConfig.builder().newCreate(true)
+                        .name(finalWorkspaceName).subscriptionId(subscription.getId()).regionName(region.getName()).build()));
+    }
+
     @Nullable
     @Override
     protected LogAnalyticsWorkspaceConfig doGetDefaultValue() {
@@ -56,11 +61,11 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
 
     @Override
     public void setValue(LogAnalyticsWorkspaceConfig val) {
+        this.draftItems.clear();
         if (Objects.nonNull(val) && val.isNewCreate()) {
-            this.draftItems.remove(val);
             this.draftItems.add(0, val);
-            this.reloadItems();
         }
+        this.reloadItems();
         super.setValue(val);
     }
 
@@ -71,9 +76,9 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         }
         final LogAnalyticsWorkspaceConfig workspace = (LogAnalyticsWorkspaceConfig) item;
         if (workspace.isNewCreate()) {
-            return "(New) " + workspace.getName();
+            return String.format("(New) [%s] %s", workspace.getRegionName(), workspace.getName());
         }
-        return workspace.getName();
+        return String.format("[%s] %s", workspace.getRegionName(), workspace.getName());
     }
 
     @Nonnull
@@ -83,15 +88,16 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         if (Objects.nonNull(this.subscription)) {
             if (CollectionUtils.isNotEmpty(this.draftItems)) {
                 workspaces.addAll(this.draftItems.stream()
-                        .filter(p -> Objects.equals(subscription.getId(), p.getSubscriptionId()))
-                        .collect(Collectors.toList()));
+                        .filter(p -> Objects.equals(subscription.getId(), p.getSubscriptionId())).toList());
             }
             final List<LogAnalyticsWorkspaceConfig> remoteWorkspaces = Azure.az(AzureLogAnalyticsWorkspace.class)
                     .logAnalyticsWorkspaces(subscription.getId()).list().stream().map(workspace ->
                             LogAnalyticsWorkspaceConfig.builder()
                                     .newCreate(false)
+                                    .subscriptionId(subscription.getId())
                                     .resourceId(workspace.getId())
                                     .name(workspace.getName())
+                                    .regionName(Optional.ofNullable(workspace.getRegion()).map(Region::getName).orElse(StringUtils.EMPTY))
                                     .build()).collect(Collectors.toList());
             workspaces.addAll(remoteWorkspaces);
             return workspaces.stream().sorted(Comparator.comparing(LogAnalyticsWorkspaceConfig::getName)).collect(Collectors.toList());
@@ -104,26 +110,5 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureLogAnalyticsWorkspace.class)
                 .logAnalyticsWorkspaces(s.getId()).refresh());
         super.refreshItems();
-    }
-
-    @Nonnull
-    @Override
-    protected List<ExtendableTextComponent.Extension> getExtensions() {
-        final List<ExtendableTextComponent.Extension> extensions = super.getExtensions();
-        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
-        final String tooltip = String.format("%s (%s)", message("workspace.create.tooltip"), KeymapUtil.getKeystrokeText(keyStroke));
-        final ExtendableTextComponent.Extension addEx = ExtendableTextComponent.Extension.create(AllIcons.General.Add, tooltip, this::showLoaAnalyticsWorkspaceCreationPopup);
-        this.registerShortcut(keyStroke, addEx);
-        extensions.add(addEx);
-        return extensions;
-    }
-
-    private void showLoaAnalyticsWorkspaceCreationPopup() {
-        final WorkspaceCreationDialog dialog = new WorkspaceCreationDialog(this.subscription, this.resourceGroup);
-        dialog.setOkActionListener((workspaceConfig) -> {
-            dialog.close();
-            this.setValue(workspaceConfig);
-        });
-        dialog.show();
     }
 }

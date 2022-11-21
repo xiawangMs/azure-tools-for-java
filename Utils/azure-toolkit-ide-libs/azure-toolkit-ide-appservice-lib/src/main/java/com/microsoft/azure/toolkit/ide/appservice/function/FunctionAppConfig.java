@@ -90,8 +90,7 @@ public class FunctionAppConfig extends AppServiceConfig {
                 .os(FunctionAppConfig.DEFAULT_RUNTIME.getOperatingSystem())
                 .pricingTier(PricingTier.CONSUMPTION).build());
 
-        final LogAnalyticsWorkspaceConfig workspaceConfig = LogAnalyticsWorkspaceConfig.builder().name(Utils.generateRandomResourceName("workspace-", 63)).newCreate(true).build();
-        final ApplicationInsightsConfig insightsConfig = ApplicationInsightsConfig.builder().name(appName).newCreate(true).workspaceConfig(workspaceConfig).build();
+        final ApplicationInsightsConfig insightsConfig = ApplicationInsightsConfig.builder().name(appName).newCreate(true).workspaceConfig(LogAnalyticsWorkspaceConfig.createConfig(subscription, region)).build();
         final MonitorConfig monitorConfig = MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build();
         return FunctionAppConfig.builder()
                 .subscription(subscription)

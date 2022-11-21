@@ -169,6 +169,10 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         return textName;
     }
 
+    public RegionComboBox getSelectorRegion() {
+        return selectorRegion;
+    }
+
     private void init() {
         final String date = DATE_FORMAT.format(new Date());
         final String defaultWebAppName = String.format("app-%s-%s", this.project.getName(), date);
