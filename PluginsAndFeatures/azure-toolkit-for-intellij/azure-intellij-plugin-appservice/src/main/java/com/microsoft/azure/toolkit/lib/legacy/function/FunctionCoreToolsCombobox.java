@@ -136,11 +136,11 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     }
 
     public void reset() {
+        this.reloadItems();
         final String defaultFuncPath = getDefaultFuncPath();
         if (StringUtils.isNotEmpty(defaultFuncPath)) {
             this.setValue(defaultFuncPath);
         }
-        this.reloadItems();
     }
 
     @Override
