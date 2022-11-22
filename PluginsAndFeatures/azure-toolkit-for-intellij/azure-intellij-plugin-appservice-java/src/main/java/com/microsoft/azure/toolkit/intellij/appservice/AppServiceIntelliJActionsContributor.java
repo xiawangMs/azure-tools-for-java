@@ -48,6 +48,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
@@ -60,7 +61,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -213,28 +213,22 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             descriptor.setTitle("Select Path to Install Azure Functions Core Tools");
             AzureTaskManager.getInstance().runLater(() -> FileChooser.chooseFile(descriptor, null, null, files -> {
                 final String installPath = files.getPath();
-                final FunctionsCoreToolsManager.FuncCoreToolsDownloadListener listener = new FunctionsCoreToolsManager.FuncCoreToolsDownloadListener() {
-                    @Override
-                    public void onSuccess() {
-                        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-                        final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
-                            @Override
-                            public void handle(Object source, Object e) {
-                                AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
-                            }
-                        };
-                        final String INSTALL_SUCCEED_MESSAGE = "download and install functions core tools successfully.";
-                        AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, "Install succeed", openSettingsActionInMessage);
-                    }
-
-                    @Override
-                    public void onFail() {}
-                };
                 AzureTaskManager.getInstance().runInModal("Download and Install Functions Core Tools",
-                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(installPath, listener));
+                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(installPath));
             }));
         };
         am.registerHandler(FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS, downloadFuncCoreToolsHandler);
+        AzureEventBus.on("function.download_func_core_tools_succeed.version", new AzureEventBus.EventListener((azureEvent) -> {
+            final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+            final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
+                @Override
+                public void handle(Object source, Object e) {
+                    AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
+                }
+            };
+            final String INSTALL_SUCCEED_MESSAGE = "Download and install Azure Functions Core Tools(%s) successfully. Auto configured Azure Functions Core Tools path in Azure Settings";
+            AzureMessager.getMessager().success(String.format(INSTALL_SUCCEED_MESSAGE, azureEvent.getSource().toString()), "Install succeed", openSettingsActionInMessage);
+        }));
     }
 
     @Override

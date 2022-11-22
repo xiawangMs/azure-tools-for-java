@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.appservice.function.coretools;
 
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,13 +27,11 @@ public class FunctionsCoreToolsManager {
     private final String RELEASE_TAG = "v4";
     public final static String DEFAULT_FUNCTIONS_CORE_TOOLS_DOWNLOAD_PATH = Paths.get(System.getProperty("user.home"), ".azure-functions-core-tools").toString();
     private static final FunctionsCoreToolsManager instance = new FunctionsCoreToolsManager();
-    private FuncCoreToolsDownloadListener listener;
     public static FunctionsCoreToolsManager getInstance() {
         return instance;
     }
 
-    public void downloadReleaseWithFilter(String downloadDirPath, FuncCoreToolsDownloadListener listener) {
-        this.listener = listener;
+    public void downloadReleaseWithFilter(String downloadDirPath) {
         if (Objects.isNull(releaseInfoCache)) {
             cacheReleaseInfoFromFeed();
         }
@@ -87,11 +86,10 @@ public class FunctionsCoreToolsManager {
             unzip(tempFile, Paths.get(downloadDirPath, releaseInfo.releaseVersion).toString());
         } catch (final Exception e) {
             AzureMessager.getMessager().error(e, INSTALL_FAILED_MESSAGE);
-            Optional.ofNullable(listener).ifPresent(FuncCoreToolsDownloadListener::onFail);
         }
         Azure.az().config().setFunctionCoreToolsPath(Paths.get(downloadDirPath, releaseInfo.releaseVersion, "func.exe").toString());
         AzureConfigInitializer.saveAzConfig();
-        Optional.ofNullable(listener).ifPresent(FuncCoreToolsDownloadListener::onSuccess);
+        AzureEventBus.emit("function.download_func_core_tools_succeed.version", releaseInfo.releaseVersion);
     }
 
     private void unzip(File zipFile, String destDirPath) throws Exception {
@@ -163,11 +161,6 @@ public class FunctionsCoreToolsManager {
             this.architectures = architectures;
             this.sizes = sizes;
         }
-    }
-
-    public static interface FuncCoreToolsDownloadListener {
-        public void onSuccess();
-        public void onFail();
     }
 
 }
