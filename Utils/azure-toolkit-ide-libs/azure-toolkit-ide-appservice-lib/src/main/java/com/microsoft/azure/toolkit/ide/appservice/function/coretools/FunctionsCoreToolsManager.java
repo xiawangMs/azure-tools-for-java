@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.net.URL;
+import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -23,10 +25,7 @@ import java.util.zip.ZipInputStream;
 
 public class FunctionsCoreToolsManager {
     private ReleaseInfo releaseInfoCache;
-    private final String AZURE_FUNCTIONS = "AzureFunctions";
-    private final String INSTALL_FAILED_MESSAGE = "failed to download and install functions core tools.";
     private final String RELEASE_TAG = "v4";
-    public final static String DEFAULT_FUNCTIONS_CORE_TOOLS_DOWNLOAD_PATH = Paths.get(System.getProperty("user.home"), ".azure-functions-core-tools").toString();
     private static final FunctionsCoreToolsManager instance = new FunctionsCoreToolsManager();
     public static FunctionsCoreToolsManager getInstance() {
         return instance;
@@ -80,13 +79,15 @@ public class FunctionsCoreToolsManager {
             return;
         }
         try {
+            final String AZURE_FUNCTIONS = "AzureFunctions";
             final File tempFile = File.createTempFile(
                     String.format("%s-%s", AZURE_FUNCTIONS, releaseInfo.releaseVersion),
                     ".zip", Files.createTempDirectory(AZURE_FUNCTIONS).toFile());
-            ReleaseService.getInstance().downloadZip(releaseInfo.downloadLink, tempFile);
+            final FileOutputStream outputStream = new FileOutputStream(tempFile);
+            outputStream.getChannel().transferFrom(Channels.newChannel(new URL(releaseInfo.downloadLink).openStream()), 0, Long.MAX_VALUE);
             unzip(tempFile, Paths.get(downloadDirPath, releaseInfo.releaseVersion).toString());
         } catch (final Exception e) {
-            AzureMessager.getMessager().error(e, INSTALL_FAILED_MESSAGE);
+            AzureMessager.getMessager().error(e, "failed to download Azure Functions Core Tools.");
             sendTelemetryWhenFail();
             return;
         }

@@ -15,7 +15,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.IOException;
 
 
 public class ReleaseService {
@@ -45,22 +45,5 @@ public class ReleaseService {
             throw new AzureToolkitRuntimeException(FAILED_TO_GET_FEED_INFO, e);
         }
         return null;
-    }
-
-    public void downloadZip(String downloadLink, File zipFile) throws IOException {
-        final Request request = new Request.Builder().url(downloadLink).build();
-        final Response response = client.newCall(request).execute();
-        final FileOutputStream fileOutputStream = new FileOutputStream(zipFile);
-        final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-        final BufferedInputStream bufferedInputStream = new BufferedInputStream(response.body().byteStream());
-        final byte[] dataBuf = new byte[1024];
-        int readLen = bufferedInputStream.read(dataBuf);
-        while (readLen > -1) {
-            bufferedOutputStream.write(dataBuf, 0, readLen);
-            readLen = bufferedInputStream.read(dataBuf);
-        }
-        bufferedInputStream.close();
-        bufferedOutputStream.flush();
-        bufferedOutputStream.close();
     }
 }
