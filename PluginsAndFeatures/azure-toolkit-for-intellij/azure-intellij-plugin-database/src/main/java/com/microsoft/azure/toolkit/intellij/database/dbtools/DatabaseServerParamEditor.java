@@ -86,16 +86,14 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         this.clazz = clazz;
         this.jdbcUrl = Optional.ofNullable(interchange.getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
         final SqlDbServerComboBox combox = this.getEditorComponent();
-        final String initialServerId = interchange.getProperty(KEY_DB_SERVER_ID);
-        if (StringUtils.isNotBlank(initialServerId) && !initialServerId.equals(NONE)) {
-            interchange.putProperty(KEY_DB_SERVER_ID, NONE);
-            combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialServerId)));
-        } else if (StringUtils.isNotBlank(interchange.getDataSource().getUsername())) {
-            combox.setValue((IDatabaseServer<?>) null);
+        combox.addValueChangedListener(this::setServer);
+        final boolean isModifying = StringUtils.isNotBlank(interchange.getDataSource().getUsername());
+        if (isModifying && Objects.nonNull(this.jdbcUrl)) {
+            final JdbcUrl url = this.jdbcUrl;
+            combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getJdbcUrl().getServerHost().equals(url.getServerHost())));
         }
 
         interchange.addPropertyChangeListener((evt -> onPropertiesChanged(evt.getPropertyName(), evt.getNewValue())), this);
-        combox.addValueChangedListener(this::setServer);
     }
 
     @Override
