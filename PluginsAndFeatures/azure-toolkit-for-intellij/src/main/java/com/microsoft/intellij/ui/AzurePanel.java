@@ -7,19 +7,15 @@ package com.microsoft.intellij.ui;
 
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.wm.ex.WindowManagerEx;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.ActionLink;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.appservice.function.coretools.FunctionsCoreToolsManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -60,7 +56,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.intellij.uiDesigner.core.GridConstraints.FILL_NONE;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
@@ -78,9 +73,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private AzureFileInput txtStorageExplorer;
     private AzureIntegerInput txtBatchSize;
     private AzureTextInput txtLabelFields;
-    private AzureFileInput funcCoreToolsDownloadPath;
-    private JPanel funcCoreToolsErrorPanel;
-    private JLabel funcCoreToolsDownloadPathLabel;
+    private ActionLink installFuncCoreToolsAction;
 
     private AzureConfiguration originalConfig;
 
@@ -117,14 +110,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         });
 
-        funcCoreToolsPath.addItemListener(e -> {
-            if (funcCoreToolsPath.getItems().size() <= 0) {
-                showFuncCoreToolsInstallPanel();
-            } else {
-                hideFuncCoreToolsInstallPanel();
-            }
-        });
-
         displayDescriptionForAzureEnv();
 
         final AzureConfiguration config = Azure.az().config();
@@ -149,17 +134,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         return AzureValidationInfo.ok(txtStorageExplorer);
     }
 
-    public AzureValidationInfo validateFuncCoreToolsDownloadPath() {
-        final String path = funcCoreToolsDownloadPath.getValue();
-        if (StringUtils.isEmpty(path)) {
-            return AzureValidationInfo.ok(funcCoreToolsDownloadPath);
-        }
-        if (!FileUtil.exists(path)) {
-            return AzureValidationInfo.error("Target dir does not exist", funcCoreToolsDownloadPath);
-        }
-        return AzureValidationInfo.ok(funcCoreToolsPath);
-    }
-
     public void setData(AzureConfiguration config) {
         this.originalConfig = config;
         final AzureEnvironment oldEnv = ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()), AzureEnvironment.AZURE);
@@ -170,9 +144,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         savePasswordComboBox.setSelectedItem(Optional.ofNullable(oldPasswordSaveType).map(Password.SaveType::valueOf).orElse(Password.SaveType.UNTIL_RESTART));
         if (StringUtils.isNotBlank(oldFuncCoreToolsPath)) {
             funcCoreToolsPath.setValue(oldFuncCoreToolsPath);
-            hideFuncCoreToolsInstallPanel();
-        } else {
-            showFuncCoreToolsInstallPanel();
         }
         if (StringUtils.isNotBlank(config.getStorageExplorerPath())) {
             txtStorageExplorer.setValue(config.getStorageExplorerPath());
@@ -316,18 +287,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         setData(originalConfig);
     }
 
-    private void showFuncCoreToolsInstallPanel() {
-        this.funcCoreToolsErrorPanel.setVisible(true);
-        this.funcCoreToolsDownloadPath.setVisible(true);
-        this.funcCoreToolsDownloadPathLabel.setVisible(true);
-    }
-
-    private void hideFuncCoreToolsInstallPanel() {
-        this.funcCoreToolsErrorPanel.setVisible(false);
-        this.funcCoreToolsDownloadPath.setVisible(false);
-        this.funcCoreToolsDownloadPathLabel.setVisible(false);
-    }
-
     private void createUIComponents() {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(null, false);
         this.funcCoreToolsPath.setPrototypeDisplayValue(StringUtils.EMPTY);
@@ -335,43 +294,34 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
-        this.funcCoreToolsDownloadPath = new AzureFileInput();
-        funcCoreToolsDownloadPath.setValue(FunctionsCoreToolsManager.DEFAULT_FUNCTIONS_CORE_TOOLS_DOWNLOAD_PATH);
-        funcCoreToolsDownloadPath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select download path for Functions Core Tools", null, funcCoreToolsDownloadPath,
-                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
-        funcCoreToolsDownloadPath.addValidator(this::validateFuncCoreToolsDownloadPath);
-        this.funcCoreToolsErrorPanel = new JPanel();
-        funcCoreToolsErrorPanel.setLayout(new GridLayoutManager(1,2));
-        final ActionLink downloadInstallBtn = new ActionLink("Download and Install", e -> {
-            final Container container = funcCoreToolsErrorPanel.getRootPane().getParent();
-            if (container instanceof JDialog) {
-                ((JDialog) container).dispose();
-            }
-            final FunctionsCoreToolsManager.FuncCoreToolsDownloadListener listener = new FunctionsCoreToolsManager.FuncCoreToolsDownloadListener() {
-                @Override
-                public void onSuccess() {
-                    final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-                    final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
-                        @Override
-                        public void handle(Object source, Object e) {
-                            AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
-                        }
-                    };
-                    final String INSTALL_SUCCEED_MESSAGE = "download and install functions core tools successfully.";
-                    AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, "Install succeed", openSettingsActionInMessage);
+        this.installFuncCoreToolsAction = new ActionLink("Install latest version", e -> {
+            FileChooser.chooseFile(FileChooserDescriptorFactory.createSingleFolderDescriptor(), null, null, files -> {
+                final Container container = installFuncCoreToolsAction.getRootPane().getParent();
+                if (container instanceof JDialog) {
+                    ((JDialog) container).dispose();
                 }
+                final String installPath = files.getPath();
+                final FunctionsCoreToolsManager.FuncCoreToolsDownloadListener listener = new FunctionsCoreToolsManager.FuncCoreToolsDownloadListener() {
+                    @Override
+                    public void onSuccess() {
+                        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+                        final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
+                            @Override
+                            public void handle(Object source, Object e) {
+                                AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
+                            }
+                        };
+                        final String INSTALL_SUCCEED_MESSAGE = "download and install functions core tools successfully.";
+                        AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, "Install succeed", openSettingsActionInMessage);
+                    }
 
-                @Override
-                public void onFail() {}
-            };
-            final String downloadPath = this.funcCoreToolsDownloadPath.getValue();
-            AzureTaskManager.getInstance().runInBackground("Download and Install Functions Core Tools",
-                    () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(new FunctionsCoreToolsFilterProvider(), downloadPath, listener));
+                    @Override
+                    public void onFail() {}
+                };
+                AzureTaskManager.getInstance().runInModal("Download and Install Functions Core Tools",
+                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(new FunctionsCoreToolsFilterProvider(), installPath, listener));
+            });
         });
-        final JLabel uninstallInfo = new JLabel("Functions Core Tools is not installed");
-        uninstallInfo.setForeground(UIUtil.getErrorForeground());
-        uninstallInfo.setIcon(AllIcons.General.Error);
-        funcCoreToolsErrorPanel.add(uninstallInfo, new GridConstraints(0, 0, 1, 1, 8, FILL_NONE, 3, 3, null, null, null, 0));
-        funcCoreToolsErrorPanel.add(downloadInstallBtn, new GridConstraints(0, 1, 1, 1, 4, FILL_NONE, 3, 3, null, null, null, 0));
+
     }
 }
