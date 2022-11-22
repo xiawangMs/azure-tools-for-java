@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.utils.FunctionCliResolver;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
 public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private static final String AZURE_TOOLKIT_FUNCTION_CORE_TOOLS_HISTORY = "azure_toolkit.function.core.tools.history";
     private static final String OPEN_AZURE_SETTINGS = "Open Azure Settings";
+    private static final String FUNCTIONS_CORE_TOOLS_NOT_FOUND = "Functions Core Tools not found";
     private static final int MAX_HISTORY_SIZE = 15;
     private final Set<String> funcCoreToolsPathList = new LinkedHashSet<>();
 
@@ -125,6 +127,10 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
             log.warn(e.getMessage(), e);
         }
         result.add(getDefaultFuncPath());
+        if (result.stream().noneMatch(Objects::nonNull)) {
+            this.setValidationInfo(includeSettings ? AzureValidationInfo.error(FUNCTIONS_CORE_TOOLS_NOT_FOUND, this)
+                    :  AzureValidationInfo.warning(FUNCTIONS_CORE_TOOLS_NOT_FOUND, this));
+        }
         result.add(includeSettings ? OPEN_AZURE_SETTINGS : null);
         return result.stream().filter(Objects::nonNull).distinct().sorted().collect(Collectors.toList());
     }
