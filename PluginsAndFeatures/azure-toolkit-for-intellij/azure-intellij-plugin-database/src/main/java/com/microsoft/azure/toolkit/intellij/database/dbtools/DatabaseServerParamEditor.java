@@ -77,13 +77,14 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
     @Getter
     @Setter
     private String text = "";
-    private IDatabaseServer<?> server;
+    @Nullable
     private JdbcUrl jdbcUrl;
     private boolean updating;
 
     public DatabaseServerParamEditor(@Nonnull Class<? extends IDatabaseServer<?>> clazz, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new SqlDbServerComboBox(clazz), interchange, FieldSize.LARGE, label);
         this.clazz = clazz;
+        this.jdbcUrl = Optional.ofNullable(interchange.getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
         final SqlDbServerComboBox combox = this.getEditorComponent();
         final String initialServerId = interchange.getProperty(KEY_DB_SERVER_ID);
         if (StringUtils.isNotBlank(initialServerId) && !initialServerId.equals(NONE)) {
@@ -173,8 +174,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
 
     private void onPropertiesChanged(String propertyName, Object newValue) {
         if (!this.updating && Objects.nonNull(this.jdbcUrl) && StringUtils.isNotEmpty((String) newValue)) {
-            if (StringUtils.equals(propertyName, "host") && !Objects.equals(this.jdbcUrl.getServerHost(), newValue) ||
-                StringUtils.equals(propertyName, "port") && !Objects.equals(this.jdbcUrl.getPort() + "", newValue)) {
+            if (StringUtils.equals(propertyName, "host") && !Objects.equals(this.jdbcUrl.getServerHost(), newValue)) {
                 this.getEditorComponent().setValue((IDatabaseServer<?>) null);
                 this.setServer(null);
             }
@@ -187,19 +187,14 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
             OperationContext.action().setTelemetryProperty("subscriptionId", a.getSubscriptionId());
             OperationContext.action().setTelemetryProperty("resourceType", ((AzResource) a).getFullResourceType());
         });
-        if (this.updating || Objects.equals(this.server, server)) {
+        final JdbcUrl newUrl = Optional.ofNullable(server).map(IDatabaseServer::getJdbcUrl).orElse(null);
+        if (this.updating || Objects.isNull(newUrl) || Objects.nonNull(jdbcUrl) && Objects.equals(jdbcUrl.getServerHost(), newUrl.getServerHost())) {
             return;
         }
-        final DataInterchange interchange = this.getInterchange();
-        this.server = server;
-        if (server == null) {
-            this.jdbcUrl = null;
-            return;
-        }
+        this.jdbcUrl = newUrl;
         this.updating = true;
-        this.jdbcUrl = server.getJdbcUrl();
-        this.text = jdbcUrl.toString();
         final String user = String.format("%s@%s", server.getAdminName(), server.getName());
+        final DataInterchange interchange = this.getInterchange();
         AzureTaskManager.getInstance().runLater(() -> {
             LocalDataSource.setUsername(interchange.getDataSource(), user);
             this.setUsername(user);
