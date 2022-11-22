@@ -10,19 +10,20 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class FunctionsCoreToolsManager {
-    private final Map<String, ReleaseInfo> releaseInfoCache = new HashMap<>();
+    private ReleaseInfo releaseInfoCache;
     private final String AZURE_FUNCTIONS = "AzureFunctions";
     private final String INSTALL_FAILED_MESSAGE = "failed to download and install functions core tools.";
+    private final String RELEASE_TAG = "v4";
     public final static String DEFAULT_FUNCTIONS_CORE_TOOLS_DOWNLOAD_PATH = Paths.get(System.getProperty("user.home"), ".azure-functions-core-tools").toString();
     private static final FunctionsCoreToolsManager instance = new FunctionsCoreToolsManager();
     private FuncCoreToolsDownloadListener listener;
@@ -32,23 +33,21 @@ public class FunctionsCoreToolsManager {
 
     public void downloadReleaseWithFilter(ReleaseFilterProvider filterProvider, String downloadDirPath, FuncCoreToolsDownloadListener listener) {
         this.listener = listener;
-        if (releaseInfoCache.isEmpty()) {
+        if (Objects.isNull(releaseInfoCache)) {
             cacheReleaseInfoFromFeed(filterProvider);
         }
-        final List<String> releaseTagList = releaseInfoCache.keySet().stream().filter(s -> s.matches("v\\d+")).sorted(Collections.reverseOrder()).collect(Collectors.toList());
-        if (releaseTagList.size() > 0) {
-            doDownloadRelease(releaseInfoCache.get(releaseTagList.get(0)), downloadDirPath);
-        }
+        doDownloadRelease(releaseInfoCache, downloadDirPath);
     }
 
     private void cacheReleaseInfoFromFeed(ReleaseFilterProvider filterProvider) {
         final ReleaseFilter releaseFilter = filterProvider.getFilter();
         final ReleaseFeedData releaseFeedData = ReleaseService.getInstance().getReleaseFeedData();
-        Optional.ofNullable(releaseFeedData).ifPresent(data -> data.getTags().forEach((tag, tagData) -> {
-            if (!tag.matches("v\\d+")) {    // Skip preview and pre-release tag
+        Optional.ofNullable(releaseFeedData).ifPresent(data -> {
+            if (!data.getTags().containsKey(RELEASE_TAG)) {
                 return;
             }
-            final ReleaseFeedData.ReleaseData releaseData = releaseFeedData.getReleases().get(tagData.getRelease());
+            final String releaseVersion = data.getTags().get(RELEASE_TAG).getRelease();
+            final ReleaseFeedData.ReleaseData releaseData = releaseFeedData.getReleases().get(releaseVersion);
             releaseData.getCoreTools().stream()
                     // Match OS and ensure a download link is present
                     .filter(it -> Objects.equals(it.getOs(), releaseFilter.os) && StringUtils.isNotBlank(it.getDownloadLink()))
@@ -69,16 +68,16 @@ public class FunctionsCoreToolsManager {
                                 .filter(i -> releaseFilter.sizes.get(i).equalsIgnoreCase(o2.getSize()))
                                 .findFirst().orElse(9999);
                         return rank1 - rank2;
-                    }).ifPresent(releaseCoreTool -> this.releaseInfoCache.put(tag.toLowerCase(),
-                            new ReleaseInfo(tagData.getRelease().toLowerCase(), releaseCoreTool.getDownloadLink())));
-
-        }));
+                    }).ifPresent(releaseCoreTool -> this.releaseInfoCache = new ReleaseInfo(releaseVersion.toLowerCase(), releaseCoreTool.getDownloadLink()));
+        });
     }
 
-    private void doDownloadRelease(ReleaseInfo releaseInfo, String downloadDirPath) {
-        final File tempFile;
+    private void doDownloadRelease(@Nullable ReleaseInfo releaseInfo, String downloadDirPath) {
+        if (Objects.isNull(releaseInfo)) {
+            return;
+        }
         try {
-            tempFile = File.createTempFile(
+            final File tempFile = File.createTempFile(
                     String.format("%s-%s", AZURE_FUNCTIONS, releaseInfo.releaseVersion),
                     ".zip", Files.createTempDirectory(AZURE_FUNCTIONS).toFile());
             ReleaseService.getInstance().downloadZip(releaseInfo.downloadLink, tempFile);
