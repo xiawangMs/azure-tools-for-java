@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -86,11 +87,20 @@ public class FunctionsCoreToolsManager {
             unzip(tempFile, Paths.get(downloadDirPath, releaseInfo.releaseVersion).toString());
         } catch (final Exception e) {
             AzureMessager.getMessager().error(e, INSTALL_FAILED_MESSAGE);
+            sendTelemetryWhenFail();
+            return;
         }
         Azure.az().config().setFunctionCoreToolsPath(Paths.get(downloadDirPath, releaseInfo.releaseVersion, "func.exe").toString());
         AzureConfigInitializer.saveAzConfig();
         AzureEventBus.emit("function.download_func_core_tools_succeed.version", releaseInfo.releaseVersion);
+        sendTelemetryWhenSucceed();
     }
+
+    @AzureOperation(name = "function.download_func_core_tools_failed", type = AzureOperation.Type.ACTION)
+    private void sendTelemetryWhenFail() {}
+
+    @AzureOperation(name = "function.download_func_core_tools_succeed", type = AzureOperation.Type.ACTION)
+    private void sendTelemetryWhenSucceed() {}
 
     private void unzip(File zipFile, String destDirPath) throws Exception {
         createIfNotExist(destDirPath);
