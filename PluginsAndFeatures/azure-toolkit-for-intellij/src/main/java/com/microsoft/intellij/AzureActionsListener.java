@@ -18,7 +18,6 @@ import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.toolkit.ide.common.experiment.ExperimentationClient;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
@@ -140,7 +139,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
         AzureStoreManager.register(new DefaultMachineStore(PluginHelper.getTemplateFile("azure.json")),
                 IntellijStore.getInstance(), IntelliJSecureStore.getInstance());
-        ExperimentationClient.init();
 
         try {
             loadPluginSettings();

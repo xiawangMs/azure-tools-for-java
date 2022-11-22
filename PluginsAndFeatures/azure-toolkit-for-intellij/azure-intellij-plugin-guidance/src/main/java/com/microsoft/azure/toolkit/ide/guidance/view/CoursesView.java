@@ -53,7 +53,8 @@ public class CoursesView {
     private void init() {
         this.lblTitle.setFont(JBFont.h2().asBold());
         this.lblLoading.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON));
-        this.actionLinkPanel.setVisible(Boolean.parseBoolean(ExperimentationClient.getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName())));
+        final String showNewUiFlag = ExperimentationClient.getExperimentationService().getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName());
+        this.actionLinkPanel.setVisible(Boolean.parseBoolean(showNewUiFlag));
         AzureTaskManager.getInstance().runInBackgroundAsObservable("Loading lesson", () -> GuidanceConfigManager.getInstance().loadCourses())
                 .subscribeOn(Schedulers.computation())
                 .subscribe(courses -> AzureTaskManager.getInstance().runLater(() -> this.setCourses(courses)));
