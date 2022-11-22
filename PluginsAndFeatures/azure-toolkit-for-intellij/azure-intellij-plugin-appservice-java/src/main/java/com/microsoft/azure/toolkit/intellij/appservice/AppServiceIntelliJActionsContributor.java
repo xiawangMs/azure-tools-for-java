@@ -7,10 +7,14 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.Messages;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.ide.appservice.function.coretools.FunctionsCoreToolsManager;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -44,6 +48,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
@@ -55,6 +60,7 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -201,6 +207,34 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         final BiConsumer<FunctionAppBase<?, ?, ?>, AnActionEvent> remoteDebuggingHandler = (c, e) ->
                 AzureTaskManager.getInstance().runLater(() -> FunctionRemoteDebuggingAction.startDebugging(c, e.getProject()));
         am.registerHandler(FunctionAppActionsContributor.REMOTE_DEBUGGING, isFunction, remoteDebuggingHandler);
+
+        final BiConsumer<Object, AnActionEvent> downloadFuncCoreToolsHandler = (v, e) -> {
+            final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+            descriptor.setTitle("Select Path to Install Azure Functions Core Tools");
+            AzureTaskManager.getInstance().runLater(() -> FileChooser.chooseFile(descriptor, null, null, files -> {
+                final String installPath = files.getPath();
+                final FunctionsCoreToolsManager.FuncCoreToolsDownloadListener listener = new FunctionsCoreToolsManager.FuncCoreToolsDownloadListener() {
+                    @Override
+                    public void onSuccess() {
+                        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+                        final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
+                            @Override
+                            public void handle(Object source, Object e) {
+                                AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
+                            }
+                        };
+                        final String INSTALL_SUCCEED_MESSAGE = "download and install functions core tools successfully.";
+                        AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, "Install succeed", openSettingsActionInMessage);
+                    }
+
+                    @Override
+                    public void onFail() {}
+                };
+                AzureTaskManager.getInstance().runInModal("Download and Install Functions Core Tools",
+                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(installPath, listener));
+            }));
+        };
+        am.registerHandler(FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS, downloadFuncCoreToolsHandler);
     }
 
     @Override

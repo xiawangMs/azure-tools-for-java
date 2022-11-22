@@ -7,8 +7,6 @@ package com.microsoft.intellij.ui;
 
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.fileChooser.FileChooser;
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
@@ -18,8 +16,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.ide.appservice.function.coretools.FunctionsCoreToolsManager;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -30,12 +26,8 @@ import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.AzureEnvironmentUtils;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
@@ -56,6 +48,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
@@ -295,34 +288,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.installFuncCoreToolsAction = new ActionLink("Install latest version", e -> {
-            final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
-            descriptor.setTitle("Select Path to Install Azure Functions Core Tools");
-            FileChooser.chooseFile(descriptor, null, null, files -> {
-                final Container container = installFuncCoreToolsAction.getRootPane().getParent();
-                if (container instanceof JDialog) {
-                    ((JDialog) container).dispose();
-                }
-                final String installPath = files.getPath();
-                final FunctionsCoreToolsManager.FuncCoreToolsDownloadListener listener = new FunctionsCoreToolsManager.FuncCoreToolsDownloadListener() {
-                    @Override
-                    public void onSuccess() {
-                        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-                        final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
-                            @Override
-                            public void handle(Object source, Object e) {
-                                AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
-                            }
-                        };
-                        final String INSTALL_SUCCEED_MESSAGE = "download and install functions core tools successfully.";
-                        AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, "Install succeed", openSettingsActionInMessage);
-                    }
-
-                    @Override
-                    public void onFail() {}
-                };
-                AzureTaskManager.getInstance().runInModal("Download and Install Functions Core Tools",
-                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(installPath, listener));
-            });
+            FocusManager.getCurrentManager().getActiveWindow().dispose();
+            AzureActionManager.getInstance().getAction(DOWNLOAD_CORE_TOOLS).handle(null);
         });
 
     }

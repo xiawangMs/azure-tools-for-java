@@ -127,7 +127,7 @@ public class FunctionsCoreToolsManager {
      * refer to https://github.com/JetBrains/azure-tools-for-intellij
      * */
     private ReleaseFilter generateFilter() {
-        final String osName = System.getProperty("os.name");
+        final String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         final String architectureName = System.getProperty("os.arch");
         final boolean isIntel64 = "x86_64".equals(architectureName) || "amd64".equals(architectureName);
         final boolean isArm64 = "aarch64".equals(architectureName) || "arm64".equals(architectureName);
