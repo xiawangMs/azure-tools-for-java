@@ -8,6 +8,7 @@ package com.microsoft.intellij.ui;
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
@@ -36,7 +37,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
-import com.microsoft.azure.toolkit.lib.legacy.function.FunctionsCoreToolsFilterProvider;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -295,7 +295,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.installFuncCoreToolsAction = new ActionLink("Install latest version", e -> {
-            FileChooser.chooseFile(FileChooserDescriptorFactory.createSingleFolderDescriptor(), null, null, files -> {
+            final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+            descriptor.setTitle("Select Path to Install Azure Functions Core Tools");
+            FileChooser.chooseFile(descriptor, null, null, files -> {
                 final Container container = installFuncCoreToolsAction.getRootPane().getParent();
                 if (container instanceof JDialog) {
                     ((JDialog) container).dispose();
@@ -319,7 +321,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     public void onFail() {}
                 };
                 AzureTaskManager.getInstance().runInModal("Download and Install Functions Core Tools",
-                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(new FunctionsCoreToolsFilterProvider(), installPath, listener));
+                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(installPath, listener));
             });
         });
 

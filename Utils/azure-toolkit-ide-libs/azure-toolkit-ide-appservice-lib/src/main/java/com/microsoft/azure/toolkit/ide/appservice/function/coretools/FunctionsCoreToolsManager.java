@@ -31,16 +31,19 @@ public class FunctionsCoreToolsManager {
         return instance;
     }
 
-    public void downloadReleaseWithFilter(ReleaseFilterProvider filterProvider, String downloadDirPath, FuncCoreToolsDownloadListener listener) {
+    public void downloadReleaseWithFilter(String downloadDirPath, FuncCoreToolsDownloadListener listener) {
         this.listener = listener;
         if (Objects.isNull(releaseInfoCache)) {
-            cacheReleaseInfoFromFeed(filterProvider);
+            cacheReleaseInfoFromFeed();
         }
         doDownloadRelease(releaseInfoCache, downloadDirPath);
     }
 
-    private void cacheReleaseInfoFromFeed(ReleaseFilterProvider filterProvider) {
-        final ReleaseFilter releaseFilter = filterProvider.getFilter();
+    /**
+     * refer to https://github.com/JetBrains/azure-tools-for-intellij
+     * */
+    private void cacheReleaseInfoFromFeed() {
+        final ReleaseFilter releaseFilter = generateFilter();
         final ReleaseFeedData releaseFeedData = ReleaseService.getInstance().getReleaseFeedData();
         Optional.ofNullable(releaseFeedData).ifPresent(data -> {
             if (!data.getTags().containsKey(RELEASE_TAG)) {
@@ -118,6 +121,28 @@ public class FunctionsCoreToolsManager {
     private void createIfNotExist(String dirPath) {
         final File dstDir = new File(dirPath);
         dstDir.mkdirs();
+    }
+
+    /**
+     * refer to https://github.com/JetBrains/azure-tools-for-intellij
+     * */
+    private ReleaseFilter generateFilter() {
+        final String osName = System.getProperty("os.name");
+        final String architectureName = System.getProperty("os.arch");
+        final boolean isIntel64 = "x86_64".equals(architectureName) || "amd64".equals(architectureName);
+        final boolean isArm64 = "aarch64".equals(architectureName) || "arm64".equals(architectureName);
+        if (osName.startsWith("windows") && isIntel64) {
+            return new ReleaseFilter("Windows", List.of("x64"), List.of("minified", "full"));
+        } else if (osName.startsWith("windows")) {
+            return new FunctionsCoreToolsManager.ReleaseFilter("Windows", List.of("x86"), List.of("minified", "full"));
+        } else if (osName.startsWith("mac") && isArm64) {
+            return new FunctionsCoreToolsManager.ReleaseFilter("MacOS", List.of("arm64", "x64"), List.of("full"));
+        } else if (osName.startsWith("mac")) {
+            return new FunctionsCoreToolsManager.ReleaseFilter("MacOS", List.of("x64"), List.of("full"));
+        } else if (osName.startsWith("linux")) {
+            return new FunctionsCoreToolsManager.ReleaseFilter("Linux", List.of("x64"), List.of("full"));
+        }
+        return new FunctionsCoreToolsManager.ReleaseFilter("Unknown", List.of("x64"), List.of("full"));
     }
 
     private static class ReleaseInfo {
