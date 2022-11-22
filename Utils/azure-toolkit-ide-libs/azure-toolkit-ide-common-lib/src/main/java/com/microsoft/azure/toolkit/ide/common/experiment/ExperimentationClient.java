@@ -11,6 +11,7 @@ import lombok.Getter;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ExperimentationClient {
     private static final String ASSIGNMENT_UNIT_ID = "clientId";
@@ -18,26 +19,27 @@ public class ExperimentationClient {
     private static final String AUDIENCE_FILTER_VALUE = "intellij";
     private static final String END_POINT = "https://aka.ms/azure-ij-ab-exp";
     private static ExperimentationService experimentationService;
-    private static boolean isInited = false;
 
     public static void init() {
-        if (isInited) {
+        if (Objects.nonNull(experimentationService)) {
             return;
         }
-        isInited = true;
-        final Map<String, String> audienceFilters = new HashMap<>();
-        final Map<String, String> assignmentIds = new HashMap<>();
-        audienceFilters.put(ASSIGNMENT_UNIT_ID, InstallationIdUtils.getHashMac());
-        experimentationService = new ExperimentationService()
-                .withEndPoint(END_POINT)
-                .withAudienceFilters(audienceFilters)
-                .withAssignmentIds(assignmentIds)
-                .create();
+        try {
+            final Map<String, String> audienceFilters = new HashMap<>();
+            final Map<String, String> assignmentIds = new HashMap<>();
+            assignmentIds.put(ASSIGNMENT_UNIT_ID, InstallationIdUtils.getHashMac());
+            experimentationService = new ExperimentationService()
+                    .withEndPoint(END_POINT)
+                    .withAudienceFilters(audienceFilters)
+                    .withAssignmentIds(assignmentIds)
+                    .create();
+        } catch (final Exception ignored) {
+        }
     }
 
     @Nullable
     public static String getFeatureVariable(String featureFlagName) {
-        if (!isInited) {
+        if (Objects.isNull(experimentationService)) {
             init();
         }
         return experimentationService.getFeatureVariable(featureFlagName);
@@ -45,7 +47,7 @@ public class ExperimentationClient {
 
     @Nullable
     public static String getAssignmentContext() {
-        if (!isInited) {
+        if (Objects.isNull(experimentationService)) {
             init();
         }
         return experimentationService.getAssignmentContext();
