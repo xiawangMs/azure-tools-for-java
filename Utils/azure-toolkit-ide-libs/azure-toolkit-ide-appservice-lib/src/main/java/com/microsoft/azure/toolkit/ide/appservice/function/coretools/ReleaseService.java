@@ -19,7 +19,7 @@ import java.io.*;
 
 
 public class ReleaseService {
-    private final static String FUNCTIONS_CORE_TOOLS_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
+    private final static String FUNCTIONS_CORE_TOOLS_FEED_URL = "https://aka.ms/func-core-tools-feed";
     private final String FAILED_TO_GET_FEED_INFO = "failed to get release feed info";
     private final OkHttpClient client = new OkHttpClient();
     private final static ReleaseService instance = new ReleaseService();
