@@ -72,7 +72,6 @@ public class MonkeySurvey {
             .uri(URI.create("https://api.surveymonkey.com/v3/collectors/445843454/responses"))
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
-            .header("Authorization", "Bearer rzK6HA54nZqRBAaYSMIcikdUzK0SjW9YcZKKXVSQFwj7AteEwiwv9LJ2VAkNhb-NfWltTMq63kTS4s9IypTK7pqX1al7UoD4ty3HUf-LqSh.tSfGLeVAHoQdeYdguP.P")
             .POST(HttpRequest.BodyPublishers.ofString(json))
             .build();
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
