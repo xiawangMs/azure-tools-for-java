@@ -184,7 +184,6 @@ public class RatePopup {
             final String strNextPopAfter = store.getProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "0");
             final long nextPopAfter = Long.parseLong(Objects.requireNonNull(strNextPopAfter));
             if (nextPopAfter >= 0 && System.currentTimeMillis() > nextPopAfter) {
-                store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
                 popup.debounce();
                 return true;
             }
@@ -218,7 +217,9 @@ public class RatePopup {
         final int times = Integer.parseInt(Objects.requireNonNull(strTimes)) + 1;
         store.setProperty(RateManager.SERVICE, RateManager.POPPED_AT, String.valueOf(System.currentTimeMillis()));
         store.setProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, String.valueOf(times));
-        store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
+        OperationContext.current().setTelemetryProperty(RateManager.POPPED_TIMES, String.valueOf(times));
+        // popup 3 days later if the popup is faded out automatically
+        popDaysLater(3);
 
         final JFrame frame = ((JFrame) IdeUtils.getWindow(project));
         RatePopup.balloon.show(new PositionTracker<>(frame.getRootPane()) {
