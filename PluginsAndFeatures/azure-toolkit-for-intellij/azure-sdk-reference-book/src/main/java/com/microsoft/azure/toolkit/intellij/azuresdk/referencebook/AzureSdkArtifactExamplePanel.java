@@ -17,7 +17,7 @@ import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
-import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.components.ActionLink;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleIndexEntity;
@@ -27,35 +27,31 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 import static com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.AzureSdkArtifactGroupPanel.SDK_EXAMPLE_REQUEST_URL;
 
 public class AzureSdkArtifactExamplePanel {
-    public static final String REQUEST_EXAMPLES = "Request Examples";
-    public static final String REQUEST_MORE_EXAMPLES = "Request More Examples";
+    private static final String NEED_MORE_SAMPLES = "Need More Samples";
     private EditorTextField viewer;
     private ExampleComboBox cbExample;
     private ActionToolbarImpl toolbar;
     @Getter
     private JPanel pnlRoot;
-    private HyperlinkLabel linkRequestMoreExamples;
+    private ActionLink linkRequestMoreExamples;
     private AzureJavaSdkArtifactExampleIndexEntity entity;
 
     public void setExampleIndex(final AzureJavaSdkArtifactExampleIndexEntity entity) {
         this.entity = entity;
         this.cbExample.setEntity(entity);
         final List<AzureJavaSdkArtifactExampleEntity> examples = Optional.ofNullable(entity).map(e -> e.getExamples()).orElse(null);
-        this.linkRequestMoreExamples.setHyperlinkText(CollectionUtils.isEmpty(examples) ? REQUEST_EXAMPLES : REQUEST_MORE_EXAMPLES);
     }
 
     private void createUIComponents() {
@@ -64,8 +60,9 @@ public class AzureSdkArtifactExamplePanel {
         this.toolbar = createExampleEditorToolBar();
         this.toolbar.setTargetComponent(this.viewer);
 
-        this.linkRequestMoreExamples = new HyperlinkLabel(REQUEST_MORE_EXAMPLES);
-        this.linkRequestMoreExamples.addHyperlinkListener(e -> AzureActionManager.getInstance().getAction(OPEN_URL).handle(SDK_EXAMPLE_REQUEST_URL));
+        this.linkRequestMoreExamples = new ActionLink(NEED_MORE_SAMPLES);
+        this.linkRequestMoreExamples.addActionListener(e -> AzureActionManager.getInstance().getAction(OPEN_URL).handle(SDK_EXAMPLE_REQUEST_URL));
+        this.linkRequestMoreExamples.setExternalLinkIcon();
     }
 
     private ExampleComboBox createExampleComboBox() {
