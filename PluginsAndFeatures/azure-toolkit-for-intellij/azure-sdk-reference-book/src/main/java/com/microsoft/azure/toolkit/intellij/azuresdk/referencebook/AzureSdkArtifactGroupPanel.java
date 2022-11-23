@@ -62,7 +62,6 @@ public class AzureSdkArtifactGroupPanel {
     private JPanel tabExamples;
     private HyperlinkLabel linkRequestExamples;
     private JTabbedPane tabbedPane;
-    private JPanel pnlRequestExamples;
     private ButtonGroup artifactsGroup;
     private final List<AzureSdkArtifactDetailPanel> artifactPnls = new ArrayList<>();
     private AzureSdkArtifactEntity pkg;
@@ -114,8 +113,6 @@ public class AzureSdkArtifactGroupPanel {
         final List<AzureJavaSdkArtifactExampleEntity> examples = Optional.ofNullable(sdkExampleIndex)
                 .map(AzureJavaSdkArtifactExampleIndexEntity::getExamples).orElse(null);
         this.pnlDependency.setExampleIndex(sdkExampleIndex);
-        this.pnlDependency.setVisible(CollectionUtils.isNotEmpty(examples));
-        this.pnlRequestExamples.setVisible(CollectionUtils.isEmpty(examples));
     }
 
     private void onDependencyTypeSelected(DependencyType type) {
