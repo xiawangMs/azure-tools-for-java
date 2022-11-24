@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.intellij.common.IdeUtils;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -42,11 +41,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class RatePopup {
     public static final JBColor BACKGROUND_COLOR =
@@ -138,14 +134,6 @@ public class RatePopup {
                 store.setProperty(RateManager.SERVICE, RateManager.RATED_AT, String.valueOf(System.currentTimeMillis()));
                 store.setProperty(RateManager.SERVICE, RateManager.RATED_SCORE, String.valueOf(index + 1));
                 if (index >= 3) {
-                    AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                        final CompletableFuture<HttpResponse<String>> response = MonkeySurvey.send(index + 1);
-                        try {
-                            System.out.println(response.get());
-                        } catch (final InterruptedException | ExecutionException ex) {
-                            throw new AzureToolkitRuntimeException(ex);
-                        }
-                    });
                     AzureMessager.getMessager().success("Thank you for the feedback!");
                     popDaysLater(-1);
                 } else {
