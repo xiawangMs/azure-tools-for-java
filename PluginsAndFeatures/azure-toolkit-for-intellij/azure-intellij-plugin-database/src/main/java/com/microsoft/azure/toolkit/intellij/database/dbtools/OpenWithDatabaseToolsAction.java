@@ -32,11 +32,11 @@ public class OpenWithDatabaseToolsAction {
     }
 
     private static Dbms getDbms(IDatabaseServer<?> server) {
-        if (MicrosoftSqlServer.class.isAssignableFrom(server.getClass())) {
+        if (server instanceof MicrosoftSqlServer) {
             return Dbms.MSSQL;
-        } else if (MySqlServer.class.isAssignableFrom(server.getClass())) {
+        } else if (server instanceof MySqlServer) {
             return Dbms.MYSQL;
-        } else if (PostgreSqlServer.class.isAssignableFrom(server.getClass())) {
+        } else if (server instanceof PostgreSqlServer) {
             return Dbms.POSTGRES;
         }
         return Dbms.UNKNOWN;

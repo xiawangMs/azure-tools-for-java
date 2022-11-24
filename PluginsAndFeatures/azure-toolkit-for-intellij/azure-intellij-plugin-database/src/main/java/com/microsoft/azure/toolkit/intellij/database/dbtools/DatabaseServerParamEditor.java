@@ -70,7 +70,6 @@ import java.util.stream.Collectors;
 
 public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerParamEditor.SqlDbServerComboBox> {
     public static final String KEY_DB_SERVER_ID = "AZURE_SQL_DB_SERVER";
-    public static final String NONE = "<NONE>";
     public static final String NO_SERVERS_TIPS = "<html>No existing %s servers in Azure. You can <a href=''>create one</a> first.</html>";
     public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing %s server in Azure.</html>";
     private final Class<? extends IDatabaseServer<?>> clazz;
@@ -87,6 +86,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         this.jdbcUrl = Optional.ofNullable(interchange.getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
         final SqlDbServerComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setServer);
+        interchange.addPersistentProperty(KEY_DB_SERVER_ID);
         final boolean isModifying = StringUtils.isNotBlank(interchange.getDataSource().getUsername());
         if (isModifying && Objects.nonNull(this.jdbcUrl)) {
             final JdbcUrl url = this.jdbcUrl;
@@ -185,6 +185,8 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
             OperationContext.action().setTelemetryProperty("subscriptionId", a.getSubscriptionId());
             OperationContext.action().setTelemetryProperty("resourceType", ((AzResource) a).getFullResourceType());
         });
+        final DataInterchange interchange = this.getInterchange();
+        interchange.putProperty(KEY_DB_SERVER_ID, Optional.ofNullable(server).map(IDatabaseServer::getId).orElse(null));
         final JdbcUrl newUrl = Optional.ofNullable(server).map(IDatabaseServer::getJdbcUrl).orElse(null);
         if (this.updating || Objects.isNull(newUrl) || Objects.nonNull(jdbcUrl) && Objects.equals(jdbcUrl.getServerHost(), newUrl.getServerHost())) {
             return;
@@ -192,7 +194,6 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         this.jdbcUrl = newUrl;
         this.updating = true;
         final String user = String.format("%s@%s", server.getAdminName(), server.getName());
-        final DataInterchange interchange = this.getInterchange();
         AzureTaskManager.getInstance().runLater(() -> {
             LocalDataSource.setUsername(interchange.getDataSource(), user);
             this.setUsername(user);
