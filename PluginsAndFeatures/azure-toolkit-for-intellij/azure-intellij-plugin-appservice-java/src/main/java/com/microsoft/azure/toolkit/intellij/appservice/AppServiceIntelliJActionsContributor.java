@@ -213,8 +213,8 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             descriptor.setTitle("Select Path to Install Azure Functions Core Tools");
             AzureTaskManager.getInstance().runLater(() -> FileChooser.chooseFile(descriptor, null, null, files -> {
                 final String installPath = files.getPath();
-                AzureTaskManager.getInstance().runInModal("Download and Install Functions Core Tools",
-                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseWithFilter(installPath));
+                AzureTaskManager.getInstance().runInBackground("Download and Install Functions Core Tools",
+                        () -> FunctionsCoreToolsManager.getInstance().downloadReleaseTools(installPath));
             }));
         };
         am.registerHandler(FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS, downloadFuncCoreToolsHandler);

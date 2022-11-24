@@ -31,11 +31,11 @@ public class FunctionsCoreToolsManager {
         return instance;
     }
 
-    public void downloadReleaseWithFilter(String downloadDirPath) {
+    public void downloadReleaseTools(String downloadDirPath) {
         if (Objects.isNull(releaseInfoCache)) {
             cacheReleaseInfoFromFeed();
         }
-        doDownloadRelease(releaseInfoCache, downloadDirPath);
+        doDownloadReleaseTools(releaseInfoCache, downloadDirPath);
     }
 
     /**
@@ -74,7 +74,7 @@ public class FunctionsCoreToolsManager {
         });
     }
 
-    private void doDownloadRelease(@Nullable ReleaseInfo releaseInfo, String downloadDirPath) {
+    private void doDownloadReleaseTools(@Nullable ReleaseInfo releaseInfo, String downloadDirPath) {
         if (Objects.isNull(releaseInfo)) {
             return;
         }
