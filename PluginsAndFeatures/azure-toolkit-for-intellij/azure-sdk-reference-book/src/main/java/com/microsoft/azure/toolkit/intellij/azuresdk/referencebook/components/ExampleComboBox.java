@@ -14,11 +14,13 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class ExampleComboBox extends AzureComboBox<AzureJavaSdkArtifactExampleEntity> {
+    public final static AzureJavaSdkArtifactExampleEntity NONE = new AzureJavaSdkArtifactExampleEntity();
     private final Project project;
     @Getter
     private AzureJavaSdkArtifactExampleIndexEntity entity;
@@ -40,7 +42,9 @@ public class ExampleComboBox extends AzureComboBox<AzureJavaSdkArtifactExampleEn
     @Nonnull
     @Override
     protected List<AzureJavaSdkArtifactExampleEntity> loadItems() {
-        return Optional.ofNullable(entity).map(AzureJavaSdkArtifactExampleIndexEntity::getExamples).orElse(Collections.emptyList());
+        return Optional.ofNullable(entity)
+                .map(AzureJavaSdkArtifactExampleIndexEntity::getExamples)
+                .orElseGet(() -> Arrays.asList(NONE));
     }
 
     @Nonnull
@@ -51,7 +55,9 @@ public class ExampleComboBox extends AzureComboBox<AzureJavaSdkArtifactExampleEn
 
     @Override
     protected String getItemText(Object item) {
-        if (item instanceof AzureJavaSdkArtifactExampleEntity) {
+        if (item == NONE) {
+            return "None";
+        } else if (item instanceof AzureJavaSdkArtifactExampleEntity) {
             final String file = ((AzureJavaSdkArtifactExampleEntity) item).getFile();
             final int start = file.lastIndexOf("/");
             final int end = file.lastIndexOf(".java");

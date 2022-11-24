@@ -98,15 +98,7 @@ public class ModuleDependencyComboBox extends AzureComboBox<ProjectModule> {
 
     @Override
     protected String getItemText(Object item) {
-        if (!(item instanceof ProjectModule)) {
-            return super.getItemText(item);
-        }
-        final ProjectModule module = (ProjectModule) item;
-        if (!module.isDependencyExists(entity)) {
-            return module.getName();
-        } else {
-            return String.format("%s %s", module.getName(), module.isDependencyUpToDate(entity, version) ? " (Dependency Ready)" : " (Dependency Outdated)");
-        }
+        return item instanceof ProjectModule ? ((ProjectModule) item).getName() : super.getItemText(item);
     }
 
     @Nullable

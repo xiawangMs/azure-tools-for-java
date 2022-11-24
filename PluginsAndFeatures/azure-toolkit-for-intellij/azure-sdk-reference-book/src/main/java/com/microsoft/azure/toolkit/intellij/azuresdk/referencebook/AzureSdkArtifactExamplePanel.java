@@ -39,7 +39,8 @@ import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonAction
 import static com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.AzureSdkArtifactGroupPanel.SDK_EXAMPLE_REQUEST_URL;
 
 public class AzureSdkArtifactExamplePanel {
-    private static final String NEED_MORE_SAMPLES = "Need More Samples";
+    private static final String NEED_MORE_SAMPLES = "Report Example Issue";
+    private static final String NO_EXAMPLE_TEXT = "// No example available for current library, please click `Report Example Issue` to request more samples.";
     private EditorTextField viewer;
     private ExampleComboBox cbExample;
     private ActionToolbarImpl toolbar;
@@ -70,6 +71,10 @@ public class AzureSdkArtifactExamplePanel {
         result.addValueChangedListener(value -> {
             if (value == null) {
                 AzureTaskManager.getInstance().runLater(() -> this.viewer.setText(StringUtils.EMPTY));
+                return;
+            }
+            if (value == ExampleComboBox.NONE) {
+                AzureTaskManager.getInstance().runLater(() -> this.viewer.setText(NO_EXAMPLE_TEXT));
                 return;
             }
             AzureTaskManager.getInstance().runLater(() -> this.viewer.setText("Loading..."));
