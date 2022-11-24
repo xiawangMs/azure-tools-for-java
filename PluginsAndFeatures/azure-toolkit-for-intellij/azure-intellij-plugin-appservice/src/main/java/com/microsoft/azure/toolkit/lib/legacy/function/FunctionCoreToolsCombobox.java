@@ -33,10 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -109,9 +108,23 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         openSettingsAction.getHandler(null, event).accept(null, event); // Open Azure Settings Panel sync
     }
 
+    @Nullable
     private String getDefaultFuncPath() {
         final String functionCoreToolsPath = Azure.az().config().getFunctionCoreToolsPath();
         return StringUtils.isNotEmpty(functionCoreToolsPath) && Files.exists(Path.of(functionCoreToolsPath)) ? functionCoreToolsPath : null;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultValue() {
+        final List<String> items = this.getItems().stream().filter(s -> !s.equals(OPEN_AZURE_SETTINGS)).toList();
+        final String value = doGetDefaultValue();
+        final int index = items.indexOf(value);
+        if (Objects.nonNull(value) && index > -1) {
+            return items.get(index);
+        } else {
+            return items.size() > 0 ? items.get(0) : null;
+        }
     }
 
     @Nonnull
@@ -121,7 +134,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         result.addAll(loadHistory());
         try {
             result.addAll(FunctionCliResolver.resolve());
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             // swallow exception while resolve function path
             // todo @hanli: handle the exception in lib
             log.warn(e.getMessage(), e);
