@@ -287,7 +287,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
-        this.installFuncCoreToolsAction = new ActionLink("Install latest version", e -> {
+        this.installFuncCoreToolsAction = new ActionLink("Install the latest version", e -> {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
             AzureActionManager.getInstance().getAction(DOWNLOAD_CORE_TOOLS).handle(null);
         });
