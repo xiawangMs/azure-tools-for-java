@@ -87,6 +87,7 @@ public class FunctionsCoreToolsManager {
             final FileOutputStream outputStream = new FileOutputStream(tempFile);
             outputStream.getChannel().transferFrom(Channels.newChannel(new URL(releaseInfo.downloadLink).openStream()), 0, Long.MAX_VALUE);
             unzip(tempFile, Paths.get(downloadDirPath, releaseInfo.releaseVersion).toString());
+            tempFile.deleteOnExit();
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
