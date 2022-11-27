@@ -52,7 +52,7 @@ public class FunctionsCoreToolsManager {
             final ReleaseFeedData.ReleaseData releaseData = releaseFeedData.getReleases().get(releaseVersion);
             releaseData.getCoreTools().stream()
                     // Match OS and ensure a download link is present
-                    .filter(it -> Objects.equals(it.getOs(), releaseFilter.os) && StringUtils.isNotBlank(it.getDownloadLink()))
+                    .filter(it -> releaseFilter.os.equalsIgnoreCase(it.getOs()) && StringUtils.isNotBlank(it.getDownloadLink()))
                     // Sort by architecture. Use 9999 when no match is found.
                     .sorted((o1, o2) -> {
                         final int rank1 = IntStream.range(0, releaseFilter.architectures.size())
@@ -129,21 +129,21 @@ public class FunctionsCoreToolsManager {
      * */
     private ReleaseFilter generateFilter() {
         final String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
-        final String architectureName = System.getProperty("os.arch");
-        final boolean isIntel64 = "x86_64".equals(architectureName) || "amd64".equals(architectureName);
-        final boolean isArm64 = "aarch64".equals(architectureName) || "arm64".equals(architectureName);
+        final String architectureName = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
+        final boolean isIntel64 = "x86_64".equalsIgnoreCase(architectureName) || "amd64".equalsIgnoreCase(architectureName);
+        final boolean isArm64 = "aarch64".equalsIgnoreCase(architectureName) || "arm64".equalsIgnoreCase(architectureName);
         if (osName.startsWith("windows") && isIntel64) {
-            return new ReleaseFilter("Windows", List.of("x64"), List.of("minified", "full"));
+            return new ReleaseFilter("windows", List.of("x64"), List.of("minified", "full"));
         } else if (osName.startsWith("windows")) {
-            return new FunctionsCoreToolsManager.ReleaseFilter("Windows", List.of("x86"), List.of("minified", "full"));
+            return new FunctionsCoreToolsManager.ReleaseFilter("windows", List.of("x86"), List.of("minified", "full"));
         } else if (osName.startsWith("mac") && isArm64) {
-            return new FunctionsCoreToolsManager.ReleaseFilter("MacOS", List.of("arm64", "x64"), List.of("full"));
+            return new FunctionsCoreToolsManager.ReleaseFilter("macOS", List.of("arm64", "x64"), List.of("full"));
         } else if (osName.startsWith("mac")) {
-            return new FunctionsCoreToolsManager.ReleaseFilter("MacOS", List.of("x64"), List.of("full"));
+            return new FunctionsCoreToolsManager.ReleaseFilter("macOS", List.of("x64"), List.of("full"));
         } else if (osName.startsWith("linux")) {
-            return new FunctionsCoreToolsManager.ReleaseFilter("Linux", List.of("x64"), List.of("full"));
+            return new FunctionsCoreToolsManager.ReleaseFilter("linux", List.of("x64"), List.of("full"));
         }
-        return new FunctionsCoreToolsManager.ReleaseFilter("Unknown", List.of("x64"), List.of("full"));
+        return new FunctionsCoreToolsManager.ReleaseFilter("unknown", List.of("x64"), List.of("full"));
     }
 
     private static class ReleaseInfo {
