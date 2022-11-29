@@ -22,17 +22,18 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleEntity;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleIndexEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExamplesEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkExampleService;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
 import icons.OpenapiIcons;
 import lombok.Getter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -57,7 +58,7 @@ public class AzureSdkArtifactGroupPanel {
     private JPanel artifactsPnl;
     private ActionToolbarImpl toolbar;
     private AzureSdkProjectDependencyPanel pnlAddDependencies;
-    private AzureSdkArtifactExamplePanel pnlDependency;
+    private AzureSdkArtifactExamplePanel pnlExample;
     private JPanel tabDependency;
     private JPanel tabExamples;
     private HyperlinkLabel linkRequestExamples;
@@ -101,18 +102,16 @@ public class AzureSdkArtifactGroupPanel {
         this.artifactsPnl.removeAll();
     }
 
+    @AzureOperation(name = "sdk.select_artifact.artifact", params = "pkg.getArtifactId()", type = AzureOperation.Type.ACTION)
     private void onPackageOrVersionSelected(AzureSdkArtifactEntity pkg, String version) {
+        OperationContext.action().setTelemetryProperty("artifact", pkg.getArtifactId());
         this.pkg = pkg;
         this.version = version;
         this.viewer.setText(pkg.getDependencySnippet(type, version));
         this.pnlAddDependencies.setPkg(pkg);
         this.pnlAddDependencies.setVersion(version);
         this.pnlAddDependencies.onSelectModule();
-
-        final AzureJavaSdkArtifactExampleIndexEntity sdkExampleIndex = AzureSdkExampleService.getSdkExampleIndex(pkg);
-        final List<AzureJavaSdkArtifactExampleEntity> examples = Optional.ofNullable(sdkExampleIndex)
-                .map(AzureJavaSdkArtifactExampleIndexEntity::getExamples).orElse(null);
-        this.pnlDependency.setExampleIndex(sdkExampleIndex);
+        this.pnlExample.setArtifact(pkg);
     }
 
     private void onDependencyTypeSelected(DependencyType type) {
@@ -137,7 +136,10 @@ public class AzureSdkArtifactGroupPanel {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new AnAction(ActionsBundle.message("action.$Copy.text"), ActionsBundle.message("action.$Copy.description"), AllIcons.Actions.Copy) {
             @Override
+            @AzureOperation(name = "sdk.copy_dependency_configuration", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull final AnActionEvent e) {
+                OperationContext.action().setTelemetryProperty("feature", pkg.getArtifactId());
+                OperationContext.action().setTelemetryProperty("tools", AzureSdkArtifactGroupPanel.type.getName());
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
         });

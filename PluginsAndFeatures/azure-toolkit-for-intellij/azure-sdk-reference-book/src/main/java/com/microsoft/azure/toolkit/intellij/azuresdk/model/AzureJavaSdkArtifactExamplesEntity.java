@@ -14,7 +14,7 @@ import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AzureJavaSdkArtifactExampleIndexEntity {
+public class AzureJavaSdkArtifactExamplesEntity {
     @JsonProperty("id")
     private int id;
     @JsonProperty("name")
@@ -28,7 +28,7 @@ public class AzureJavaSdkArtifactExampleIndexEntity {
     @JsonProperty("version")
     private String version;
     @JsonProperty("date_epoch")
-    private String date_epoch;
+    private String dateEpoch;
     @JsonProperty("date")
     private String date;
 
