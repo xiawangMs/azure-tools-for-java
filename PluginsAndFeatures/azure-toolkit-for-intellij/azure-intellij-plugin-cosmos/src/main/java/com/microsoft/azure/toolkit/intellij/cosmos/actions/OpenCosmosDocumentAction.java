@@ -12,7 +12,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -23,11 +22,8 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDocument;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -66,28 +62,19 @@ public class OpenCosmosDocumentAction {
         };
         final Runnable onClose = () -> WriteAction.run(() -> FileUtil.delete(new File(virtualFile.getPath())));
         final AzureString title = OperationBundle.description("appservice.open_file.file", virtualFile.getName());
-        AzureTaskManager.getInstance().runLater(new AzureTask<>(title, () -> {
-            VirtualFileActions.openFileInEditor(virtualFile, onSave, onClose, fileEditorManager);
-        }));
+        AzureTaskManager.getInstance().runLater(new AzureTask<>(title, () -> VirtualFileActions.openFileInEditor(virtualFile, onSave, onClose, fileEditorManager)));
     }
 
 
     private static synchronized VirtualFile getOrCreateVirtualFile(final ICosmosDocument document, final FileEditorManager manager) {
-        synchronized (document) {
-            return Arrays.stream(manager.getOpenFiles())
-                    .filter(f -> StringUtils.equals(f.getUserData(DOCUMENT_FILE_ID), document.getName()))
-                    .findFirst().orElse(createVirtualFile(document, manager));
-        }
+        final VirtualFile virtualFile = VirtualFileActions.getVirtualFile(document.getId(), manager);
+        return Objects.isNull(virtualFile) ? createVirtualFile(document, manager) : virtualFile;
     }
 
     @SneakyThrows
     private static VirtualFile createVirtualFile(final ICosmosDocument document, FileEditorManager manager) {
         final File tempFile = FileUtil.createTempFile(document.getName(), ".json", true);
         FileUtil.writeToFile(tempFile, Objects.requireNonNull(document.getDocument()).toPrettyString());
-        final VirtualFile result = Objects.requireNonNull(LocalFileSystem.getInstance().refreshAndFindFileByIoFile(tempFile));
-        result.setCharset(StandardCharsets.UTF_8);
-        result.putUserData(DOCUMENT_FILE_ID, document.getName());
-        result.setWritable(true);
-        return result;
+        return VirtualFileActions.createVirtualFile(document.getId(), document.getDocumentDisplayName(), tempFile, manager);
     }
 }
