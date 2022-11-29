@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -99,33 +100,24 @@ public class FunctionsCoreToolsManager {
     }
 
     private void unzip(File zipFile, String destDirPath) throws Exception {
-        createIfNotExist(destDirPath);
+        Files.createDirectories(Paths.get(destDirPath));
         final ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile));
         ZipEntry zipEntry = zipInputStream.getNextEntry();
         while (zipEntry != null) {
             final File zipEntryFile = new File(destDirPath + File.separator + zipEntry.getName());
-            createIfNotExist(zipEntryFile.getParent());
             if (zipEntry.isDirectory()) {
-                createIfNotExist(zipEntryFile.getAbsolutePath());
+                Files.createDirectories(zipEntryFile.toPath());
             } else {
-                final FileOutputStream fileOutputStream = new FileOutputStream(zipEntryFile);
-                final byte[] buffer = new byte[1024 * 10];
-                int len = 0;
-                while ((len = zipInputStream.read(buffer)) != -1) {
-                    fileOutputStream.write(buffer, 0, len);
+                Files.createDirectories(zipEntryFile.toPath().getParent());
+                try (final OutputStream out = new FileOutputStream(zipEntryFile)) {
+                    IOUtils.copy(zipInputStream, out);
                 }
-                fileOutputStream.close();
             }
             zipInputStream.closeEntry();
             zipEntry = zipInputStream.getNextEntry();
         }
         zipInputStream.closeEntry();
         zipInputStream.close();
-    }
-
-    private void createIfNotExist(String dirPath) {
-        final File dstDir = new File(dirPath);
-        dstDir.mkdirs();
     }
 
     /**
