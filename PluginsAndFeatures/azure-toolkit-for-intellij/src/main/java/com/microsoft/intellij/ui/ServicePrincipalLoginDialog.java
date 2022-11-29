@@ -5,8 +5,9 @@
 
 package com.microsoft.intellij.ui;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.gson.JsonSyntaxException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.lang.Language;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.event.DocumentEvent;
@@ -281,8 +282,9 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
     private void json2UIComponents(String json) {
         try {
+            final ObjectMapper mapper = new ObjectMapper();
             final TypeReference<HashMap<String, String>> type = new TypeReference<>() {};
-            final Map<String, String> map = JsonUtils.fromJson(json, type);
+            final Map<String, String> map = mapper.readValue(json, type);
             if (map != null) {
                 ApplicationManager.getApplication().invokeAndWait(() -> {
                     if (!intermediateState.compareAndSet(false, true)) {
@@ -314,7 +316,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
                 });
             }
 
-        } catch (final JsonSyntaxException ex) {
+        } catch (final JsonProcessingException ex) {
             // ignore all json errors
         }
     }

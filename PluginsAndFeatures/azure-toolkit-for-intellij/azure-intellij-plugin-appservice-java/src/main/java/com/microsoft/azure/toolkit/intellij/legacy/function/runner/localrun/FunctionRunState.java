@@ -55,6 +55,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -153,6 +154,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         }
     }
 
+    @Nullable
     @AzureOperation(
             name = "function.get_version.func",
             params = {"this.functionRunConfiguration.getFuncPath()"},
@@ -161,21 +163,21 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private ComparableVersion getFuncVersion() {
         final File funcFile = Optional.ofNullable(functionRunConfiguration.getFuncPath()).map(File::new).orElse(null);
         if (funcFile == null || !funcFile.exists()) {
-            throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"),
-                    message("function.run.error.runtimeNotFound.tips"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+            throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
         }
         try {
             final String funcVersion = CommandUtils.exec(String.format("%s -v", funcFile.getName()), funcFile.getParent());
             return StringUtils.isEmpty(funcVersion) ? null : new ComparableVersion(funcVersion);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             // swallow exception to get func version
-            log.info("Failed to get version of function core tools", e);
+            log.info("Failed to get version of Azure Functions Core Tools", e);
             return null;
         }
     }
 
     // Get java runtime version following the strategy of function core tools
     // Get java version of JAVA_HOME first, fall back to use PATH if JAVA_HOME not exists
+    @Nullable
     @AzureOperation(
             name = "function.validate_jre",
             type = AzureOperation.Type.TASK
@@ -372,7 +374,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         retryAction.setAuthRequired(false);
         final String errorMessage = ExceptionUtils.getRootCause(throwable).getMessage();
         return StringUtils.isNotEmpty(errorMessage) && PORT_EXCEPTION_PATTERN.matcher(errorMessage).find() ?
-                new Action[]{retryAction} : super.getErrorActions(executor, programRunner, throwable);
+                new Action[]{retryAction} : null;
     }
 
     private boolean isInstallingExtensionNeeded(Set<BindingEnum> bindingTypes, RunProcessHandler processHandler) {
