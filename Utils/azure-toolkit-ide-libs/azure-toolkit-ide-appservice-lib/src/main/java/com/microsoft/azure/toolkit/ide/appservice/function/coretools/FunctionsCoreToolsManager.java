@@ -137,9 +137,9 @@ public class FunctionsCoreToolsManager {
         final boolean isIntel64 = "x86_64".equalsIgnoreCase(architectureName) || "amd64".equalsIgnoreCase(architectureName);
         final boolean isArm64 = "aarch64".equalsIgnoreCase(architectureName) || "arm64".equalsIgnoreCase(architectureName);
         if (osName.startsWith("windows") && isIntel64) {
-            return new ReleaseFilter("windows", List.of("x64"), List.of("minified", "full"));
+            return new ReleaseFilter("windows", List.of("x64"), List.of("full"));
         } else if (osName.startsWith("windows")) {
-            return new FunctionsCoreToolsManager.ReleaseFilter("windows", List.of("x86"), List.of("minified", "full"));
+            return new FunctionsCoreToolsManager.ReleaseFilter("windows", List.of("x86"), List.of("full"));
         } else if (osName.startsWith("mac") && isArm64) {
             return new FunctionsCoreToolsManager.ReleaseFilter("macOS", List.of("arm64", "x64"), List.of("full"));
         } else if (osName.startsWith("mac")) {
@@ -167,7 +167,7 @@ public class FunctionsCoreToolsManager {
     public static class ReleaseFilter {
         private final String os;
         private final List<String> architectures;
-        private final List<String> sizes;
+        private final List<String> sizes;   // todo only one size(full-size), should change list to string
         public ReleaseFilter(String os, List<String> architectures, List<String> sizes) {
             this.os = os;
             this.architectures = architectures;
