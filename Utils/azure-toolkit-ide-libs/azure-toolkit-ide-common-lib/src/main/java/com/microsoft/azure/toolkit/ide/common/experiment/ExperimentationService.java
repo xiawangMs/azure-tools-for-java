@@ -57,8 +57,7 @@ public class ExperimentationService {
     }
 
     private void updateFeatures() {
-        try {
-            final Response response = client.newCall(request).execute();
+        try (final Response response = client.newCall(request).execute()) {
             if (response.isSuccessful() && Objects.nonNull(response.body())) {
                 final AssignmentResponse assignmentResponse = JSON_MAPPER.readValue(response.body().byteStream(), AssignmentResponse.class);
                 final List<AssignmentResponse.Config> configList = assignmentResponse.getConfigs();

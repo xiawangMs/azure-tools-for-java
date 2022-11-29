@@ -227,7 +227,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                 }
             };
             final String INSTALL_SUCCEED_MESSAGE = "Download and install Azure Functions Core Tools successfully. Auto configured Azure Functions Core Tools path in Azure Settings";
-            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, "Install successfully", openSettingsActionInMessage);
+            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsActionInMessage);
         }));
     }
 
