@@ -1,0 +1,10 @@
+intellij {
+}
+
+dependencies {
+    implementation project(':azure-intellij-plugin-lib')
+    implementation project(':azure-intellij-resource-connector-lib')
+    implementation project(':azure-intellij-resource-connector-lib-java')
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    implementation 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-spark-lib:' + azureToolkitHDInsightVersion
+}
