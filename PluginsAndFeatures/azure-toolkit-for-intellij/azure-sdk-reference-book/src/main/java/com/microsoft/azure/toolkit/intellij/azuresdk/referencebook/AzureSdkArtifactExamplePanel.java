@@ -26,6 +26,8 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.components.Ex
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkExampleService;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
@@ -103,14 +105,24 @@ public class AzureSdkArtifactExamplePanel {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new AnAction(ActionsBundle.message("action.$Copy.text"), ActionsBundle.message("action.$Copy.description"), AllIcons.Actions.Copy) {
             @Override
+            @AzureOperation(name = "sdk.copy_artifact_example", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull final AnActionEvent e) {
+                OperationContext.action().setTelemetryProperty("artifact", artifact.getArtifactId());
+                OperationContext.action().setTelemetryProperty("example_id", String.valueOf(Optional.ofNullable(cbExample.getValue())
+                        .filter(v -> v != ExampleComboBox.NONE)
+                        .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
         });
         group.add(new AnAction("Browse", "Browse Source Code", IntelliJAzureIcons.getIcon(AzureIcons.Common.OPEN_IN_PORTAL)) {
             @Override
+            @AzureOperation(name = "sdk.open_example_in_browser", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull final AnActionEvent e) {
                 final AzureJavaSdkArtifactExampleEntity value = cbExample.getValue();
+                OperationContext.action().setTelemetryProperty("artifact", artifact.getArtifactId());
+                OperationContext.action().setTelemetryProperty("example_id", String.valueOf(Optional.ofNullable(cbExample.getValue())
+                        .filter(v -> v != ExampleComboBox.NONE)
+                        .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
                 Optional.ofNullable(value).ifPresent(v -> AzureActionManager.getInstance().getAction(OPEN_URL).handle(v.getGithubUrl()));
             }
         });

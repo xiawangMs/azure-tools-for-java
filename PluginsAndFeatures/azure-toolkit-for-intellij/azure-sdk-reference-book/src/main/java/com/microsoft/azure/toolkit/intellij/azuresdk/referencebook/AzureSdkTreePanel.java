@@ -32,6 +32,7 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryServ
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -95,6 +96,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
 
     @AzureOperation(name = "sdk.show_lib_details.feature", params = "feature.getName()", type = AzureOperation.Type.ACTION)
     private void selectFeature(final AzureSdkFeatureEntity feature) {
+        OperationContext.action().setTelemetryProperty("feature", feature.getName());
         this.onSdkFeatureNodeSelected.accept(feature);
     }
 
