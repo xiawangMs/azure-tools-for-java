@@ -51,7 +51,6 @@ public class AzureSdkExampleService {
     }
 
     @Nullable
-    @AzureOperation(name = "sdk.get_artifact_examples.library", params = "entity.getArtifactId()", type = AzureOperation.Type.REQUEST)
     public static AzureJavaSdkArtifactExamplesEntity getArtifactExamples(@Nonnull AzureSdkArtifactEntity entity) {
         return loadAllExamples().stream()
                 .filter(example -> StringUtils.equalsIgnoreCase(example.getGroupId(), entity.getGroupId())
@@ -61,7 +60,7 @@ public class AzureSdkExampleService {
 
     @Preload
     @Cacheable(value = "sdk/examples")
-    @AzureOperation(name = "sdk.load_all_examples", type = AzureOperation.Type.SERVICE, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "sdk.load_all_examples", type = AzureOperation.Type.SERVICE)
     public static List<AzureJavaSdkArtifactExamplesEntity> loadAllExamples() {
         final Map<Integer, List<AzureJavaSdkArtifactExampleEntity>> exampleMap = loadAzureSDKExampleEntities().stream()
                 .collect(Collectors.groupingBy(e -> e.getReleaseId(), Collectors.mapping(e -> e, Collectors.toList())));
