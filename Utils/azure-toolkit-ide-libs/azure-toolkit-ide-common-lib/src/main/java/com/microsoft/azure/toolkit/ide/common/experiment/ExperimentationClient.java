@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.common.experiment;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import lombok.Getter;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,7 @@ public class ExperimentationClient {
     private static final String END_POINT = "https://aka.ms/azure-ij-ab-exp";
     private static ExperimentationService experimentationService;
 
+    @Nullable
     public static ExperimentationService getExperimentationService() {
         if (Objects.isNull(experimentationService)) {
             init();
