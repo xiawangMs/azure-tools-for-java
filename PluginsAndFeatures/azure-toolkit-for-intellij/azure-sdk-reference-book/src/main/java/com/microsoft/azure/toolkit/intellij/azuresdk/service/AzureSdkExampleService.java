@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,19 +37,17 @@ public class AzureSdkExampleService {
     private static final ObjectMapper CSV_MAPPER = new CsvMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final String JAVA_LIBRARY_EXAMPLE_LIST_CSV = "/java-library-example-list.csv";
     private static final String JAVA_LIBRARY_EXAMPLE_INDEX_CSV = "/java-library-example-index.csv";
-    private static final Map<String, String> TEMPLATE_CACHE = new HashMap<>();
 
     @Nullable
+    @Cacheable(value = "sdk/examples/{url}", key = "${entity.getRawUrl()}")
     @AzureOperation(name = "sdk.load_artifact_example.url", params = "entity.getRawUrl()", type = AzureOperation.Type.REQUEST)
     public static String loadArtifactExample(@Nonnull final AzureJavaSdkArtifactExampleEntity entity) {
-        return TEMPLATE_CACHE.computeIfAbsent(entity.getRawUrl(), ignore -> {
-            try {
-                return IOUtils.toString(new URL(entity.getRawUrl()), Charset.defaultCharset());
-            } catch (final IOException e) {
-                log.warn("failed to load Azure SDK example", e);
-                return null;
-            }
-        });
+        try {
+            return IOUtils.toString(new URL(entity.getRawUrl()), Charset.defaultCharset());
+        } catch (IOException e) {
+            log.warn("failed to load Azure SDK example", e);
+            return null;
+        }
     }
 
     @Nullable
