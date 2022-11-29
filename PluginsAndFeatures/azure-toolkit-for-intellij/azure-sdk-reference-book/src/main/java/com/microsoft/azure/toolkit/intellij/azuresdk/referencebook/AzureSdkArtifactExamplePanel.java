@@ -52,7 +52,7 @@ public class AzureSdkArtifactExamplePanel {
 
     public void setArtifact(final AzureSdkArtifactEntity artifact) {
         this.artifact = artifact;
-        this.examples = AzureSdkExampleService.getSdkExampleIndex(artifact);
+        this.examples = AzureSdkExampleService.getArtifactExamples(artifact);
         this.cbExample.setEntity(examples);
     }
 
@@ -80,7 +80,7 @@ public class AzureSdkArtifactExamplePanel {
             }
             AzureTaskManager.getInstance().runLater(() -> this.viewer.setText("Loading..."));
             AzureTaskManager.getInstance().runInBackground("Loading example", () -> {
-                final String example = AzureSdkExampleService.loadSdkTemplate(value);
+                final String example = AzureSdkExampleService.loadArtifactExample(value);
                 AzureTaskManager.getInstance().runLater(() -> this.viewer.setText(example));
             });
         });

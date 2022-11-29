@@ -40,7 +40,9 @@ public class AzureSdkExampleService {
     private static final String JAVA_LIBRARY_EXAMPLE_INDEX_CSV = "/java-library-example-index.csv";
     private static final Map<String, String> TEMPLATE_CACHE = new HashMap<>();
 
-    public static String loadSdkTemplate(@Nonnull final AzureJavaSdkArtifactExampleEntity entity) {
+    @Nullable
+    @AzureOperation(name = "sdk.load_artifact_example.url", params = "entity.getRawUrl()", type = AzureOperation.Type.REQUEST)
+    public static String loadArtifactExample(@Nonnull final AzureJavaSdkArtifactExampleEntity entity) {
         return TEMPLATE_CACHE.computeIfAbsent(entity.getRawUrl(), ignore -> {
             try {
                 return IOUtils.toString(new URL(entity.getRawUrl()), Charset.defaultCharset());
@@ -52,8 +54,9 @@ public class AzureSdkExampleService {
     }
 
     @Nullable
-    public static AzureJavaSdkArtifactExamplesEntity getSdkExampleIndex(@Nonnull AzureSdkArtifactEntity entity) {
-        return loadAzureSDKExample().stream()
+    @AzureOperation(name = "sdk.get_artifact_examples.library", params = "entity.getArtifactId()", type = AzureOperation.Type.REQUEST)
+    public static AzureJavaSdkArtifactExamplesEntity getArtifactExamples(@Nonnull AzureSdkArtifactEntity entity) {
+        return loadAllExamples().stream()
                 .filter(example -> StringUtils.equalsIgnoreCase(example.getGroupId(), entity.getGroupId())
                         && StringUtils.equalsIgnoreCase(example.getPackageName(), entity.getArtifactId()))
                 .findFirst().orElse(null);
@@ -61,38 +64,39 @@ public class AzureSdkExampleService {
 
     @Preload
     @Cacheable(value = "sdk/examples")
-    public static List<AzureJavaSdkArtifactExamplesEntity> loadAzureSDKExample() {
+    @AzureOperation(name = "sdk.load_all_examples", type = AzureOperation.Type.SERVICE, target = AzureOperation.Target.PLATFORM)
+    public static List<AzureJavaSdkArtifactExamplesEntity> loadAllExamples() {
         final Map<Integer, List<AzureJavaSdkArtifactExampleEntity>> exampleMap = loadAzureSDKExampleEntities().stream()
                 .collect(Collectors.groupingBy(e -> e.getReleaseId(), Collectors.mapping(e -> e, Collectors.toList())));
-        final List<AzureJavaSdkArtifactExamplesEntity> indexEntities = loadAzureSDKExampleIndex().stream()
+        final List<AzureJavaSdkArtifactExamplesEntity> indexEntities = loadAzureSDKExamplesEntities().stream()
                 .filter(entity -> StringUtils.equalsIgnoreCase(entity.getLanguage(), "java"))
                 .collect(Collectors.toList());
         indexEntities.forEach(entity -> entity.setExamples(exampleMap.get(entity.getId())));
         return indexEntities;
     }
 
-    @Cacheable(value = "java-library-example-index")
-    @AzureOperation(name = "sdk.load_library_example_index", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
-    public static List<AzureJavaSdkArtifactExamplesEntity> loadAzureSDKExampleIndex() {
+    @Cacheable(value = "java-library-examples")
+    @AzureOperation(name = "sdk.load_library_examples_entities", type = AzureOperation.Type.TASK)
+    private static List<AzureJavaSdkArtifactExamplesEntity> loadAzureSDKExamplesEntities() {
         final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkArtifactExamplesEntity.class).with(CsvSchema.emptySchema().withHeader());
         try (final InputStream stream = AzureSdkLibraryService.class.getResourceAsStream(JAVA_LIBRARY_EXAMPLE_INDEX_CSV)) {
             final MappingIterator<AzureJavaSdkArtifactExamplesEntity> data = reader.readValues(stream);
             return data.readAll().stream().collect(Collectors.toList());
         } catch (final IOException e) {
-            log.warn("failed to load Azure SDK example index", e);
+            log.warn("failed to load Azure SDK examples", e);
         }
         return Collections.emptyList();
     }
 
     @Cacheable(value = "java-library-example")
-    @AzureOperation(name = "sdk.load_library_example", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
-    public static List<AzureJavaSdkArtifactExampleEntity> loadAzureSDKExampleEntities() {
+    @AzureOperation(name = "sdk.load_library_example_entities", type = AzureOperation.Type.TASK)
+    private static List<AzureJavaSdkArtifactExampleEntity> loadAzureSDKExampleEntities() {
         final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkArtifactExampleEntity.class).with(CsvSchema.emptySchema().withHeader());
         try (final InputStream stream = AzureSdkLibraryService.class.getResourceAsStream(JAVA_LIBRARY_EXAMPLE_LIST_CSV)) {
             final MappingIterator<AzureJavaSdkArtifactExampleEntity> data = reader.readValues(stream);
             return data.readAll().stream().collect(Collectors.toList());
         } catch (final IOException e) {
-            log.warn("failed to load Azure SDK example index", e);
+            log.warn("failed to load Azure SDK example", e);
         }
         return Collections.emptyList();
     }
