@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleEntity;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleIndexEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExamplesEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
@@ -52,7 +52,7 @@ public class AzureSdkExampleService {
     }
 
     @Nullable
-    public static AzureJavaSdkArtifactExampleIndexEntity getSdkExampleIndex(@Nonnull AzureSdkArtifactEntity entity) {
+    public static AzureJavaSdkArtifactExamplesEntity getSdkExampleIndex(@Nonnull AzureSdkArtifactEntity entity) {
         return loadAzureSDKExample().stream()
                 .filter(example -> StringUtils.equalsIgnoreCase(example.getGroupId(), entity.getGroupId())
                         && StringUtils.equalsIgnoreCase(example.getPackageName(), entity.getArtifactId()))
@@ -61,10 +61,10 @@ public class AzureSdkExampleService {
 
     @Preload
     @Cacheable(value = "sdk/examples")
-    public static List<AzureJavaSdkArtifactExampleIndexEntity> loadAzureSDKExample() {
+    public static List<AzureJavaSdkArtifactExamplesEntity> loadAzureSDKExample() {
         final Map<Integer, List<AzureJavaSdkArtifactExampleEntity>> exampleMap = loadAzureSDKExampleEntities().stream()
                 .collect(Collectors.groupingBy(e -> e.getReleaseId(), Collectors.mapping(e -> e, Collectors.toList())));
-        final List<AzureJavaSdkArtifactExampleIndexEntity> indexEntities = loadAzureSDKExampleIndex().stream()
+        final List<AzureJavaSdkArtifactExamplesEntity> indexEntities = loadAzureSDKExampleIndex().stream()
                 .filter(entity -> StringUtils.equalsIgnoreCase(entity.getLanguage(), "java"))
                 .collect(Collectors.toList());
         indexEntities.forEach(entity -> entity.setExamples(exampleMap.get(entity.getId())));
@@ -73,10 +73,10 @@ public class AzureSdkExampleService {
 
     @Cacheable(value = "java-library-example-index")
     @AzureOperation(name = "sdk.load_library_example_index", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
-    public static List<AzureJavaSdkArtifactExampleIndexEntity> loadAzureSDKExampleIndex() {
-        final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkArtifactExampleIndexEntity.class).with(CsvSchema.emptySchema().withHeader());
+    public static List<AzureJavaSdkArtifactExamplesEntity> loadAzureSDKExampleIndex() {
+        final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkArtifactExamplesEntity.class).with(CsvSchema.emptySchema().withHeader());
         try (final InputStream stream = AzureSdkLibraryService.class.getResourceAsStream(JAVA_LIBRARY_EXAMPLE_INDEX_CSV)) {
-            final MappingIterator<AzureJavaSdkArtifactExampleIndexEntity> data = reader.readValues(stream);
+            final MappingIterator<AzureJavaSdkArtifactExamplesEntity> data = reader.readValues(stream);
             return data.readAll().stream().collect(Collectors.toList());
         } catch (final IOException e) {
             log.warn("failed to load Azure SDK example index", e);

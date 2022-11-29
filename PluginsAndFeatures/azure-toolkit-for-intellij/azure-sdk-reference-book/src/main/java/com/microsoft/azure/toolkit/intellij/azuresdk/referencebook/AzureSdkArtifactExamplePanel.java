@@ -20,7 +20,8 @@ import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.ActionLink;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleEntity;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleIndexEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExamplesEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.components.ExampleComboBox;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkExampleService;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -32,7 +33,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
-import java.util.List;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
@@ -47,12 +47,13 @@ public class AzureSdkArtifactExamplePanel {
     @Getter
     private JPanel pnlRoot;
     private ActionLink linkRequestMoreExamples;
-    private AzureJavaSdkArtifactExampleIndexEntity entity;
+    private AzureSdkArtifactEntity artifact;
+    private AzureJavaSdkArtifactExamplesEntity examples;
 
-    public void setExampleIndex(final AzureJavaSdkArtifactExampleIndexEntity entity) {
-        this.entity = entity;
-        this.cbExample.setEntity(entity);
-        final List<AzureJavaSdkArtifactExampleEntity> examples = Optional.ofNullable(entity).map(e -> e.getExamples()).orElse(null);
+    public void setArtifact(final AzureSdkArtifactEntity artifact) {
+        this.artifact = artifact;
+        this.examples = AzureSdkExampleService.getSdkExampleIndex(artifact);
+        this.cbExample.setEntity(examples);
     }
 
     private void createUIComponents() {

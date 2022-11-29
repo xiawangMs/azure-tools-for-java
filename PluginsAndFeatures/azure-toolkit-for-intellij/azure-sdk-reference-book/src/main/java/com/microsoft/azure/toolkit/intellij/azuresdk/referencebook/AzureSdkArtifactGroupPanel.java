@@ -22,7 +22,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleEntity;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExampleIndexEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkArtifactExamplesEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkExampleService;
@@ -32,7 +32,6 @@ import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
 import icons.OpenapiIcons;
 import lombok.Getter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -57,7 +56,7 @@ public class AzureSdkArtifactGroupPanel {
     private JPanel artifactsPnl;
     private ActionToolbarImpl toolbar;
     private AzureSdkProjectDependencyPanel pnlAddDependencies;
-    private AzureSdkArtifactExamplePanel pnlDependency;
+    private AzureSdkArtifactExamplePanel pnlExample;
     private JPanel tabDependency;
     private JPanel tabExamples;
     private HyperlinkLabel linkRequestExamples;
@@ -108,11 +107,7 @@ public class AzureSdkArtifactGroupPanel {
         this.pnlAddDependencies.setPkg(pkg);
         this.pnlAddDependencies.setVersion(version);
         this.pnlAddDependencies.onSelectModule();
-
-        final AzureJavaSdkArtifactExampleIndexEntity sdkExampleIndex = AzureSdkExampleService.getSdkExampleIndex(pkg);
-        final List<AzureJavaSdkArtifactExampleEntity> examples = Optional.ofNullable(sdkExampleIndex)
-                .map(AzureJavaSdkArtifactExampleIndexEntity::getExamples).orElse(null);
-        this.pnlDependency.setExampleIndex(sdkExampleIndex);
+        this.pnlExample.setArtifact(pkg);
     }
 
     private void onDependencyTypeSelected(DependencyType type) {
