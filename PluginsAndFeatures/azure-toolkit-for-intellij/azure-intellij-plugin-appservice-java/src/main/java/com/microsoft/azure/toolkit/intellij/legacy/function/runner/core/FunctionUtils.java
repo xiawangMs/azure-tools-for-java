@@ -14,6 +14,8 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
+import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModuleOrderEntry;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
@@ -27,6 +29,8 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.roots.ModuleOrderEntryBridge;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
@@ -68,6 +72,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -289,10 +295,14 @@ public class FunctionUtils {
         if (gradleProject.isValid()) {
             gradleProject.getDependencies().forEach(lib -> dependencies.add(lib));
         } else {
-            OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
-                Arrays.stream(lib.getFiles(OrderRootType.CLASSES)).map(virtualFile -> new File(stripExtraCharacters(virtualFile.getPath())))
-                        .filter(File::exists)
-                        .forEach(dependencies::add);
+            OrderEnumerator.orderEntries(module).productionOnly().forEach(lib -> {
+                if (lib instanceof ModuleOrderEntry) {
+                    Optional.ofNullable(getArtifactFromModule(((ModuleOrderEntry) lib).getModule())).ifPresent(dependencies::add);
+                } else if (lib instanceof LibraryOrderEntry) {
+                    Arrays.stream(lib.getFiles(OrderRootType.CLASSES)).map(virtualFile -> new File(stripExtraCharacters(virtualFile.getPath())))
+                            .filter(File::exists)
+                            .forEach(dependencies::add);
+                }
                 return true;
             });
         }
@@ -304,10 +314,26 @@ public class FunctionUtils {
         final File libFolder = new File(stagingFolder.toFile(), "lib");
         for (final File file : dependencies) {
             if (!StringUtils.equalsIgnoreCase(getArtifactIdFromFile(file), libraryToExclude)) {
+                if (!file.exists()) {
+                    throw new AzureToolkitRuntimeException(String.format("Dependency artifact (%s) not found, please correct the dependency and try again", file.getAbsolutePath()));
+                }
                 FileUtils.copyFileToDirectory(file, libFolder);
             }
         }
         return configMap;
+    }
+
+    // get artifact based on module
+    @Nullable
+    private static File getArtifactFromModule(final Module module) {
+        final Project project = module.getProject();
+        final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(project);
+        return artifactManager.getAllSupportedAzureArtifacts().stream()
+                .filter(artifact -> Objects.equals(artifactManager.getModuleFromAzureArtifact(artifact), module))
+                .findFirst()
+                .map(azureArtifact -> artifactManager.getFileForDeployment(azureArtifact))
+                .map(File::new)
+                .orElse(null);
     }
 
     private static String getArtifactIdFromFile(@Nonnull final File file) {
