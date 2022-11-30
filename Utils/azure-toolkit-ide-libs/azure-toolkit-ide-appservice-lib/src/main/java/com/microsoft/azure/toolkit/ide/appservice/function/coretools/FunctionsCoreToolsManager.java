@@ -82,6 +82,7 @@ public class FunctionsCoreToolsManager {
             return;
         }
         final String unzipRootDir = Paths.get(downloadDirPath, extractFileNameFromUrl(releaseInfo.downloadLink)).toString();
+        final String executionFilePath = Paths.get(unzipRootDir, "windows".equalsIgnoreCase(generateFilter().os) ? "func.exe" : "func").toString();
         final String AZURE_FUNCTIONS = "AzureFunctions";
         try {
             final File tempFile = File.createTempFile(
@@ -91,10 +92,12 @@ public class FunctionsCoreToolsManager {
             outputStream.getChannel().transferFrom(Channels.newChannel(new URL(releaseInfo.downloadLink).openStream()), 0, Long.MAX_VALUE);
             unzip(tempFile, unzipRootDir);
             tempFile.deleteOnExit();
+//            final File executionFile = new File(executionFilePath);
+//            executionFile.setExecutable(true);
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
-        Azure.az().config().setFunctionCoreToolsPath(Paths.get(unzipRootDir, "func.exe").toString());
+        Azure.az().config().setFunctionCoreToolsPath(executionFilePath);
         AzureConfigInitializer.saveAzConfig();
         AzureEventBus.emit("function.download_func_core_tools_succeed.version", releaseInfo.releaseVersion);
     }
