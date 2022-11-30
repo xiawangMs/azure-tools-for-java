@@ -83,11 +83,12 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
     public DatabaseServerParamEditor(@Nonnull Class<? extends IDatabaseServer<?>> clazz, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new SqlDbServerComboBox(clazz), interchange, FieldSize.LARGE, label);
         this.clazz = clazz;
-        this.jdbcUrl = Optional.ofNullable(getDataSourceConfigurable().getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
+        final LocalDataSource dataSource = getDataSourceConfigurable().getDataSource();
+        this.jdbcUrl = Optional.ofNullable(dataSource.getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
         final SqlDbServerComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setServer);
         interchange.addPersistentProperty(KEY_DB_SERVER_ID);
-        final boolean isModifying = StringUtils.isNotBlank(interchange.getDataSource().getUsername());
+        final boolean isModifying = StringUtils.isNotBlank(dataSource.getUsername());
         if (isModifying && Objects.nonNull(this.jdbcUrl)) {
             final JdbcUrl url = this.jdbcUrl;
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getJdbcUrl().getServerHost().equals(url.getServerHost())));
