@@ -83,7 +83,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
     public DatabaseServerParamEditor(@Nonnull Class<? extends IDatabaseServer<?>> clazz, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new SqlDbServerComboBox(clazz), interchange, FieldSize.LARGE, label);
         this.clazz = clazz;
-        this.jdbcUrl = Optional.ofNullable(interchange.getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
+        this.jdbcUrl = Optional.ofNullable(getDataSourceConfigurable().getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
         final SqlDbServerComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setServer);
         interchange.addPersistentProperty(KEY_DB_SERVER_ID);
