@@ -92,8 +92,10 @@ public class FunctionsCoreToolsManager {
             outputStream.getChannel().transferFrom(Channels.newChannel(new URL(releaseInfo.downloadLink).openStream()), 0, Long.MAX_VALUE);
             unzip(tempFile, unzipRootDir);
             tempFile.deleteOnExit();
-//            final File executionFile = new File(executionFilePath);
-//            executionFile.setExecutable(true);
+            final File executionFile = new File(executionFilePath);
+            if (executionFile.exists() && !executionFile.canExecute()) {
+                executionFile.setExecutable(true);
+            }
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
