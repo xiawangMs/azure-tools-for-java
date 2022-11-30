@@ -11,6 +11,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -19,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
@@ -78,7 +80,7 @@ public class CreateWebAppAction {
 
     @AzureOperation(name = "webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
     private static void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureString title = description("webapp.deploy_artifact.app", webapp.name());
+        final AzureString title = description("webapp.deploy_artifact.app", webapp.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
@@ -86,14 +88,17 @@ public class CreateWebAppAction {
             final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
             processHandler.startNotify();
             consoleView.attachToProcess(processHandler);
+
+            final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
+            OperationContext.current().setMessager(messenger);
             AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(webapp, application.toFile(), true, processHandler);
         });
-        AzureTaskManager.getInstance().runInModalAsObservable(task).single().subscribe((none) -> notifyDeploymentSuccess(webapp)); // let root exception handler to show the error.
+        AzureTaskManager.getInstance().runInBackgroundAsObservable(task).single().subscribe((none) -> notifyDeploymentSuccess(webapp)); // let root exception handler to show the error.
     }
 
     private static void notifyDeploymentSuccess(final WebApp app) {
         final String title = message("webapp.deploy.success.title");
-        final String message = message("webapp.deploy.success.message", app.name());
+        final String message = message("webapp.deploy.success.message", app.getName());
         AzureMessager.getMessager().success(message, title);
     }
 }
