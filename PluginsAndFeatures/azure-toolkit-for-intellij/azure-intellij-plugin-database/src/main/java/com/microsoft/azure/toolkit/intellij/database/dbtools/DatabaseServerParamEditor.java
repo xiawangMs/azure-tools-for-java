@@ -171,9 +171,11 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
     }
 
     private void onPropertiesChanged(String propertyName, Object newValue) {
-        if (!this.updating && Objects.nonNull(this.jdbcUrl) && StringUtils.isNotEmpty((String) newValue)) {
-            if (StringUtils.equals(propertyName, "host") && !Objects.equals(this.jdbcUrl.getServerHost(), newValue)) {
-                this.getEditorComponent().setValue((IDatabaseServer<?>) null);
+        if (!this.updating && StringUtils.isNotEmpty((String) newValue) && StringUtils.equals(propertyName, "host")) {
+            final SqlDbServerComboBox combox = this.getEditorComponent();
+            final IDatabaseServer<?> server = combox.getValue();
+            if (Objects.nonNull(server) && !Objects.equals(server.getJdbcUrl().getServerHost(), newValue)) {
+                combox.setValue((IDatabaseServer<?>) null);
                 this.setServer(null);
             }
         }
