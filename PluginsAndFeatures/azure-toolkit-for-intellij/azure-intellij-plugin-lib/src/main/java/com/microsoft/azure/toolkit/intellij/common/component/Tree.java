@@ -154,13 +154,11 @@ public class Tree extends SimpleTree implements DataProvider {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
                 if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
                     this.removeLoadMoreNode();
-                    this.refreshChildrenView();
-                    model.insertNodeInto(new LoadingNode(), this, this.getChildCount());
                 } else {
                     this.removeAllChildren();
-                    this.add(new LoadingNode());
-                    this.refreshChildrenView();
                 }
+                this.add(new LoadingNode());
+                this.refreshChildrenView();
                 this.loaded = null;
                 this.loadChildren(incremental);
             }
