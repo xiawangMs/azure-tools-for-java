@@ -187,7 +187,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
                 .stream().sorted(Comparator.comparing(AzureSdkCategoryEntity::getServiceName))
                 .forEach(categoryService -> {
                     final AzureSdkServiceEntity service = serviceMap.get(getServiceKeyByName(categoryService.getServiceName()));
-                    this.loadServiceData(service, categoryService, categoryNode, filters);
+                    AzureTaskManager.getInstance().runLater(() -> this.loadServiceData(service, categoryService, categoryNode, filters));
                 });
             if (ArrayUtils.isEmpty(filters) || categoryMatched || categoryNode.getChildCount() > 0) {
                 this.model.insertNodeInto(categoryNode, root, root.getChildCount());

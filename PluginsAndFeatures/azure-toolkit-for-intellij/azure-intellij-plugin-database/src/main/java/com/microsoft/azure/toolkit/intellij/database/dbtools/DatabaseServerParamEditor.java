@@ -83,11 +83,12 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
     public DatabaseServerParamEditor(@Nonnull Class<? extends IDatabaseServer<?>> clazz, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new SqlDbServerComboBox(clazz), interchange, FieldSize.LARGE, label);
         this.clazz = clazz;
-        this.jdbcUrl = Optional.ofNullable(interchange.getDataSource().getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
+        final LocalDataSource dataSource = getDataSourceConfigurable().getDataSource();
+        this.jdbcUrl = Optional.ofNullable(dataSource.getUrl()).filter(StringUtils::isNotBlank).map(JdbcUrl::from).orElse(null);
         final SqlDbServerComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setServer);
         interchange.addPersistentProperty(KEY_DB_SERVER_ID);
-        final boolean isModifying = StringUtils.isNotBlank(interchange.getDataSource().getUsername());
+        final boolean isModifying = StringUtils.isNotBlank(dataSource.getUsername());
         if (isModifying && Objects.nonNull(this.jdbcUrl)) {
             final JdbcUrl url = this.jdbcUrl;
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getJdbcUrl().getServerHost().equals(url.getServerHost())));
@@ -171,9 +172,11 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
     }
 
     private void onPropertiesChanged(String propertyName, Object newValue) {
-        if (!this.updating && Objects.nonNull(this.jdbcUrl) && StringUtils.isNotEmpty((String) newValue)) {
-            if (StringUtils.equals(propertyName, "host") && !Objects.equals(this.jdbcUrl.getServerHost(), newValue)) {
-                this.getEditorComponent().setValue((IDatabaseServer<?>) null);
+        if (!this.updating && StringUtils.isNotEmpty((String) newValue) && StringUtils.equals(propertyName, "host")) {
+            final SqlDbServerComboBox combox = this.getEditorComponent();
+            final IDatabaseServer<?> server = combox.getValue();
+            if (Objects.nonNull(server) && !Objects.equals(server.getJdbcUrl().getServerHost(), newValue)) {
+                combox.setValue((IDatabaseServer<?>) null);
                 this.setServer(null);
             }
         }

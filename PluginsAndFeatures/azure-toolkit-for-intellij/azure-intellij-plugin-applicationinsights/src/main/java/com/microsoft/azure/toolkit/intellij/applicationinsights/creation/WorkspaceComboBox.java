@@ -44,7 +44,7 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         }
         this.region = region;
         final String defaultWorkspaceName = String.format("DefaultWorkspace-%s-%s", subscription.getId(), region.getAbbreviation());
-        final String finalWorkspaceName = defaultWorkspaceName.length() > 64 ? defaultWorkspaceName.substring(0, 64) : defaultWorkspaceName;
+        final String finalWorkspaceName = defaultWorkspaceName.length() > 63 ? defaultWorkspaceName.substring(0, 63) : defaultWorkspaceName;
         final Optional<LogAnalyticsWorkspaceConfig> item = this.getItems().stream()
                 .filter(config -> Objects.equals(config.getName(), finalWorkspaceName)).findFirst();
         item.ifPresentOrElse(

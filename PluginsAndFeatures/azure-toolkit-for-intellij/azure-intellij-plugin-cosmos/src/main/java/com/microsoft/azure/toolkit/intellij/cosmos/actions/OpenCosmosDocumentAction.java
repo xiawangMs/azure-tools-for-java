@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDocument;
 import lombok.SneakyThrows;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -75,6 +76,7 @@ public class OpenCosmosDocumentAction {
     private static VirtualFile createVirtualFile(final ICosmosDocument document, FileEditorManager manager) {
         final File tempFile = FileUtil.createTempFile(document.getName(), ".json", true);
         FileUtil.writeToFile(tempFile, Objects.requireNonNull(document.getDocument()).toPrettyString());
-        return VirtualFileActions.createVirtualFile(document.getId(), document.getDocumentDisplayName(), tempFile, manager);
+        final String virtualFileName = String.format("%s.%s", document.getName(), FilenameUtils.getExtension(tempFile.getName()));
+        return VirtualFileActions.createVirtualFile(document.getId(), virtualFileName, tempFile, manager);
     }
 }
