@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
+    public static final String KEY_FROM_AZURE_EXPLORER = "FROM_EXPLORER";
     public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s). You can <a href=''>create one</a> first.</html>";
     public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Cosmos DB account.</html>";
     private final DatabaseAccountKind kind;
@@ -76,13 +77,19 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new CosmosDbAccountComboBox(kind), interchange, FieldSize.LARGE, label);
         this.kind = kind;
-        this.accountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
+        final String accountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
+        // inputs will be fill with values from account if `this.accountId` is null;
+        // fill inputs with values from account if it is from azure explorer
+        // don't change values of inputs if it's modifying an existing data source
+        if (Objects.isNull(interchange.getProperty(KEY_FROM_AZURE_EXPLORER)) && Objects.nonNull(accountId)) {
+            this.accountId = accountId;
+        }
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setAccount);
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
-        if (StringUtils.isNotBlank(this.accountId)) {
+        if (StringUtils.isNotBlank(accountId)) {
             interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, null);
-            combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(this.accountId)));
+            combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(accountId)));
         }
 
         interchange.addPropertyChangeListener((evt -> onPropertiesChanged(evt.getPropertyName(), evt.getNewValue())), this);
