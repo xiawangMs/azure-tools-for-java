@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 public class DownloadKubuConfigAction {
-    @AzureOperation(name = "kubernetes.download_config", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "kubernetes.download_config.kubernetes", params = {"cluster.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void downloadKubuConfig(@Nonnull KubernetesCluster cluster, @Nonnull Project project, boolean isAdmin) {
         final File destFile = AzureTaskManager.getInstance().runLaterAsObservable(new AzureTask<>(() ->
                 FileChooser.showFileSaver("Download kubernetes configuration", String.format("%s-%s.yml", cluster.getName(), isAdmin ? "admin" : "user"))))

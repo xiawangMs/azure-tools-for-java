@@ -25,23 +25,27 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3>3.70.0</h3>
-      <h4>Added</h4>
+      <h3 id="3710">3.71.0</h2>
+      <h4 id="added">Added</h3>
       <ul>
-        <li>Added support for remote debugging of <code>Azure Spring Apps</code>.</li>
-        <li>Added support for remote debugging of <code>Azure Function Apps</code>.</li>
-        <li>Added support for data management of <code>Azure Storage Account</code> in Azure Explorer.</li>
-        <li>Added support for data management of <code>Azure Cosmos DB account</code> in Azure Explorer.</li>
-        <li>Added support for filtering app settings of <code>Azure Web App/ Function App</code> in properties view and run configuration dialog.</li>
+        <li>Code samples of management SDK are now available in Azure SDK Reference Book</li>
+        <li>Function Core Tools can be installed and configured automatically inside IDE.</li>
+        <li>Data sources can be created by selecting an existing Azure Database for MySQL/PostgreSQL or Azure SQL. (Ultimate Edition only)</li>
       </ul>
-       <h4>Fixed</h4>
-       <ul>
-        <li>Fix <code>Open Spark History UI</code> link no reaction, when there is no job in the cluster. </li>
-        <li>Fix local console and Livy console run failed.</li>
-        <li>Fix error getting cluster storage configuration.</li>
-        <li>Fix linked clusters cannot be expanded when not logged in to azure.</li>
-        <li>Fix local console get IDE Fatal Error when the project first create.</li>
-       </ul>
+      <h4 id="changed">Changed</h3>
+      <ul>
+        <li>Action icons of <code>Getting Started</code> would be highlighted for part of those who have never opened it before.</li>
+        <li>UI of <code>Getting Started</code> courses panel is changed a little bit.</li>
+      </ul>
+      <h4 id="fixed">Fixed</h3>
+      <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7063">#7063</a>: ClassNotFoundException with local deployment of function app that depends on another module in the same project</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7089">#7089</a>: Uncaught Exception Access is allowed from event dispatch thread only</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7116">#7116</a>: IntelliJ Azure Function SQL Library is not copied to lib folder when running locally</li>
+        <li>editor names of opened CosmosDB documents is not the same as that of the document.</li>
+        <li>exception throws if invalid json is provided when signing in in Service Principal mode.</li>
+        <li>Setting dialog will open automatically when running a function locally but Azure Function Core tools is not installed.</li>
+      </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
@@ -67,6 +71,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-vm.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-redis.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-database.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-database-java.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-appservice-java.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-arm.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-containerregistry.xml" xpointer="xpointer(/idea-plugin/*)"/>

@@ -41,7 +41,8 @@ public class CoursePanel {
 
     public CoursePanel(@Nonnull final CourseConfig course, @Nonnull final Project project) {
         super();
-        this.showNewUIFlag = Boolean.parseBoolean(ExperimentationClient.getExperimentationService().getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName()));
+        this.showNewUIFlag = Boolean.parseBoolean(Optional.ofNullable(ExperimentationClient.getExperimentationService())
+                .map(service -> service.getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName())).orElse("false"));
         this.course = course;
         this.project = project;
         $$$setupUI$$$();

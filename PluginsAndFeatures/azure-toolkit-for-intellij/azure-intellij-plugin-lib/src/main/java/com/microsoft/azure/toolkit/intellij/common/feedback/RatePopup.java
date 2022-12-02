@@ -210,6 +210,9 @@ public class RatePopup {
         popDaysLater(3);
 
         final JFrame frame = ((JFrame) IdeUtils.getWindow(project));
+        if (RatePopup.balloon.isDisposed()) {
+            return;
+        }
         RatePopup.balloon.show(new PositionTracker<>(frame.getRootPane()) {
             @Override
             public RelativePoint recalculateLocation(@NotNull Balloon balloon) {

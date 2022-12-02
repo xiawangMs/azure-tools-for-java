@@ -20,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -90,6 +89,7 @@ public class AzureSdkProjectDependencyPanel {
 
     @AzureOperation(name = "sdk.add_dependency", type = AzureOperation.Type.ACTION)
     private void onAddDependency() {
+        OperationContext.action().setTelemetryProperty("artifact", pkg.getArtifactId());
         messager.clean();
         OperationContext.action().setMessager(messager);
         btnAddDependency.setText("Running...");
