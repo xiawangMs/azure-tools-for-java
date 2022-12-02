@@ -4,6 +4,7 @@
 ## 3.71.0
 ### Added
 - Code samples of management SDK are now available in Azure SDK Reference Book
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202211/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202211.sdk.gif" alt="gif of examples in sdk reference book"/>
 - Function Core Tools can be installed and configured automatically inside IDE.
 - Data sources can be created by selecting an existing Azure Database for MySQL/PostgreSQL or Azure SQL. (Ultimate Edition only)<br>
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202211/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202211.sqldatabase.png" alt="screenshot of 'creating data source'"/>
