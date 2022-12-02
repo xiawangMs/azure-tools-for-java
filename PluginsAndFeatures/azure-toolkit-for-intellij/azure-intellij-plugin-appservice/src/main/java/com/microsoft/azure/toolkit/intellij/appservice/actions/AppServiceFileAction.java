@@ -55,7 +55,7 @@ public class AppServiceFileAction {
     private static final String FILE_HAS_BEEN_SAVED = "File %s has been saved to Azure";
 
     @AzureOperation(
-        name = "appservice.open_file.file",
+        name = "action/appservice.open_file.file",
         params = {"target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -63,7 +63,7 @@ public class AppServiceFileAction {
     public void openAppServiceFile(AppServiceFile target, Object context) {
         final AppServiceAppBase<?, ?, ?> appService = target.getApp();
         final FileEditorManager manager = FileEditorManager.getInstance((Project) context);
-        final AzureString title = OperationBundle.description("appservice.open_file.file", target.getName());
+        final AzureString title = OperationBundle.description("action/appservice.open_file.file", target.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -163,7 +163,7 @@ public class AppServiceFileAction {
             return;
         }
         final OutputStream output = new FileOutputStream(destFile);
-        final AzureString title = OperationBundle.description("appservice.download_file.file", file.getName());
+        final AzureString title = OperationBundle.description("action/appservice.download_file.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             file.getApp()

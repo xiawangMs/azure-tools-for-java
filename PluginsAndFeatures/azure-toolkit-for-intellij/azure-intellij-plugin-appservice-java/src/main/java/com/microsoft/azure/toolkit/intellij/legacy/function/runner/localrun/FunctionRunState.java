@@ -122,7 +122,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     }
 
     @Override
-    @AzureOperation(name = "function.run_app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/function.run_app", type = AzureOperation.Type.ACTION)
     protected Boolean executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
         OperationContext.current().setMessager(new RunProcessHandlerMessenger(processHandler));

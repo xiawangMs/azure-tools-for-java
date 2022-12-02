@@ -69,7 +69,7 @@ public class DownloadKubuConfigAction {
     // todo: remove duplicated with AppServiceFileAction
     private static Action<?> getOpenInExplorerAction(@Nonnull Project project, @Nonnull File file) {
         final ActionView.Builder view = new ActionView.Builder("Open in Explorer").enabled(ignore -> true);
-        final Action.Id<Void> id = Action.Id.of("common.reveal_file_in_explorer");
+        final Action.Id<Void> id = Action.Id.of("action/common.reveal_file_in_explorer");
         return new Action<>(id, ignore -> VirtualFileActions.revealInExplorer(file), view);
     }
 
@@ -81,7 +81,7 @@ public class DownloadKubuConfigAction {
             }, fileEditorManager);
         };
         final ActionView.Builder view = new ActionView.Builder("Open in Editor").enabled(ignore -> true);
-        final Action.Id<Void> id = Action.Id.of("common.open_file_in_editor");
+        final Action.Id<Void> id = Action.Id.of("action/common.open_file_in_editor");
         return new Action<>(id, consumer, view);
     }
 }

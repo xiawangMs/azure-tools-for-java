@@ -19,7 +19,7 @@ public class WebAppPropertyViewProvider extends WebAppBasePropertyViewProvider {
     @NotNull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "webapp.create_app_properties_editor.app", params = {"virtualFile.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "action/webapp.create_app_properties_editor.app", params = {"virtualFile.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         String sid = virtualFile.getUserData(OpenAppServicePropertyViewAction.SUBSCRIPTION_ID);
         String id = virtualFile.getUserData(OpenAppServicePropertyViewAction.RESOURCE_ID);

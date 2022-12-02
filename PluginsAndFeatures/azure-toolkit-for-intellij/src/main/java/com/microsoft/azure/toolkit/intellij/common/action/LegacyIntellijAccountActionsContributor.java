@@ -67,7 +67,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
                 final Project[] openProjects = ProjectManagerEx.getInstance().getOpenProjects();
                 return ArrayUtils.isEmpty(openProjects) ? null : openProjects[0];
             });
-            final AzureString title = OperationBundle.description("common.open_azure_settings");
+            final AzureString title = OperationBundle.description("action/common.open_azure_settings");
             AzureTaskManager.getInstance().runLater(new AzureTask<>(title, () -> openSettingsDialog(project)));
         };
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
@@ -76,7 +76,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_EXPLORER, (i, e) -> true, openAzureExplorer);
     }
 
-    @AzureOperation(name = "common.open_azure_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "action/common.open_azure_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openAzureExplorer(AnActionEvent e) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(Objects.requireNonNull(e.getProject())).
             getToolWindow(ServerExplorerToolWindowFactory.EXPLORER_WINDOW);
@@ -85,7 +85,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         }
     }
 
-    @AzureOperation(name = "common.open_azure_settings", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "action/common.open_azure_settings", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openSettingsDialog(Project project) {
         ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.class);
     }

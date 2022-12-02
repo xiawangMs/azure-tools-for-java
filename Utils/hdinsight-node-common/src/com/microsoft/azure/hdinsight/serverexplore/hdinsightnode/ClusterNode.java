@@ -7,7 +7,6 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.*;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -65,7 +64,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             addAction("Open Azure Storage Explorer for storage", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
-                    final AzureString title =  OperationBundle.description("storage.open_azure_storage_explorer.account", clusterDetail.getName());
+                    final AzureString title =  OperationBundle.description("action/storage.open_azure_storage_explorer.account", clusterDetail.getName());
                     AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, () -> {
                         OpenHDIAzureStorageExplorerAction openHDIAzureStorageExplorerAction = new OpenHDIAzureStorageExplorerAction();
                         openHDIAzureStorageExplorerAction.openResource(clusterDetail);

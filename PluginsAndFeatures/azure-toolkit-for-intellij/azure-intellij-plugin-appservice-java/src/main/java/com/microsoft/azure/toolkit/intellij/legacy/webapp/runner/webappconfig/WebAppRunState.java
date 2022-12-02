@@ -85,7 +85,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
 
     @Nullable
     @Override
-    @AzureOperation(name = "webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
     public WebAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         OperationContext.current().setMessager(messenger);
@@ -196,7 +196,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     }
 
     @Override
-    @AzureOperation(name = "webapp.open_public_url.app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/webapp.open_public_url.app", type = AzureOperation.Type.ACTION)
     protected void onSuccess(WebAppBase<?, ?, ?> result, @NotNull RunProcessHandler processHandler) {
         updateConfigurationDataModel(result);
         final String fileName = FileNameUtils.getBaseName(artifact.getName());

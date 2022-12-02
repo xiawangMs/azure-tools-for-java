@@ -62,7 +62,7 @@ public class OpenCosmosDocumentAction {
             return true;
         };
         final Runnable onClose = () -> WriteAction.run(() -> FileUtil.delete(new File(virtualFile.getPath())));
-        final AzureString title = OperationBundle.description("appservice.open_file.file", virtualFile.getName());
+        final AzureString title = OperationBundle.description("action/appservice.open_file.file", virtualFile.getName());
         AzureTaskManager.getInstance().runLater(new AzureTask<>(title, () -> VirtualFileActions.openFileInEditor(virtualFile, onSave, onClose, fileEditorManager)));
     }
 

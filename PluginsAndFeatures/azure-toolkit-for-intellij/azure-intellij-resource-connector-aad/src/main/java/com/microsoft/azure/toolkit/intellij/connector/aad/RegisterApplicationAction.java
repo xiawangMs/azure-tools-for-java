@@ -54,7 +54,7 @@ public class RegisterApplicationAction extends AnAction {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "aad.register_application", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/aad.register_application", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull AnActionEvent e) {
         var project = e.getProject();
         if (project == null || project.isDisposed()) {

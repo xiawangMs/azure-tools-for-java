@@ -95,7 +95,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
-    @AzureOperation(name = "springcloud.deploy_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/springcloud.deploy_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
     public SpringCloudDeployment execute(IAzureMessager messager) {
         OperationContext.current().setMessager(messager);
         OperationContext.current().setTelemetryProperties(getTelemetryProperties());

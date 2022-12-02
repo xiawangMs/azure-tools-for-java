@@ -119,7 +119,7 @@ public class StorageFileActions {
                 final BlobFileDraft draft = (BlobFileDraft) module.create(relativePath.getName(0).toString(), "");
                 draft.setRelativePath(relativePath.toString());
                 draft.setDirectory(relativePath.getNameCount() > 1);
-                final AzureString title = OperationBundle.description("storage.create_blob.blob", draft.getPath());
+                final AzureString title = OperationBundle.description("action/storage.create_blob.blob", draft.getPath());
                 final IBlobFile finalCurrent = current;
                 AzureTaskManager.getInstance().runInBackground(title, () -> {
                     draft.createIfNotExist();
@@ -137,7 +137,7 @@ public class StorageFileActions {
                 dialog.close();
                 final AbstractAzResourceModule<? extends StorageFile, ? extends StorageFile, ?> module = file.getSubFileModule();
                 final AzResource.Draft<? extends StorageFile, ?> draft = module.create(name, "");
-                final AzureString title = OperationBundle.description("storage.create_file.file", draft.getName());
+                final AzureString title = OperationBundle.description("action/storage.create_file.file", draft.getName());
                 AzureTaskManager.getInstance().runInBackground(title, () -> {
                     draft.createIfNotExist();
                     openFileInEditor((StorageFile) draft, project);
@@ -154,7 +154,7 @@ public class StorageFileActions {
                 dialog.close();
                 final StorageFile.Draft<?, ?> draft = (StorageFile.Draft<?, ?>) file.getSubFileModule().create(name, "");
                 draft.setDirectory(true);
-                final AzureString title = OperationBundle.description("storage.create_directory.dir", draft.getName());
+                final AzureString title = OperationBundle.description("action/storage.create_directory.dir", draft.getName());
                 AzureTaskManager.getInstance().runInBackground(title, draft::createIfNotExist);
             });
             dialog.show();
@@ -235,14 +235,14 @@ public class StorageFileActions {
         });
     }
 
-    @AzureOperation(name = "storage.copy_file_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "action/storage.copy_file_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void copyUrl(StorageFile file, Project project) {
         final String url = file.getUrl();
         CopyPasteManager.getInstance().setContents(new StringSelection(url));
         AzureMessager.getMessager().success(AzureString.format("URL of %s copied to clipboard: %s", file.getName(), url));
     }
 
-    @AzureOperation(name = "storage.copy_file_sas_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "action/storage.copy_file_sas_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void copySasUrl(StorageFile file, Project project) {
         final String url = file.getSasUrl();
         CopyPasteManager.getInstance().setContents(new StringSelection(url));

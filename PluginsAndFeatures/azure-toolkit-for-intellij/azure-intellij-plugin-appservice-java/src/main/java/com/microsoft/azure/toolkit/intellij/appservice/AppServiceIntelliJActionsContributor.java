@@ -80,7 +80,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             .getInstance().runLater(() -> new AppServiceFileAction().openAppServiceFile(file, e.getProject()));
         final ActionView.Builder openFileView = new ActionView.Builder("Open File", null)
             .title(s -> Optional.ofNullable(s)
-                .map(r -> OperationBundle.description("appservice.open_file.file", ((AppServiceFile) r).getName()))
+                .map(r -> OperationBundle.description("action/appservice.open_file.file", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> openFileAction = new Action<>(APP_SERVICE_FILE_VIEW, openFileHandler, openFileView);
@@ -91,7 +91,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             .getInstance().runLater(() -> new AppServiceFileAction().saveAppServiceFile(file, e.getProject(), null));
         final ActionView.Builder downloadFileView = new ActionView.Builder("Download", null)
             .title(s -> Optional.ofNullable(s)
-                .map(r -> OperationBundle.description("appservice.download_file.file", ((AppServiceFile) r).getName()))
+                .map(r -> OperationBundle.description("action/appservice.download_file.file", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> downloadFileAction = new Action<>(APP_SERVICE_FILE_DOWNLOAD, downloadFileHandler, downloadFileView);

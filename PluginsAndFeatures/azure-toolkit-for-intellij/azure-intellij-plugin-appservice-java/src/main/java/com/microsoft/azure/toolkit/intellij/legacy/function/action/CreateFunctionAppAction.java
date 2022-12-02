@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateFunctionAppAction {
-    @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/function.open_creation_dialog", type = AzureOperation.Type.ACTION)
     public static void openDialog(final Project project, @Nullable final FunctionAppConfig data) {
         AzureTaskManager.getInstance().runLater(() -> {
             final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
@@ -58,9 +58,9 @@ public class CreateFunctionAppAction {
         });
     }
 
-    @AzureOperation(name = "function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static Single<FunctionAppBase<?,?,?>> createFunctionApp(final FunctionAppConfig config) {
-        final AzureString title = description("function.create_app.app", config.getName());
+        final AzureString title = description("action/function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public boolean show(IAzureMessage raw) {

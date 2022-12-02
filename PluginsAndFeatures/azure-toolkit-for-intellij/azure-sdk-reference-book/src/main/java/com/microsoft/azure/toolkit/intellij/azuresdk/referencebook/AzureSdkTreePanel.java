@@ -94,7 +94,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         });
     }
 
-    @AzureOperation(name = "sdk.show_lib_details.feature", params = "feature.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/sdk.show_lib_details.feature", params = "feature.getName()", type = AzureOperation.Type.ACTION)
     private void selectFeature(final AzureSdkFeatureEntity feature) {
         OperationContext.action().setTelemetryProperty("feature", feature.getName());
         this.onSdkFeatureNodeSelected.accept(feature);

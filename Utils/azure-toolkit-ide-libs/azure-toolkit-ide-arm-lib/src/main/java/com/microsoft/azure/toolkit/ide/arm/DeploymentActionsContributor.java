@@ -26,25 +26,25 @@ public class DeploymentActionsContributor implements IActionsContributor {
     public static final String DEPLOYMENT_ACTIONS = "actions.resourceDeployments.deployment";
     public static final String DEPLOYMENTS_ACTIONS = "actions.resourceDeployments.deployments";
 
-    public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("arm.edit_deployment.deployment");
-    public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("arm.update_deployment.deployment");
-    public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("arm.export_template.deployment");
-    public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("arm.export_parameter.deployment");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("arm.create_deployment.group");
+    public static final Action.Id<ResourceDeployment> EDIT = Action.Id.of("action/arm.edit_deployment.deployment");
+    public static final Action.Id<ResourceDeployment> UPDATE = Action.Id.of("action/arm.update_deployment.deployment");
+    public static final Action.Id<ResourceDeployment> EXPORT_TEMPLATE = Action.Id.of("action/arm.export_template.deployment");
+    public static final Action.Id<ResourceDeployment> EXPORT_PARAMETER = Action.Id.of("action/arm.export_parameter.deployment");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_DEPLOYMENT = Action.Id.of("action/arm.create_deployment.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder editDeployment = new ActionView.Builder("Edit Deployment", AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("arm.edit_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/arm.edit_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable());
         final ActionView.Builder updateDeployment = new ActionView.Builder("Update Deployment",  AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("arm.update_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/arm.update_deployment.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable());
         final ActionView.Builder exportTemplate = new ActionView.Builder("Export Template File",   AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("arm.export_template.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/arm.export_template.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
         final ActionView.Builder exportParameter = new ActionView.Builder("Export Parameter File",  AzureIcons.Action.EDIT.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("arm.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/arm.export_parameter.deployment", ((ResourceDeployment) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected());
         final Action<ResourceDeployment> editAction = new Action<>(EDIT, editDeployment);
         final Action<ResourceDeployment> exportTemplateAction = new Action<>(EXPORT_TEMPLATE, exportTemplate);
@@ -57,7 +57,7 @@ public class DeploymentActionsContributor implements IActionsContributor {
         am.registerAction(exportParameterAction);
 
         final ActionView.Builder createDeploymentView = new ActionView.Builder("Deployment")
-            .title(s -> Optional.ofNullable(s).map(r -> description("arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/arm.create_deployment.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GROUP_CREATE_DEPLOYMENT, createDeploymentView));
     }

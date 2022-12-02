@@ -21,7 +21,7 @@ public class OpenHDIAzureStorageExplorerAction {
         }
     }
 
-    @AzureOperation(name = "storage.open_azure_storage_explorer.account", params = {"clusterDetail.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/storage.open_azure_storage_explorer.account", params = {"clusterDetail.getName()"}, type = AzureOperation.Type.ACTION)
     public void openResource(final IClusterDetail clusterDetail) {
         this.handler.openResource(clusterDetail);
     }

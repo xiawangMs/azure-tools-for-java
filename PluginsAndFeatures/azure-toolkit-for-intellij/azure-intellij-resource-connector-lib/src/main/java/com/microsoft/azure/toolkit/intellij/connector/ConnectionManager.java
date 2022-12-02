@@ -90,14 +90,14 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         }
 
         @Override
-        @AzureOperation(name = "connector.add_connection", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+        @AzureOperation(name = "action/connector.add_connection", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
         public synchronized void addConnection(Connection<?, ?> connection) {
             connections.removeIf(c -> Objects.equals(c, connection)); // always replace the old with the new one.
             connections.add(connection);
         }
 
         @Override
-        @AzureOperation(name = "connector.remove_connection", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+        @AzureOperation(name = "action/connector.remove_connection", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
         public synchronized void removeConnection(String resourceId, String consumerId) {
             connections.removeIf(c -> StringUtils.equals(resourceId, c.getResource().getId()) && StringUtils.equals(consumerId, c.getConsumer().getId()));
         }

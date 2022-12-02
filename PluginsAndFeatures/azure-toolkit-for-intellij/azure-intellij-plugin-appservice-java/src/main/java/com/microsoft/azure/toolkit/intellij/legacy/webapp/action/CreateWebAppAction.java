@@ -39,7 +39,7 @@ import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.d
 public class CreateWebAppAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
-    @AzureOperation(name = "webapp.open_creation_dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/webapp.open_creation_dialog", type = AzureOperation.Type.ACTION)
     public static void openDialog(final Project project, @Nullable final WebAppConfig data) {
         AzureTaskManager.getInstance().runLater(() -> {
             final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
@@ -66,9 +66,9 @@ public class CreateWebAppAction {
         });
     }
 
-    @AzureOperation(name = "webapp.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/webapp.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static Single<WebApp> createWebApp(final WebAppConfig config) {
-        final AzureString title = description("webapp.create_app.app", config.getName());
+        final AzureString title = description("action/webapp.create_app.app", config.getName());
         final AzureTask<WebApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -78,9 +78,9 @@ public class CreateWebAppAction {
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(task).toSingle();
     }
 
-    @AzureOperation(name = "webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/webapp.deploy_artifact.app", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
     private static void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureString title = description("webapp.deploy_artifact.app", webapp.getName());
+        final AzureString title = description("action/webapp.deploy_artifact.app", webapp.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();

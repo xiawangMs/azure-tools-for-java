@@ -137,12 +137,12 @@ public class VirtualFileActions {
     }
 
     private static Action<Void> newShowInExplorerAction(@Nonnull final File dest) {
-        final Action.Id<Void> REVEAL = Action.Id.of("common.reveal_file_in_explorer");
+        final Action.Id<Void> REVEAL = Action.Id.of("action/common.reveal_file_in_explorer");
         return new Action<>(REVEAL, v -> revealInExplorer(dest), new ActionView.Builder(RevealFileAction.getActionName()));
     }
 
     private static Action<Void> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
-        final Action.Id<Void> OPEN = Action.Id.of("common.open_file_in_editor");
+        final Action.Id<Void> OPEN = Action.Id.of("action/common.open_file_in_editor");
         return new Action<>(OPEN, v -> AzureTaskManager.getInstance().runLater(() -> {
             final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
             final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);

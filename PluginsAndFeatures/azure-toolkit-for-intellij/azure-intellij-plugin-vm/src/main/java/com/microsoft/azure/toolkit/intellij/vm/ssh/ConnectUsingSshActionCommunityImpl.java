@@ -25,7 +25,7 @@ public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction
         return instance;
     }
 
-    @AzureOperation(name = "vm.connect_using_ssh_community.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/vm.connect_using_ssh_community.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final String machineName = vm.getName();
         final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);

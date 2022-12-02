@@ -138,7 +138,7 @@ public class AzureWebAppMvpModel {
      * API to create new Web App by setting model.
      */
     @AzureOperation(
-            name = "webapp.create_app.app",
+            name = "action/webapp.create_app.app",
             params = {"model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )

@@ -56,7 +56,7 @@ public class SSHIntoWebAppAction {
         final Action<Void> retry = Action.retryFromFailure(this::execute);
         logger.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
-        final AzureString title = description("webapp.connect_ssh.app", webAppName);
+        final AzureString title = description("action/webapp.connect_ssh.app", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false,
             () -> {
                 if (webApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {

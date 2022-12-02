@@ -32,7 +32,7 @@ public class EnableRemoteDebuggingAction {
     private static final String CONFIRM_DIALOG_TITLE = "%s Remote Debugging";
     private static final String SUCCESS_MESSAGE = "Remote debugging is %sd for app %s successfully";
 
-    @AzureOperation(name = "springcloud.enable_remote_debugging.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/springcloud.enable_remote_debugging.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
     public static void enableRemoteDebugging(@Nonnull SpringCloudApp app, @Nullable Project project) {
         toggleDebuggingAction(true, app, project);
     }
@@ -44,8 +44,8 @@ public class EnableRemoteDebuggingAction {
     private static void toggleDebuggingAction(boolean isEnabled, @Nonnull SpringCloudApp app, @Nullable Project project) {
         final IAzureMessager messager = AzureMessager.getMessager();
         final String action = isEnabled ? "enable" : "disable";
-        final AzureString title = isEnabled ? OperationBundle.description("springcloud.enable_remote_debugging.app", app.getName()) :
-                OperationBundle.description("springcloud.disable_remote_debugging.app", app.getName());
+        final AzureString title = isEnabled ? OperationBundle.description("action/springcloud.enable_remote_debugging.app", app.getName()) :
+                OperationBundle.description("action/springcloud.disable_remote_debugging.app", app.getName());
         final boolean userInput = AzureMessager.getMessager().confirm(String.format(CONFIRM_MESSAGE, action, app.getName(), REMOTE_DEBUGGING_DOCS),
                 String.format(CONFIRM_DIALOG_TITLE, Character.toUpperCase(action.charAt(0)) + action.substring(1)));
         if (!userInput) {

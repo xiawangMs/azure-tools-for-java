@@ -39,9 +39,9 @@ public class CreateApplicationInsightsAction {
         });
     }
 
-    @AzureOperation(name = "ai.create_ai.ai", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/ai.create_ai.ai", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     public static void create(final ApplicationInsightDraft config) {
-        final AzureString title = OperationBundle.description("ai.create_ai.ai", config.getName());
+        final AzureString title = OperationBundle.description("action/ai.create_ai.ai", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> createApplicationInsights(config));
     }
 

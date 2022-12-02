@@ -55,7 +55,7 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
 
         final BiPredicate<AzResource, AnActionEvent> connectCondition = (r, e) -> r instanceof ApplicationInsight;
         final BiConsumer<AzResource, AnActionEvent> connectHandler = (r, e) -> AzureTaskManager.getInstance().runLater(
-                OperationBundle.description("resource.connect_resource.resource", r.getName()), () -> {
+                OperationBundle.description("action/resource.connect_resource.resource", r.getName()), () -> {
                     final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                     dialog.setResource(new AzureServiceResource<>(((ApplicationInsight) r), ApplicationInsightsResourceDefinition.INSTANCE));
                     dialog.show();

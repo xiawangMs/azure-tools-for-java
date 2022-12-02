@@ -27,45 +27,45 @@ import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.d
 public class AppServiceActionsContributor implements IActionsContributor {
 
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> START_STREAM_LOG = Action.Id.of("appservice.open_log_stream.app");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> STOP_STREAM_LOG = Action.Id.of("appservice.close_log_stream.app");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("appservice.refresh_deployments.app");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_IN_BROWSER = Action.Id.of("webapp.open_in_browser.app");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> SSH_INTO_WEBAPP = Action.Id.of("webapp.connect_ssh.app");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> PROFILE_FLIGHT_RECORD = Action.Id.of("webapp.profile_flight_recorder.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> START_STREAM_LOG = Action.Id.of("action/appservice.open_log_stream.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> STOP_STREAM_LOG = Action.Id.of("action/appservice.close_log_stream.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("action/appservice.refresh_deployments.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_IN_BROWSER = Action.Id.of("action/webapp.open_in_browser.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> SSH_INTO_WEBAPP = Action.Id.of("action/webapp.connect_ssh.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> PROFILE_FLIGHT_RECORD = Action.Id.of("action/webapp.profile_flight_recorder.app");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceAppBase<?, ?, ?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
             .handle("https://" + appService.getHostName());
         final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser",  AzureIcons.Action.PORTAL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.open_in_browser.app", ((WebApp) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/webapp.open_in_browser.app", ((WebApp) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(OPEN_IN_BROWSER, openInBrowser, openInBrowserView));
 
         final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", AzureIcons.Action.LOG.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(new Action<>(START_STREAM_LOG, startStreamLogView));
 
         final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", AzureIcons.Action.LOG.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(new Action<>(STOP_STREAM_LOG, stopStreamLogView));
 
         final ActionView.Builder profileFlightRecorderView = new ActionView.Builder("Profile Flight Recorder")
-            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.profile_flight_recorder.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/webapp.profile_flight_recorder.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(new Action<>(PROFILE_FLIGHT_RECORD, profileFlightRecorderView));
 
         final ActionView.Builder sshView = new ActionView.Builder("SSH into Web App")
-            .title(s -> Optional.ofNullable(s).map(r -> description("webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
             .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
         am.registerAction(new Action<>(SSH_INTO_WEBAPP, sshView));
 
         final Consumer<AppServiceAppBase<?, ?, ?>> refresh = app -> AzureEventBus.emit("appservice.slot.refresh", app);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("appservice.refresh_deployments.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("action/appservice.refresh_deployments.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
                 .enabled(s -> s instanceof AppServiceAppBase);
         final Action<AppServiceAppBase<?, ?, ?>> refreshAction = new Action<>(REFRESH_DEPLOYMENT_SLOTS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());

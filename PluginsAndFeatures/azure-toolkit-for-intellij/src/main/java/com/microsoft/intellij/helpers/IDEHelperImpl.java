@@ -304,7 +304,7 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-            name = "appservice.open_file.file",
+            name = "action/appservice.open_file.file",
             params = {"target.getName()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -315,7 +315,7 @@ public class IDEHelperImpl implements IDEHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
-        final AzureString title = OperationBundle.description("appservice.open_file.file", virtualFile.getName());
+        final AzureString title = OperationBundle.description("action/appservice.open_file.file", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -426,7 +426,7 @@ public class IDEHelperImpl implements IDEHelper {
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final AzureString title = OperationBundle.description("appservice.download_file.file", file.getName());
+        final AzureString title = OperationBundle.description("action/appservice.download_file.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             file.getApp()

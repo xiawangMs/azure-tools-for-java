@@ -109,12 +109,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
-    @AzureOperation(name = "redis.delete_redis.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/redis.delete_redis.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
-    @AzureOperation(name = "redis.open_portal.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/redis.open_portal.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = "";
         try {
@@ -125,12 +125,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, this.resourceId));
     }
 
-    @AzureOperation(name = "redis.show_properties.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/redis.show_properties.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openRedisPropertyView(this);
     }
 
-    @AzureOperation(name = "redis.open_redis_explorer.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/redis.open_redis_explorer.redis", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openExplorer() {
         DefaultLoader.getUIHelper().openRedisExplorer(this);
     }

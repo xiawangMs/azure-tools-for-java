@@ -97,7 +97,7 @@ public class PhasePanel extends JPanel {
         this.phase.getContext().addContextListener(ignore -> this.renderDescription());
     }
 
-    @AzureOperation(name = "guidance.execute_phase.phase", params = {"this.phase.getTitle()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "action/guidance.execute_phase.phase", params = {"this.phase.getTitle()"}, type = AzureOperation.Type.ACTION)
     private void execute() {
         this.phase.execute(true);
     }

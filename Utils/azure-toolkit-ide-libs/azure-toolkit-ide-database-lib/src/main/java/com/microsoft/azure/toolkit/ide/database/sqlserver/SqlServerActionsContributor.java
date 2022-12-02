@@ -29,20 +29,20 @@ public class SqlServerActionsContributor implements IActionsContributor {
     public static final String SERVER_ACTIONS = "actions.sqlserver.server";
 
     private static final String NAME_PREFIX = "SqlServer Server - %s";
-    public static final Action.Id<AzResource> OPEN_DATABASE_TOOL = Action.Id.of("sqlserver.open_database_tools.server");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_SQLSERVER = Action.Id.of("sqlserver.create_server.group");
+    public static final Action.Id<AzResource> OPEN_DATABASE_TOOL = Action.Id.of("action/sqlserver.open_database_tools.server");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_SQLSERVER = Action.Id.of("action/sqlserver.create_server.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open with Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("sqlserver.open_database_tools.server", ((AzResource) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/sqlserver.open_database_tools.server", ((AzResource) r).name())).orElse(null))
             .enabled(s -> s instanceof MicrosoftSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
         action.setShortcuts("control alt D");
         am.registerAction(action);
 
         final ActionView.Builder createServerView = new ActionView.Builder("SQL Server")
-            .title(s -> Optional.ofNullable(s).map(r -> description("sqlserver.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("action/sqlserver.create_server.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GROUP_CREATE_SQLSERVER, createServerView));
     }
