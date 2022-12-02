@@ -83,8 +83,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         combox.addValueChangedListener(this::setAccount);
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
         final String accountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
-        final boolean isModifying = StringUtils.isNotBlank(dataSource.getUsername());
-        if (isModifying && StringUtils.isNotBlank(accountId)) {
+        if (StringUtils.isNotBlank(accountId)) {
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(accountId)));
         }
 
