@@ -99,24 +99,24 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
 
         final BiFunction<MongoCosmosDBAccount, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> mongoDraftSupplier = (account, config) ->
             (ICosmosDatabaseDraft<?, ?>) account.mongoDatabases().getOrDraft(config.getName(), account.getResourceGroupName());
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof MongoCosmosDBAccount && ((MongoCosmosDBAccount) r).getFormalStatus().isConnected(), (Object r, AnActionEvent e) ->
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof MongoCosmosDBAccount && ((MongoCosmosDBAccount) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
             CreateCosmosDatabaseAction.create(e.getProject(), (MongoCosmosDBAccount) r, mongoDraftSupplier, getDefaultDatabaseConfig()));
 
         final BiFunction<SqlCosmosDBAccount, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> sqlDraftSupplier = (account, config) ->
             (ICosmosDatabaseDraft<?, ?>) account.sqlDatabases().getOrDraft(config.getName(), account.getResourceGroupName());
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof SqlCosmosDBAccount && ((SqlCosmosDBAccount) r).getFormalStatus().isConnected(), (Object r, AnActionEvent e) ->
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof SqlCosmosDBAccount && ((SqlCosmosDBAccount) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
             CreateCosmosDatabaseAction.create(e.getProject(), (SqlCosmosDBAccount) r, sqlDraftSupplier, getDefaultDatabaseConfig()));
 
         final BiFunction<CassandraCosmosDBAccount, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> cassandraDraftSupplier = (account, config) ->
             (ICosmosDatabaseDraft<?, ?>) account.keySpaces().getOrDraft(config.getName(), account.getResourceGroupName());
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CassandraCosmosDBAccount && ((CassandraCosmosDBAccount) r).getFormalStatus().isConnected(), (Object r, AnActionEvent e) ->
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CassandraCosmosDBAccount && ((CassandraCosmosDBAccount) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
             CreateCosmosDatabaseAction.create(e.getProject(), (CassandraCosmosDBAccount) r, cassandraDraftSupplier, getDefaultDatabaseConfig("keyspace")));
 
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof SqlDatabase && ((SqlDatabase) r).getFormalStatus().isConnected(), (Object r, AnActionEvent e) ->
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof SqlDatabase && ((SqlDatabase) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
                 CreateCosmosContainerAction.createSQLContainer(e.getProject(), (SqlDatabase) r, SqlContainerDraft.SqlContainerConfig.getDefaultConfig()));
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof MongoDatabase && ((MongoDatabase) r).getFormalStatus().isConnected(), (Object r, AnActionEvent e) ->
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof MongoDatabase && ((MongoDatabase) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
                 CreateCosmosContainerAction.createMongoCollection(e.getProject(), (MongoDatabase) r, MongoCollectionDraft.MongoCollectionConfig.getDefaultConfig()));
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CassandraKeyspace && ((CassandraKeyspace) r).getFormalStatus().isConnected(), (Object r, AnActionEvent e) ->
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CassandraKeyspace && ((CassandraKeyspace) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
                 CreateCosmosContainerAction.createCassandraTable(e.getProject(), (CassandraKeyspace) r, CassandraTableDraft.CassandraTableConfig.getDefaultConfig()));
 
         final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";

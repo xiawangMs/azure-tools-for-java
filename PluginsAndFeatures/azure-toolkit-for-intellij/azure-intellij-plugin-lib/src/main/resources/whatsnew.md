@@ -1,5 +1,25 @@
-<!-- Version: 3.68.0 -->
+<!-- Version: 3.71.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.71.0
+### Added
+- Code samples of management SDK are now available in Azure SDK Reference Book
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202211/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202211.sdk.gif" alt="gif of examples in sdk reference book"/>
+- Function Core Tools can be installed and configured automatically inside IDE.
+- Data sources can be created by selecting an existing Azure Database for MySQL/PostgreSQL or Azure SQL. (Ultimate Edition only)<br>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202211/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202211.sqldatabase.png" alt="screenshot of 'creating data source'"/>
+
+### Changed
+- Action icons of `Getting Started` would be highlighted for part of those who have never opened it before.
+- UI of `Getting Started` courses panel is changed a little bit.
+
+### Fixed
+- [#7063](https://github.com/microsoft/azure-tools-for-java/issues/7063): ClassNotFoundException with local deployment of function app that depends on another module in the same project
+- [#7089](https://github.com/microsoft/azure-tools-for-java/issues/7089): Uncaught Exception Access is allowed from event dispatch thread only
+- [#7116](https://github.com/microsoft/azure-tools-for-java/issues/7116): IntelliJ Azure Function SQL Library is not copied to lib folder when running locally
+- editor names of opened CosmosDB documents is not the same as that of the document.
+- exception throws if invalid json is provided when signing in in Service Principal mode.
+- Setting dialog will open automatically when running a function locally but Azure Function Core tools is not installed.
 
 ## 3.70.0
 ### Added

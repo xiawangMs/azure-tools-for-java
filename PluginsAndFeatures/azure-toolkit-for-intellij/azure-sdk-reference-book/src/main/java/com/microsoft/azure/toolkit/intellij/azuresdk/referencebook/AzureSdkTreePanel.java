@@ -32,6 +32,7 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryServ
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -95,6 +96,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
 
     @AzureOperation(name = "sdk.show_lib_details.feature", params = "feature.getName()", type = AzureOperation.Type.ACTION)
     private void selectFeature(final AzureSdkFeatureEntity feature) {
+        OperationContext.action().setTelemetryProperty("feature", feature.getName());
         this.onSdkFeatureNodeSelected.accept(feature);
     }
 
@@ -133,7 +135,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
 
     private void filter(final String text) {
         final String[] filters = Arrays.stream(text.split("\\s+")).filter(StringUtils::isNoneBlank).map(String::toLowerCase).toArray(String[]::new);
-        this.loadData(this.categories, this.services, filters);
+        AzureTaskManager.getInstance().runLater(() -> this.loadData(this.categories, this.services, filters));
     }
 
     public synchronized void refresh(boolean... force) {
@@ -144,7 +146,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             this.services = AzureSdkLibraryService.loadAzureSdkServices();
             this.categories = AzureSdkCategoryService.loadAzureSDKCategories();
             this.fillDescriptionFromCategoryIfMissing(this.categories, this.services);
-            this.loadData(this.categories, this.services, this.searchBox.getText());
+            AzureTaskManager.getInstance().runAndWait(() -> this.loadData(this.categories, this.services, this.searchBox.getText()), AzureTask.Modality.ANY);
             Optional.ofNullable(this.lastNodePath).ifPresent(p -> AzureTaskManager.getInstance().runAndWait(() -> TreeUtil.selectPath(this.tree, p)));
             AzureEventBus.emit("reference.refresh");
         } catch (final IOException e) {
