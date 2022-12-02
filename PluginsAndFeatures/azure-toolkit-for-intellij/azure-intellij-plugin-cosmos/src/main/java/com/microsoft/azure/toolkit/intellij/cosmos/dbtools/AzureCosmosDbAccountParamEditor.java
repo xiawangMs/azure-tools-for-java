@@ -183,8 +183,10 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         manager.runOnPooledThread(() -> {
             this.connectionString = Optional.ofNullable(account).map(CosmosDBAccount::getCosmosDBAccountPrimaryConnectionString).orElse(null);
             manager.runLater(() -> {
+                final boolean fromExplorer = Objects.nonNull(interchange.getProperty(KEY_FROM_AZURE_EXPLORER));
+                interchange.putProperty(KEY_FROM_AZURE_EXPLORER, null);
                 interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, Optional.ofNullable(newAccountId).orElse(NONE));
-                if (Objects.isNull(account) || Objects.isNull(connectionString) || StringUtils.equalsIgnoreCase(oldAccountId, newAccountId)) {
+                if (Objects.isNull(account) || Objects.isNull(connectionString) || StringUtils.equalsIgnoreCase(oldAccountId, newAccountId) && !fromExplorer) {
                     this.updating = false;
                     return;
                 }
