@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoCosmosDBAccount;
 import java.util.function.BiConsumer;
 
 import static com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID;
+import static com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountParamEditor.KEY_FROM_AZURE_EXPLORER;
 
 public class IntelliJCosmosActionsContributorForUltimate implements IActionsContributor {
     @Override
@@ -46,6 +47,7 @@ public class IntelliJCosmosActionsContributorForUltimate implements IActionsCont
         final LocalDataSourceManager manager = LocalDataSourceManager.getInstance(project);
         final DbDataSource newElement = ((DbPsiFacadeImpl) facade).createDataSourceWrapperElement(ds, manager);
         ds.setAdditionalProperty(KEY_COSMOS_ACCOUNT_ID, account.getId());
+        ds.setAdditionalProperty(KEY_FROM_AZURE_EXPLORER, String.valueOf(true));
         DataSourceManagerDialog.showDialog(facade, newElement, null, null, null);
     }
 }

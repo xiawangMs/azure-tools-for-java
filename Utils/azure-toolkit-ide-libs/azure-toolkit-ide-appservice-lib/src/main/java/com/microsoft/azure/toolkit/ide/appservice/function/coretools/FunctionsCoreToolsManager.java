@@ -76,7 +76,6 @@ public class FunctionsCoreToolsManager {
         });
     }
 
-    @AzureOperation(name = "function.download_func_core_tools", type = AzureOperation.Type.ACTION)
     private void doDownloadReleaseTools(@Nullable ReleaseInfo releaseInfo, String downloadDirPath) {
         if (Objects.isNull(releaseInfo)) {
             return;
