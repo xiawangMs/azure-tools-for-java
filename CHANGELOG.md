@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.71.0](#3710)
   - [3.70.0](#3700)
   - [3.69.0](#3690)
   - [3.68.1](#3681)
@@ -89,6 +90,24 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.71.0
+### Added
+- Code samples of management SDK are now available in Azure SDK Reference Book
+- Function Core Tools can be installed and configured automatically inside IDE.
+- Data sources can be created by selecting an existing Azure Database for MySQL/PostgreSQL or Azure SQL. (Ultimate Edition only)
+
+### Changed
+- Action icons of `Getting Started` would be highlighted for part of those who have never opened it before.
+- UI of `Getting Started` courses panel is changed a little bit.
+
+### Fixed
+- [#7063](https://github.com/microsoft/azure-tools-for-java/issues/7063): ClassNotFoundException with local deployment of function app that depends on another module in the same project
+- [#7089](https://github.com/microsoft/azure-tools-for-java/issues/7089): Uncaught Exception Access is allowed from event dispatch thread only
+- [#7116](https://github.com/microsoft/azure-tools-for-java/issues/7116): IntelliJ Azure Function SQL Library is not copied to lib folder when running locally
+- editor names of opened CosmosDB documents is not the same as that of the document.
+- exception throws if invalid json is provided when signing in in Service Principal mode.
+- Setting dialog will open automatically when running a function locally but Azure Function Core tools is not installed.
 
 ## 3.70.0
 ### Added
