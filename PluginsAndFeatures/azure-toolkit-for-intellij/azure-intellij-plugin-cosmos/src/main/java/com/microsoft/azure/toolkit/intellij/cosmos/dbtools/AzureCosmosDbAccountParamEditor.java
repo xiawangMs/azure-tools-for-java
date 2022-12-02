@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
+    public static final String NONE = "<NONE>";
     public static final String KEY_FROM_AZURE_EXPLORER = "FROM_EXPLORER";
     public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s). You can <a href=''>create one</a> first.</html>";
     public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Cosmos DB account.</html>";
@@ -70,25 +71,20 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     @Getter
     @Setter
     private String text = "";
-    private String accountId;
+    @Nullable
     private CosmosDBAccountConnectionString connectionString;
     private boolean updating;
 
     public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new CosmosDbAccountComboBox(kind), interchange, FieldSize.LARGE, label);
         this.kind = kind;
-        final String accountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
-        // inputs will be fill with values from account if `this.accountId` is null;
-        // fill inputs with values from account if it is from azure explorer
-        // don't change values of inputs if it's modifying an existing data source
-        if (Objects.isNull(interchange.getProperty(KEY_FROM_AZURE_EXPLORER)) && Objects.nonNull(accountId)) {
-            this.accountId = accountId;
-        }
+        final LocalDataSource dataSource = getDataSourceConfigurable().getDataSource();
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setAccount);
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
-        if (StringUtils.isNotBlank(accountId)) {
-            interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, null);
+        final String accountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
+        final boolean isModifying = StringUtils.isNotBlank(dataSource.getUsername());
+        if (isModifying && StringUtils.isNotBlank(accountId)) {
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(accountId)));
         }
 
@@ -162,9 +158,10 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     }
 
     private void onPropertiesChanged(String propertyName, Object newValue) {
-        if (!this.updating && Objects.nonNull(this.connectionString) && StringUtils.isNotEmpty((String) newValue)) {
-            if (StringUtils.equals(propertyName, "host") && !Objects.equals(this.connectionString.getHost(), newValue) ||
-                StringUtils.equals(propertyName, "port") && !Objects.equals(this.connectionString.getPort() + "", newValue)) {
+        if (!this.updating && StringUtils.isNotEmpty((String) newValue) && StringUtils.equals(propertyName, "host") && Objects.nonNull(this.connectionString)) {
+            final AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox combox = this.getEditorComponent();
+            final CosmosDBAccount account = combox.getValue();
+            if (Objects.nonNull(account) && !Objects.equals(this.connectionString.getHost(), newValue)) {
                 this.getEditorComponent().setValue((CosmosDBAccount) null);
                 this.setAccount(null);
             }
@@ -180,35 +177,33 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         });
 
         final DataInterchange interchange = this.getInterchange();
+        final String oldAccountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
         final String newAccountId = Optional.ofNullable(account).map(AbstractAzResource::getId).orElse(null);
-        interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, newAccountId);
-        if (this.updating || Objects.isNull(newAccountId) || StringUtils.equalsIgnoreCase(newAccountId, this.accountId)) {
-            return;
-        }
-        this.connectionString = null;
-        this.accountId = newAccountId;
+        final AzureTaskManager manager = AzureTaskManager.getInstance();
         this.updating = true;
-        // AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(combox::reloadItems);
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            this.connectionString = account.getCosmosDBAccountPrimaryConnectionString();
-            final LocalDataSource dataSource = interchange.getDataSource();
-            final String host = connectionString.getHost();
-            final String port = String.valueOf(connectionString.getPort());
-            final String user = connectionString.getUsername();
-            final String password = String.valueOf(connectionString.getPassword());
-            this.text = connectionString.getConnectionString();
-            AzureTaskManager.getInstance().runLater(() -> {
+        manager.runOnPooledThread(() -> {
+            this.connectionString = Optional.ofNullable(account).map(CosmosDBAccount::getCosmosDBAccountPrimaryConnectionString).orElse(null);
+            manager.runLater(() -> {
+                interchange.putProperty(KEY_COSMOS_ACCOUNT_ID, Optional.ofNullable(newAccountId).orElse(NONE));
+                if (Objects.isNull(account) || Objects.isNull(connectionString) || StringUtils.equalsIgnoreCase(oldAccountId, newAccountId)) {
+                    this.updating = false;
+                    return;
+                }
+                final LocalDataSource dataSource = interchange.getDataSource();
+                final String host = connectionString.getHost();
+                final String port = String.valueOf(connectionString.getPort());
+                final String user = connectionString.getUsername();
+                final String password = String.valueOf(connectionString.getPassword());
                 LocalDataSource.setUsername(dataSource, user);
                 interchange.getCredentials().storePassword(dataSource, new OneTimeString(password));
                 this.setUseSsl(true);
                 interchange.putProperties(consumer -> {
-                    consumer.consume(KEY_COSMOS_ACCOUNT_ID, account.getId());
                     consumer.consume("host", host);
                     consumer.consume("user", user);
                     consumer.consume("port", port);
-                    this.updating = false;
                 });
                 this.setUsername(user);
+                this.updating = false;
             }, AzureTask.Modality.ANY);
         });
     }

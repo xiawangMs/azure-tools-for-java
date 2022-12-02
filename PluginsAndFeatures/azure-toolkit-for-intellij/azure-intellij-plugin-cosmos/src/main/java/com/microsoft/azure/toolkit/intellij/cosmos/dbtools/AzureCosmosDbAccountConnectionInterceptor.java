@@ -19,10 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OPERATION_NAME;
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OP_NAME;
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OP_TYPE;
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.SERVICE_NAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
 
 @SuppressWarnings("UnstableApiUsage")
 public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnectionInterceptor {
@@ -30,7 +27,7 @@ public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnec
     public CompletionStage<ProtoConnection> intercept(@NotNull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent) {
         final DatabaseConnectionPoint point = proto.getConnectionPoint();
         final String accountId = point.getAdditionalProperty(AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID);
-        if (StringUtils.isNotBlank(accountId)) {
+        if (StringUtils.isNotBlank(accountId) && !StringUtils.equalsIgnoreCase(accountId, AzureCosmosDbAccountParamEditor.NONE)) {
             final Map<String, String> properties = new HashMap<>();
             final ResourceId id = ResourceId.fromString(accountId);
             properties.put("subscriptionId", id.subscriptionId());
