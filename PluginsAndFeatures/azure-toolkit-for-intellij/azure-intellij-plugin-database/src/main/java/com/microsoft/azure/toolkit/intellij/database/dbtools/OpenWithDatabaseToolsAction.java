@@ -25,6 +25,7 @@ public class OpenWithDatabaseToolsAction {
         final DataSourceDetector.Builder builder = registry.getBuilder()
             .withDriverClass(server.getJdbcUrl().getDefaultDriverClass())
             .withUrl(server.getJdbcUrl().toString())
+            .withJdbcAdditionalProperty(DatabaseServerParamEditor.KEY_DB_SERVER_ID, server.getId())
             .withUser(String.format("%s@%s", server.getAdminName(), server.getName()))
             .withDbms(getDbms(server))
             .commit();

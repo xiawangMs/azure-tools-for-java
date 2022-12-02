@@ -226,8 +226,8 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
                     AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
                 }
             };
-            final String INSTALL_SUCCEED_MESSAGE = "Download and install Azure Functions Core Tools(%s) successfully. Auto configured Azure Functions Core Tools path in Azure Settings";
-            AzureMessager.getMessager().success(String.format(INSTALL_SUCCEED_MESSAGE, azureEvent.getSource().toString()), "Install succeed", openSettingsActionInMessage);
+            final String INSTALL_SUCCEED_MESSAGE = "Download and install Azure Functions Core Tools successfully. Auto configured Azure Functions Core Tools path in Azure Settings";
+            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsActionInMessage);
         }));
     }
 
