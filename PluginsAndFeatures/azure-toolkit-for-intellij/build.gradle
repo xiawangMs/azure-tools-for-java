@@ -58,7 +58,7 @@ intellij {
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal', 'gradle-java']
-	downloadSources = Boolean.valueOf(sources)
+    downloadSources = Boolean.valueOf(sources)
 }
 
 
@@ -121,7 +121,7 @@ subprojects {
         compileOnly 'org.jetbrains:annotations'
     }
 
-    buildSearchableOptions.onlyIf {false}
+    buildSearchableOptions.onlyIf { false }
 }
 
 sourceSets {
@@ -266,7 +266,7 @@ task cucumberPackJar(type: Jar) {
     }
 }
 
-buildSearchableOptions.onlyIf {false}
+buildSearchableOptions.onlyIf { false }
 
 task cucumber() {
     dependsOn assemble, testClasses, compileTestJava, cucumberPackJar
@@ -275,10 +275,10 @@ task cucumber() {
             main = "io.cucumber.core.cli.Main"
             classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
             args = [
-                '--plugin', 'progress',
-                '--glue', 'com.microsoft.azure.hdinsight.spark.common',
-                '-m',
-                'Test/resources']
+                    '--plugin', 'progress',
+                    '--glue', 'com.microsoft.azure.hdinsight.spark.common',
+                    '-m',
+                    'Test/resources']
         }
     }
 }
