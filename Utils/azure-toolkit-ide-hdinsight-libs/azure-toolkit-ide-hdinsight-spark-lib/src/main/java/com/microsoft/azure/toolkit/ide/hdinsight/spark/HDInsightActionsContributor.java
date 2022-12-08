@@ -13,6 +13,8 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
     public static final String SERVICE_ACTIONS = "actions.hdinsight.service";
 
+    public static final String CLUSTER_ACTIONS = "actions.hdinsight.cluster";
+
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
     public static final Action.Id<ResourceGroup> GROUP_CREATE_HDInsight_SERVICE = Action.Id.of("hdinsight.create_hdinsight.group");
@@ -36,6 +38,15 @@ public class HDInsightActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
+
+//        final ActionGroup serverActionGroup = new ActionGroup(
+//                ResourceCommonActionsContributor.PIN,
+//                "---",
+//                ResourceCommonActionsContributor.REFRESH,
+//                "---"
+//
+//        );
+//        am.registerGroup(CLUSTER_ACTIONS, serverActionGroup);
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
         group.addAction(GROUP_CREATE_HDInsight_SERVICE);
