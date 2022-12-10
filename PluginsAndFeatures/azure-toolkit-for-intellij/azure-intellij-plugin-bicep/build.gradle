@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':azure-intellij-plugin-lib')
+    implementation project(':azure-intellij-plugin-lib-java')
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+}
