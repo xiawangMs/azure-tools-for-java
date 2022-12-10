@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+intellij {
+    plugins = ['org.jetbrains.plugins.textmate']
+}
+
 repositories {
     mavenCentral()
 }

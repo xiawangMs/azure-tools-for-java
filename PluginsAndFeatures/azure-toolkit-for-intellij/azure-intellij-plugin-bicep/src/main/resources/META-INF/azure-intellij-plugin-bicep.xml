@@ -3,4 +3,5 @@
         <fileType name="Bicep" language="Bicep" extensions="bicep" fieldName="INSTANCE"
                   implementationClass="com.microsoft.azure.toolkit.intellij.bicep.BicepFileType"/>
     </extensions>
+    <depends config-file="azure-intellij-plugin-bicep-highlight.xml">org.jetbrains.plugins.textmate</depends>
 </idea-plugin>
