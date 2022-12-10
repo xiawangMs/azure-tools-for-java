@@ -38,13 +38,13 @@ import java.util.function.BiConsumer;
 public class LegacyIntellijAccountActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
-        final AzureString authzTitle = OperationBundle.description("account.authorize_action");
+        final AzureString authzTitle = OperationBundle.description("internal/account.authorize_action");
         final ActionView.Builder authzView = new ActionView.Builder("Authorize").title((s) -> authzTitle);
         final BiConsumer<Runnable, AnActionEvent> authzHandler = (Runnable r, AnActionEvent e) ->
             AzureSignInAction.requireSignedIn(Optional.ofNullable(e).map(AnActionEvent::getProject).orElse(null), r);
         am.registerAction(new Action<>(Action.REQUIRE_AUTH, authzHandler, authzView).setAuthRequired(false));
 
-        final AzureString authnTitle = OperationBundle.description("account.authenticate");
+        final AzureString authnTitle = OperationBundle.description("user/account.authenticate");
         final ActionView.Builder authnView = new ActionView.Builder("Sign in").title((s) -> authnTitle);
         final BiConsumer<Object, AnActionEvent> authnHandler = (Object v, AnActionEvent e) -> {
             final AzureAccount az = Azure.az(AzureAccount.class);
@@ -67,7 +67,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
                 final Project[] openProjects = ProjectManagerEx.getInstance().getOpenProjects();
                 return ArrayUtils.isEmpty(openProjects) ? null : openProjects[0];
             });
-            final AzureString title = OperationBundle.description("action/common.open_azure_settings");
+            final AzureString title = OperationBundle.description("user/common.open_azure_settings");
             AzureTaskManager.getInstance().runLater(new AzureTask<>(title, () -> openSettingsDialog(project)));
         };
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS, (i, e) -> true, openSettingsHandler);
@@ -76,7 +76,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         am.registerHandler(ResourceCommonActionsContributor.OPEN_AZURE_EXPLORER, (i, e) -> true, openAzureExplorer);
     }
 
-    @AzureOperation(name = "action/common.open_azure_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/common.open_azure_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openAzureExplorer(AnActionEvent e) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(Objects.requireNonNull(e.getProject())).
             getToolWindow(ServerExplorerToolWindowFactory.EXPLORER_WINDOW);
@@ -85,7 +85,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         }
     }
 
-    @AzureOperation(name = "action/common.open_azure_settings", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/common.open_azure_settings", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openSettingsDialog(Project project) {
         ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.class);
     }

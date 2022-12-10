@@ -27,36 +27,36 @@ public class ContainerServiceActionsContributor implements IActionsContributor {
 
     public static final String AGENT_POOL_ACTIONS = "actions.kubernetes.agent_pool";
 
-    public static final Action.Id<KubernetesCluster> DOWNLOAD_CONFIG_ADMIN = Action.Id.of("action/kubernetes.kubu_config_admin.kubernetes");
-    public static final Action.Id<KubernetesCluster> DOWNLOAD_CONFIG_USER = Action.Id.of("action/kubernetes.kubu_config_user.kubernetes");
-    public static final Action.Id<KubernetesCluster> GET_CREDENTIAL_ADMIN = Action.Id.of("action/kubernetes.get_credential_admin.kubernetes");
-    public static final Action.Id<KubernetesCluster> GET_CREDENTIAL_USER = Action.Id.of("action/kubernetes.get_credential_user.kubernetes");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_KUBERNETES_SERVICE = Action.Id.of("action/kubernetes.create_kubernetes.group");
+    public static final Action.Id<KubernetesCluster> DOWNLOAD_CONFIG_ADMIN = Action.Id.of("user/kubernetes.kubu_config_admin.kubernetes");
+    public static final Action.Id<KubernetesCluster> DOWNLOAD_CONFIG_USER = Action.Id.of("user/kubernetes.kubu_config_user.kubernetes");
+    public static final Action.Id<KubernetesCluster> GET_CREDENTIAL_ADMIN = Action.Id.of("user/kubernetes.get_credential_admin.kubernetes");
+    public static final Action.Id<KubernetesCluster> GET_CREDENTIAL_USER = Action.Id.of("user/kubernetes.get_credential_user.kubernetes");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_KUBERNETES_SERVICE = Action.Id.of("user/kubernetes.create_kubernetes.group");
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder createClusterView = new ActionView.Builder("Kubernetes service")
                 .title(s -> Optional.ofNullable(s).map(r ->
-                        description("action/kubernetes.create_kubernetes.group", ((ResourceGroup) r).getName())).orElse(null))
+                        description("user/kubernetes.create_kubernetes.group", ((ResourceGroup) r).getName())).orElse(null))
                 .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GROUP_CREATE_KUBERNETES_SERVICE, createClusterView));
 
         final ActionView.Builder adminConfigView = new ActionView.Builder("Download Kubeconfig (Admin)")
-                .title(s -> Optional.ofNullable(s).map(r -> description("action/kubernetes.kubu_config_admin.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("user/kubernetes.kubu_config_admin.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(DOWNLOAD_CONFIG_ADMIN, adminConfigView));
 
         final ActionView.Builder userConfigView = new ActionView.Builder("Download Kubeconfig (User)")
-                .title(s -> Optional.ofNullable(s).map(r -> description("action/kubernetes.kubu_config_user.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("user/kubernetes.kubu_config_user.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(DOWNLOAD_CONFIG_USER, userConfigView));
 
         final ActionView.Builder getAdminCredentialView = new ActionView.Builder("Set as Current Cluster (Admin)")
-                .title(s -> Optional.ofNullable(s).map(r -> description("action/kubernetes.get_credential_admin.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("user/kubernetes.get_credential_admin.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GET_CREDENTIAL_ADMIN, getAdminCredentialView));
 
         final ActionView.Builder getUserCredentialView = new ActionView.Builder("Set as Current Cluster (User)")
-                .title(s -> Optional.ofNullable(s).map(r -> description("action/kubernetes.get_credential_user.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("user/kubernetes.get_credential_user.kubernetes", ((KubernetesCluster) r).getName())).orElse(null))
                 .enabled(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GET_CREDENTIAL_USER, getUserCredentialView));
     }

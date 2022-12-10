@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -28,7 +27,6 @@ import org.jetbrains.plugins.terminal.TerminalTabState;
 import org.jetbrains.plugins.terminal.TerminalView;
 
 import javax.annotation.Nonnull;
-
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -42,7 +40,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
         return instance;
     }
 
-    @AzureOperation(name = "action/vm.connect_using_ssh_ultimate.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/vm.connect_using_ssh_ultimate.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
         AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE,() ->
@@ -63,7 +61,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
         }
     }
 
-    @AzureOperation(name = "vm.create_ssh_session_iu", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_3rd/vm.create_ssh_session_iu", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void createSshSession(@Nonnull Project project, SshConfig ssh, SshTerminalCachingRunner runner) {
         final TerminalTabState tabState = new TerminalTabState();
         tabState.myTabName = ssh.getName();
@@ -71,11 +69,11 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
     }
 
     private Action<?> openSshConfigurationAction(final @NotNull Project project, RemoteCredentials sshCredential) {
-        final Action.Id<Void> id = Action.Id.of("vm.open_ssh_configuration");
+        final Action.Id<Void> id = Action.Id.of("to_3rd/vm.open_ssh_configuration");
         return new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> openSshConfiguration(project, sshCredential)), new ActionView.Builder("Modify SSH Configuration"));
     }
 
-    @AzureOperation(name = "vm.open_ssh_configuration", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_3rd/vm.open_ssh_configuration", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openSshConfiguration(@Nonnull Project project, RemoteCredentials sshCredential) {
         final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
         ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {

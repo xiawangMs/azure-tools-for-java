@@ -80,7 +80,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             .getInstance().runLater(() -> new AppServiceFileAction().openAppServiceFile(file, e.getProject()));
         final ActionView.Builder openFileView = new ActionView.Builder("Open File", null)
             .title(s -> Optional.ofNullable(s)
-                .map(r -> OperationBundle.description("action/appservice.open_file.file", ((AppServiceFile) r).getName()))
+                .map(r -> OperationBundle.description("user/appservice.open_file.file", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> openFileAction = new Action<>(APP_SERVICE_FILE_VIEW, openFileHandler, openFileView);
@@ -91,7 +91,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             .getInstance().runLater(() -> new AppServiceFileAction().saveAppServiceFile(file, e.getProject(), null));
         final ActionView.Builder downloadFileView = new ActionView.Builder("Download", null)
             .title(s -> Optional.ofNullable(s)
-                .map(r -> OperationBundle.description("action/appservice.download_file.file", ((AppServiceFile) r).getName()))
+                .map(r -> OperationBundle.description("user/appservice.download_file.file", ((AppServiceFile) r).getName()))
                 .orElse(null))
             .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> downloadFileAction = new Action<>(APP_SERVICE_FILE_DOWNLOAD, downloadFileHandler, downloadFileView);
@@ -220,7 +220,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         am.registerHandler(FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS, downloadFuncCoreToolsHandler);
         AzureEventBus.on("function.download_func_core_tools_succeed.version", new AzureEventBus.EventListener((azureEvent) -> {
             final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-            final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
+            final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("user/common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
                 @Override
                 public void handle(Object source, Object e) {
                     AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));

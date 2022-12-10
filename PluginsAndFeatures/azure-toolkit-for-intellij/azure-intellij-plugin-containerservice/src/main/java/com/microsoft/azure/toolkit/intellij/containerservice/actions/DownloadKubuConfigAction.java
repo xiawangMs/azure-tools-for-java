@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 public class DownloadKubuConfigAction {
-    @AzureOperation(name = "kubernetes.download_config.kubernetes", params = {"cluster.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "azure/kubernetes.download_config.kubernetes", params = {"cluster.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void downloadKubuConfig(@Nonnull KubernetesCluster cluster, @Nonnull Project project, boolean isAdmin) {
         final File destFile = AzureTaskManager.getInstance().runLaterAsObservable(new AzureTask<>(() ->
                 FileChooser.showFileSaver("Download kubernetes configuration", String.format("%s-%s.yml", cluster.getName(), isAdmin ? "admin" : "user"))))
@@ -62,14 +62,14 @@ public class DownloadKubuConfigAction {
         };
         final ActionView.Builder view = new ActionView.Builder("Set kubeconfig for project")
             .title(ignore -> AzureString.fromString("Set kubeconfig")).enabled(ignore -> true);
-        final Action.Id<Void> id = Action.Id.of("kubernetes.set_kube_config");
+        final Action.Id<Void> id = Action.Id.of("user/kubernetes.set_kube_config");
         return new Action<>(id, consumer, view);
     }
 
     // todo: remove duplicated with AppServiceFileAction
     private static Action<?> getOpenInExplorerAction(@Nonnull Project project, @Nonnull File file) {
         final ActionView.Builder view = new ActionView.Builder("Open in Explorer").enabled(ignore -> true);
-        final Action.Id<Void> id = Action.Id.of("action/common.reveal_file_in_explorer");
+        final Action.Id<Void> id = Action.Id.of("user/common.reveal_file_in_explorer");
         return new Action<>(id, ignore -> VirtualFileActions.revealInExplorer(file), view);
     }
 
@@ -81,7 +81,7 @@ public class DownloadKubuConfigAction {
             }, fileEditorManager);
         };
         final ActionView.Builder view = new ActionView.Builder("Open in Editor").enabled(ignore -> true);
-        final Action.Id<Void> id = Action.Id.of("action/common.open_file_in_editor");
+        final Action.Id<Void> id = Action.Id.of("user/common.open_file_in_editor");
         return new Action<>(id, consumer, view);
     }
 }

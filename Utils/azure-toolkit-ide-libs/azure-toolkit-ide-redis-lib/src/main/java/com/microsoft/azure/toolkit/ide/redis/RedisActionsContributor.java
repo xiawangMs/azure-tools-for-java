@@ -26,20 +26,20 @@ public class RedisActionsContributor implements IActionsContributor {
 
     public static final String SERVICE_ACTIONS = "actions.redis.service";
     public static final String REDIS_ACTIONS = "actions.redis.instance";
-    public static final Action.Id<AzResource> OPEN_EXPLORER = Action.Id.of("action/redis.open_redis_explorer.redis");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("action/redis.create_redis.group");
+    public static final Action.Id<AzResource> OPEN_EXPLORER = Action.Id.of("user/redis.open_redis_explorer.redis");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_REDIS = Action.Id.of("user/redis.create_redis.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder showExplorerView = new ActionView.Builder("Open Redis Explorer")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/redis.open_redis_explorer.redis", ((AzResourceBase) r).getName())).orElse(null))
             .enabled(s -> s instanceof RedisCache && ((RedisCache) s).getFormalStatus().isRunning());
         final Action<AzResource> action = new Action<>(OPEN_EXPLORER, showExplorerView);
         action.setShortcuts(am.getIDEDefaultShortcuts().view());
         am.registerAction(action);
 
         final ActionView.Builder createRedisView = new ActionView.Builder("Redis Cache")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/redis.create_redis.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GROUP_CREATE_REDIS, createRedisView));
     }

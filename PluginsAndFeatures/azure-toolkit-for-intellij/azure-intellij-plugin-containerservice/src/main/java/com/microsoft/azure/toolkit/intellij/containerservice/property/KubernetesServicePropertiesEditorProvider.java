@@ -26,7 +26,7 @@ public class KubernetesServicePropertiesEditorProvider implements FileEditorProv
     }
 
     @Override
-    @AzureOperation(name = "action/kubernetes.create_cluster_properties_editor.cluster", params = {"file.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/kubernetes.create_cluster_properties_editor.cluster", params = {"file.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
     public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
         final KubernetesCluster server = (KubernetesCluster) file.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert server != null;

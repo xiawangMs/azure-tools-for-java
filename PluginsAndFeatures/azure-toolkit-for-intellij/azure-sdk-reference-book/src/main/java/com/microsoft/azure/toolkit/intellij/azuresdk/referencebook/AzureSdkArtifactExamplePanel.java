@@ -105,7 +105,7 @@ public class AzureSdkArtifactExamplePanel {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new AnAction(ActionsBundle.message("action.$Copy.text"), ActionsBundle.message("action.$Copy.description"), AllIcons.Actions.Copy) {
             @Override
-            @AzureOperation(name = "action/sdk.copy_artifact_example", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "user/sdk.copy_artifact_example", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull final AnActionEvent e) {
                 OperationContext.action().setTelemetryProperty("artifact", artifact.getArtifactId());
                 OperationContext.action().setTelemetryProperty("example_id", String.valueOf(Optional.ofNullable(cbExample.getValue())
@@ -116,7 +116,7 @@ public class AzureSdkArtifactExamplePanel {
         });
         group.add(new AnAction("Browse", "Browse Source Code", IntelliJAzureIcons.getIcon(AzureIcons.Common.OPEN_IN_PORTAL)) {
             @Override
-            @AzureOperation(name = "action/sdk.open_example_in_browser", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "user/sdk.open_example_in_browser", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull final AnActionEvent e) {
                 final AzureJavaSdkArtifactExampleEntity value = cbExample.getValue();
                 OperationContext.action().setTelemetryProperty("artifact", artifact.getArtifactId());

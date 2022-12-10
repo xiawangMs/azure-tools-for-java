@@ -26,9 +26,9 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     public static final String APP_SERVICE_FILE_ACTIONS = "actions.appservice.file";
     public static final String APP_SERVICE_DIRECTORY_ACTIONS = "actions.appservice.directory";
 
-    public static final Action.Id<AppServiceFile> APP_SERVICE_DIRECTORY_REFRESH = Action.Id.of("action/appservice.refresh_directory.dir");
-    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_VIEW = Action.Id.of("action/appservice.open_file.file");
-    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_DOWNLOAD = Action.Id.of("action/appservice.download_file.file");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_DIRECTORY_REFRESH = Action.Id.of("user/appservice.refresh_directory.dir");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_VIEW = Action.Id.of("user/appservice.open_file.file");
+    public static final Action.Id<AppServiceFile> APP_SERVICE_FILE_DOWNLOAD = Action.Id.of("user/appservice.download_file.file");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -48,7 +48,7 @@ public class AppServiceFileActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<AppServiceFile> refresh = file -> AzureEventBus.emit("resource.refreshed.resource", file);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("action/appservice.refresh_directory.dir", ((AppServiceFile) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("user/appservice.refresh_directory.dir", ((AppServiceFile) r).getName())).orElse(null))
                 .enabled(s -> s instanceof AppServiceFile);
         final Action<AppServiceFile> action = new Action<>(APP_SERVICE_DIRECTORY_REFRESH, refresh, refreshView);
         action.setShortcuts(am.getIDEDefaultShortcuts().refresh());

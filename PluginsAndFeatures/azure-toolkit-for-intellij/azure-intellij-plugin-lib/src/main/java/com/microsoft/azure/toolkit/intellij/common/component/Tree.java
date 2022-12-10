@@ -147,7 +147,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
-        @AzureOperation(name = "action/common.load_children.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
+        @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
         public synchronized void refreshChildren(boolean... incremental) {
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();

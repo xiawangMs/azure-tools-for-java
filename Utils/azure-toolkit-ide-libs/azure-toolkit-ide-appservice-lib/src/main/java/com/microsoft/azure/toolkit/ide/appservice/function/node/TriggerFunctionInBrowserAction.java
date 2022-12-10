@@ -52,11 +52,7 @@ public class TriggerFunctionInBrowserAction {
         }
     }
 
-    @AzureOperation(
-            name = "function.trigger_func_http.app",
-            params = {"this.functionApp.name()"},
-            type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "internal/function.trigger_func_http.app", params = {"this.functionApp.name()"}, type = AzureOperation.Type.TASK)
     public void trigger() {
         final String authLevel = trigger.getProperty("authLevel");
         String targetUrl;

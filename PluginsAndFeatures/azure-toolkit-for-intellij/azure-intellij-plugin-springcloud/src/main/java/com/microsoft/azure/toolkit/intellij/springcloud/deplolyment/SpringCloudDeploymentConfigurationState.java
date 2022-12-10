@@ -95,13 +95,13 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
-    @AzureOperation(name = "action/springcloud.deploy_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/springcloud.deploy_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
     public SpringCloudDeployment execute(IAzureMessager messager) {
         OperationContext.current().setMessager(messager);
         OperationContext.current().setTelemetryProperties(getTelemetryProperties());
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         if (Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).map(IArtifact::getFile).filter(File::exists).isEmpty()) {
-            final Action.Id<Void> REOPEN = Action.Id.of("springcloud.reopen_deploy_dialog");
+            final Action.Id<Void> REOPEN = Action.Id.of("user/springcloud.reopen_deploy_dialog");
             throw new AzureToolkitRuntimeException(
                 message("springcloud.deploy_app.no_artifact").toString(),
                 message("springcloud.deploy_app.no_artifact.tips").toString(),

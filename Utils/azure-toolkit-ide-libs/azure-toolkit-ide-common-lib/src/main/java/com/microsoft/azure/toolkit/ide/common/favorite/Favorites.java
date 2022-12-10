@@ -118,7 +118,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Override
     @SneakyThrows
-    @AzureOperation(name = "favorite.delete_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "internal/favorite.delete_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
         final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
         this.favorites.remove(resourceId.toLowerCase());
@@ -163,14 +163,14 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
 
-    @AzureOperation(name = "favorite.unpin_all", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "internal/favorite.unpin_all", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public void unpinAll() {
         this.clear();
         this.persist();
         this.refresh();
     }
 
-    @AzureOperation(name = "favorite.add_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "internal/favorite.add_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
         if (this.exists(resource.getId())) {
             final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());
@@ -207,7 +207,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", AzureIcons.Action.UNPIN.getIconPath())
             .enabled(s -> s instanceof Favorites);
         final Consumer<Favorites> unpinAllHandler = Favorites::unpinAll;
-        final Action.Id<Favorites> UNPIN_ALL = Action.Id.of("action/resource.unpin_all");
+        final Action.Id<Favorites> UNPIN_ALL = Action.Id.of("user/resource.unpin_all");
         final Action<Favorites> unpinAllAction = new Action<>(UNPIN_ALL, unpinAllHandler, unpinAllView);
         unpinAllAction.setShortcuts("control F11");
 

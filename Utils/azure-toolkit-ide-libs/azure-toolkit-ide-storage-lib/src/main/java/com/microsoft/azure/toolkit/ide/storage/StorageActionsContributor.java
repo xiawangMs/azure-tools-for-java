@@ -45,22 +45,22 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final String TABLE_ACTIONS = "actions.storage.table";
     public static final String STORAGE_MODULE_ACTIONS = "actions.storage.module";
 
-    public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("action/storage.open_azure_storage_explorer.account");
-    public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("action/storage.copy_connection_string.account");
-    public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("action/storage.copy_primary_key.account");
-    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("action/storage.create_account.group");
+    public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("user/storage.open_azure_storage_explorer.account");
+    public static final Action.Id<StorageAccount> COPY_CONNECTION_STRING = Action.Id.of("user/storage.copy_connection_string.account");
+    public static final Action.Id<StorageAccount> COPY_PRIMARY_KEY = Action.Id.of("user/storage.copy_primary_key.account");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("user/storage.create_account.group");
 
-    public static final Action.Id<IBlobFile> CREATE_BLOB = Action.Id.of("action/storage.create_blob.blob");
-    public static final Action.Id<StorageFile> OPEN_FILE = Action.Id.of("action/storage.open_file.file");
-    public static final Action.Id<StorageFile> CREATE_FILE = Action.Id.of("action/storage.create_file.file");
-    public static final Action.Id<StorageFile> CREATE_DIRECTORY = Action.Id.of("action/storage.create_directory.dir");
-    public static final Action.Id<StorageFile> DOWNLOAD_FILE = Action.Id.of("action/storage.download_file.file");
-    public static final Action.Id<StorageFile> UPLOAD_FILES = Action.Id.of("action/storage.upload_files.dir");
-    public static final Action.Id<StorageFile> UPLOAD_FILE = Action.Id.of("action/storage.upload_file.file");
-    public static final Action.Id<StorageFile> UPLOAD_FOLDER = Action.Id.of("action/storage.upload_folder.dir");
-    public static final Action.Id<StorageFile> COPY_FILE_URL = Action.Id.of("action/storage.copy_file_url.file");
-    public static final Action.Id<StorageFile> COPY_FILE_SAS_URL = Action.Id.of("action/storage.copy_file_sas_url.file");
-    public static final Action.Id<StorageFile> DELETE_DIRECTORY = Action.Id.of("action/storage.delete_directory.dir");
+    public static final Action.Id<IBlobFile> CREATE_BLOB = Action.Id.of("user/storage.create_blob.blob");
+    public static final Action.Id<StorageFile> OPEN_FILE = Action.Id.of("user/storage.open_file.file");
+    public static final Action.Id<StorageFile> CREATE_FILE = Action.Id.of("user/storage.create_file.file");
+    public static final Action.Id<StorageFile> CREATE_DIRECTORY = Action.Id.of("user/storage.create_directory.dir");
+    public static final Action.Id<StorageFile> DOWNLOAD_FILE = Action.Id.of("user/storage.download_file.file");
+    public static final Action.Id<StorageFile> UPLOAD_FILES = Action.Id.of("user/storage.upload_files.dir");
+    public static final Action.Id<StorageFile> UPLOAD_FILE = Action.Id.of("user/storage.upload_file.file");
+    public static final Action.Id<StorageFile> UPLOAD_FOLDER = Action.Id.of("user/storage.upload_folder.dir");
+    public static final Action.Id<StorageFile> COPY_FILE_URL = Action.Id.of("user/storage.copy_file_url.file");
+    public static final Action.Id<StorageFile> COPY_FILE_SAS_URL = Action.Id.of("user/storage.copy_file_sas_url.file");
+    public static final Action.Id<StorageFile> DELETE_DIRECTORY = Action.Id.of("user/storage.delete_directory.dir");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -75,7 +75,7 @@ public class StorageActionsContributor implements IActionsContributor {
             }
         };
         final ActionView.Builder openAzureStorageExplorerView = new ActionView.Builder("Open Azure Storage Explorer")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.open_azure_storage_explorer.account", ((AzResource) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.open_azure_storage_explorer.account", ((AzResource) r).getName())).orElse(null))
             .enabled(s -> (s instanceof StorageAccount && ((AzResource) s).getFormalStatus().isConnected()) || s instanceof AzResource);
         final Action<AzResource> openAzureStorageExplorerAction = new Action<>(OPEN_AZURE_STORAGE_EXPLORER, openAzureStorageExplorer, openAzureStorageExplorerView);
         openAzureStorageExplorerAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
@@ -86,7 +86,7 @@ public class StorageActionsContributor implements IActionsContributor {
             AzureMessager.getMessager().info("Connection string copied");
         };
         final ActionView.Builder copyConnectionStringView = new ActionView.Builder("Copy Connection String")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.copy_connection_string.account", ((StorageAccount) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyConnectionStringAction = new Action<>(COPY_CONNECTION_STRING, copyConnectionString, copyConnectionStringView);
         am.registerAction(copyConnectionStringAction);
@@ -96,58 +96,58 @@ public class StorageActionsContributor implements IActionsContributor {
             AzureMessager.getMessager().info("Primary key copied");
         };
         final ActionView.Builder copyPrimaryView = new ActionView.Builder("Copy Primary Key")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.copy_primary_key.account", ((StorageAccount) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected());
         final Action<StorageAccount> copyPrimaryKeyAction = new Action<>(COPY_PRIMARY_KEY, copyPrimaryKey, copyPrimaryView);
         am.registerAction(copyPrimaryKeyAction);
 
         final ActionView.Builder openFileView = new ActionView.Builder("Open in Editor")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.open_file.file", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.open_file.file", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile);
         am.registerAction(new Action<>(OPEN_FILE, openFileView).setShortcuts(am.getIDEDefaultShortcuts().edit()));
 
         final ActionView.Builder createBlobView = new ActionView.Builder("Create Empty Blob", AzureIcons.Action.CREATE.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.create_blob.blob", ((StorageFile) r).getPath())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.create_blob.blob", ((StorageFile) r).getPath())).orElse(null))
             .enabled(s -> s instanceof IBlobFile && ((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(CREATE_BLOB, createBlobView));
 
         final ActionView.Builder createFileView = new ActionView.Builder("Create Empty File", AzureIcons.Action.CREATE.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.create_file.file", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.create_file.file", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(CREATE_FILE, createFileView));
 
         final ActionView.Builder createDirView = new ActionView.Builder("Create Subdirectory", AzureIcons.Action.CREATE.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.create_directory.dir", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.create_directory.dir", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(CREATE_DIRECTORY, createDirView));
 
         final ActionView.Builder uploadFilesView = new ActionView.Builder("Upload Files", AzureIcons.Action.UPLOAD.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.upload_files.dir", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.upload_files.dir", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(UPLOAD_FILES, uploadFilesView));
 
         final ActionView.Builder uploadFileView = new ActionView.Builder("Upload File", AzureIcons.Action.UPLOAD.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.upload_file.file", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.upload_file.file", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(UPLOAD_FILE, uploadFileView));
 
         final ActionView.Builder uploadFolderView = new ActionView.Builder("Upload Folder", AzureIcons.Action.UPLOAD.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.upload_folder.dir", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.upload_folder.dir", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(UPLOAD_FOLDER, uploadFolderView));
 
         final ActionView.Builder downloadFileView = new ActionView.Builder("Download", AzureIcons.Action.DOWNLOAD.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.download_file.file", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.download_file.file", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory());
         am.registerAction(new Action<>(DOWNLOAD_FILE, downloadFileView));
 
         final ActionView.Builder copyUrlView = new ActionView.Builder("Copy URL")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.copy_file_url.file", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.copy_file_url.file", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile);
         am.registerAction(new Action<>(COPY_FILE_URL, copyUrlView));
 
         final ActionView.Builder copySasUrlView = new ActionView.Builder("Generate and Copy SAS Token and URL")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.copy_file_sas_url.file", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.copy_file_sas_url.file", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile);
         am.registerAction(new Action<>(COPY_FILE_SAS_URL, copySasUrlView));
 
@@ -157,14 +157,14 @@ public class StorageActionsContributor implements IActionsContributor {
             }
         };
         final ActionView.Builder deleteDirView = new ActionView.Builder("Delete Directory", AzureIcons.Action.DELETE.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.delete_directory.dir", ((StorageFile) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.delete_directory.dir", ((StorageFile) r).getName())).orElse(null))
             .enabled(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory());
         final Action<StorageFile> deleteAction = new Action<>(DELETE_DIRECTORY, deleteDir, deleteDirView);
         deleteAction.setShortcuts(am.getIDEDefaultShortcuts().delete());
         am.registerAction(deleteAction);
 
         final ActionView.Builder createAccountView = new ActionView.Builder("Storage Account")
-            .title(s -> Optional.ofNullable(s).map(r -> description("action/storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("user/storage.create_account.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(new Action<>(GROUP_CREATE_ACCOUNT, createAccountView));
     }

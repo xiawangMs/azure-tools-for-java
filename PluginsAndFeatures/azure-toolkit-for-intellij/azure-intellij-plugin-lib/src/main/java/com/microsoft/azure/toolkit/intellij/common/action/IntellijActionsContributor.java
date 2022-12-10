@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class IntellijActionsContributor implements IActionsContributor {
-    public static final Action.Id<Object> TRY_ULTIMATE = Action.Id.of("action/database.try_ultimate");
+    public static final Action.Id<Object> TRY_ULTIMATE = Action.Id.of("user/database.try_ultimate");
     private static final String IDE_DOWNLOAD_URL = "https://www.jetbrains.com/idea/download/";
 
     @Override
@@ -41,7 +41,7 @@ public class IntellijActionsContributor implements IActionsContributor {
     }
 
 
-    @AzureOperation(name = "resource.open_url.url", params = {"u"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_platform/resource.open_url.url", params = {"u"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void browseUrl(String u) {
         BrowserUtil.browse(u);
     }

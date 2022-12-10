@@ -49,7 +49,7 @@ public class DeploymentActions {
     public static final String NOTIFY_UPDATE_DEPLOYMENT_SUCCESS = "Update deployment successfully";
     public static final String NOTIFY_UPDATE_DEPLOYMENT_FAIL = "Update deployment failed";
 
-    @AzureOperation(name = "action/arm.create_deployment_ui.rg", params = {"rg.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/arm.create_deployment_ui.rg", params = {"rg.getName()"}, type = AzureOperation.Type.ACTION)
     public static void createDeployment(@Nonnull final Project project, @Nullable ResourceGroup rg) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -58,7 +58,7 @@ public class DeploymentActions {
         });
     }
 
-    @AzureOperation(name = "action/arm.open_template_view.deployment", params = {"deployment.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/arm.open_template_view.deployment", params = {"deployment.getName()"}, type = AzureOperation.Type.ACTION)
     public static void openTemplateView(@Nonnull final Project project, @Nonnull ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -70,12 +70,12 @@ public class DeploymentActions {
         });
     }
 
-    @AzureOperation(name = "action/arm.update_deployment_ui.deployment", params = {"deployment.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/arm.update_deployment_ui.deployment", params = {"deployment.getName()"}, type = AzureOperation.Type.ACTION)
     public static void updateDeployment(@Nonnull final Project project, @Nonnull final ResourceDeployment deployment) {
         AzureTaskManager.getInstance().runLater(() -> new UpdateDeploymentDialog(project, deployment).show());
     }
 
-    @AzureOperation(name = "action/arm.export_template.deployment", params = {"deployment.getName"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/arm.export_template.deployment", params = {"deployment.getName"}, type = AzureOperation.Type.ACTION)
     public static void exportTemplate(@Nonnull final Project project, @Nonnull final ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -96,12 +96,12 @@ public class DeploymentActions {
         });
     }
 
-    @AzureOperation(name = "arm.export_template_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_platform/arm.export_template_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void doExportTemplate(File file, String template) throws IOException {
         IOUtils.write(template, new FileOutputStream(file), Charset.defaultCharset());
     }
 
-    @AzureOperation(name = "action/arm.export_parameter.deployment", params = {"deployment.getName"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/arm.export_parameter.deployment", params = {"deployment.getName"}, type = AzureOperation.Type.ACTION)
     public static void exportParameters(@Nonnull final Project project, final ResourceDeployment deployment) {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -122,18 +122,18 @@ public class DeploymentActions {
         });
     }
 
-    @AzureOperation(name = "arm.export_parameters_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_platform/arm.export_parameters_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void doExportParameters(File file, String parameters) throws IOException {
         IOUtils.write(parameters, new FileOutputStream(file), Charset.defaultCharset());
     }
 
     private static Action<Void> newShowInExplorerAction(@Nonnull final File dest) {
-        final Action.Id<Void> REVEAL = Action.Id.of("action/common.reveal_file_in_explorer");
+        final Action.Id<Void> REVEAL = Action.Id.of("user/common.reveal_file_in_explorer");
         return new Action<>(REVEAL, v -> VirtualFileActions.revealInExplorer(dest), new ActionView.Builder(RevealFileAction.getActionName()));
     }
 
     private static Action<Void> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
-        final Action.Id<Void> OPEN = Action.Id.of("action/common.open_file_in_editor");
+        final Action.Id<Void> OPEN = Action.Id.of("user/common.open_file_in_editor");
         return new Action<>(OPEN, v -> AzureTaskManager.getInstance().runLater(() -> {
             final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
             final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);

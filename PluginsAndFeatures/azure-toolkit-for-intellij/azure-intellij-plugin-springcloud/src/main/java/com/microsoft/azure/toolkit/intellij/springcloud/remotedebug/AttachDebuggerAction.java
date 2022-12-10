@@ -5,7 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
-import com.intellij.execution.*;
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.ExecutionListener;
+import com.intellij.execution.ExecutionManager;
+import com.intellij.execution.ProgramRunnerUtil;
+import com.intellij.execution.RunManagerEx;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
@@ -43,7 +48,7 @@ public class AttachDebuggerAction {
     private static final int DEFAULT_PORT = 5005;
     private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app %s.";
 
-    @AzureOperation(name = "action/springcloud.start_remote_debugging.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/springcloud.start_remote_debugging.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebugging(@Nonnull SpringCloudAppInstance appInstance, Project project) {
         if (!appInstance.getParent().isRemoteDebuggingEnabled()) {
             showEnableDebuggingMessage(appInstance);
@@ -54,7 +59,7 @@ public class AttachDebuggerAction {
         showOpenUrlMessage(appInstance);
     }
 
-    @AzureOperation(name = "action/springcloud.start_remote_debugging.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/springcloud.start_remote_debugging.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebuggingApp(@Nonnull SpringCloudApp app, Project project) {
         final SpringCloudDeployment deployment = app.getActiveDeployment();
         final List<SpringCloudAppInstance> instances = deployment.getInstances();
@@ -121,7 +126,7 @@ public class AttachDebuggerAction {
         return runTask;
     }
 
-    @AzureOperation(name = "springcloud.start_debug_configuration.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_platform/springcloud.start_debug_configuration.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void executeRunConfiguration(@Nonnull SpringCloudAppInstance appInstance, Project project) {
         final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
         final RunManagerImpl managerImpl = new RunManagerImpl(project);
@@ -137,7 +142,7 @@ public class AttachDebuggerAction {
         final String confirmEnableDebuggingMessage = "Remote debugging should be enabled first before debugging. Would you like to enable it?";
         final Action<SpringCloudApp> enableDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING);
         AzureMessager.getMessager().warning(confirmEnableDebuggingMessage, null,
-                new Action<>(Action.Id.of("springcloud.enable_remote_debugging_dialog"), new ActionView.Builder("Enable Remote Debugging")) {
+                new Action<>(Action.Id.of("user/springcloud.enable_remote_debugging_dialog"), new ActionView.Builder("Enable Remote Debugging")) {
                     @Override
                     public void handle(Object source, Object e) {
                         enableDebuggingAction.handle(appInstance.getParent().getParent(), e);
@@ -154,7 +159,7 @@ public class AttachDebuggerAction {
     @Nullable
     private static Action<?> generateAccessPublicUrlAction(@Nonnull SpringCloudApp app) {
         if (app.isPublicEndpointEnabled()) {
-            return  new Action<>(Action.Id.of("springcloud.open_public_url_dialog"), new ActionView.Builder("Access Public Endpoint")) {
+            return  new Action<>(Action.Id.of("user/springcloud.open_public_url_dialog"), new ActionView.Builder("Access Public Endpoint")) {
                 @Override
                 public void handle(Object source, Object e) {
                     AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getApplicationUrl());
@@ -166,7 +171,7 @@ public class AttachDebuggerAction {
 
 
     private static Action<?> generateAccessTestUrlAction(@Nonnull SpringCloudApp app) {
-        return new Action<>(Action.Id.of("springcloud.open_test_url_dialog"), new ActionView.Builder("Access Test Endpoint")) {
+        return new Action<>(Action.Id.of("user/springcloud.open_test_url_dialog"), new ActionView.Builder("Access Test Endpoint")) {
             @Override
             public void handle(Object source, Object e) {
                 AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getTestUrl());

@@ -50,7 +50,7 @@ public class RunFunctionAction extends AzureAnAction {
         event.getPresentation().setEnabledAndVisible(FunctionUtils.isFunctionProject(event.getProject()));
     }
 
-    @AzureOperation(name = "action/function.run_app.module", params = {"module.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.run_app.module", params = {"module.getName()"}, type = AzureOperation.Type.ACTION)
     private void runConfiguration(Module module) {
         // todo: investigate when will module be null
         if (module == null) {

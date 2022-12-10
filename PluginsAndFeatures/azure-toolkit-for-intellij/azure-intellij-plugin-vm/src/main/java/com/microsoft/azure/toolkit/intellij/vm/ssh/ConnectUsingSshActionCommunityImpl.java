@@ -25,7 +25,7 @@ public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction
         return instance;
     }
 
-    @AzureOperation(name = "action/vm.connect_using_ssh_community.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/vm.connect_using_ssh_community.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final String machineName = vm.getName();
         final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
@@ -42,7 +42,7 @@ public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction
         });
     }
 
-    @AzureOperation(name = "vm.create_ssh_session_ic", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_3rd/vm.create_ssh_session_ic", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openTerminal(VirtualMachine vm, ShellTerminalWidget shellTerminalWidget) throws IOException {
         shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, vm.getAdminUserName(), vm.getHostIp()));
     }

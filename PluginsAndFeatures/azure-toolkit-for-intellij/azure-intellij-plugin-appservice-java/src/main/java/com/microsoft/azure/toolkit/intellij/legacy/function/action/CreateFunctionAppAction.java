@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateFunctionAppAction {
-    @AzureOperation(name = "action/function.open_creation_dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.open_creation_dialog", type = AzureOperation.Type.ACTION)
     public static void openDialog(final Project project, @Nullable final FunctionAppConfig data) {
         AzureTaskManager.getInstance().runLater(() -> {
             final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
@@ -49,7 +49,7 @@ public class CreateFunctionAppAction {
                     }, (error) -> {
                         final String title = String.format("Reopen dialog \"%s\"", dialog.getTitle());
                         final Consumer<Object> act = t -> openDialog(project, config);
-                        final Action.Id<Object> REOPEN = Action.Id.of("function.reopen_creation_dialog");
+                        final Action.Id<Object> REOPEN = Action.Id.of("user/function.reopen_creation_dialog");
                         final Action<?> action = new Action<>(REOPEN, act, new ActionView.Builder(title));
                         AzureMessager.getMessager().error(error, null, action);
                     });
@@ -58,9 +58,9 @@ public class CreateFunctionAppAction {
         });
     }
 
-    @AzureOperation(name = "action/function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static Single<FunctionAppBase<?,?,?>> createFunctionApp(final FunctionAppConfig config) {
-        final AzureString title = description("action/function.create_app.app", config.getName());
+        final AzureString title = description("user/function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
             @Override
             public boolean show(IAzureMessage raw) {

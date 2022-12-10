@@ -98,7 +98,7 @@ public class AzureSdkArtifactGroupPanel {
         this.artifactsPnl.removeAll();
     }
 
-    @AzureOperation(name = "action/sdk.select_artifact.artifact", params = "pkg.getArtifactId()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/sdk.select_artifact.artifact", params = "pkg.getArtifactId()", type = AzureOperation.Type.ACTION)
     private void onPackageOrVersionSelected(AzureSdkArtifactEntity pkg, String version) {
         OperationContext.action().setTelemetryProperty("artifact", pkg.getArtifactId());
         this.pkg = pkg;
@@ -132,7 +132,7 @@ public class AzureSdkArtifactGroupPanel {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new AnAction(ActionsBundle.message("action.$Copy.text"), ActionsBundle.message("action.$Copy.description"), AllIcons.Actions.Copy) {
             @Override
-            @AzureOperation(name = "action/sdk.copy_dependency_configuration", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "user/sdk.copy_dependency_configuration", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull final AnActionEvent e) {
                 OperationContext.action().setTelemetryProperty("feature", pkg.getArtifactId());
                 OperationContext.action().setTelemetryProperty("tools", AzureSdkArtifactGroupPanel.type.getName());

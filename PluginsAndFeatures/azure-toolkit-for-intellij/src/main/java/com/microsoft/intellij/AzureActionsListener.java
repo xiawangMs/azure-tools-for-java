@@ -124,7 +124,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "common.init_plugin", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "platform/common.init_plugin", type = AzureOperation.Type.SERVICE)
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
         try {
             DefaultLoader.setPluginComponent(this);

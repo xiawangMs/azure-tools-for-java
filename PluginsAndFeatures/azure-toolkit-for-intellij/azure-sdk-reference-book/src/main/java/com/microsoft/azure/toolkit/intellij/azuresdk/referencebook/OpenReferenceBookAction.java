@@ -20,11 +20,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 
 public class OpenReferenceBookAction extends AnAction implements DumbAware {
-    public static final String ID = "action/AzureToolkit.OpenSdkReferenceBook";
+    public static final String ID = "user/AzureToolkit.OpenSdkReferenceBook";
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "action/sdk.open_reference_book", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/sdk.open_reference_book", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@Nonnull final AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         openSdkReferenceBook(event.getProject(), null);

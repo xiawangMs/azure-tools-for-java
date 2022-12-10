@@ -52,7 +52,7 @@ public class VirtualFileActions {
     private static final String SUCCESS_DOWNLOADING = "File %s is successfully downloaded to %s.";
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
-    @AzureOperation(name = "common.open_file_in_editor.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_3rd/common.open_file_in_editor.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void openFileInEditor(VirtualFile file, final Function<? super String, Boolean> onSave, Runnable onClose, FileEditorManager manager) {
         final Project project = manager.getProject();
         final FileEditor[] editors = manager.openFile(file, true, true);
@@ -137,12 +137,12 @@ public class VirtualFileActions {
     }
 
     private static Action<Void> newShowInExplorerAction(@Nonnull final File dest) {
-        final Action.Id<Void> REVEAL = Action.Id.of("action/common.reveal_file_in_explorer");
+        final Action.Id<Void> REVEAL = Action.Id.of("user/common.reveal_file_in_explorer");
         return new Action<>(REVEAL, v -> revealInExplorer(dest), new ActionView.Builder(RevealFileAction.getActionName()));
     }
 
     private static Action<Void> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
-        final Action.Id<Void> OPEN = Action.Id.of("action/common.open_file_in_editor");
+        final Action.Id<Void> OPEN = Action.Id.of("user/common.open_file_in_editor");
         return new Action<>(OPEN, v -> AzureTaskManager.getInstance().runLater(() -> {
             final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
             final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
@@ -151,7 +151,7 @@ public class VirtualFileActions {
         }), new ActionView.Builder("Open In Editor"));
     }
 
-    @AzureOperation(name = "common.reveal_file_in_explorer.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_3rd/common.reveal_file_in_explorer.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void revealInExplorer(@Nonnull File file) {
         AzureTaskManager.getInstance().runLater(() -> RevealFileAction.openFile(file));
     }

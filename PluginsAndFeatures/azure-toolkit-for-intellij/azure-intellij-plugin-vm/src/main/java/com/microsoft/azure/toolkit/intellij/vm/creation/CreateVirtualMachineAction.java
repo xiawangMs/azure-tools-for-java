@@ -58,14 +58,14 @@ public class CreateVirtualMachineAction {
 
     private static void doCreateVirtualMachine(final Project project, final VirtualMachineDraft draft) {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        tm.runInBackground(OperationBundle.description("vm.create_vm.vm", draft.getName()), () -> {
+        tm.runInBackground(OperationBundle.description("internal/vm.create_vm.vm", draft.getName()), () -> {
             OperationContext.action().setTelemetryProperty("subscriptionId", draft.getSubscriptionId());
             try {
                 new CreateVirtualMachineTask(draft).execute();
                 CacheManager.getUsageHistory(VirtualMachine.class).push(draft);
             } catch (final Exception e) {
                 final Consumer<Object> act = t -> tm.runLater("open dialog", () -> openDialog(project, draft));
-                final Action.Id<Object> REOPEN = Action.Id.of("vm.reopen_creation_dialog");
+                final Action.Id<Object> REOPEN = Action.Id.of("user/vm.reopen_creation_dialog");
                 final Action<?> action = new Action<>(REOPEN, act, new ActionView.Builder(REOPEN_CREATION_DIALOG));
                 AzureMessager.getMessager().error(e, null, action);
             }

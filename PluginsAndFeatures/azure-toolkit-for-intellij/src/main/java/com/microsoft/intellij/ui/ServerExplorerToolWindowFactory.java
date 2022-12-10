@@ -15,8 +15,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
-import com.intellij.openapi.options.newEditor.SettingsDialog;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -90,7 +88,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private final Map<Project, DefaultTreeModel> treeModelMap = new HashMap<>();
 
     @Override
-    @AzureOperation(name = "common.initialize_explorer", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "platform/common.initialize_explorer", type = AzureOperation.Type.SERVICE)
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         final AzureModule azureModule = new AzureModuleImpl(project);
@@ -459,7 +457,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             final AnAction whatsNewAction = ActionManager.getInstance().getAction("Actions.WhatsNew");
             final AnAction reportIssueAction = ActionManager.getInstance().getAction("AzureToolkit.GithubIssue");
             final AnAction featureRequestAction = ActionManager.getInstance().getAction("AzureToolkit.FeatureRequest");
-            final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("action/AzureToolkit.OpenSdkReferenceBook");
+            final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("user/AzureToolkit.OpenSdkReferenceBook");
             final AnAction openResourceConnectionExplorerAction = ActionManager.getInstance().getAction("AzureToolkit.OpenResourceConnectionExplorerAction");
             final AnAction openAzureSettingsAction = ActionManager.getInstance().getAction(OPEN_AZURE_SETTINGS.getId());
             (toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, openAzureSettingsAction,openResourceConnectionExplorerAction,

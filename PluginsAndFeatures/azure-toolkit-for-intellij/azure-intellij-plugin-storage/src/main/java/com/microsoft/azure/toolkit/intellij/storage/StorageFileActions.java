@@ -57,7 +57,7 @@ public class StorageFileActions {
             AzureTaskManager.getInstance().runLater(() -> Messages.showWarningDialog(failure, "Open File"));
             return;
         }
-        final AzureString title = OperationBundle.description("storage.load_content.file", file.getName());
+        final AzureString title = OperationBundle.description("to_platform/storage.load_content.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -81,7 +81,7 @@ public class StorageFileActions {
         file.download(Path.of(temp.getAbsolutePath()));
         final VirtualFile virtualFile = VirtualFileActions.createVirtualFile(file.getId(), file.getName(), temp, fileEditorManager);
         final Function<String, Boolean> onSave = content -> {
-            final AzureString title = OperationBundle.description("storage.save_content.file", file.getName());
+            final AzureString title = OperationBundle.description("internal/storage.save_content.file", file.getName());
             AzureTaskManager.getInstance().runInBackground(title, () -> {
                 @SuppressWarnings("rawtypes")
                 final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
@@ -119,7 +119,7 @@ public class StorageFileActions {
                 final BlobFileDraft draft = (BlobFileDraft) module.create(relativePath.getName(0).toString(), "");
                 draft.setRelativePath(relativePath.toString());
                 draft.setDirectory(relativePath.getNameCount() > 1);
-                final AzureString title = OperationBundle.description("action/storage.create_blob.blob", draft.getPath());
+                final AzureString title = OperationBundle.description("user/storage.create_blob.blob", draft.getPath());
                 final IBlobFile finalCurrent = current;
                 AzureTaskManager.getInstance().runInBackground(title, () -> {
                     draft.createIfNotExist();
@@ -137,7 +137,7 @@ public class StorageFileActions {
                 dialog.close();
                 final AbstractAzResourceModule<? extends StorageFile, ? extends StorageFile, ?> module = file.getSubFileModule();
                 final AzResource.Draft<? extends StorageFile, ?> draft = module.create(name, "");
-                final AzureString title = OperationBundle.description("action/storage.create_file.file", draft.getName());
+                final AzureString title = OperationBundle.description("user/storage.create_file.file", draft.getName());
                 AzureTaskManager.getInstance().runInBackground(title, () -> {
                     draft.createIfNotExist();
                     openFileInEditor((StorageFile) draft, project);
@@ -154,7 +154,7 @@ public class StorageFileActions {
                 dialog.close();
                 final StorageFile.Draft<?, ?> draft = (StorageFile.Draft<?, ?>) file.getSubFileModule().create(name, "");
                 draft.setDirectory(true);
-                final AzureString title = OperationBundle.description("action/storage.create_directory.dir", draft.getName());
+                final AzureString title = OperationBundle.description("user/storage.create_directory.dir", draft.getName());
                 AzureTaskManager.getInstance().runInBackground(title, draft::createIfNotExist);
             });
             dialog.show();
@@ -168,7 +168,7 @@ public class StorageFileActions {
             final VirtualFile[] files = FileChooser.chooseFiles(descriptor, project, null);
             final AtomicInteger count = new AtomicInteger(0);
             for (final VirtualFile virtualFile : files) {
-                final AzureString title = OperationBundle.description("storage.upload_files.source|dir", virtualFile.getName(), file.getName());
+                final AzureString title = OperationBundle.description("internal/storage.upload_files.source|dir", virtualFile.getName(), file.getName());
                 final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
                     final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                     indicator.setIndeterminate(true);
@@ -194,7 +194,7 @@ public class StorageFileActions {
                 final VirtualFile[] files = FileChooser.chooseFiles(descriptor, project, null);
                 if (files.length > 0) {
                     final VirtualFile virtualFile = files[0];
-                    final AzureString title = OperationBundle.description("storage.upload_file.source|file", virtualFile.getName(), file.getName());
+                    final AzureString title = OperationBundle.description("internal/storage.upload_file.source|file", virtualFile.getName(), file.getName());
                     final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
                         @SuppressWarnings("rawtypes")
                         final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
@@ -220,7 +220,7 @@ public class StorageFileActions {
             fileChooserDescriptor.setTitle("Choose Where to Save the File");
             final VirtualFile vf = FileChooser.chooseFile(fileChooserDescriptor, null, null);
             if (vf != null) {
-                final AzureString title = OperationBundle.description("storage.download_file.file|dir", file.getName(), vf.getPath());
+                final AzureString title = OperationBundle.description("to_platform/storage.download_file.file|dir", file.getName(), vf.getPath());
                 manager.runInModal(title, () -> {
                     final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                     indicator.setIndeterminate(true);
@@ -235,14 +235,14 @@ public class StorageFileActions {
         });
     }
 
-    @AzureOperation(name = "action/storage.copy_file_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/storage.copy_file_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void copyUrl(StorageFile file, Project project) {
         final String url = file.getUrl();
         CopyPasteManager.getInstance().setContents(new StringSelection(url));
         AzureMessager.getMessager().success(AzureString.format("URL of %s copied to clipboard: %s", file.getName(), url));
     }
 
-    @AzureOperation(name = "action/storage.copy_file_sas_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/storage.copy_file_sas_url.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public static void copySasUrl(StorageFile file, Project project) {
         final String url = file.getSasUrl();
         CopyPasteManager.getInstance().setContents(new StringSelection(url));
