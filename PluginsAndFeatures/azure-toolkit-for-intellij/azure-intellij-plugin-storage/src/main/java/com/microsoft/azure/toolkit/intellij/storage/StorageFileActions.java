@@ -57,7 +57,7 @@ public class StorageFileActions {
             AzureTaskManager.getInstance().runLater(() -> Messages.showWarningDialog(failure, "Open File"));
             return;
         }
-        final AzureString title = OperationBundle.description("to_platform/storage.load_content.file", file.getName());
+        final AzureString title = OperationBundle.description("boundary/storage.load_content.file", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -220,7 +220,7 @@ public class StorageFileActions {
             fileChooserDescriptor.setTitle("Choose Where to Save the File");
             final VirtualFile vf = FileChooser.chooseFile(fileChooserDescriptor, null, null);
             if (vf != null) {
-                final AzureString title = OperationBundle.description("to_platform/storage.download_file.file|dir", file.getName(), vf.getPath());
+                final AzureString title = OperationBundle.description("boundary/storage.download_file.file|dir", file.getName(), vf.getPath());
                 manager.runInModal(title, () -> {
                     final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                     indicator.setIndeterminate(true);

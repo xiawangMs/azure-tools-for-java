@@ -41,7 +41,7 @@ public class IntellijActionsContributor implements IActionsContributor {
     }
 
 
-    @AzureOperation(name = "to_platform/resource.open_url.url", params = {"u"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/resource.open_url.url", params = {"u"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void browseUrl(String u) {
         BrowserUtil.browse(u);
     }

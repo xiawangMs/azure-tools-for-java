@@ -124,7 +124,7 @@ public class IdeAzureAccount {
         });
     }
 
-    @AzureOperation(name = "to_platform/account.cache_auth_config", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/account.cache_auth_config", type = AzureOperation.Type.TASK)
     private void cacheAuthConfiguration(@Nonnull final AuthConfiguration config) {
         try {
             log.debug("cache auth configuration...");
@@ -147,7 +147,7 @@ public class IdeAzureAccount {
     }
 
     @Nullable
-    @AzureOperation(name = "to_platform/account.load_auth_config_cache", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/account.load_auth_config_cache", type = AzureOperation.Type.TASK)
     private static AuthConfiguration loadAuthConfigurationCache() {
         log.debug("loading auth configuration cache...");
         try {

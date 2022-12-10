@@ -48,7 +48,7 @@ public class BrowseRemoteHostSftpAction {
         tryConnecting(project, sshConfig, openToolWindowHandler);
     }
 
-    @AzureOperation(name = "to_3rd/vm.open_sftp_toolwindow", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.open_sftp_toolwindow", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openSftpToolWindow(@Nonnull Project project, SshConfig sshConfig) {
         final WebServerConfig server = getOrCreateWebServerConfigFromSsh(sshConfig, project);
         final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
@@ -58,7 +58,7 @@ public class BrowseRemoteHostSftpAction {
 
     private static void tryConnecting(@Nonnull Project project, SshConfig sshConfig, Runnable callback) {
         final SshUiData sshUiData = new SshUiData(sshConfig);
-        final AzureString title = OperationBundle.description("to_3rd/vm.connecting.vm", sshConfig.getName());
+        final AzureString title = OperationBundle.description("boundary/vm.connecting.vm", sshConfig.getName());
         final AzureTask<Void> task = new AzureTask<>(title, () -> {
             try {
                 RemoteCredentialsUtil.connectionBuilder(sshUiData, project)

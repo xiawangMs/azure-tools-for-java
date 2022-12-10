@@ -8,6 +8,7 @@ package com.microsoft.intellij.util;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.plugins.gradle.GradleManager;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 public class GradleUtils {
 
+    @AzureOperation("boundary/common.list_gradle_projects")
     public static List<ExternalProjectPojo> listGradleRootProjectPojo(Project project) {
         final GradleManager gradleManager = (GradleManager) ExternalSystemApiUtil.getManager(GradleConstants.SYSTEM_ID);
         final Map<ExternalProjectPojo, Collection<ExternalProjectPojo>> projects =

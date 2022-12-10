@@ -61,7 +61,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
         }
     }
 
-    @AzureOperation(name = "to_3rd/vm.create_ssh_session_iu", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.create_ssh_session_iu", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void createSshSession(@Nonnull Project project, SshConfig ssh, SshTerminalCachingRunner runner) {
         final TerminalTabState tabState = new TerminalTabState();
         tabState.myTabName = ssh.getName();
@@ -69,11 +69,11 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
     }
 
     private Action<?> openSshConfigurationAction(final @NotNull Project project, RemoteCredentials sshCredential) {
-        final Action.Id<Void> id = Action.Id.of("to_3rd/vm.open_ssh_configuration");
+        final Action.Id<Void> id = Action.Id.of("boundary/vm.open_ssh_configuration");
         return new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> openSshConfiguration(project, sshCredential)), new ActionView.Builder("Modify SSH Configuration"));
     }
 
-    @AzureOperation(name = "to_3rd/vm.open_ssh_configuration", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.open_ssh_configuration", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openSshConfiguration(@Nonnull Project project, RemoteCredentials sshCredential) {
         final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
         ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {

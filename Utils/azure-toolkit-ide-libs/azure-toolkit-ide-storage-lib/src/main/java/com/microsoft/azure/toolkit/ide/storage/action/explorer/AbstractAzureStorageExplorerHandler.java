@@ -73,7 +73,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
         }
     }
 
-    @AzureOperation(name = "to_3rd/storage.open_azure_storage_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/storage.open_azure_storage_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     protected boolean launchStorageExplorerWithUri(@Nonnull final StorageAccount storageAccount, @Nonnull final String resourceUrl) {
         if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {

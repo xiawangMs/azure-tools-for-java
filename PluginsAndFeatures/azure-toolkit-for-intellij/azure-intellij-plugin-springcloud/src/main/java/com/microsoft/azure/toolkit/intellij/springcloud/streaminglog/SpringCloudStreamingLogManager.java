@@ -59,7 +59,7 @@ public class SpringCloudStreamingLogManager {
     }
 
     public void closeStreamingLog(String instanceName) {
-        final AzureString title = OperationBundle.description("to_platform/springcloud.close_log_stream.instance", instanceName);
+        final AzureString title = OperationBundle.description("boundary/springcloud.close_log_stream.instance", instanceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, title, false, () -> {
             final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
             if (consoleView != null && consoleView.getStatus() == ACTIVE) {

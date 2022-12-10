@@ -133,14 +133,14 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(openPortalUrlAction.setAuthRequired(false));
 
         // register commands
-        final ActionView.Builder openUrlView = new ActionView.Builder("Open Url").title(url -> description("to_platform/resource.open_url.url", url));
+        final ActionView.Builder openUrlView = new ActionView.Builder("Open Url").title(url -> description("boundary/resource.open_url.url", url));
         final Action<String> action = new Action<>(OPEN_URL, (s) -> {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
         }, openUrlView);
         action.setAuthRequired(false);
         am.registerAction(action);
 
-        final ActionView.Builder copyStringView = new ActionView.Builder("Copy").title(str -> description("to_platform/common.copy_string.string", str));
+        final ActionView.Builder copyStringView = new ActionView.Builder("Copy").title(str -> description("boundary/common.copy_string.string", str));
         final Action<String> copyStringAction = new Action<>(COPY_STRING, ResourceCommonActionsContributor::copyString, copyStringView);
         action.setAuthRequired(false);
         am.registerAction(copyStringAction);
@@ -214,7 +214,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(pinAction.setAuthRequired(false));
     }
 
-    @AzureOperation(name = "to_platform/common.copy_string.string", params = {"s"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/common.copy_string.string", params = {"s"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void copyString(String s) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
     }

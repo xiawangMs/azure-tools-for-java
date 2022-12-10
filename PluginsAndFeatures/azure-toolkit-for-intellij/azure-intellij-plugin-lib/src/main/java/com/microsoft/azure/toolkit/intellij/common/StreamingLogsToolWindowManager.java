@@ -31,7 +31,7 @@ public class StreamingLogsToolWindowManager {
         return SingletonHolder.INSTANCE;
     }
 
-    @AzureOperation(name = "to_platform/common.open_log_streaming_console.resource", params = {"resourceName"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/common.open_log_streaming_console.resource", params = {"resourceName"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     public void showStreamingLogConsole(Project project, String resourceId, String resourceName, ConsoleView consoleView) {
         final ToolWindow toolWindow = getToolWindow(project);
         final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();

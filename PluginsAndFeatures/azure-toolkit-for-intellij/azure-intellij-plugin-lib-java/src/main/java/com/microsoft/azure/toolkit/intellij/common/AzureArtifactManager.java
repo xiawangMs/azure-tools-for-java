@@ -130,7 +130,7 @@ public class AzureArtifactManager {
     }
 
     @Nullable
-    @AzureOperation(name = "to_platform/common.get_artifact_module.artifact", params = {"azureArtifact.getName()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/common.get_artifact_module.artifact", params = {"azureArtifact.getName()"}, type = AzureOperation.Type.TASK)
     public Module getModuleFromAzureArtifact(AzureArtifact azureArtifact) {
         if (azureArtifact == null || azureArtifact.getReferencedObject() == null) {
             return null;

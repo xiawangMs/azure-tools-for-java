@@ -42,7 +42,7 @@ public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction
         });
     }
 
-    @AzureOperation(name = "to_3rd/vm.create_ssh_session_ic", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.create_ssh_session_ic", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openTerminal(VirtualMachine vm, ShellTerminalWidget shellTerminalWidget) throws IOException {
         shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, vm.getAdminUserName(), vm.getHostIp()));
     }

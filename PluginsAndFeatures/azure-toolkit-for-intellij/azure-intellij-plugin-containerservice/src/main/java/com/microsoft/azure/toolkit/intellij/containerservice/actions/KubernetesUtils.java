@@ -72,7 +72,7 @@ public class KubernetesUtils {
         AzureTaskManager.getInstance().runLater(() -> doCallK8sPlugin(action, toolWindow, context));
     }
 
-    @AzureOperation(name = "to_3rd/kubernetes.open_in_k8s_plugin", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/kubernetes.open_in_k8s_plugin", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void doCallK8sPlugin(AnAction action, ToolWindow toolWindow, DataContext context) {
         ActionUtil.invokeAction(action, context, "KubernetesNotification", null, null);
         toolWindow.activate(null);
@@ -86,7 +86,7 @@ public class KubernetesUtils {
         return new Action<>(id, consumer, view);
     }
 
-    @AzureOperation(name = "to_platform/kubernetes.search_k8s_plugin", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/kubernetes.search_k8s_plugin", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void searchK8sPlugin() {
         ShowSettingsUtil.getInstance().editConfigurable(null, new PluginManagerConfigurable(), it ->
             it.openMarketplaceTab("/tag: \"Cloud\" Kubernetes")

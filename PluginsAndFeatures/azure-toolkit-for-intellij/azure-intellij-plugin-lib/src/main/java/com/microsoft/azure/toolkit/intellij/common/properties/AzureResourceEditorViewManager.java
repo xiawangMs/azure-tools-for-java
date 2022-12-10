@@ -57,12 +57,12 @@ public class AzureResourceEditorViewManager {
         }
     }
 
-    @AzureOperation(name = "to_platform/common.open_properties_editor.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/common.open_properties_editor.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void openFile(FileEditorManager manager, LightVirtualFile file) {
         manager.openFile(file, true, true);
     }
 
-    @AzureOperation(name = "to_platform/common.close_properties_editor.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/common.close_properties_editor.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void closeFile(FileEditorManager fileEditorManager, LightVirtualFile file) {
         fileEditorManager.closeFile(file);
     }

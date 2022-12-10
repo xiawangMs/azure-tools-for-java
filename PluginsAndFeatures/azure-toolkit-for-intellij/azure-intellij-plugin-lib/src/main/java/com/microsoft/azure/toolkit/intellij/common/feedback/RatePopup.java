@@ -179,7 +179,7 @@ public class RatePopup {
         return false;
     }
 
-    @AzureOperation(name = "to_platform/feedback.show_popup_rating", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/feedback.show_popup_rating", type = AzureOperation.Type.TASK)
     public static synchronized void popup(@Nullable Project project) {
         if (RatePopup.balloon == null || RatePopup.balloon.isDisposed()) {
             final JPanel rateUsPanel = new RatePopup().getContentPanel();

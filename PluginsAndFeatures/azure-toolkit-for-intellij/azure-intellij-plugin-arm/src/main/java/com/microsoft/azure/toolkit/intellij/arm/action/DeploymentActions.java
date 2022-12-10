@@ -96,7 +96,7 @@ public class DeploymentActions {
         });
     }
 
-    @AzureOperation(name = "to_platform/arm.export_template_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/arm.export_template_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void doExportTemplate(File file, String template) throws IOException {
         IOUtils.write(template, new FileOutputStream(file), Charset.defaultCharset());
     }
@@ -122,7 +122,7 @@ public class DeploymentActions {
         });
     }
 
-    @AzureOperation(name = "to_platform/arm.export_parameters_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/arm.export_parameters_to_file.file", params = {"file.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
     private static void doExportParameters(File file, String parameters) throws IOException {
         IOUtils.write(parameters, new FileOutputStream(file), Charset.defaultCharset());
     }
