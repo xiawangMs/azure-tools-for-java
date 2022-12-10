@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+    <toolWindow anchor="bottom"
+                factoryClass="com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager$AzureMonitorFactory"
+                id="Azure Monitor" canCloseContents="true"/>
+    </extensions>
+</idea-plugin>
