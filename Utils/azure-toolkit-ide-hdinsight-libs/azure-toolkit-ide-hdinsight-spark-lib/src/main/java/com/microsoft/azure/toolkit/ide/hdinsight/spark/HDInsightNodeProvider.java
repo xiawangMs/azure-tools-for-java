@@ -1,13 +1,20 @@
 package com.microsoft.azure.toolkit.ide.hdinsight.spark;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.hdinsight.AzureHDInsightService;
+import com.microsoft.azure.toolkit.lib.hdinsight.SparkCluster;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -24,18 +31,30 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
-        return data instanceof AzureHDInsightService;
+        return data instanceof AzureHDInsightService
+                || data instanceof SparkCluster;
     }
 
     @Nullable
     @Override
     public Node<?> createNode(@Nonnull Object data,@Nullable Node<?> parent,@Nonnull Manager manager) {
         if (data instanceof AzureHDInsightService) {
-            final AzureHDInsightService service = ((AzureHDInsightService) data);
-            return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
-                    .actions(HDInsightActionsContributor.SERVICE_ACTIONS);
+            AzureHDInsightService service = (AzureHDInsightService)data;
+            Function<AzureHDInsightService, List<SparkCluster>> clusters = s -> s.list().stream()
+                    .flatMap(m -> m.clusters().list().stream()).collect(Collectors.toList());
+            return new Node<>(service).view(new AzureServiceLabelView(service, "HDInsight", ICON))
+                    .actions("actions.hdinsight.service")
+                    .addChildren(clusters, (cluster, serviceNode) -> this.createNode(cluster, serviceNode, manager));
+        } else if (data instanceof SparkCluster){
+                final SparkCluster sparkCluster = (SparkCluster) data;
+                return new Node<>(sparkCluster)
+                        .view(new AzureResourceLabelView<>(sparkCluster))
+                        .inlineAction(ResourceCommonActionsContributor.PIN);
+                        //.doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
+                        //.actions(HDInsightActionsContributor.CLUSTER_ACTIONS);
+        } else {
+            return null;
         }
-        return null;
     }
 
 }

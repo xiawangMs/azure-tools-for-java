@@ -13,12 +13,26 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzServiceSubscriptio
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSubscription, HDInsightManager> {
 
     public AzureHDInsightService() {
         super("Microsoft.HDInsight");
+    }
+
+    @Nonnull
+    public List<SparkCluster> clusters() {
+        return this.list().stream().flatMap(m -> m.clusters().list().stream()).collect(Collectors.toList());
+    }
+
+    @Nonnull
+    public SparkClusterModule clusters(@Nonnull String subscriptionId) {
+        final HDInsightServiceSubscription rm = get(subscriptionId, null);
+        assert rm != null;
+        return rm.clusters();
     }
 
     @Nonnull
