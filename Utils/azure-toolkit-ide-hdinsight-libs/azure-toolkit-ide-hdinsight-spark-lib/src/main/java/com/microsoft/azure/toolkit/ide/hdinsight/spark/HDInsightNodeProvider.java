@@ -2,10 +2,11 @@ package com.microsoft.azure.toolkit.ide.hdinsight.spark;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.ide.hdinsight.spark.component.SparkClusterNodeView;
+import com.microsoft.azure.toolkit.ide.hdinsight.spark.component.SparkJobNodeView;
 import com.microsoft.azure.toolkit.lib.hdinsight.AzureHDInsightService;
 import com.microsoft.azure.toolkit.lib.hdinsight.SparkCluster;
 
@@ -46,12 +47,15 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
                     .actions("actions.hdinsight.service")
                     .addChildren(clusters, (cluster, serviceNode) -> this.createNode(cluster, serviceNode, manager));
         } else if (data instanceof SparkCluster){
-                final SparkCluster sparkCluster = (SparkCluster) data;
-                return new Node<>(sparkCluster)
-                        .view(new AzureResourceLabelView<>(sparkCluster))
-                        .inlineAction(ResourceCommonActionsContributor.PIN);
-                        //.doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
-                        //.actions(HDInsightActionsContributor.CLUSTER_ACTIONS);
+            final SparkCluster sparkCluster = (SparkCluster) data;
+            Node<SparkCluster> jobsNode = new Node<>(sparkCluster)
+                    .view(new SparkJobNodeView(sparkCluster))
+                    .clickAction(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW);
+            return new Node<>(sparkCluster)
+                        .view(new SparkClusterNodeView(sparkCluster))
+                        .inlineAction(ResourceCommonActionsContributor.PIN)
+                        .actions(HDInsightActionsContributor.SPARK_CLUSTER_ACTIONS)
+                        .addChild(jobsNode);
         } else {
             return null;
         }
