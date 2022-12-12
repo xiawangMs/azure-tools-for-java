@@ -3,8 +3,13 @@ package com.microsoft.azure.toolkit.lib.hdinsight;
 import com.azure.resourcemanager.hdinsight.HDInsightManager;
 import com.azure.resourcemanager.hdinsight.models.Cluster;
 import com.azure.resourcemanager.hdinsight.models.Clusters;
+import com.google.common.collect.ImmutableList;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.JobViewManager;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,13 +32,26 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkCluster, H
     protected Stream<Cluster> loadResourcesFromAzure() {
         //log.debug("[{}]:loadResourcesFromAzure()", this.getName());
         return Optional.ofNullable( this.getClient()).map((c) -> {
+            if (JobViewManager.REGISTERED_JOBVIEW_MAP>=0)
+                AzureTaskManager.getInstance().runInBackground("loading cluster data",()->{
+                    try {
+                        JobViewManager.REGISTERED_JOBVIEW_MAP = -1;
+                        ClusterManagerEx clusterManagerEx = ClusterManagerEx.getInstance();
+                        ImmutableList<IClusterDetail> clusterDetails = clusterManagerEx.getClusterDetails();
+                        for (IClusterDetail detail : clusterDetails) {
+                            JobViewManager.registerJovViewNode(detail.getName(), detail);
+                        }
+                    } finally {
+                        JobViewManager.REGISTERED_JOBVIEW_MAP = 1;
+                    }
+                });
+
             List<Cluster> sourceList = c.list().stream().collect(Collectors.toList());
             List<Cluster> resultList = new ArrayList<Cluster>();
-
             // Remove duplicate clusters that share the same cluster name
             HashSet<String> clusterIdSet = new HashSet<>();
             for (Cluster cluster : sourceList)
-                if (clusterIdSet.add(cluster.id()))
+                if (clusterIdSet.add(cluster.id()) && isSparkCluster(cluster.properties().clusterDefinition().kind()))
                     resultList.add(cluster);
 
             return resultList.stream();
@@ -72,9 +90,14 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkCluster, H
         return new SparkCluster(name, Objects.requireNonNull(resourceGroupName),this);
     }
 
+    private boolean isSparkCluster(String clusterKind) {
+        return clusterKind.equalsIgnoreCase("spark");
+    }
+
     @Nonnull
     @Override
     public String getResourceTypeName() {
         return "HDInsight Clusters";
     }
+
 }

@@ -2,5 +2,6 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.hdinsight.spark.HDInsightNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.hdinsight.spark.HDInsightActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.hdinsight.IntellijHDInsightActionsContributor"/>
     </extensions>
 </idea-plugin>

@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.lib.hdinsight;
 
 import com.azure.resourcemanager.hdinsight.models.Cluster;
+import com.azure.resourcemanager.hdinsight.models.ClusterGetProperties;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
@@ -37,7 +38,10 @@ public class SparkCluster extends AbstractAzResource<SparkCluster, HDInsightServ
     @NotNull
     @Override
     public String loadStatus(@NotNull Cluster remote) {
-        return null;
+        ClusterGetProperties p = remote.properties();
+        return new StringBuffer().append("(Spark:")
+                .append(p.clusterDefinition().componentVersion().get("Spark")).append(")")
+                .append(p.clusterState()).toString();
     }
 
 }

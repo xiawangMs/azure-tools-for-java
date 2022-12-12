@@ -27,14 +27,27 @@
             <artifactId>azure-toolkit-ide-common-lib</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-ide-storage-lib</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>hdinsight-node-common</artifactId>
-            <version>3.72.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.azure.resourcemanager</groupId>
             <artifactId>azure-resourcemanager-hdinsight</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-ide-storage-lib</artifactId>
+            <version>0.28.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
