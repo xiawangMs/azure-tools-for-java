@@ -9,14 +9,19 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.ui.UIUtil;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.LabelUI;
 import java.awt.*;
 
 public class AzureCommentLabel extends JBLabel {
-    public AzureCommentLabel(@NotNull String text) {
+    public AzureCommentLabel() {
+        super();
+        setForeground(UIUtil.getContextHelpForeground());
+    }
+
+    public AzureCommentLabel(@Nonnull String text) {
         super(text);
         setForeground(UIUtil.getContextHelpForeground());
     }
@@ -27,7 +32,7 @@ public class AzureCommentLabel extends JBLabel {
 
         if (SystemInfo.isMac) {
             Font font = getFont();
-            float size = font.getSize2D();
+            final float size = font.getSize2D();
             font = new FontUIResource(font.deriveFont(size - JBUIScale.scale(2))); // Allow to reset the font by UI
             setFont(font);
         }
