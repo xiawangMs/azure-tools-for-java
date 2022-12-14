@@ -147,6 +147,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         });
     }
 
+    public void setValue(Predicate<T> predicate) {
+        this.setValue(new ItemReference<>(predicate));
+    }
+
     public void setValue(final ItemReference<T> val) {
         this.setValue(val, null);
     }
