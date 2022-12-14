@@ -3,10 +3,11 @@ package com.microsoft.azure.toolkit.intellij.hdinsight;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.hdinsight.spark.HDInsightActionsContributor;
+import com.microsoft.azure.toolkit.intellij.hdinsight.actions.OpenLinkAClusterAction;
 import com.microsoft.azure.toolkit.intellij.hdinsight.actions.OpenSparkJobViewAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.hdinsight.SparkCluster;
+import com.microsoft.azure.toolkit.lib.hdinsight.SparkClusterNode;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -15,9 +16,13 @@ public class IntellijHDInsightActionsContributor implements IActionsContributor 
 
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<AzResource, AnActionEvent> condition = (r, e) -> r instanceof SparkCluster;
-        final BiConsumer<AzResource, AnActionEvent> handler = (c, e) -> OpenSparkJobViewAction.open((SparkCluster) c, e);
-        am.registerHandler(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW, condition, handler);
+        final BiPredicate<AzResource, AnActionEvent> jobviewCondition = (r, e) -> r instanceof SparkClusterNode;
+        final BiConsumer<AzResource, AnActionEvent> jobviewHandler = (c, e) -> OpenSparkJobViewAction.open((SparkClusterNode) c, e);
+        am.registerHandler(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW, jobviewCondition, jobviewHandler);
+
+        final BiPredicate<Object, AnActionEvent> linkClusterCondition = (r, e) -> r instanceof Object;
+        final BiConsumer<Object, AnActionEvent> linkClusterHandler = (c, e) -> OpenLinkAClusterAction.open(c, e);
+        am.registerHandler(HDInsightActionsContributor.LINK_A_CLUSTER, linkClusterCondition, linkClusterHandler);
     }
 
 }
