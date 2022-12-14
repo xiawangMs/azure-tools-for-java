@@ -2,5 +2,6 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.containerapps.ContainerAppsNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.containerapps.ContainerAppsActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.containerapps.IntelliJContainerAppsActionsContributor"/>
     </extensions>
 </idea-plugin>
