@@ -9,7 +9,7 @@ import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SparkClusterModule extends AbstractAzResourceModule<SparkCluster, HDInsightServiceSubscription, Cluster> {
+import static com.microsoft.azure.toolkit.lib.common.model.AzResource.RESOURCE_GROUP_PLACEHOLDER;
+
+public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNode, HDInsightServiceSubscription, Cluster> {
 
     public static final String NAME = "clusters";
 
@@ -33,7 +35,6 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkCluster, H
         //log.debug("[{}]:loadResourcesFromAzure()", this.getName());
         return Optional.ofNullable( this.getClient()).map((c) -> {
             if (JobViewManager.REGISTERED_JOBVIEW_MAP>=0)
-                AzureTaskManager.getInstance().runInBackground("loading cluster data",()->{
                     try {
                         JobViewManager.REGISTERED_JOBVIEW_MAP = -1;
                         ClusterManagerEx clusterManagerEx = ClusterManagerEx.getInstance();
@@ -44,7 +45,6 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkCluster, H
                     } finally {
                         JobViewManager.REGISTERED_JOBVIEW_MAP = 1;
                     }
-                });
 
             List<Cluster> sourceList = c.list().stream().collect(Collectors.toList());
             List<Cluster> resultList = new ArrayList<Cluster>();
@@ -68,26 +68,26 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkCluster, H
         super(name, parent);
     }
 
-//    @Nullable
-//    @Override
-//    public SparkCluster get(@Nonnull String name, @Nullable String resourceGroup) {
-//        resourceGroup = StringUtils.firstNonBlank(resourceGroup, this.getParent().getResourceGroupName());
-//        if (StringUtils.isBlank(resourceGroup) || StringUtils.equalsIgnoreCase(resourceGroup, RESOURCE_GROUP_PLACEHOLDER)) {
-//            return this.list().stream().filter(c -> StringUtils.equalsIgnoreCase(name, c.getName())).findAny().orElse(null);
-//        }
-//        return super.get(name, resourceGroup);
-//    }
-
-    @NotNull
+    @Nullable
     @Override
-    protected SparkCluster newResource(@NotNull Cluster cluster) {
-        return new SparkCluster(cluster,this);
+    public SparkClusterNode get(@Nonnull String name, @Nullable String resourceGroup) {
+        resourceGroup = StringUtils.firstNonBlank(resourceGroup, this.getParent().getResourceGroupName());
+        if (StringUtils.isBlank(resourceGroup) || StringUtils.equalsIgnoreCase(resourceGroup, RESOURCE_GROUP_PLACEHOLDER)) {
+            return this.list().stream().filter(c -> StringUtils.equalsIgnoreCase(name, c.getName())).findAny().orElse(null);
+        }
+        return super.get(name, resourceGroup);
     }
 
     @NotNull
     @Override
-    protected SparkCluster newResource(@NotNull String name, @Nullable String resourceGroupName) {
-        return new SparkCluster(name, Objects.requireNonNull(resourceGroupName),this);
+    protected SparkClusterNode newResource(@NotNull Cluster cluster) {
+        return new SparkClusterNode(cluster,this);
+    }
+
+    @NotNull
+    @Override
+    protected SparkClusterNode newResource(@NotNull String name, @Nullable String resourceGroupName) {
+        return new SparkClusterNode(name, Objects.requireNonNull(resourceGroupName),this);
     }
 
     private boolean isSparkCluster(String clusterKind) {

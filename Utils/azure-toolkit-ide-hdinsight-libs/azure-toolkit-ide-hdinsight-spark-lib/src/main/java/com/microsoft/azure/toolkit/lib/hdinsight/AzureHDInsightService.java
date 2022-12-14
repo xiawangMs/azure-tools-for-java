@@ -24,7 +24,7 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
     }
 
     @Nonnull
-    public List<SparkCluster> clusters() {
+    public List<SparkClusterNode> clusters() {
         return this.list().stream().flatMap(m -> m.clusters().list().stream()).collect(Collectors.toList());
     }
 
