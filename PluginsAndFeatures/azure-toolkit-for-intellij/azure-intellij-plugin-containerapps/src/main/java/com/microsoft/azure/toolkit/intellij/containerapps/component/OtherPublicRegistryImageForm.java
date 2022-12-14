@@ -17,14 +17,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class OtherPublicRegistryImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig> {
-    private final Project project;
     @Getter
     private JPanel contentPanel;
     private com.microsoft.azure.toolkit.intellij.common.AzureTextInput txtImage;
 
-    public OtherPublicRegistryImageForm(Project project) {
+    public OtherPublicRegistryImageForm() {
         super();
-        this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }

@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.updateimage;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
@@ -30,8 +29,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateImageForm.UpdateImageConfig> {
-    private final Project project;
-
     @Getter
     private JPanel contentPanel;
     private ContainerRegistryTypeComboBox selectorRegistryType;
@@ -40,9 +37,8 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
     private AzureCommentLabel commentApp;
     private AzureFormJPanel<ContainerAppDraft.ImageConfig> formImage;
 
-    public UpdateImageForm(final Project project) {
+    public UpdateImageForm() {
         super();
-        this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
@@ -126,7 +122,7 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
         final AzureFormJPanel<ContainerAppDraft.ImageConfig> newFormImage = Objects.equals(type, ContainerRegistryTypeComboBox.ACR) ?
-            new ACRImageForm(this.project) : new OtherPublicRegistryImageForm(this.project);
+            new ACRImageForm() : new OtherPublicRegistryImageForm();
         this.formImageContainer.removeAll();
         this.formImageContainer.add(newFormImage.getContentPanel(), constraints);
         return newFormImage;

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
-import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -33,7 +32,7 @@ public class ACRImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConf
     private ACRRepositoryComboBox selectorRepository;
     private ACRRepositoryTagComboBox selectorTag;
 
-    public ACRImageForm(final Project project) {
+    public ACRImageForm() {
         super();
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
