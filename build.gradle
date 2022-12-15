@@ -61,7 +61,11 @@ task buildToolkitsLib {
             goals = "install"
             pom = file("${tempDir}/azure-toolkit-libs/pom.xml")
         }
+    }
+}
 
+task prepareBicepSupport {
+    doLast {
         logger.info('Building Lsp4intellij ...')
         def bicepDir = File.createTempDir()
         bicepDir.deleteOnExit()
@@ -75,7 +79,7 @@ task buildToolkitsLib {
         logger.info('Downloading bicep language server ...')
         def f = new File('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/src/main/resources/bicep-langserver.zip')
         if (!f.exists()) {
-            new URL('https://github.com/Azure/bicep/releases/download/v0.13.1/bicep-langserver.zip').withInputStream{ i -> f.withOutputStream{ it << i }}
+            new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream{ i -> f.withOutputStream{ it << i }}
         }
     }
 }
@@ -103,7 +107,7 @@ task buildAdditionalLibrary {
 }
 
 task buildEclipse {
-    dependsOn buildUtils, buildAdditionalLibrary
+    dependsOn buildUtils, buildAdditionalLibrary, prepareBicepSupport
 
     doLast {
         logger.info('Building Eclipse plugin ...')
