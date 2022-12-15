@@ -1,0 +1,32 @@
+{
+  "Application Insights": [
+    {
+      "displayName": "Exceptions causing request failures",
+      "queryString": ""
+    },
+    {
+      "displayName": "Failed operations",
+      "queryString": ""
+    }
+  ],
+  "App Service": [
+    {
+      "displayName": "App logs for each App Service",
+      "queryString": ""
+    },
+    {
+      "displayName": "App Service Health",
+      "queryString": ""
+    }
+  ],
+  "Azure Spring Cloud": [
+    {
+      "displayName": "Show the config server logs",
+      "queryString": ""
+    },
+    {
+      "displayName": "Show the service registry logs",
+      "queryString": ""
+    }
+  ]
+}

@@ -12,56 +12,55 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 
 public class AzureMonitorManager {
     private static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
-
+    private static final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
         return instance;
     }
 
-    public void openMonitorWindow(@Nonnull Project project) {
+    public void openMonitorWindow(@Nonnull Project project, @Nonnull Subscription subscription, @Nullable LogAnalyticsWorkspace workspace) {
+        final ToolWindow azureMonitorWindow = getToolWindow(project);
+        final ContentFactory contentFactory = ContentFactory.getInstance();
+        final AzureMonitorView monitorView = new AzureMonitorView(project, subscription, workspace);
+        final Content content = contentFactory.createContent(monitorView.getCenterPanel(), "", false);
+        azureMonitorWindow.getContentManager().addContent(content);
+        AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {
+            azureMonitorWindow.setAvailable(true);
+            azureMonitorWindow.show();
+//                monitorView.initListener();
+        }));
+    }
+
+    private ToolWindow getToolWindow(Project project) {
+        if (toolWindowMap.containsKey(project)) {
+            return toolWindowMap.get(project);
+        }
         final ToolWindow azureMonitorWindow = ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW);
-        AzureTaskManager.getInstance().runLater(() -> {
-            assert azureMonitorWindow != null;
-            azureMonitorWindow.activate(() -> {
-                azureMonitorWindow.setAvailable(true);
-                azureMonitorWindow.show();
-            });
-        });
+        toolWindowMap.put(project, azureMonitorWindow);
+        return azureMonitorWindow;
     }
 
     public static class AzureMonitorFactory implements ToolWindowFactory {
-        private static final Map<Project, AzureMonitorView> viewMap = new HashMap<>();
-
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-            AzureMonitorView monitorView = getMonitorView(project);
-            if (Objects.isNull(monitorView)) {
-                monitorView = new AzureMonitorView(project);
-                viewMap.put(project, monitorView);
-            }
-            final ContentFactory contentFactory = ContentFactory.getInstance();
-            final Content content = contentFactory.createContent(monitorView.getCenterPanel(), "", false);
-            toolWindow.getContentManager().addContent(content);
         }
 
         @Override
         public boolean shouldBeAvailable(@NotNull Project project) {
             return false;
-        }
-
-        public static AzureMonitorView getMonitorView(@Nonnull final Project project) {
-            return viewMap.get(project);
         }
     }
 

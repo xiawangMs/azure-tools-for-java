@@ -1,0 +1,9 @@
+{
+  "Application Insights": [
+    "AppDependencies", "AppExceptions", "AppMetrics", "AppPerformanceCounters", "AppRequests"
+  ],
+  "App Service": [
+    "AppServiceConsoleLogs", "AppServiceAppLogs", "AppServiceHTTPLogs", "AppServicePlatformLogs", "FunctionAppLogs"
+  ],
+  "Azure Spring Cloud": ["AppPlatformLogsforSpring"]
+}

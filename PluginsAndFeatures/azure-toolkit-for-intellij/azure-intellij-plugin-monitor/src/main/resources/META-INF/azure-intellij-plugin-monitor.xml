@@ -1,6 +1,7 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
     <toolWindow anchor="bottom"
+                icon="/icons/Common/AzureActivityLog.svg"
                 factoryClass="com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager$AzureMonitorFactory"
                 id="Azure Monitor" canCloseContents="true"/>
     </extensions>

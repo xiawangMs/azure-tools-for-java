@@ -5,4 +5,5 @@ dependencies {
     implementation project(':azure-intellij-plugin-lib')
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-applicationinsights-lib:' + azureToolkitVersion
+    implementation 'com.azure:azure-monitor-query:1.0.10'
 }
