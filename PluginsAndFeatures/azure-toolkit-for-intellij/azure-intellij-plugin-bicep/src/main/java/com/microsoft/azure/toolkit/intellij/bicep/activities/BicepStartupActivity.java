@@ -17,7 +17,6 @@ import javax.annotation.Nonnull;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class BicepStartupActivity implements StartupActivity.DumbAware {
     public static final String TEXTMATE_ZIP = "/textmate.zip";
-    public static final String BICEP_SERVER = "/bicep-langserver.zip";
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
 
     @Override
@@ -25,6 +24,5 @@ public class BicepStartupActivity implements StartupActivity.DumbAware {
     @AzureOperation(name = "platform/bicep.prepare_textmate_bundles")
     public void runActivity(@Nonnull Project project) {
         ZipResourceUtils.copyTextMateBundlesFromJar(TEXTMATE_ZIP, "textmate");
-        ZipResourceUtils.copyTextMateBundlesFromJar(BICEP_SERVER, "bicep-langserver");
     }
 }
