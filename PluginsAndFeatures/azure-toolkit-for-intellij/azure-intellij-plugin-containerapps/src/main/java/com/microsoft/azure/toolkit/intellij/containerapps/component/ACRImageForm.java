@@ -6,9 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
-import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.Repository;
@@ -27,7 +25,6 @@ public class ACRImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConf
     @Getter
     private JPanel contentPanel;
 
-    private SubscriptionComboBox selectorSubscription;
     private ACRRegistryComboBox selectorRegistry;
     private ACRRepositoryComboBox selectorRepository;
     private ACRRepositoryTagComboBox selectorTag;
@@ -54,7 +51,6 @@ public class ACRImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConf
     public void setValue(final ContainerAppDraft.ImageConfig config) {
         final IContainerRegistry iRegistry = Objects.requireNonNull(config.getContainerRegistry(), "container registry is null.");
         final ContainerRegistry registry = ((ContainerRegistry) iRegistry);
-        this.selectorSubscription.setValue(registry.getSubscription());
         this.selectorRegistry.setValue(registry);
         this.selectorRepository.setValue(r -> r.getName().equalsIgnoreCase(config.getSimpleImageName()));
         this.selectorTag.setValue(t -> t.getLeft().equalsIgnoreCase(config.getTag()));
@@ -63,7 +59,6 @@ public class ACRImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConf
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            this.selectorSubscription,
             this.selectorRegistry,
             this.selectorRepository,
             this.selectorTag
@@ -77,21 +72,11 @@ public class ACRImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConf
     }
 
     private void init() {
-        this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
         this.selectorRegistry.addItemListener(this::onRegistryChanged);
         this.selectorRepository.addItemListener(this::onRepositoryChanged);
-        this.selectorSubscription.setRequired(true);
         this.selectorRegistry.setRequired(true);
         this.selectorRepository.setRequired(true);
         this.selectorTag.setRequired(true);
-    }
-
-    private void onSubscriptionChanged(final ItemEvent e) {
-        //TODO: @wangmi try subscription mechanism? e.g. this.selectorGroup.subscribe(this.selectSubscription)
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Subscription subscription = (Subscription) e.getItem();
-            this.selectorRegistry.setSubscription(subscription);
-        }
     }
 
     private void onRegistryChanged(ItemEvent e) {
