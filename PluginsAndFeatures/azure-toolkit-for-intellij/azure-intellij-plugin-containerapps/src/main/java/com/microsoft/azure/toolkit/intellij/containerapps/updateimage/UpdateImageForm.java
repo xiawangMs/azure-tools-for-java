@@ -5,10 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.updateimage;
 
+import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
 import com.intellij.icons.AllIcons;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.ACRImageForm;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.ContainerAppComboBox;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.ContainerRegistryTypeComboBox;
@@ -26,7 +28,9 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateImageForm.UpdateImageConfig> {
     @Getter
@@ -35,6 +39,7 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
     private ContainerAppComboBox selectorApp;
     private JPanel formImageContainer;
     private AzureCommentLabel commentApp;
+    private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
     private AzureFormJPanel<ContainerAppDraft.ImageConfig> formImage;
 
     public UpdateImageForm() {
@@ -53,10 +58,15 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
     }
 
     @Override
-    public UpdateImageConfig getValue() {
+    public synchronized UpdateImageConfig getValue() {
         final UpdateImageConfig config = new UpdateImageConfig();
         config.setApp(this.selectorApp.getValue());
         config.setImage(this.formImage.getValue());
+        final Map<String, String> envVarsMap = this.inputEnv.getEnvironmentVariables();
+        final List<EnvironmentVar> vars = envVarsMap.entrySet().stream()
+            .map(e -> new EnvironmentVar().withName(e.getKey()).withValue(e.getValue()))
+            .collect(Collectors.toList());
+        config.getImage().setEnvironmentVariables(vars);
         return config;
     }
 
@@ -97,7 +107,7 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
 
     private void onRegistryTypeChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            this.updateImagePanel((String) e.getItem());
+            this.formImage = this.updateImagePanel((String) e.getItem());
         }
     }
 
@@ -116,7 +126,7 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
         }
     }
 
-    private AzureFormJPanel<ContainerAppDraft.ImageConfig> updateImagePanel(String type) {
+    private synchronized AzureFormJPanel<ContainerAppDraft.ImageConfig> updateImagePanel(String type) {
         final GridConstraints constraints = new GridConstraints();
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
@@ -125,6 +135,9 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
             new ACRImageForm() : new OtherPublicRegistryImageForm();
         this.formImageContainer.removeAll();
         this.formImageContainer.add(newFormImage.getContentPanel(), constraints);
+        this.formImageContainer.revalidate();
+        this.formImageContainer.repaint();
+        this.formImage = newFormImage;
         return newFormImage;
     }
 
