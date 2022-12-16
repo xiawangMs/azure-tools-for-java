@@ -54,7 +54,7 @@ public class MySqlPropertyOverviewPanel extends JPanel {
         locationTextField.setText(Optional.ofNullable(server.getRegion()).map(Region::getLabel).orElse(""));
         serverNameTextField.setText(StringUtils.firstNonBlank(server.getFullyQualifiedDomainName(), server.getName()));
         serverNameTextField.setCaretPosition(0);
-        serverAdminLoginNameTextField.setText(server.getAdminName() + "@" + server.name());
+        serverAdminLoginNameTextField.setText(server.getFullAdminName());
         serverAdminLoginNameTextField.setCaretPosition(0);
         versionTextField.setText(server.getVersion());
         final String skuTier = server.getSkuTier();

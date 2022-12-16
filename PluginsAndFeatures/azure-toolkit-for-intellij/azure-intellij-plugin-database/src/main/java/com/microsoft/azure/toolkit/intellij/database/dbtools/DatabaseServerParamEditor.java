@@ -196,7 +196,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
                 this.updating = false;
                 return;
             }
-            final String user = String.format("%s@%s", server.getAdminName(), server.getName());
+            final String user = server.getFullAdminName();
             LocalDataSource.setUsername(interchange.getDataSource(), user);
             this.setUsername(user);
             this.setJdbcUrl(server.getJdbcUrl().toString());

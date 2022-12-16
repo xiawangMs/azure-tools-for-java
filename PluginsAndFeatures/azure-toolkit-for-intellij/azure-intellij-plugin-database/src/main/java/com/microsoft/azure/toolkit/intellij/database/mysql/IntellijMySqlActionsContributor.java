@@ -48,7 +48,7 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 final MySqlServer server = (MySqlServer) o;
                 dialog.setResource(new SqlDatabaseResource<>(server.databases().list().get(0),
-                    server.getAdminName() + "@" + server.getName(), MySqlDatabaseResourceDefinition.INSTANCE));
+                    server.getFullAdminName(), MySqlDatabaseResourceDefinition.INSTANCE));
                 dialog.show();
             }));
 
