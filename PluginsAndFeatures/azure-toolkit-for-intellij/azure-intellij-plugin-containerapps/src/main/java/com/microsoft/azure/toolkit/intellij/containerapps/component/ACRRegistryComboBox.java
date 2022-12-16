@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
+import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistryServiceSubscription;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class ACRRegistryComboBox extends AzureComboBox<ContainerRegistry> {
+    @Nullable
     private Subscription subscription;
     private final List<ContainerRegistry> draftItems = new LinkedList<>();
 
@@ -77,18 +80,18 @@ public class ACRRegistryComboBox extends AzureComboBox<ContainerRegistry> {
     @Nonnull
     @Override
     protected List<? extends ContainerRegistry> loadItems() {
-        final List<ContainerRegistry> registries = new ArrayList<>();
+        Stream<AzureContainerRegistryServiceSubscription> stream = Azure.az(AzureContainerRegistry.class).list().stream();
         if (Objects.nonNull(this.subscription)) {
-            final String sid = subscription.getId();
-            final List<ContainerRegistry> remoteRegistries = Azure.az(AzureContainerRegistry.class).registry(sid).list().stream()
-                .sorted(Comparator.comparing(ContainerRegistry::getName)).toList();
-            registries.addAll(remoteRegistries);
-            if (CollectionUtils.isNotEmpty(this.draftItems)) {
-                this.draftItems.stream()
-                    .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
-                    .filter(i -> !remoteRegistries.contains(i)) // filter out the draft item which has been created
-                    .forEach(registries::add);
-            }
+            stream = stream.filter(s -> s.getSubscriptionId().equalsIgnoreCase(this.subscription.getId()));
+        }
+        final List<ContainerRegistry> remoteRegistries = stream.flatMap(s -> s.registry().list().stream())
+            .sorted(Comparator.comparing(ContainerRegistry::getName)).toList();
+        final List<ContainerRegistry> registries = new ArrayList<>(remoteRegistries);
+        if (CollectionUtils.isNotEmpty(this.draftItems)) {
+            this.draftItems.stream()
+                .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
+                .filter(i -> !remoteRegistries.contains(i)) // filter out the draft item which has been created
+                .forEach(registries::add);
         }
         return registries;
     }

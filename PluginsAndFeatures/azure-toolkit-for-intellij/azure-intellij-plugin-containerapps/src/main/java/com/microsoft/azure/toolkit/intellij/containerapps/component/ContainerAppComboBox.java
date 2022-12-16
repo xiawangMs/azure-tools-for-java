@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
+import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerAppsServiceSubscription;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class ContainerAppComboBox extends AzureComboBox<ContainerApp> {
     private Subscription subscription;
@@ -77,18 +79,18 @@ public class ContainerAppComboBox extends AzureComboBox<ContainerApp> {
     @Nonnull
     @Override
     protected List<? extends ContainerApp> loadItems() {
-        final List<ContainerApp> apps = new ArrayList<>();
+        Stream<AzureContainerAppsServiceSubscription> stream = Azure.az(AzureContainerApps.class).list().stream();
         if (Objects.nonNull(this.subscription)) {
-            final String sid = subscription.getId();
-            final List<ContainerApp> remoteApps = Azure.az(AzureContainerApps.class).containerApps(sid).list().stream()
-                .sorted(Comparator.comparing(ContainerApp::getName)).toList();
-            apps.addAll(remoteApps);
-            if (CollectionUtils.isNotEmpty(this.draftItems)) {
-                this.draftItems.stream()
-                    .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
-                    .filter(i -> !remoteApps.contains(i)) // filter out the draft item which has been created
-                    .forEach(apps::add);
-            }
+            stream = stream.filter(s -> s.getSubscriptionId().equalsIgnoreCase(this.subscription.getId()));
+        }
+        final List<ContainerApp> remoteApps = stream.flatMap(s -> s.containerApps().list().stream())
+            .sorted(Comparator.comparing(ContainerApp::getName)).toList();
+        final List<ContainerApp> apps = new ArrayList<>(remoteApps);
+        if (CollectionUtils.isNotEmpty(this.draftItems)) {
+            this.draftItems.stream()
+                .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
+                .filter(i -> !remoteApps.contains(i)) // filter out the draft item which has been created
+                .forEach(apps::add);
         }
         return apps;
     }
