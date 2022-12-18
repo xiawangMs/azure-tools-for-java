@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -31,7 +30,6 @@ import rx.Single;
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
@@ -55,10 +53,9 @@ public class CreateWebAppAction {
                             AzureTaskManager.getInstance().runLater("deploy", () -> deploy(webapp, artifact, project));
                         }
                     }, (error) -> {
-                        final String title = String.format("Reopen dialog \"%s\"", dialog.getTitle());
-                        final Consumer<Object> act = t -> openDialog(project, config);
-                        final Action.Id<Object> REOPEN = Action.Id.of("user/webapp.reopen_creation_dialog");
-                        final Action<?> action = new Action<>(REOPEN, act, new ActionView.Builder(title));
+                        final Action<?> action = new Action<>(Action.Id.of("user/webapp.reopen_creation_dialog"))
+                            .withLabel(String.format("Reopen dialog \"%s\"", dialog.getTitle()))
+                            .withHandler(t -> openDialog(project, config));
                         AzureMessager.getMessager().error(error, null, action);
                     });
             });

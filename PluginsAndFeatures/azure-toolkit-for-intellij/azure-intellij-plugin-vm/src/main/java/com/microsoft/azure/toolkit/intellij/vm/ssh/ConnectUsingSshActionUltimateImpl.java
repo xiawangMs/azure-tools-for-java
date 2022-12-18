@@ -16,7 +16,6 @@ import com.intellij.ui.AppUIUtil;
 import com.jetbrains.plugins.remotesdk.console.SshConsoleOptionsProvider;
 import com.jetbrains.plugins.remotesdk.console.SshTerminalCachingRunner;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -43,8 +42,8 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
     @AzureOperation(name = "user/vm.connect_using_ssh_ultimate.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
-        AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE,() ->
-                connectToSshUnderProgress(project, existingConfig)
+        AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE, () ->
+            connectToSshUnderProgress(project, existingConfig)
         );
     }
 
@@ -57,7 +56,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
             AppUIUtil.invokeLaterIfProjectAlive(project, () -> createSshSession(project, ssh, runner));
         } catch (final RemoteSdkException e) {
             AzureMessager.getMessager().warning(e.getMessage(), SSH_CONNECTION_TITLE,
-                    openSshConfigurationAction(project, sshCredential));
+                openSshConfigurationAction(project, sshCredential));
         }
     }
 
@@ -70,7 +69,9 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
 
     private Action<?> openSshConfigurationAction(final @NotNull Project project, RemoteCredentials sshCredential) {
         final Action.Id<Void> id = Action.Id.of("boundary/vm.open_ssh_configuration");
-        return new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> openSshConfiguration(project, sshCredential)), new ActionView.Builder("Modify SSH Configuration"));
+        return new Action<>(id)
+            .withLabel("Modify SSH Configuration")
+            .withHandler(v -> AzureTaskManager.getInstance().runLater(() -> openSshConfiguration(project, sshCredential)));
     }
 
     @AzureOperation(name = "boundary/vm.open_ssh_configuration", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)

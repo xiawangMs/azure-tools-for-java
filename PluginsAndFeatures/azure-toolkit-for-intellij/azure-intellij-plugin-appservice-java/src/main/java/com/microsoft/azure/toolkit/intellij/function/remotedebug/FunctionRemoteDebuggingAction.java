@@ -26,7 +26,6 @@ import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsCon
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -108,13 +107,11 @@ public class FunctionRemoteDebuggingAction {
 
     private static void showEnableDebuggingMessage(@Nonnull FunctionAppBase<?, ?, ?> target) {
         final String confirmEnableDebuggingMessage = "Remote debugging should be enabled first before debugging. Would you like to enable it?";
-        final Action<FunctionAppBase<?, ?, ?>> enableDebuggingAction = AzureActionManager.getInstance().getAction(FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING);
-        AzureMessager.getMessager().warning(confirmEnableDebuggingMessage, null,
-                new Action<>(Action.Id.of("user/function.enable_remote_debugging_notification"), new ActionView.Builder("Enable Remote Debugging")) {
-                    @Override
-                    public void handle(Object source, Object e) {
-                        enableDebuggingAction.handle(target, e);
-                    }
-                });
+        final AzureActionManager am = AzureActionManager.getInstance();
+        final Action.Id<Object> ENABLE_REMOTE_DEBUGGING = Action.Id.of("user/function.enable_remote_debugging_notification");
+        final Action<Object> enableRemoteDebugging = new Action<>(ENABLE_REMOTE_DEBUGGING)
+            .withLabel("Enable Remote Debugging")
+            .withHandler((d, e) -> am.getAction(FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING).handle(target, e));
+        AzureMessager.getMessager().warning(confirmEnableDebuggingMessage, null, enableRemoteDebugging);
     }
 }

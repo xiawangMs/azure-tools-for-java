@@ -16,18 +16,15 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class FunctionAppActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;
@@ -89,26 +86,26 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         am.registerGroup(FUNCTION_APP_ACTIONS, functionAppActionGroup);
 
         final ActionGroup slotActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                ResourceCommonActionsContributor.SHOW_PROPERTIES,
-                "---",
-                SWAP_DEPLOYMENT_SLOT,
-                "---",
-                ResourceCommonActionsContributor.START,
-                ResourceCommonActionsContributor.STOP,
-                ResourceCommonActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                AppServiceActionsContributor.START_STREAM_LOG,
-                AppServiceActionsContributor.STOP_STREAM_LOG
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
+            "---",
+            SWAP_DEPLOYMENT_SLOT,
+            "---",
+            ResourceCommonActionsContributor.START,
+            ResourceCommonActionsContributor.STOP,
+            ResourceCommonActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            AppServiceActionsContributor.START_STREAM_LOG,
+            AppServiceActionsContributor.STOP_STREAM_LOG
         );
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, slotActionGroup);
 
         am.registerGroup(DEPLOYMENT_SLOTS_ACTIONS, new ActionGroup(ResourceCommonActionsContributor.REFRESH));
 
         am.registerGroup(FUNCTION_ACTION, new ActionGroup(FunctionAppActionsContributor.TRIGGER_FUNCTION,
-                FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER, FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT));
+            FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER, FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT));
         am.registerGroup(FUNCTIONS_ACTIONS, new ActionGroup(FunctionAppActionsContributor.REFRESH_FUNCTIONS));
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
@@ -117,69 +114,75 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<FunctionAppDeploymentSlot> swap = slot -> slot.getParent().swap(slot.getName());
-        final ActionView.Builder swapView = new ActionView.Builder("Swap With Production")
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.swap_deployment.deployment|app",
-                        ((FunctionAppDeploymentSlot) s).getName(), ((FunctionAppDeploymentSlot) s).getParent().getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionAppDeploymentSlot && ((FunctionAppDeploymentSlot) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(SWAP_DEPLOYMENT_SLOT, swap, swapView));
+        new Action<>(SWAP_DEPLOYMENT_SLOT)
+            .enableWhen(s -> s instanceof FunctionAppDeploymentSlot && ((FunctionAppDeploymentSlot) s).getFormalStatus().isRunning())
+            .withLabel("Swap with Production")
+            .withIdParam(AbstractAzResource::getName)
+            .register(am);
 
-        final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.refresh_functions.app", ((FunctionApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionApp);
-        final Action<FunctionApp> refreshAction = new Action<>(REFRESH_FUNCTIONS, refresh, refreshView);
-        refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
-        am.registerAction(refreshAction);
+        new Action<>(REFRESH_FUNCTIONS)
+            .withLabel("Refresh")
+            .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof FunctionApp)
+            .withShortcut(am.getIDEDefaultShortcuts().refresh())
+            .withHandler(s -> AzureEventBus.emit("appservice|function.functions.refresh", s))
+            .register(am);
 
-        final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.trigger_func.trigger", ((FunctionEntity) s).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionEntity && !AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
-        am.registerAction(new Action<>(TRIGGER_FUNCTION, triggerView));
+        new Action<>(TRIGGER_FUNCTION)
+            .withLabel("Trigger Function")
+            .withIdParam(FunctionEntity::getName)
+            .enableWhen(s -> s instanceof FunctionEntity && !AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s))
+            .register(am);
 
-        final Consumer<FunctionEntity> triggerInBrowserHandler = entity -> new TriggerFunctionInBrowserAction(entity).trigger();
-        final ActionView.Builder triggerInBrowserView = new ActionView.Builder("Trigger Function In Browser")
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.trigger_func_in_browser.trigger", ((FunctionEntity) s).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s));
-        am.registerAction(new Action<>(TRIGGER_FUNCTION_IN_BROWSER, triggerInBrowserHandler, triggerInBrowserView));
+        new Action<>(TRIGGER_FUNCTION_IN_BROWSER)
+            .withLabel("Trigger Function In Browser")
+            .withIdParam(FunctionEntity::getName)
+            .enableWhen(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s))
+            .withHandler(s -> new TriggerFunctionInBrowserAction(s).trigger())
+            .register(am);
 
-        final ActionView.Builder triggerWIthHttpClientView = new ActionView.Builder("Trigger Function with Http Client")
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.trigger_function_with_http_client.trigger",
-                        ((FunctionEntity) s).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionEntity);
-        am.registerAction(new Action<>(TRIGGER_FUNCTION_WITH_HTTP_CLIENT, triggerWIthHttpClientView));
+        new Action<>(TRIGGER_FUNCTION_WITH_HTTP_CLIENT)
+            .withLabel("Trigger Function with Http Client")
+            .withIdParam(FunctionEntity::getName)
+            .enableWhen(s -> s instanceof FunctionEntity)
+            .register(am);
 
-        final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
-                .title(s -> description("user/function.download_core_tools"));
-        final Action<Object> downloadCliAction = new Action<>(DOWNLOAD_CORE_TOOLS, downloadCliView);
-        downloadCliAction.setAuthRequired(false);
-        am.registerAction(downloadCliAction);
+        new Action<>(DOWNLOAD_CORE_TOOLS)
+            .withLabel("Download")
+            .withAuthRequired(false)
+            .register(am);
 
-        final ActionView.Builder configCliView = new ActionView.Builder("Configure")
-                .title(s -> description("user/function.config_core_tools"));
-        final Action<Object> configCliAction = new Action<>(CONFIG_CORE_TOOLS, (v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e), configCliView);
-        configCliAction.setAuthRequired(false);
-        am.registerAction(configCliAction);
+        new Action<>(CONFIG_CORE_TOOLS)
+            .withLabel("Configure")
+            .withHandler((v, e) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null, e))
+            .withAuthRequired(false)
+            .register(am);
 
-        final ActionView.Builder createFunctionView = new ActionView.Builder("Function App")
-            .title(s -> Optional.ofNullable(s).map(r -> description("user/function.create_app.group", ((ResourceGroup) r).getName())).orElse(null))
-            .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
-        am.registerAction(new Action<>(GROUP_CREATE_FUNCTION, createFunctionView));
+        new Action<>(GROUP_CREATE_FUNCTION)
+            .withLabel("Function App")
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .register(am);
 
-        final ActionView.Builder enableRemoteDebuggingView = new ActionView.Builder("Enable Remote Debugging")
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.enable_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionAppBase<?,?,?> && ((AzResourceBase) s).getFormalStatus().isRunning() && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled());
-        am.registerAction(new Action<>(ENABLE_REMOTE_DEBUGGING, enableRemoteDebuggingView));
+        new Action<>(ENABLE_REMOTE_DEBUGGING)
+            .withLabel("Enable Remote Debugging")
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning() && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
+            .register(am);
 
-        final ActionView.Builder disableRemoteDebuggingView = new ActionView.Builder("Disable Remote Debugging")
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.disable_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning() && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled());
-        am.registerAction(new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
+        new Action<>(DISABLE_REMOTE_DEBUGGING)
+            .withLabel("Disable Remote Debugging")
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning() && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
+            .register(am);
 
-        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Attach Debugger", AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/function.start_remote_debugging.app", ((FunctionAppBase<?, ?, ?>) r).getName())).orElse(null))
-                .enabled(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(REMOTE_DEBUGGING, attachDebuggerView));
+        new Action<>(REMOTE_DEBUGGING)
+            .withLabel("Attach Debugger")
+            .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .register(am);
     }
 
     @Override

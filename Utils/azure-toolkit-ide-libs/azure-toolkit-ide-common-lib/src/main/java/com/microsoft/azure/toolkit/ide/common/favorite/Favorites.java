@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -47,7 +46,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -204,12 +202,12 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         final AzureActionManager am = AzureActionManager.getInstance();
         final AzureActionManager.Shortcuts shortcuts = am.getIDEDefaultShortcuts();
 
-        final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", AzureIcons.Action.UNPIN.getIconPath())
-            .enabled(s -> s instanceof Favorites);
-        final Consumer<Favorites> unpinAllHandler = Favorites::unpinAll;
-        final Action.Id<Favorites> UNPIN_ALL = Action.Id.of("user/resource.unpin_all");
-        final Action<Favorites> unpinAllAction = new Action<>(UNPIN_ALL, unpinAllHandler, unpinAllView);
-        unpinAllAction.setShortcuts("control F11");
+        final Action<Favorites> unpinAllAction = new Action<>(Action.Id.<Favorites>of("user/resource.unpin_all"))
+            .withLabel("Unmark All As Favorite")
+            .withIcon(AzureIcons.Action.UNPIN.getIconPath())
+            .enableWhen(s -> s instanceof Favorites)
+            .withHandler(Favorites::unpinAll)
+            .withShortcut("control F11");
 
         final AzureModuleLabelView<Favorites> rootView = new AzureModuleLabelView<>(Favorites.getInstance(), "Favorites", FAVORITE_ICON);
         return new Node<>(Favorites.getInstance(), rootView).lazy(false)

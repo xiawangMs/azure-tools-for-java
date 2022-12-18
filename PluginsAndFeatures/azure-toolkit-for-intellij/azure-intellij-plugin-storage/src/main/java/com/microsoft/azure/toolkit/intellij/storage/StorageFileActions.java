@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.storage.component.FileCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -45,7 +44,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class StorageFileActions {
@@ -83,8 +81,7 @@ public class StorageFileActions {
         final Function<String, Boolean> onSave = content -> {
             final AzureString title = OperationBundle.description("internal/storage.save_content.file", file.getName());
             AzureTaskManager.getInstance().runInBackground(title, () -> {
-                @SuppressWarnings("rawtypes")
-                final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
+                @SuppressWarnings("rawtypes") final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
                 draft.setSourceFile(temp.toPath());
                 draft.updateIfExist();
             });
@@ -196,8 +193,7 @@ public class StorageFileActions {
                     final VirtualFile virtualFile = files[0];
                     final AzureString title = OperationBundle.description("internal/storage.upload_file.source|file", virtualFile.getName(), file.getName());
                     final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
-                        @SuppressWarnings("rawtypes")
-                        final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
+                        @SuppressWarnings("rawtypes") final StorageFile.Draft<? extends StorageFile, ?> draft = (StorageFile.Draft<? extends StorageFile, ?>) ((AbstractAzResource) file).update();
                         draft.setSourceFile(Paths.get(virtualFile.getPath()));
                         draft.updateIfExist();
                         final AzureString msg = AzureString.format("Successfully overwrite content of %s with that of file %s.", file.getName(), virtualFile.getName());
@@ -251,9 +247,8 @@ public class StorageFileActions {
     }
 
     private static Action<Void> openUrl(@Nonnull final String url) {
-        final Action.Id<Void> OPEN = Action.Id.of("common.open_in_browser");
-        final ActionView.Builder view = new ActionView.Builder("Open with Browser");
-        final Consumer<Void> handler = v -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
-        return new Action<>(OPEN, handler, view);
+        return new Action<>(Action.Id.<Void>of("common.open_in_browser"))
+            .withLabel("Open with Browser")
+            .withHandler(v -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url));
     }
 }

@@ -9,20 +9,14 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class AppServiceActionsContributor implements IActionsContributor {
 
@@ -36,40 +30,48 @@ public class AppServiceActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<AppServiceAppBase<?, ?, ?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
-            .handle("https://" + appService.getHostName());
-        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser",  AzureIcons.Action.PORTAL.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("user/webapp.open_in_browser.app", ((WebApp) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isConnected());
-        am.registerAction(new Action<>(OPEN_IN_BROWSER, openInBrowser, openInBrowserView));
+        new Action<>(OPEN_IN_BROWSER)
+            .withLabel("Open In Browser")
+            .withIcon(AzureIcons.Action.PORTAL.getIconPath())
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isConnected())
+            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getHostName()))
+            .register(am);
 
-        final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", AzureIcons.Action.LOG.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("user/appservice.open_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(START_STREAM_LOG, startStreamLogView));
+        new Action<>(START_STREAM_LOG)
+            .withLabel("Start Streaming Logs")
+            .withIcon(AzureIcons.Action.LOG.getIconPath())
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .register(am);
 
-        final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", AzureIcons.Action.LOG.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("user/appservice.close_log_stream.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(STOP_STREAM_LOG, stopStreamLogView));
+        new Action<>(STOP_STREAM_LOG)
+            .withLabel("Stop Streaming Logs")
+            .withIcon(AzureIcons.Action.LOG.getIconPath())
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .register(am);
 
-        final ActionView.Builder profileFlightRecorderView = new ActionView.Builder("Profile Flight Recorder")
-            .title(s -> Optional.ofNullable(s).map(r -> description("user/webapp.profile_flight_recorder.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(PROFILE_FLIGHT_RECORD, profileFlightRecorderView));
+        new Action<>(PROFILE_FLIGHT_RECORD)
+            .withLabel("Profile Flight Recorder")
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .register(am);
 
-        final ActionView.Builder sshView = new ActionView.Builder("SSH into Web App")
-            .title(s -> Optional.ofNullable(s).map(r -> description("user/webapp.connect_ssh.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-            .enabled(s -> s instanceof AppServiceAppBase<?, ?, ?> && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(SSH_INTO_WEBAPP, sshView));
+        new Action<>(SSH_INTO_WEBAPP)
+            .withLabel("SSH into Web App")
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .register(am);
 
-        final Consumer<AppServiceAppBase<?, ?, ?>> refresh = app -> AzureEventBus.emit("appservice.slot.refresh", app);
-        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("user/appservice.refresh_deployments.app", ((AppServiceAppBase<?, ?, ?>) r).getName())).orElse(null))
-                .enabled(s -> s instanceof AppServiceAppBase);
-        final Action<AppServiceAppBase<?, ?, ?>> refreshAction = new Action<>(REFRESH_DEPLOYMENT_SLOTS, refresh, refreshView);
-        refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
-        am.registerAction(refreshAction);
+        new Action<>(REFRESH_DEPLOYMENT_SLOTS)
+            .withLabel("Refresh")
+            .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof AppServiceAppBase)
+            .withHandler(app -> AzureEventBus.emit("appservice.slot.refresh", app))
+            .withShortcut(am.getIDEDefaultShortcuts().refresh())
+            .register(am);
     }
 
     @Override

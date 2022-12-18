@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -45,9 +45,9 @@ public class EnableRemoteDebuggingAction {
         final IAzureMessager messager = AzureMessager.getMessager();
         final String action = isEnabled ? "enable" : "disable";
         final AzureString title = isEnabled ? OperationBundle.description("user/springcloud.enable_remote_debugging.app", app.getName()) :
-                OperationBundle.description("user/springcloud.disable_remote_debugging.app", app.getName());
+            OperationBundle.description("user/springcloud.disable_remote_debugging.app", app.getName());
         final boolean userInput = AzureMessager.getMessager().confirm(String.format(CONFIRM_MESSAGE, action, app.getName(), REMOTE_DEBUGGING_DOCS),
-                String.format(CONFIRM_DIALOG_TITLE, Character.toUpperCase(action.charAt(0)) + action.substring(1)));
+            String.format(CONFIRM_DIALOG_TITLE, Character.toUpperCase(action.charAt(0)) + action.substring(1)));
         if (!userInput) {
             return;
         }
@@ -70,20 +70,15 @@ public class EnableRemoteDebuggingAction {
 
     private static Action<?> generateDebugAction(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final Action<SpringCloudApp> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ATTACH_DEBUGGER_APP);
-        return new Action<>(Action.Id.of("user/springcloud.open_remote_debug_dialog"), new ActionView.Builder("Attach Debugger")) {
-            @Override
-            public void handle(Object source, Object e) {
-                remoteDebuggingAction.handle(app, e);
-            }
-        };
+        return new Action<>(Action.Id.of("user/springcloud.open_remote_debug_dialog"))
+            .withLabel("Attach Debugger")
+            .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
+            .withHandler((s, e) -> remoteDebuggingAction.handle(app, e));
     }
 
     private static Action<?> generateLearnMoreAction() {
-        return new Action<>(Action.Id.of("user/springcloud.learn_more_dialog"), new ActionView.Builder("Learn More")) {
-            @Override
-            public void handle(Object source, Object e) {
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(REMOTE_DEBUGGING_DOCS);
-            }
-        };
+        return new Action<>(Action.Id.of("user/springcloud.learn_more_dialog"))
+            .withLabel("Learn More")
+            .withHandler(s -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(REMOTE_DEBUGGING_DOCS));
     }
 }

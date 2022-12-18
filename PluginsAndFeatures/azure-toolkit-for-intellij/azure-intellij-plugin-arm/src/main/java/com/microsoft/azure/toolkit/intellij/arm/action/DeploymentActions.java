@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEdito
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -129,16 +128,20 @@ public class DeploymentActions {
 
     private static Action<Void> newShowInExplorerAction(@Nonnull final File dest) {
         final Action.Id<Void> REVEAL = Action.Id.of("user/common.reveal_file_in_explorer");
-        return new Action<>(REVEAL, v -> VirtualFileActions.revealInExplorer(dest), new ActionView.Builder(RevealFileAction.getActionName()));
+        return new Action<>(REVEAL)
+            .withLabel(RevealFileAction.getActionName())
+            .withHandler(v -> VirtualFileActions.revealInExplorer(dest));
     }
 
     private static Action<Void> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
         final Action.Id<Void> OPEN = Action.Id.of("user/common.open_file_in_editor");
-        return new Action<>(OPEN, v -> AzureTaskManager.getInstance().runLater(() -> {
-            final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-            final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
-            VirtualFileActions.openFileInEditor(virtualFile, (a) -> false, () -> {
-            }, fileEditorManager);
-        }), new ActionView.Builder("Open In Editor"));
+        return new Action<>(OPEN)
+            .withLabel("Open In Editor")
+            .withHandler(v -> AzureTaskManager.getInstance().runLater(() -> {
+                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+                final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
+                VirtualFileActions.openFileInEditor(virtualFile, (a) -> false, () -> {
+                }, fileEditorManager);
+            }));
     }
 }
