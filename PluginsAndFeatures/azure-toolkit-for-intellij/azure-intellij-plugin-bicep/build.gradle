@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+intellij {
+    plugins = ['org.jetbrains.plugins.textmate']
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':azure-intellij-plugin-lib')
+    implementation project(':azure-intellij-plugin-lib-java')
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+}
