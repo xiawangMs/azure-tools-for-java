@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class DotnetRuntimeHandler {
     @Nullable
     public static String getDotnetRuntimePath() {
         final List<String> paths = CommandUtils.resolveCommandPath("dotnet");
-        return CollectionUtils.isEmpty(paths) ? null : paths.get(0);
+        return CollectionUtils.isEmpty(paths) ? null : Paths.get(paths.get(0)).getParent().toString();
     }
 
     public static void installDotnet(final String path) {
@@ -56,19 +57,10 @@ public class DotnetRuntimeHandler {
             final String INSTALL_SUCCEED_MESSAGE = "Download and install .NET runtime successfully. Auto configured .NET runtime path in Azure Settings";
             AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, getOpenAzureSettingsAction());
         } catch (final IOException e) {
+            final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
             AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and set the path manually",
-                    generateDownloadAction(), getOpenAzureSettingsAction());
+                    generateDownloadAction(), openSettingsAction);
         }
-    }
-
-    private static Action<Object> getOpenAzureSettingsAction() {
-        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-        return new Action<Object>(Action.Id.of("common.open_azure_settings_dialog"), new ActionView.Builder("Open Azure Settings")) {
-            @Override
-            public void handle(Object source, Object e) {
-                AzureTaskManager.getInstance().runLater(() -> openSettingsAction.handle(null, e));
-            }
-        };
     }
 
     private static Action<?> generateDownloadAction() {

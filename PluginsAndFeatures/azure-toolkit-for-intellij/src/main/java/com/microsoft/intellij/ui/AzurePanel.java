@@ -34,6 +34,7 @@ import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +43,7 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -296,9 +298,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.dotnetRuntimePath = new AzureFileInput();
-        txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for .NET runtime", null, txtStorageExplorer,
+        this.dotnetRuntimePath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for .NET runtime", null, txtStorageExplorer,
                 null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
-        txtStorageExplorer.addValidator(this::validateDotnetRuntime);
+        this.dotnetRuntimePath.addValidator(this::validateDotnetRuntime);
         this.installFuncCoreToolsAction = new ActionLink("Install the latest version", e -> {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
             AzureActionManager.getInstance().getAction(DOWNLOAD_CORE_TOOLS).handle(null);
@@ -316,7 +318,10 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             return AzureValidationInfo.ok(txtStorageExplorer);
         }
         if (!FileUtil.exists(path)) {
-            return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
+            return AzureValidationInfo.error("Target directory does not exist", txtStorageExplorer);
+        }
+        if (!FileUtils.isDirectory(new File(path))) {
+            return AzureValidationInfo.error(".NET runtime path should be a directory", txtStorageExplorer);
         }
         // todo: make sure dotnet exists in current folder
         return AzureValidationInfo.ok(txtStorageExplorer);
