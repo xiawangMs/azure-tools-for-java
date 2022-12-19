@@ -1,9 +1,12 @@
 <idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.bicep.BicepActionsContributor"/>
+    </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Bicep" language="Bicep" extensions="bicep" fieldName="INSTANCE"
                   implementationClass="com.microsoft.azure.toolkit.intellij.bicep.BicepFileType"/>
         <!-- register a preloading activity. You need to init IntellijLanguageClient with your config, see readme -->
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.bicep.activities.BicepLanguageSupportPreloadingActivity" id="com.microsoft.azure.toolkit.intellij.bicep.BallerinaPreloadingActivity"/>
+        <!-- <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.bicep.activities.BicepLanguageSupportInitializer" id="com.microsoft.azure.toolkit.intellij.bicep.BallerinaPreloadingActivity"/> -->
 
         <!-- register intellijLanguageClient as a Service OR as a plugin component (see readme)... -->
         <applicationService serviceImplementation="org.wso2.lsp4intellij.IntellijLanguageClient"/>

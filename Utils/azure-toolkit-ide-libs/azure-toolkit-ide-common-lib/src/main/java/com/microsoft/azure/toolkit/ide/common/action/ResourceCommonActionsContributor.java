@@ -60,7 +60,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("common.open_azure_explorer");
     public static final Action.Id<Object> OPEN_AZURE_REFERENCE_BOOK = Action.Id.of("common.open_azure_reference_book");
     public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("common.highlight_resource_in_explorer");
-
+    public static final Action.Id<Object> INSTALL_DOTNET_RUNTIME = Action.Id.of("bicep.install_dotnet_runtime");
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
     @Override
@@ -212,6 +212,12 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         }, pinView);
         pinAction.setShortcuts("F11");
         am.registerAction(pinAction.setAuthRequired(false));
+
+        final ActionView.Builder installDotnetRuntimeView = new ActionView.Builder("Install .Net Runtime")
+                .title(s -> description("bicep.install_dotnet_runtime"));
+        final Action<Object> installDotnetRuntime = new Action<>(INSTALL_DOTNET_RUNTIME, installDotnetRuntimeView);
+        installDotnetRuntime.setAuthRequired(false);
+        am.registerAction(installDotnetRuntime);
     }
 
     @AzureOperation(name = "common.copy_string.string", params = {"s"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)

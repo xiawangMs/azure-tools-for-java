@@ -34,6 +34,7 @@ import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +43,7 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +51,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
+import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.INSTALL_DOTNET_RUNTIME;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
@@ -67,6 +70,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private AzureIntegerInput txtBatchSize;
     private AzureTextInput txtLabelFields;
     private ActionLink installFuncCoreToolsAction;
+    private AzureFileInput dotnetRuntimePath;
+    private ActionLink installDotnetRuntime;
 
     private AzureConfiguration originalConfig;
 
@@ -143,6 +148,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
         txtBatchSize.setValue(config.getCosmosBatchSize());
+        dotnetRuntimePath.setValue(config.getDotnetRuntimePath());
         txtLabelFields.setValue(config.getDocumentsLabelFields().stream().collect(Collectors.joining(";")));
     }
 
@@ -167,6 +173,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotEmpty(txtLabelFields.getValue())) {
             final List<String> fields = Arrays.stream(txtLabelFields.getValue().split(";")).collect(Collectors.toList());
             data.setDocumentsLabelFields(fields);
+        }
+        if (StringUtils.isNoneBlank(dotnetRuntimePath.getValue())) {
+            data.setDotnetRuntimePath(dotnetRuntimePath.getValue());
         }
         return data;
     }
@@ -234,6 +243,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         this.originalConfig.setCosmosBatchSize(newConfig.getCosmosBatchSize());
         this.originalConfig.setDocumentsLabelFields(newConfig.getDocumentsLabelFields());
+        this.originalConfig.setDotnetRuntimePath(newConfig.getDotnetRuntimePath());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
 
         if (StringUtils.isNotBlank(newConfig.getCloud())) {
@@ -287,10 +297,33 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
+        this.dotnetRuntimePath = new AzureFileInput();
+        this.dotnetRuntimePath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for .NET runtime", null, txtStorageExplorer,
+                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.dotnetRuntimePath.addValidator(this::validateDotnetRuntime);
         this.installFuncCoreToolsAction = new ActionLink("Install the latest version", e -> {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
             AzureActionManager.getInstance().getAction(DOWNLOAD_CORE_TOOLS).handle(null);
         });
 
+        this.installDotnetRuntime = new ActionLink("Install .NET runtime", e -> {
+            FocusManager.getCurrentManager().getActiveWindow().dispose();
+            AzureActionManager.getInstance().getAction(INSTALL_DOTNET_RUNTIME).handle(null);
+        });
+    }
+
+    private AzureValidationInfo validateDotnetRuntime() {
+        final String path = txtStorageExplorer.getValue();
+        if (StringUtils.isEmpty(path)) {
+            return AzureValidationInfo.ok(txtStorageExplorer);
+        }
+        if (!FileUtil.exists(path)) {
+            return AzureValidationInfo.error("Target directory does not exist", txtStorageExplorer);
+        }
+        if (!FileUtils.isDirectory(new File(path))) {
+            return AzureValidationInfo.error(".NET runtime path should be a directory", txtStorageExplorer);
+        }
+        // todo: make sure dotnet exists in current folder
+        return AzureValidationInfo.ok(txtStorageExplorer);
     }
 }

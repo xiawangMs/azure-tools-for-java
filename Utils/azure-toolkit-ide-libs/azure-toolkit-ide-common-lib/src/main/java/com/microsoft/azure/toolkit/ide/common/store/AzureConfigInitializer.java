@@ -6,12 +6,19 @@ package com.microsoft.azure.toolkit.ide.common.store;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
+import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler.getDotnetRuntimePath;
 
 public class AzureConfigInitializer {
     public static final String TELEMETRY = "telemetry";
@@ -20,6 +27,7 @@ public class AzureConfigInitializer {
     public static final String DATABASE = "database";
     public static final String STORAGE = "storage";
     public static final String COSMOS = "cosmos";
+    public static final String BICEP = "bicep";
 
     public static final String TELEMETRY_PLUGIN_VERSION = "telemetry_plugin_version";
     public static final String AZURE_ENVIRONMENT_KEY = "azure_environment";
@@ -30,6 +38,7 @@ public class AzureConfigInitializer {
     public static final String STORAGE_EXPLORER_PATH = "storage_explorer_path";
     public static final String DOCUMENTS_BATCH_SIZE = "documents_batch_size";
     public static final String DOCUMENTS_LABEL_FIELDS = "documents_label_fields";
+    public static final String DOTNET_RUNTIME_PATH = "dotnet_runtime_path";
 
     public static void initialize(String defaultMachineId, String pluginName, String pluginVersion) {
         String machineId = AzureStoreManager.getInstance().getMachineStore().getProperty(TELEMETRY,
@@ -74,6 +83,12 @@ public class AzureConfigInitializer {
             config.setDocumentsLabelFields(Arrays.stream(documentsLabelFields.split(";")).collect(Collectors.toList()));
         }
 
+        final String defaultDotnetRuntimePath = getDotnetRuntimePath();
+        final String dotnetRuntimePath = ideStore.getProperty(BICEP, DOTNET_RUNTIME_PATH, defaultDotnetRuntimePath);
+        if (StringUtils.isNoneBlank(dotnetRuntimePath)) {
+            config.setDotnetRuntimePath(dotnetRuntimePath);
+        }
+
         ideStore.getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, "");
 
         final String userAgent = String.format("%s, v%s, machineid:%s", pluginName, pluginVersion,
@@ -100,5 +115,6 @@ public class AzureConfigInitializer {
         ideStore.setProperty(COSMOS, DOCUMENTS_BATCH_SIZE, String.valueOf(config.getCosmosBatchSize()));
         ideStore.setProperty(COSMOS, DOCUMENTS_LABEL_FIELDS, String.join(";", config.getDocumentsLabelFields()));
         // don't save pluginVersion, it is saved in AzurePlugin class
+        ideStore.setProperty(BICEP, DOTNET_RUNTIME_PATH, config.getDotnetRuntimePath());
     }
 }
