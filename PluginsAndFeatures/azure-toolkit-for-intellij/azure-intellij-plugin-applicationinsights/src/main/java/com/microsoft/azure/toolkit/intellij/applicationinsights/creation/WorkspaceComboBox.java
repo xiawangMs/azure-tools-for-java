@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -94,7 +95,8 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
                         .filter(p -> Objects.equals(subscription.getId(), p.getSubscriptionId())).toList());
             }
             final List<LogAnalyticsWorkspaceConfig> remoteWorkspaces = Azure.az(AzureLogAnalyticsWorkspace.class)
-                    .logAnalyticsWorkspaces(subscription.getId()).list().stream().map(workspace ->
+                    .logAnalyticsWorkspaces(subscription.getId()).list()
+                    .stream().sorted(Comparator.comparing(LogAnalyticsWorkspace::getName)).map(workspace ->
                             LogAnalyticsWorkspaceConfig.builder()
                                     .newCreate(false)
                                     .subscriptionId(subscription.getId())
@@ -103,7 +105,7 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
                                     .regionName(Optional.ofNullable(workspace.getRegion()).map(Region::getName).orElse(StringUtils.EMPTY))
                                     .build()).collect(Collectors.toList());
             workspaces.addAll(remoteWorkspaces);
-            return workspaces.stream().sorted(Comparator.comparing(LogAnalyticsWorkspaceConfig::getName)).collect(Collectors.toList());
+            return workspaces;
         }
         return workspaces;
     }

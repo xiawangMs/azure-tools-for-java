@@ -147,7 +147,8 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
                     .filter(p -> this.subscription.equals(p.getSubscription()))
                     .collect(Collectors.toList()));
             }
-            final List<AppServicePlan> remotePlans = Azure.az(AzureAppService.class).plans(subscription.getId()).list();
+            final List<AppServicePlan> remotePlans = Azure.az(AzureAppService.class).plans(subscription.getId()).list()
+                    .stream().sorted((first, second) -> StringUtils.compare(first.getName(), second.getName())).toList();
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
@@ -159,7 +160,6 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             if (Objects.nonNull(this.servicePlanFilter)) {
                 stream = stream.filter(servicePlanFilter);
             }
-            stream = stream.sorted((first, second) -> StringUtils.compare(first.getName(), second.getName()));
             return stream.collect(Collectors.toList());
         }
         return plans;
