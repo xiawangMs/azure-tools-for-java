@@ -10,15 +10,10 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
-
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -41,129 +36,136 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<ContainerApp> openInBrowser = resource ->
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + resource.getLatestRevisionFqdn());
-        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.open_in_browser.app", ((ContainerApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected());
-        final Action<ContainerApp> openInBrowserAction = new Action<>(OPEN_LATEST_REVISION_IN_BROWSER, openInBrowser, openInBrowserView);
-        am.registerAction(openInBrowserAction);
+        new Action<>(OPEN_LATEST_REVISION_IN_BROWSER)
+            .withLabel("Open In Browser")
+            .withIcon(AzureIcons.Action.BROWSER.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getLatestRevisionFqdn()))
+            .register(am);
 
-        final Consumer<ContainerApp> activateLatestRevision = resource -> resource.activate();
-        final ActionView.Builder activateLatestRevisionView = new ActionView.Builder("Activate Latest Revision", AzureIcons.Action.START.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.activate_latest_revision.app", ((ContainerApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected());
-        final Action<ContainerApp> activateLatestRevisionAction = new Action<>(ACTIVATE_LATEST_REVISION, activateLatestRevision, activateLatestRevisionView);
-        am.registerAction(activateLatestRevisionAction);
+        new Action<>(ACTIVATE_LATEST_REVISION)
+            .withLabel("Activate Latest Revision")
+            .withIcon(AzureIcons.Action.START.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .withHandler(ContainerApp::activate)
+            .register(am);
 
-        final Consumer<ContainerApp> deactivateLatestRevision = resource -> resource.deactivate();
-        final ActionView.Builder deactivateLatestRevisionView = new ActionView.Builder("Deactivate Latest Revision", AzureIcons.Action.STOP.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.deactivate_latest_revision.app", ((ContainerApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected());
-        final Action<ContainerApp> deactivateLatestRevisionAction = new Action<>(DEACTIVATE_LATEST_REVISION, deactivateLatestRevision, deactivateLatestRevisionView);
-        am.registerAction(deactivateLatestRevisionAction);
+        new Action<>(DEACTIVATE_LATEST_REVISION)
+            .withLabel("Deactivate Latest Revision")
+            .withIcon(AzureIcons.Action.STOP.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .withHandler(ContainerApp::deactivate)
+            .register(am);
 
-        final Consumer<ContainerApp> restartLatestRevision = resource -> resource.restart();
-        final ActionView.Builder restartLatestRevisionView = new ActionView.Builder("Restart Latest Revision", AzureIcons.Action.RESTART.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.restart_latest_revision.app", ((ContainerApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected());
-        final Action<ContainerApp> restartLatestRevisionAction = new Action<>(RESTART_LATEST_REVISION, restartLatestRevision, restartLatestRevisionView);
-        am.registerAction(restartLatestRevisionAction);
+        new Action<>(RESTART_LATEST_REVISION)
+            .withLabel("Restart Latest Revision")
+            .withIcon(AzureIcons.Action.RESTART.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .withHandler(ContainerApp::restart)
+            .register(am);
 
-        final ActionView.Builder updateImageView = new ActionView.Builder("Update Image", AzureIcons.Action.UPLOAD.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.update_image.app", ((ContainerApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected());
-        final Action<ContainerApp> updateImageAction = new Action<>(UPDATE_IMAGE, updateImageView);
-        am.registerAction(updateImageAction);
+        new Action<>(UPDATE_IMAGE)
+            .withLabel("Update Image")
+            .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .register(am);
 
-        final Consumer<ContainerApp> openLogStreams = resource ->
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(resource.getPortalUrl() + "/logstream");
-        final ActionView.Builder openLogStreamView = new ActionView.Builder("Open Log Streams", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.open_log_streams.app", ((ContainerApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected());
-        final Action<ContainerApp> openLogStreamsAction = new Action<>(OPEN_LOG_STREAMS, openLogStreams, openLogStreamView);
-        am.registerAction(openLogStreamsAction);
+        new Action<>(OPEN_LOG_STREAMS)
+            .withLabel("Open Log Streams")
+            .withIcon(AzureIcons.Action.LOG.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getPortalUrl() + "/logstream"))
+            .register(am);
 
-        final Consumer<Revision> activate = resource -> resource.activate();
-        final ActionView.Builder activateView = new ActionView.Builder("Activate", AzureIcons.Action.START.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.activate.revision", ((Revision) r).getName())).orElse(null))
-                .enabled(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected());
-        final Action<Revision> activateRevisionAction = new Action<>(ACTIVATE, activate, activateView);
-        am.registerAction(activateRevisionAction);
+        new Action<>(ACTIVATE)
+            .withLabel("Activate")
+            .withIcon(AzureIcons.Action.START.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .withHandler(Revision::activate)
+            .register(am);
 
-        final Consumer<Revision> deactivateRevision = resource -> resource.deactivate();
-        final ActionView.Builder deactivateRevisionView = new ActionView.Builder("Deactivate", AzureIcons.Action.STOP.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.deactivate.revision", ((Revision) r).getName())).orElse(null))
-                .enabled(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected());
-        final Action<Revision> deactivateRevisionAction = new Action<>(DEACTIVATE, deactivateRevision, deactivateRevisionView);
-        am.registerAction(deactivateRevisionAction);
+        new Action<>(DEACTIVATE)
+            .withLabel("Deactivate")
+            .withIcon(AzureIcons.Action.STOP.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .withHandler(Revision::deactivate)
+            .register(am);
 
-        final Consumer<Revision> restartRevision = resource -> resource.restart();
-        final ActionView.Builder restartRevisionView = new ActionView.Builder("Restart", AzureIcons.Action.RESTART.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.restart.revision", ((Revision) r).getName())).orElse(null))
-                .enabled(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected());
-        final Action<Revision> restartRevisionAction = new Action<>(RESTART, restartRevision, restartRevisionView);
-        am.registerAction(restartRevisionAction);
+        new Action<>(RESTART)
+            .withLabel("Restart")
+            .withIcon(AzureIcons.Action.RESTART.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .withHandler(Revision::restart)
+            .register(am);
 
-        final Consumer<Revision> openRevision = resource ->
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + resource.getFqdn());
-        final ActionView.Builder openRevisionView = new ActionView.Builder("Open In Browser", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.open_in_browser.revision", ((Revision) r).getName())).orElse(null))
-                .enabled(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected());
-        final Action<Revision> openRevisionAction = new Action<>(OPEN_IN_BROWSER, openRevision, openRevisionView);
-        am.registerAction(openRevisionAction);
+        new Action<>(OPEN_IN_BROWSER)
+            .withLabel("Open In Browser")
+            .withIcon(AzureIcons.Action.RESTART.getIconPath())
+            .withIdParam(AbstractAzResource::getName)
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getFqdn()))
+            .register(am);
     }
 
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
-                "---",
-                ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
+            "---",
+            ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup environmentActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.PIN,
-                "---",
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                "---",
-                ResourceCommonActionsContributor.CREATE,
-                ResourceCommonActionsContributor.DELETE
+            ResourceCommonActionsContributor.PIN,
+            "---",
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            "---",
+            ResourceCommonActionsContributor.CREATE,
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(ENVIRONMENT_ACTIONS, environmentActionGroup);
 
         final ActionGroup containerAppActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.PIN,
-                "---",
-                ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                ContainerAppsActionsContributor.OPEN_LATEST_REVISION_IN_BROWSER,
-                "---",
-                ContainerAppsActionsContributor.ACTIVATE_LATEST_REVISION,
-                ContainerAppsActionsContributor.DEACTIVATE_LATEST_REVISION,
-                ContainerAppsActionsContributor.RESTART_LATEST_REVISION,
-                ContainerAppsActionsContributor.UPDATE_IMAGE,
-                ResourceCommonActionsContributor.DELETE,
-                "---",
-                ContainerAppsActionsContributor.OPEN_LOG_STREAMS
+            ResourceCommonActionsContributor.PIN,
+            "---",
+            ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
+            ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+            ContainerAppsActionsContributor.OPEN_LATEST_REVISION_IN_BROWSER,
+            "---",
+            ContainerAppsActionsContributor.ACTIVATE_LATEST_REVISION,
+            ContainerAppsActionsContributor.DEACTIVATE_LATEST_REVISION,
+            ContainerAppsActionsContributor.RESTART_LATEST_REVISION,
+            ContainerAppsActionsContributor.UPDATE_IMAGE,
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            ContainerAppsActionsContributor.OPEN_LOG_STREAMS
         );
         am.registerGroup(CONTAINER_APP_ACTIONS, containerAppActionGroup);
 
         final ActionGroup revisionActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.PIN,
-                "---",
-                ResourceCommonActionsContributor.REFRESH,
-                ContainerAppsActionsContributor.OPEN_IN_BROWSER,
-                "---",
-                ContainerAppsActionsContributor.ACTIVATE,
-                ContainerAppsActionsContributor.DEACTIVATE,
-                ContainerAppsActionsContributor.RESTART,
-                ResourceCommonActionsContributor.DELETE
+            ResourceCommonActionsContributor.PIN,
+            "---",
+            ResourceCommonActionsContributor.REFRESH,
+            ContainerAppsActionsContributor.OPEN_IN_BROWSER,
+            "---",
+            ContainerAppsActionsContributor.ACTIVATE,
+            ContainerAppsActionsContributor.DEACTIVATE,
+            ContainerAppsActionsContributor.RESTART,
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(REVISION_ACTIONS, revisionActionGroup);
     }
