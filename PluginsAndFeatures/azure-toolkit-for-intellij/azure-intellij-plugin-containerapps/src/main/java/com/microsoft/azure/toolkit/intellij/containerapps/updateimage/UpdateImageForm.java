@@ -20,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.model.RevisionMode;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-import com.microsoft.azure.toolkit.lib.containerregistry.model.IContainerRegistry;
 import lombok.Data;
 import lombok.Getter;
 
@@ -83,8 +82,10 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
     }
 
     public void setImage(ContainerAppDraft.ImageConfig imageConfig) {
-        final IContainerRegistry registry = imageConfig.getContainerRegistry();
-        final String type = registry instanceof ContainerRegistry ? ContainerRegistryTypeComboBox.ACR : ContainerRegistryTypeComboBox.OTHER;
+        final ContainerRegistry registry = imageConfig.getContainerRegistry();
+        final String type = registry != null ? ContainerRegistryTypeComboBox.ACR :
+            imageConfig.getFullImageName().startsWith("docker.io") ?
+                ContainerRegistryTypeComboBox.DOCKER_HUB : ContainerRegistryTypeComboBox.OTHER;
         this.formImage = this.updateImagePanel(type);
         this.selectorRegistryType.setValue(type);
         this.formImage.setValue(imageConfig);

@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.Repository;
-import com.microsoft.azure.toolkit.lib.containerregistry.model.IContainerRegistry;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -49,8 +48,7 @@ public class ACRImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConf
 
     @Override
     public void setValue(final ContainerAppDraft.ImageConfig config) {
-        final IContainerRegistry iRegistry = Objects.requireNonNull(config.getContainerRegistry(), "container registry is null.");
-        final ContainerRegistry registry = ((ContainerRegistry) iRegistry);
+        final ContainerRegistry registry = Objects.requireNonNull(config.getContainerRegistry(), "container registry is null.");
         this.selectorRegistry.setValue(registry);
         this.selectorRepository.setValue(r -> r.getName().equalsIgnoreCase(config.getSimpleImageName()));
         this.selectorTag.setValue(t -> t.getLeft().equalsIgnoreCase(config.getTag()));
