@@ -48,7 +48,7 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
                 final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
                 final PostgreSqlServer server = (PostgreSqlServer) o;
                 dialog.setResource(new SqlDatabaseResource<>(server.databases().list().get(0),
-                    server.getAdminName() + "@" + server.getName(), PostgreSqlDatabaseResourceDefinition.INSTANCE));
+                    server.getFullAdminName(), PostgreSqlDatabaseResourceDefinition.INSTANCE));
                 dialog.show();
             }));
 

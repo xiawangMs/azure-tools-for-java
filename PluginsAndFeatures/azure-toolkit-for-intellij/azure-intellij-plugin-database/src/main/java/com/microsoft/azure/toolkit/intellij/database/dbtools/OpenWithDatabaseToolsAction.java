@@ -26,7 +26,7 @@ public class OpenWithDatabaseToolsAction {
             .withDriverClass(server.getJdbcUrl().getDefaultDriverClass())
             .withUrl(server.getJdbcUrl().toString())
             .withJdbcAdditionalProperty(DatabaseServerParamEditor.KEY_DB_SERVER_ID, server.getId())
-            .withUser(String.format("%s@%s", server.getAdminName(), server.getName()))
+            .withUser(server.getFullAdminName())
             .withDbms(getDbms(server))
             .commit();
         DataSourceManagerDialog.showDialog(dbPsiFacade, registry);

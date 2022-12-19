@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 
 public class MySqlPropertiesEditorProvider implements FileEditorProvider, DumbAware {
 
-    public static final String TYPE = "Microsoft.DBforMySQL.servers";
+    public static final String TYPE = "Microsoft.DBforMySQL.flexibleServers";
 
     @Override
     public boolean accept(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
