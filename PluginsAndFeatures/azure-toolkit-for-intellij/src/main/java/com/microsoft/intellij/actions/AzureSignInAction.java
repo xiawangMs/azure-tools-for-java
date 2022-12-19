@@ -106,7 +106,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         }
     }
 
-    @AzureOperation(name = "account.sign_in", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/account.sign_in", type = AzureOperation.Type.SERVICE)
     private static void login(Project project, Runnable callback) {
         final AzureTaskManager manager = AzureTaskManager.getInstance();
         manager.runLater(() -> {
@@ -118,7 +118,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             if (auth.getType() == AuthType.DEVICE_CODE) {
                 dcWindow[0] = setupDeviceCodeAuth(project, auth);
             }
-            final AzureString title = OperationBundle.description("account.sign_in");
+            final AzureString title = OperationBundle.description("internal/account.sign_in");
             final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
                 final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                 indicator.setIndeterminate(true);

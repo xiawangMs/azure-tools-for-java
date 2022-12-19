@@ -127,7 +127,7 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
         }
     }
 
-    @AzureOperation(name = "cosmos.open_database_tools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/cosmos.open_database_tools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
     private void openDatabaseTool(Project project, CosmosDBAccount account) {
         final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
         final String DATABASE_PLUGIN_NOT_INSTALLED = "\"Database tools and SQL\" plugin is not installed.";
@@ -136,7 +136,7 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
     }
 
     private <T extends AzResource> void openResourceConnector(@Nonnull final T resource, @Nonnull final AzureServiceResource.Definition<T> definition, Project project) {
-        final Function<AzResource, AzureString> titleSupplier = r -> OperationBundle.description("resource.connect_resource.resource", r.getName());
+        final Function<AzResource, AzureString> titleSupplier = r -> OperationBundle.description("user/resource.connect_resource.resource", r.getName());
         AzureTaskManager.getInstance().runLater(titleSupplier.apply(resource), () -> {
             final ConnectorDialog dialog = new ConnectorDialog(project);
             dialog.setResource(new AzureServiceResource<>(resource, definition));

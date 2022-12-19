@@ -136,11 +136,7 @@ public class FunctionUtils {
         }
     }
 
-    @AzureOperation(
-        name = "function.clean_staging_folder.folder",
-        params = {"stagingFolder.getName()"},
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "boundary/function.clean_staging_folder.folder", params = {"stagingFolder.getName()"}, type = AzureOperation.Type.TASK)
     public static void cleanUpStagingFolder(File stagingFolder) {
         try {
             if (stagingFolder != null) {
@@ -151,11 +147,7 @@ public class FunctionUtils {
         }
     }
 
-    @AzureOperation(
-        name = "function.list_function_modules.project",
-        params = {"project.getName()"},
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "boundary/function.list_function_modules.project", params = {"project.getName()"}, type = AzureOperation.Type.TASK)
     public static Module[] listFunctionModules(Project project) {
         final Module[] modules = ModuleManager.getInstance(project).getModules();
         return Arrays.stream(modules).filter(m -> {
@@ -176,11 +168,7 @@ public class FunctionUtils {
                      .findFirst().orElse(null);
     }
 
-    @AzureOperation(
-        name = "common.validate_func_project.project",
-        params = {"project.getName()"},
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "boundary/common.validate_func_project.project", params = {"project.getName()"}, type = AzureOperation.Type.TASK)
     public static boolean isFunctionProject(Project project) {
         if (project == null) {
             return false;
@@ -195,11 +183,7 @@ public class FunctionUtils {
         return libraries.size() > 0;
     }
 
-    @AzureOperation(
-        name = "function.list_function_methods.module",
-        params = {"module.getName()"},
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "boundary/function.list_function_methods.module", params = {"module.getName()"}, type = AzureOperation.Type.TASK)
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
         if (module == null) {
             return new PsiMethod[0];
@@ -237,11 +221,7 @@ public class FunctionUtils {
         }
     }
 
-    @AzureOperation(
-        name = "function.copy_settings.settings|folder",
-        params = {"localSettingJson", "stagingFolder"},
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "internal/function.copy_settings.settings|folder", params = {"localSettingJson", "stagingFolder"}, type = AzureOperation.Type.TASK)
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
                                                         Path localSettingJson,
                                                         Map<String, String> appSettings) throws IOException {
@@ -252,10 +232,7 @@ public class FunctionUtils {
         }
     }
 
-    @AzureOperation(
-        name = "function.prepare_staging_folder",
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "boundary/function.prepare_staging_folder", type = AzureOperation.Type.TASK)
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Project project, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = ReadAction.compute(() -> generateConfigurations(methods));

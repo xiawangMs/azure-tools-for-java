@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 
@@ -148,7 +147,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
-        @AzureOperation(name = "common.load_children.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
+        @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
         public synchronized void refreshChildren(boolean... incremental) {
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();

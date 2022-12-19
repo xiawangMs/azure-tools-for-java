@@ -73,7 +73,7 @@ public class RateManager {
         return Collections.emptyMap();
     }
 
-    @AzureOperation(name = "feedback.add_operation_score", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/feedback.add_operation_score", type = AzureOperation.Type.TASK)
     public void addScore(Operation causeOperation, int score) {
         final int total = this.score.addAndGet(score);
         OperationContext.current().setTelemetryProperty("addScore", String.valueOf(score));
@@ -99,7 +99,7 @@ public class RateManager {
         return score.get();
     }
 
-    @AzureOperation(name = "feedback.rewind_operation_score_on_error", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/feedback.rewind_operation_score_on_error", type = AzureOperation.Type.TASK)
     public void rewindScore(Operation causeOperation) {
         OperationContext.current().setTelemetryProperty("causeOperation", causeOperation.getId());
         OperationContext.current().setTelemetryProperty("causeOperationId", causeOperation.getExecutionId());

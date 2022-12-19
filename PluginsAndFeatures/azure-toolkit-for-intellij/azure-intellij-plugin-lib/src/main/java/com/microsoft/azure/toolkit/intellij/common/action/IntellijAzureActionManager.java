@@ -23,7 +23,6 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -74,8 +73,9 @@ public class IntellijAzureActionManager extends AzureActionManager {
         if (origin instanceof AnActionWrapper) {
             return (Action<D>) ((AnActionWrapper<?>) origin).getAction();
         } else {
-            final ActionView.Builder view = new ActionView.Builder(origin.getTemplateText());
-            return new Action<>(id, (D d, AnActionEvent e) -> origin.actionPerformed(e), view).setAuthRequired(false);
+            return new Action<>(id)
+                .withLabel(Objects.requireNonNull(origin.getTemplateText()))
+                .withHandler((D d, AnActionEvent e) -> origin.actionPerformed(e));
         }
     }
 
@@ -107,7 +107,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
         @Nullable
         public ShortcutSet getShortcuts() {
-            final Object shortcuts = action.getShortcuts();
+            final Object shortcuts = action.getShortcut();
             if (shortcuts instanceof Action.Id) {
                 return ActionManager.getInstance().getAction(((Action.Id<?>) shortcuts).getId()).getShortcutSet();
             } else if (shortcuts instanceof String) {

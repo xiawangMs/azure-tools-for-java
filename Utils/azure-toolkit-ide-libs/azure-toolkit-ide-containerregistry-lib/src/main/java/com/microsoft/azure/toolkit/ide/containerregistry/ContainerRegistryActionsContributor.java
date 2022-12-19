@@ -9,13 +9,9 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
-
-import java.util.Optional;
-
-import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class ContainerRegistryActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -23,14 +19,15 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
     public static final String SERVICE_ACTIONS = "actions.registry.service";
     public static final String REGISTRY_ACTIONS = "actions.registry.registry";
 
-    public static final Action.Id<ContainerRegistry> PUSH_IMAGE = Action.Id.of("acr.push_image.acr");
+    public static final Action.Id<ContainerRegistry> PUSH_IMAGE = Action.Id.of("user/acr.push_image.acr");
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder pushImageView = new ActionView.Builder("Push Image")
-                .title(s -> Optional.ofNullable(s).map(r -> description("acr.push_image.acr", ((ContainerRegistry) r).name())).orElse(null))
-                .enabled(s -> s instanceof ContainerRegistry && ((ContainerRegistry) s).getFormalStatus().isRunning());
-        am.registerAction(new Action<>(PUSH_IMAGE, pushImageView));
+        new Action<>(PUSH_IMAGE)
+            .withLabel("Push Image")
+            .enableWhen(s -> s instanceof ContainerRegistry && ((ContainerRegistry) s).getFormalStatus().isRunning())
+            .withIdParam(AzResource::getName)
+            .register(am);
     }
 
     @Override

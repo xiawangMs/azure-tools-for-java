@@ -54,11 +54,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
 
     @NotNull
     @Override
-    @AzureOperation(
-        name = "springcloud.list_clusters.subscription",
-        params = {"this.subscription.getId()"},
-        type = AzureOperation.Type.SERVICE
-    )
+    @AzureOperation(name = "internal/springcloud.list_clusters.subscription", params = {"this.subscription.getId()"}, type = AzureOperation.Type.SERVICE)
     protected List<? extends SpringCloudCluster> loadItems() {
         if (Objects.nonNull(this.subscription)) {
             final String sid = this.subscription.getId();
