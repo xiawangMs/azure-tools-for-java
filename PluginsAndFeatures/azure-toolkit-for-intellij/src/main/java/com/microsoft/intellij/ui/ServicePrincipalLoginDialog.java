@@ -34,7 +34,6 @@ import com.microsoft.azure.toolkit.lib.auth.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -213,11 +212,6 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return new ArrayList<>();
-    }
-
-    @Override
-    public List<AzureValidationInfo> validateData() {
-        return Collections.emptyList();
     }
 
     private void initJsonData() {
