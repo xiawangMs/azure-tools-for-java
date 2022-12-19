@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view;
+package com.microsoft.azure.toolkit.intellij.monitor.view.left;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;

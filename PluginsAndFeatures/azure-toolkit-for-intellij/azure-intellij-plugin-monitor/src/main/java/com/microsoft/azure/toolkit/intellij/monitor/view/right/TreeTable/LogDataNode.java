@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.TreeTable;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable;
 
 import java.util.Collections;
 import java.util.List;

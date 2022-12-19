@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.TreeTable;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable;
 
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;

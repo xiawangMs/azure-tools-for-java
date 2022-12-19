@@ -1,10 +1,10 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.azure.monitor.query.models.LogsTable;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.microsoft.azure.toolkit.intellij.monitor.view.TreeTable.LogDataNode;
-import com.microsoft.azure.toolkit.intellij.monitor.view.TreeTable.LogDataModel;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable.LogDataNode;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable.LogDataModel;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 
 import javax.swing.*;
