@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
+import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.monitor.workspace.LogAnalyticsWorkspace;
 import org.apache.commons.collections4.CollectionUtils;
