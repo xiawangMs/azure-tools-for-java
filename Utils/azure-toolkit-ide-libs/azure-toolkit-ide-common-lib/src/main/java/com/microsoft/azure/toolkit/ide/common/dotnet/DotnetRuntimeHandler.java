@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.annotation.Nonnull;
@@ -35,8 +36,14 @@ public class DotnetRuntimeHandler {
             "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & %s }\"";
     public static final String VERSION = "6.0.9";
 
-    public static String getDotNetVersion() throws IOException {
-        return exec("dotnet --version");
+    public static String getDotnetVersion() {
+        final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
+        try {
+            return exec("dotnet --version", dotnetRuntimePath);
+        } catch (IOException e) {
+            // swallow exception to get version
+            return null;
+        }
     }
 
     @Nullable
