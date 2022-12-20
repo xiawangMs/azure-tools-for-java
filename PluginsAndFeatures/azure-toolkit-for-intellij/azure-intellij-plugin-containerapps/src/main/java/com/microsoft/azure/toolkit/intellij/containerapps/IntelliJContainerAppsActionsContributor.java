@@ -18,9 +18,8 @@ import java.util.function.BiPredicate;
 public class IntelliJContainerAppsActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
-        final BiPredicate<ContainerApp, AnActionEvent> serviceCondition = (r, e) -> r instanceof ContainerApp;
-        final BiConsumer<ContainerApp, AnActionEvent> handler = (c, e) -> UpdateContainerImageAction.openUpdateDialog(c, e);
-        am.registerHandler(ContainerAppsActionsContributor.UPDATE_IMAGE, serviceCondition, handler);
+        final BiPredicate<ContainerApp, AnActionEvent> serviceCondition = (r, e) -> r != null;
+        am.registerHandler(ContainerAppsActionsContributor.UPDATE_IMAGE, UpdateContainerImageAction::openUpdateDialog);
     }
 
     @Override

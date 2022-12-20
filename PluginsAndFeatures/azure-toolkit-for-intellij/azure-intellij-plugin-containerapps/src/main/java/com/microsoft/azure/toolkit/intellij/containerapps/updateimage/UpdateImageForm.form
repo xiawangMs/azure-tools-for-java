@@ -54,7 +54,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value="Registry Type"/>
+              <text value="Registry Type:"/>
             </properties>
           </component>
           <component id="637f" class="com.microsoft.azure.toolkit.intellij.containerapps.component.ContainerRegistryTypeComboBox" binding="selectorRegistryType">
@@ -104,9 +104,11 @@
           </component>
           <component id="b8e0f" class="com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel" binding="commentApp">
             <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="2" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <componentStyle value="SMALL"/>
+            </properties>
           </component>
           <component id="86dc7" class="com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton" binding="inputEnv">
             <constraints>

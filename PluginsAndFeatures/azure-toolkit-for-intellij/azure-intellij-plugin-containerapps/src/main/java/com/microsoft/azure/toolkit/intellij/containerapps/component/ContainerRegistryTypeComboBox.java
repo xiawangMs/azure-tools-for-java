@@ -5,34 +5,39 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
-import com.intellij.ui.components.fields.ExtendableTextComponent;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.IconLoader;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 
-import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import javax.swing.*;
+import java.awt.*;
 
-public class ContainerRegistryTypeComboBox extends AzureComboBox<String> {
+public class ContainerRegistryTypeComboBox extends ComboBox<String> {
 
     public static final String ACR = "Azure Container Registries";
     public static final String DOCKER_HUB = "Docker Hub Registry";
     public static final String OTHER = "Other public Registry";
 
-    @Override
-    public String getLabel() {
-        return "Registry Type";
+    public ContainerRegistryTypeComboBox() {
+        super();
+        this.setModel(new DefaultComboBoxModel<>(new String[]{ACR, DOCKER_HUB, OTHER}));
+        this.setRenderer(new MyRenderer());
     }
 
-    @Nonnull
-    @Override
-    protected List<? extends String> loadItems() {
-        return Arrays.asList(ACR, DOCKER_HUB, OTHER);
-    }
-
-    @Nonnull
-    @Override
-    protected List<ExtendableTextComponent.Extension> getExtensions() {
-        return Collections.emptyList();
+    private static class MyRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            this.setText(String.valueOf(value));
+            final Icon icon = switch (String.valueOf(value)) {
+                case ACR -> IntelliJAzureIcons.getIcon(AzureIcons.ContainerRegistry.MODULE);
+                case DOCKER_HUB -> IconLoader.getIcon("/icons/Docker.svg", ContainerRegistryTypeComboBox.class);
+                default -> AllIcons.Actions.Help;
+            };
+            this.setIcon(icon);
+            return this;
+        }
     }
 }
