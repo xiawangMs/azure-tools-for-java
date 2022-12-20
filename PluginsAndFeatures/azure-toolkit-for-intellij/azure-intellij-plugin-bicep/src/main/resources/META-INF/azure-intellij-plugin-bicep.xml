@@ -62,5 +62,5 @@
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
 
-    <depends config-file="azure-intellij-plugin-bicep-highlight.xml">org.jetbrains.plugins.textmate</depends>
+    <depends config-file="azure-intellij-plugin-bicep-highlight.xml" optional="true">org.jetbrains.plugins.textmate</depends>
 </idea-plugin>
