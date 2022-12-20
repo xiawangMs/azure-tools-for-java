@@ -39,7 +39,7 @@ public class IntelliJCosmosActionsContributorForUltimate implements IActionsCont
         am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount || (r instanceof CassandraCosmosDBAccount && cassandraOn), openDatabaseHandler);
     }
 
-    @AzureOperation(name = "user/cosmos.open_database_tools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/cosmos.open_database_tools.account", params = {"account.getName()"})
     private void openDatabaseTool(Project project, CosmosDBAccount account) {
         final String driver = account instanceof MongoCosmosDBAccount ? "az_cosmos_mongo" : "az_cosmos_cassandra";
         final LocalDataSource ds = DatabaseDriverManager.getInstance().getDriver(driver).createDataSource(null);

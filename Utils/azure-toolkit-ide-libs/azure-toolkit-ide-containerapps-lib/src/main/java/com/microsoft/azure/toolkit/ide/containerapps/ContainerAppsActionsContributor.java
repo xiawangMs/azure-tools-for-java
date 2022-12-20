@@ -23,16 +23,16 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String CONTAINER_APP_ACTIONS = "actions.containerapps.containerapp";
     public static final String REVISION_ACTIONS = "actions.containerapps.revision";
 
-    public static final Action.Id<ContainerApp> OPEN_LATEST_REVISION_IN_BROWSER = Action.Id.of("containerapps.open_in_browser.app");
-    public static final Action.Id<ContainerApp> ACTIVATE_LATEST_REVISION = Action.Id.of("containerapps.activate_latest_revision.app");
-    public static final Action.Id<ContainerApp> DEACTIVATE_LATEST_REVISION = Action.Id.of("containerapps.deactivate_latest_revision.app");
-    public static final Action.Id<ContainerApp> RESTART_LATEST_REVISION = Action.Id.of("containerapps.restart_latest_revision.app");
-    public static final Action.Id<ContainerApp> UPDATE_IMAGE = Action.Id.of("containerapps.update_image.app");
-    public static final Action.Id<ContainerApp> OPEN_LOG_STREAMS = Action.Id.of("containerapps.open_log_streams.app");
-    public static final Action.Id<Revision> ACTIVATE = Action.Id.of("containerapps.activate.revision");
-    public static final Action.Id<Revision> DEACTIVATE = Action.Id.of("containerapps.deactivate.revision");
-    public static final Action.Id<Revision> RESTART = Action.Id.of("containerapps.restart.revision");
-    public static final Action.Id<Revision> OPEN_IN_BROWSER = Action.Id.of("containerapps.open_in_browser.revision");
+    public static final Action.Id<ContainerApp> OPEN_LATEST_REVISION_IN_BROWSER = Action.Id.of("user/containerapps.open_in_browser.app");
+    public static final Action.Id<ContainerApp> ACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.activate_latest_revision.app");
+    public static final Action.Id<ContainerApp> DEACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.deactivate_latest_revision.app");
+    public static final Action.Id<ContainerApp> RESTART_LATEST_REVISION = Action.Id.of("user/containerapps.restart_latest_revision.app");
+    public static final Action.Id<ContainerApp> UPDATE_IMAGE = Action.Id.of("user/containerapps.update_image.app");
+    public static final Action.Id<ContainerApp> OPEN_LOG_STREAMS = Action.Id.of("user/containerapps.open_log_streams.app");
+    public static final Action.Id<Revision> ACTIVATE = Action.Id.of("user/containerapps.activate.revision");
+    public static final Action.Id<Revision> DEACTIVATE = Action.Id.of("user/containerapps.deactivate.revision");
+    public static final Action.Id<Revision> RESTART = Action.Id.of("user/containerapps.restart.revision");
+    public static final Action.Id<Revision> OPEN_IN_BROWSER = Action.Id.of("user/containerapps.open_in_browser.revision");
 
     @Override
     public void registerActions(AzureActionManager am) {

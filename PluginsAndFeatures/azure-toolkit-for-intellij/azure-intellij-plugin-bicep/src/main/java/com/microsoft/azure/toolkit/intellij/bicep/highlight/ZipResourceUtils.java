@@ -47,7 +47,7 @@ public class ZipResourceUtils {
                     AzureMessager.getMessager().error(e);
                 }
             } else {
-                throw new SystemException(String.format("'%s.zip' not found in toolkit", source));
+                throw new SystemException(String.format("'%s' not found in toolkit", source));
             }
         }
     }

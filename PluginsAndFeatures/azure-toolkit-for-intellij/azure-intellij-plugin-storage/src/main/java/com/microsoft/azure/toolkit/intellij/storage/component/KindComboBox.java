@@ -45,7 +45,7 @@ public class KindComboBox extends AzureComboBox<Kind> {
 
     @Nonnull
     @Override
-    @AzureOperation(name = "internal/storage|account.kind.list.supported", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/storage|account.kind.list.supported")
     protected List<? extends Kind> loadItems() {
         return Objects.isNull(this.performance) ? Collections.emptyList() : Azure.az(AzureStorageAccount.class).listSupportedKinds(this.performance);
     }

@@ -116,7 +116,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Override
     @SneakyThrows
-    @AzureOperation(name = "internal/favorite.delete_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "internal/favorite.delete_favorite")
     protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
         final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
         this.favorites.remove(resourceId.toLowerCase());
@@ -161,14 +161,14 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
 
-    @AzureOperation(name = "internal/favorite.unpin_all", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "internal/favorite.unpin_all")
     public void unpinAll() {
         this.clear();
         this.persist();
         this.refresh();
     }
 
-    @AzureOperation(name = "internal/favorite.add_favorite", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "internal/favorite.add_favorite")
     public synchronized void pin(@Nonnull AbstractAzResource<?, ?, ?> resource) {
         if (this.exists(resource.getId())) {
             final String message = String.format("%s '%s' is already pinned.", resource.getResourceTypeName(), resource.getName());

@@ -42,7 +42,7 @@ public class CreateMySqlAction {
 
     }
 
-    @AzureOperation(name = "user/mysql.create_server.server", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/mysql.create_server.server", params = {"config.getName()"})
     private static void doCreate(final DatabaseServerConfig config, final Project project) {
         final AzureString title = OperationBundle.description("user/mysql.create_server.server", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {

@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BrowseRemoteHostSftpAction {
 
-    @AzureOperation(name = "user/vm.browse_files_sftp.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/vm.browse_files_sftp.vm", params = "vm.getName()")
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig curSshConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
         final SshConfig sshConfig = validateSshConfig(curSshConfig);
@@ -48,7 +48,7 @@ public class BrowseRemoteHostSftpAction {
         tryConnecting(project, sshConfig, openToolWindowHandler);
     }
 
-    @AzureOperation(name = "boundary/vm.open_sftp_toolwindow", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.open_sftp_toolwindow")
     private static void openSftpToolWindow(@Nonnull Project project, SshConfig sshConfig) {
         final WebServerConfig server = getOrCreateWebServerConfigFromSsh(sshConfig, project);
         final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);

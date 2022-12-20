@@ -73,7 +73,7 @@ public class RateManager {
         return Collections.emptyMap();
     }
 
-    @AzureOperation(name = "internal/feedback.add_operation_score", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/feedback.add_operation_score")
     public void addScore(Operation causeOperation, int score) {
         final int total = this.score.addAndGet(score);
         OperationContext.current().setTelemetryProperty("addScore", String.valueOf(score));
@@ -99,7 +99,7 @@ public class RateManager {
         return score.get();
     }
 
-    @AzureOperation(name = "internal/feedback.rewind_operation_score_on_error", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/feedback.rewind_operation_score_on_error")
     public void rewindScore(Operation causeOperation) {
         OperationContext.current().setTelemetryProperty("causeOperation", causeOperation.getId());
         OperationContext.current().setTelemetryProperty("causeOperationId", causeOperation.getExecutionId());
@@ -130,9 +130,7 @@ public class RateManager {
         @Override
         public void afterReturning(Operation operation, Object source) {
             final RateManager manager = RateManager.getInstance();
-            if (StringUtils.equalsIgnoreCase(operation.getType(), AzureOperation.Type.REQUEST.name()) ||
-                operation.getTarget() == AzureOperation.Target.PLATFORM ||
-                operation.getTarget() == AzureOperation.Target.AZURE) {
+            if (StringUtils.equalsAnyIgnoreCase(operation.getType(), Operation.Type.AZURE, Operation.Type.BOUNDARY)) {
                 final ScoreConfig config = manager.scores.get(operation.getId());
                 if (config != null) {
                     final String actionId = Optional.ofNullable(operation.getActionParent()).map(Operation::getId).orElse(null);

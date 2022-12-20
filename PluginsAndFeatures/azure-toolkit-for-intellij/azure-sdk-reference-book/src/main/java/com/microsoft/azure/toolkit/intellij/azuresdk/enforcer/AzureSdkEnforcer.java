@@ -51,7 +51,7 @@ public class AzureSdkEnforcer {
         }
     }
 
-    @AzureOperation(name = "user/sdk.warn_deprecated_libs", type = AzureOperation.Type.DEFAULT)
+    @AzureOperation(name = "user/sdk.warn_deprecated_libs")
     private static void warnDeprecatedLibs(@AzureTelemetry.Property List<? extends AzureJavaSdkEntity> deprecatedLibs) {
         final String message = buildMessage(deprecatedLibs);
         final AzureActionManager am = AzureActionManager.getInstance();

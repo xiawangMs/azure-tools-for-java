@@ -74,7 +74,7 @@ public class AzureArtifactManager {
         }
     }
 
-    @AzureOperation(name = "internal/common.get_artifact_file.artifact", params = {"artifact.getName()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/common.get_artifact_file.artifact", params = {"artifact.getName()"})
     public String getFileForDeployment(AzureArtifact artifact) {
         switch (artifact.getType()) {
             case Gradle:
@@ -130,7 +130,7 @@ public class AzureArtifactManager {
     }
 
     @Nullable
-    @AzureOperation(name = "boundary/common.get_artifact_module.artifact", params = {"azureArtifact.getName()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/common.get_artifact_module.artifact", params = {"azureArtifact.getName()"})
     public Module getModuleFromAzureArtifact(AzureArtifact azureArtifact) {
         if (azureArtifact == null || azureArtifact.getReferencedObject() == null) {
             return null;

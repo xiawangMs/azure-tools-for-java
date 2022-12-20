@@ -49,7 +49,7 @@ public class StepPanel extends JPanel {
         this.step.getContext().addContextListener(ignore -> this.renderDescription());
     }
 
-    @AzureOperation(name = "user/guidance.execute_step.step", params = {"this.step.getTitle()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/guidance.execute_step.step", params = {"this.step.getTitle()"})
     private void execute() {
         this.step.execute();
     }

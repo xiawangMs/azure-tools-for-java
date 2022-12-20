@@ -106,7 +106,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         }
     }
 
-    @AzureOperation(name = "internal/account.sign_in", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/account.sign_in")
     private static void login(Project project, Runnable callback) {
         final AzureTaskManager manager = AzureTaskManager.getInstance();
         manager.runLater(() -> {
