@@ -95,6 +95,7 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
             this.selectorRegistryType,
+            this.formImage,
             this.selectorApp
         };
         return Arrays.asList(inputs);

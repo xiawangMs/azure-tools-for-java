@@ -5,21 +5,25 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
-import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class OtherPublicRegistryImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig> {
     @Getter
     private JPanel contentPanel;
-    private com.microsoft.azure.toolkit.intellij.common.AzureTextInput txtImage;
+    private AzureTextInput txtImage;
+
+    final Pattern dockerHubImage = Pattern.compile("^(?<registry>[\\w.\\-_]+((?::\\d+|)(?=/[a-z0-9._\\-]+/[a-z0-9._\\-]+))|)(?:/|)(?<image>[a-z0-9.\\-_]+(?:/[a-z0-9.\\-_]+|))(:(?<tag>[\\w.\\-_]{1,127})|)$");
 
     public OtherPublicRegistryImageForm() {
         super();
@@ -28,6 +32,16 @@ public class OtherPublicRegistryImageForm implements AzureFormJPanel<ContainerAp
     }
 
     private void init() {
+        this.txtImage.setRequired(true);
+        this.txtImage.addValidator(() -> {
+            final String value = this.txtImage.getValue();
+            if (StringUtils.isBlank(value)) {
+                return AzureValidationInfo.error("Image name is required.", this.txtImage);
+            } else if (!dockerHubImage.matcher(value).matches()) {
+                return AzureValidationInfo.error("Should be in format of 'host[:port]/namespace/repository:tag', e.g. 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'.", this.txtImage);
+            }
+            return AzureValidationInfo.ok(this.txtImage);
+        });
     }
 
     @Override
