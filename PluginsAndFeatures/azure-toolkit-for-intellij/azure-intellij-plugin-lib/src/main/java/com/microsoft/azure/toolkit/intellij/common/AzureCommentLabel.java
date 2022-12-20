@@ -19,11 +19,13 @@ public class AzureCommentLabel extends JBLabel {
     public AzureCommentLabel() {
         super();
         setForeground(UIUtil.getContextHelpForeground());
+        this.setCopyable(true);
     }
 
     public AzureCommentLabel(@Nonnull String text) {
         super(text);
         setForeground(UIUtil.getContextHelpForeground());
+        this.setCopyable(true);
     }
 
     @Override
