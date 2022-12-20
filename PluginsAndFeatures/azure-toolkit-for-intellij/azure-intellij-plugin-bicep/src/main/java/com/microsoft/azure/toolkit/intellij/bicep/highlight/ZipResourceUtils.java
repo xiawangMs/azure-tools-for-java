@@ -14,7 +14,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,9 +29,8 @@ import static com.microsoft.azure.toolkit.intellij.bicep.highlight.BicepEditorHi
 public class ZipResourceUtils {
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
 
-    @Nullable
-    @AzureOperation("boundary/bicep.copy_textmate_bundle_from_jar")
-    public static void copyTextMateBundlesFromJar(final String source, final String target) {
+    @AzureOperation(value = "boundary/bicep.copy_zip_from_jar.zip", params = "source")
+    public static void copyZipFileFromJarAndUnzip(final String source, final String target) {
         final File targetFolder = new File(LIB_ROOT, target);
         if (!targetFolder.exists()) {
             final URL textmateZipUrl = ZipResourceUtils.class.getResource(source);
@@ -41,7 +39,7 @@ public class ZipResourceUtils {
                     final File destZipFile = new File(LIB_ROOT, String.format("%s.zip", target));
                     FileUtils.copyURLToFile(textmateZipUrl, destZipFile);
                     unzip(destZipFile, targetFolder);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     LOG.error(e);
                     targetFolder.delete();
                     AzureMessager.getMessager().error(e);
@@ -52,7 +50,7 @@ public class ZipResourceUtils {
         }
     }
 
-    @AzureOperation(value = "boundary/bicep.unzip_textmate_bundle.zip", params = "zipFilePath")
+    @AzureOperation(value = "boundary/bicep.unzip.zip", params = "file.getName()")
     private static void unzip(@Nonnull final File file, @Nonnull final File target) throws IOException {
         try (final java.util.zip.ZipFile zipFile = new ZipFile(file)) {
             final Enumeration<? extends ZipEntry> entries = zipFile.entries();

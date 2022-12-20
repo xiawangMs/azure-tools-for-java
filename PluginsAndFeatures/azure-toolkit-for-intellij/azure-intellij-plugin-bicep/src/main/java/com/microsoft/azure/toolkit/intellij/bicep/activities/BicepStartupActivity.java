@@ -30,8 +30,7 @@ import java.util.Objects;
 import static com.microsoft.azure.toolkit.intellij.bicep.highlight.BicepEditorHighlighterProvider.LIB_ROOT;
 import static com.microsoft.azure.toolkit.lib.common.utils.CommandUtils.exec;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
-public class BicepStartupActivity implements StartupActivity.DumbAware {
+public class BicepStartupActivity implements StartupActivity {
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
     public static final String TEXTMATE_ZIP = "/textmate.zip";
     public static final String BICEP_SERVER = "/bicep-langserver.zip";
@@ -43,8 +42,8 @@ public class BicepStartupActivity implements StartupActivity.DumbAware {
     @ExceptionNotification
     @AzureOperation(name = "platform/bicep.prepare_textmate_bundles")
     public void runActivity(@Nonnull Project project) {
-        ZipResourceUtils.copyTextMateBundlesFromJar(TEXTMATE_ZIP, "textmate");
-        ZipResourceUtils.copyTextMateBundlesFromJar(BICEP_SERVER, "bicep-langserver");
+        ZipResourceUtils.copyZipFileFromJarAndUnzip(TEXTMATE_ZIP, "textmate");
+        ZipResourceUtils.copyZipFileFromJarAndUnzip(BICEP_SERVER, "bicep-langserver");
         // start bicep language server
         final File bicep = FileUtils.getFile(LIB_ROOT, BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
         if (Objects.isNull(bicep) || !bicep.exists()) {
