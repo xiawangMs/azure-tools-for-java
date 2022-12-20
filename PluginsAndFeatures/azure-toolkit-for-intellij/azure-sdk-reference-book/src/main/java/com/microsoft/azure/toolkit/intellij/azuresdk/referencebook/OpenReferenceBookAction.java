@@ -24,7 +24,7 @@ public class OpenReferenceBookAction extends AnAction implements DumbAware {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/sdk.open_reference_book", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/sdk.open_reference_book")
     public void actionPerformed(@Nonnull final AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         openSdkReferenceBook(event.getProject(), null);

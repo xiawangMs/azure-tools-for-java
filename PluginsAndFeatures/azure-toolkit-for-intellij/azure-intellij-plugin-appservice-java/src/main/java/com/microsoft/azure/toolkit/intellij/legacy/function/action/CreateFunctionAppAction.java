@@ -33,7 +33,7 @@ import java.util.Objects;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class CreateFunctionAppAction {
-    @AzureOperation(name = "user/function.open_creation_dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.open_creation_dialog")
     public static void openDialog(final Project project, @Nullable final FunctionAppConfig data) {
         AzureTaskManager.getInstance().runLater(() -> {
             final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
@@ -55,7 +55,7 @@ public class CreateFunctionAppAction {
         });
     }
 
-    @AzureOperation(name = "user/function.create_app.app", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.create_app.app", params = {"config.getName()"})
     private static Single<FunctionAppBase<?, ?, ?>> createFunctionApp(final FunctionAppConfig config) {
         final AzureString title = description("user/function.create_app.app", config.getName());
         final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {

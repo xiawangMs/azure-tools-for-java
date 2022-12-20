@@ -43,7 +43,7 @@ public class CreateRedisCacheAction {
         });
     }
 
-    @AzureOperation(name = "user/redis.create_redis.redis", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/redis.create_redis.redis", params = {"config.getName()"})
     private static void doCreate(final RedisConfig config, final Project project) {
         final AzureString title = OperationBundle.description("user/redis.create_redis.redis", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {

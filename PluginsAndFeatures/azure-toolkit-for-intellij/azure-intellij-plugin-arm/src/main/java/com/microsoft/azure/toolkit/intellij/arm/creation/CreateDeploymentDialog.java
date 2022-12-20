@@ -168,7 +168,7 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
         });
     }
 
-    @AzureOperation(name = "user/arm.create_deployment.deployment", params = {"deploymentName"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/arm.create_deployment.deployment", params = {"deploymentName"})
     private void createDeployment(String deploymentName, String parametersPath, String templatePath, IAzureMessager messager, ResourceGroup group)
         throws IOException {
         final String template = IOUtils.toString(new FileReader(templatePath));

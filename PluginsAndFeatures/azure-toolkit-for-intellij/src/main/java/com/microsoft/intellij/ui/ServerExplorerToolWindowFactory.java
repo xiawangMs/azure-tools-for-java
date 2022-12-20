@@ -88,7 +88,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private final Map<Project, DefaultTreeModel> treeModelMap = new HashMap<>();
 
     @Override
-    @AzureOperation(name = "platform/common.initialize_explorer", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "platform/common.initialize_explorer")
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         final AzureModule azureModule = new AzureModuleImpl(project);

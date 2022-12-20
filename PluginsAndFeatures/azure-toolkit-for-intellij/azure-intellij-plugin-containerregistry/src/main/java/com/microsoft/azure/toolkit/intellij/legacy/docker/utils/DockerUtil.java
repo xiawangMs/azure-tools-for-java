@@ -96,7 +96,7 @@ public class DockerUtil {
     /**
      * build image.
      */
-    @AzureOperation(name = "boundary/docker.build_image.image|dir|host", params = {"imageNameWithTag", "dockerDirectory", "docker.getHost()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/docker.build_image.image|dir|host", params = {"imageNameWithTag", "dockerDirectory", "docker.getHost()"})
     public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
                                     String dockerFile, ProgressHandler progressHandler)
             throws DockerException, InterruptedException, IOException {
@@ -107,7 +107,7 @@ public class DockerUtil {
     /**
      * Push image to a private registry.
      */
-    @AzureOperation(name = "boundary/docker.push_image.image|registry", params = {"targetImageName", "registryUrl"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/docker.push_image.image|registry", params = {"targetImageName", "registryUrl"})
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
                                  String registryPassword, String targetImageName,
                                  ProgressHandler handler)
@@ -179,7 +179,7 @@ public class DockerUtil {
         return "";
     }
 
-    @AzureOperation(name = "boundary/docker.ping_host.host", params = {"docker.getHost()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/docker.ping_host.host", params = {"docker.getHost()"})
     public static void ping(DockerClient docker) throws AzureExecutionException {
         try {
             docker.ping();

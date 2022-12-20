@@ -103,7 +103,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         this.functionRunConfiguration = functionRunConfiguration;
     }
 
-    @AzureOperation(name = "boundary/function.launch_debugger", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/function.launch_debugger")
     private void launchDebugger(final Project project, int debugPort) {
         final Runnable runnable = () -> {
             final RunManagerImpl manager = new RunManagerImpl(project);
@@ -121,7 +121,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     }
 
     @Override
-    @AzureOperation(name = "user/function.run_app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.run_app")
     protected Boolean executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
         OperationContext.current().setMessager(new RunProcessHandlerMessenger(processHandler));
@@ -134,7 +134,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         return true;
     }
 
-    @AzureOperation(name = "internal/function.validate_runtime", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/function.validate_runtime")
     private void validateFunctionRuntime() {
         final ComparableVersion funcVersion = getFuncVersion();
         final ComparableVersion javaVersion = getJavaVersion();
@@ -154,7 +154,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     }
 
     @Nullable
-    @AzureOperation(name = "boundary/function.get_version.func", params = {"this.functionRunConfiguration.getFuncPath()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/function.get_version.func", params = {"this.functionRunConfiguration.getFuncPath()"})
     private ComparableVersion getFuncVersion() {
         final File funcFile = Optional.ofNullable(functionRunConfiguration.getFuncPath()).map(File::new).orElse(null);
         if (funcFile == null || !funcFile.exists()) {
@@ -173,7 +173,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     // Get java runtime version following the strategy of function core tools
     // Get java version of JAVA_HOME first, fall back to use PATH if JAVA_HOME not exists
     @Nullable
-    @AzureOperation(name = "boundary/function.validate_jre", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/function.validate_jre")
     private static ComparableVersion getJavaVersion() {
         try {
             final String javaHome = System.getenv("JAVA_HOME");
@@ -191,7 +191,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         }
     }
 
-    @AzureOperation(name = "boundary/function.run_cli.folder", params = {"stagingFolder.getName()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "boundary/function.run_cli.folder", params = {"stagingFolder.getName()"})
     private int runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
         throws IOException, InterruptedException {
         isDebuggerLaunched = false;
@@ -266,7 +266,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         return processBuilder;
     }
 
-    @AzureOperation(name = "boundary/function.prepare_staging_folder.folder|app", params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "boundary/function.prepare_staging_folder.folder|app", params = {"stagingFolder.getName()", "this.functionRunConfiguration.getFuncPath()"})
     private void prepareStagingFolder(File stagingFolder,
                                       RunProcessHandler processHandler,
                                       final @NotNull Operation operation) throws Exception {
@@ -324,7 +324,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     }
 
     @Override
-    @AzureOperation(name = "boundary/function.complete_run.func", params = {"this.functionRunConfiguration.getFuncPath()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/function.complete_run.func", params = {"this.functionRunConfiguration.getFuncPath()"})
     protected void onSuccess(Boolean result, RunProcessHandler processHandler) {
         stopProcessIfAlive(process);
 

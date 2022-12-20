@@ -20,7 +20,7 @@ public class PerformanceComboBox extends AzureComboBox<Performance> {
 
     @Nonnull
     @Override
-    @AzureOperation(name = "internal/storage|account.performance.list.supported", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/storage|account.performance.list.supported")
     protected List<? extends Performance> loadItems() {
         return Azure.az(AzureStorageAccount.class).listSupportedPerformances();
     }
