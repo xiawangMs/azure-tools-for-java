@@ -23,7 +23,7 @@ public class OtherPublicRegistryImageForm implements AzureFormJPanel<ContainerAp
     private JPanel contentPanel;
     private AzureTextInput txtImage;
 
-    final Pattern dockerHubImage = Pattern.compile("^(?<registry>[\\w.\\-_]+((?::\\d+|)(?=/[a-z0-9._\\-]+/[a-z0-9._\\-]+))|)(?:/|)(?<image>[a-z0-9.\\-_]+(?:/[a-z0-9.\\-_]+|))(:(?<tag>[\\w.\\-_]{1,127})|)$");
+    final Pattern dockerHubImage = Pattern.compile("^[\\w.\\-_]+(?::\\d+)?/[a-z0-9._\\-]+/[a-z0-9._\\-]+(:(?<tag>[\\w.\\-_]{1,127})|)$");
 
     public OtherPublicRegistryImageForm() {
         super();
