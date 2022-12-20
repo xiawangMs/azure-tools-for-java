@@ -32,6 +32,7 @@ public class DockerHubImageForm implements AzureFormJPanel<ContainerAppDraft.Ima
     }
 
     private void init() {
+        this.txtImage.setLabel("Image");
         this.txtImage.setRequired(true);
         this.txtImage.addValidator(() -> {
             final String value = this.txtImage.getValue();
