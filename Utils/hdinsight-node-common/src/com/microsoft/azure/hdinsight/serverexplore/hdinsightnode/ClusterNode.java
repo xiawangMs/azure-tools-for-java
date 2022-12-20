@@ -7,6 +7,7 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.*;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;

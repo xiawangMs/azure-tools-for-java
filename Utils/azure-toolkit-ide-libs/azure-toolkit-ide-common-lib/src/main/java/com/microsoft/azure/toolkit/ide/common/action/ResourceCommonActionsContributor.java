@@ -52,6 +52,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("user/common.open_azure_explorer");
     public static final Action.Id<Object> OPEN_AZURE_REFERENCE_BOOK = Action.Id.of("user/common.open_azure_reference_book");
     public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.highlight_resource_in_explorer");
+    public static final Action.Id<Object> INSTALL_DOTNET_RUNTIME = Action.Id.of("bicep.install_dotnet_runtime");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
@@ -215,6 +216,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                     favorites.pin(r);
                 }
             })
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(INSTALL_DOTNET_RUNTIME)
+            .withLabel("Install .Net Runtime")
             .withAuthRequired(false)
             .register(am);
     }
