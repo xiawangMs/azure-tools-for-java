@@ -53,6 +53,9 @@ public class UpdateImageForm extends JPanel implements AzureFormJPanel<UpdateIma
         this.selectorApp.setRequired(true);
         this.commentApp.setVisible(false);
         this.commentApp.setIconWithAlignment(AllIcons.General.Warning, SwingConstants.LEFT, SwingConstants.CENTER);
+        final String defaultType = ContainerRegistryTypeComboBox.ACR;
+        this.selectorRegistryType.setSelectedItem(defaultType);
+        this.updateImagePanel(defaultType);
     }
 
     @Override
