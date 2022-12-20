@@ -54,7 +54,7 @@ public class AppServiceFileAction {
     private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
     private static final String FILE_HAS_BEEN_SAVED = "File %s has been saved to Azure";
 
-    @AzureOperation(name = "user/appservice.open_file.file", params = {"target.getName()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "user/appservice.open_file.file", params = {"target.getName()"})
     @SneakyThrows
     public void openAppServiceFile(AppServiceFile target, Object context) {
         final AppServiceAppBase<?, ?, ?> appService = target.getApp();

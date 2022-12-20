@@ -31,7 +31,7 @@ public abstract class ConfigDialog<T> extends AzureDialog<T> {
         return this.getForm().getValue();
     }
 
-    @AzureOperation(name = "internal/common.toggle_config_mode.ui", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "internal/common.toggle_config_mode.ui")
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
         final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();

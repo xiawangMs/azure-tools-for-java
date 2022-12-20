@@ -85,7 +85,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
 
     @Nullable
     @Override
-    @AzureOperation(name = "user/webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"})
     public WebAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         OperationContext.current().setMessager(messenger);
@@ -196,7 +196,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     }
 
     @Override
-    @AzureOperation(name = "user/webapp.open_public_url.app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/webapp.open_public_url.app")
     protected void onSuccess(WebAppBase<?, ?, ?> result, @NotNull RunProcessHandler processHandler) {
         updateConfigurationDataModel(result);
         final String fileName = FileNameUtils.getBaseName(artifact.getName());
@@ -251,7 +251,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         }
     }
 
-    @AzureOperation(name = "internal/webapp.get_artifact.app", params = {"this.webAppConfiguration.getName()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/webapp.get_artifact.app", params = {"this.webAppConfiguration.getName()"})
     private String getTargetPath() {
         final AzureArtifact azureArtifact =
                 AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
@@ -263,7 +263,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
     }
 
-    @AzureOperation(name = "internal/webapp.create_deployment.app", params = {"this.webAppConfiguration.getName()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/webapp.create_deployment.app", params = {"this.webAppConfiguration.getName()"})
     private WebAppDeploymentSlot createDeploymentSlot(final WebApp webApp, @NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("webapp.deploy.hint.creatingDeploymentSlot"));
         try {

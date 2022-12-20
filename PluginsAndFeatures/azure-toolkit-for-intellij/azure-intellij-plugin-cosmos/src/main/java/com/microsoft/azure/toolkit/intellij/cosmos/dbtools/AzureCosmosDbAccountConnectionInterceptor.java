@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.database.dataSource.DatabaseConnectionInterceptor;
 import com.intellij.database.dataSource.DatabaseConnectionPoint;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +35,7 @@ public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnec
             properties.put(SERVICE_NAME, "cosmos");
             properties.put(OPERATION_NAME, "connect_jdbc_from_dbtools");
             properties.put(OP_NAME, "cosmos.connect_jdbc_from_dbtools");
-            properties.put(OP_TYPE, AzureOperation.Type.ACTION.name());
+            properties.put(OP_TYPE, Operation.Type.USER);
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, properties);
         }
         return null;

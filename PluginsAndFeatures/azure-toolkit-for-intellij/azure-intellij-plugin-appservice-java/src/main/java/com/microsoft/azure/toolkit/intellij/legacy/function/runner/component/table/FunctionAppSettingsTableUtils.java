@@ -59,7 +59,7 @@ public class FunctionAppSettingsTableUtils {
 
         final AnActionButton importButton = new AnActionButton(message("common.import"), AllIcons.ToolbarDecorator.Import) {
             @Override
-            @AzureOperation(name = "user/function.import_app_settings", type = AzureOperation.Type.ACTION)
+            @AzureOperation(name = "user/function.import_app_settings")
             public void actionPerformed(AnActionEvent anActionEvent) {
                 importAppSettings(appSettingsTable);
             }

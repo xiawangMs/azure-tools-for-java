@@ -55,7 +55,7 @@ public class WhatsNewAction extends AnAction implements DumbAware {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/common.open_whats_new", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/common.open_whats_new")
     public void actionPerformed(@Nonnull final AnActionEvent event) {
         final boolean manually = !"AzurePluginStartupActivity".equals(event.getPlace());
         final String content = getWhatsNewContent();

@@ -225,7 +225,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .register(am);
     }
 
-    @AzureOperation(name = "boundary/common.copy_string.string", params = {"s"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/common.copy_string.string", params = {"s"})
     private static void copyString(String s) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
     }

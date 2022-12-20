@@ -39,7 +39,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
         return instance;
     }
 
-    @AzureOperation(name = "user/vm.connect_using_ssh_ultimate.vm", params = "vm.getName()", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/vm.connect_using_ssh_ultimate.vm", params = "vm.getName()")
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
         AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE, () ->
@@ -60,7 +60,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
         }
     }
 
-    @AzureOperation(name = "boundary/vm.create_ssh_session_iu", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.create_ssh_session_iu")
     private static void createSshSession(@Nonnull Project project, SshConfig ssh, SshTerminalCachingRunner runner) {
         final TerminalTabState tabState = new TerminalTabState();
         tabState.myTabName = ssh.getName();
@@ -74,7 +74,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
             .withHandler(v -> AzureTaskManager.getInstance().runLater(() -> openSshConfiguration(project, sshCredential)));
     }
 
-    @AzureOperation(name = "boundary/vm.open_ssh_configuration", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/vm.open_ssh_configuration")
     private static void openSshConfiguration(@Nonnull Project project, RemoteCredentials sshCredential) {
         final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
         ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {

@@ -37,7 +37,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
     private static final String STORAGE_EXPLORER_DOWNLOAD_URL = "https://go.microsoft.com/fwlink/?LinkId=723579";
     private static final String STORAGE_EXPLORER = "StorageExplorer";
 
-    @AzureOperation(name = "user/storage.open_azure_storage_explorer.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/storage.open_azure_storage_explorer.account", params = {"account.getName()"})
     public void openResource(@Nonnull StorageAccount account) {
         // Get resource url
         final Charset charset = Charset.forName("UTF-8");
@@ -53,7 +53,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
         }
     }
 
-    @AzureOperation(name = "user/storage.open_azure_storage_explorer.storage", params = {"storage.getName()"}, type = AzureOperation.Type.ACTION, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "user/storage.open_azure_storage_explorer.storage", params = {"storage.getName()"})
     public void openResource(@Nonnull final AbstractAzResource<?, StorageAccount, ?> storage) {
         // Get resource url
         final StorageAccount storageAccount = storage.getParent();
@@ -72,7 +72,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
         }
     }
 
-    @AzureOperation(name = "boundary/storage.open_azure_storage_explorer", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/storage.open_azure_storage_explorer")
     protected boolean launchStorageExplorerWithUri(@Nonnull final StorageAccount storageAccount, @Nonnull final String resourceUrl) {
         if (Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
