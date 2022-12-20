@@ -25,10 +25,7 @@ public class MySqlActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            ResourceCommonActionsContributor.REFRESH,
-            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
-            "---",
-            ResourceCommonActionsContributor.CREATE
+            ResourceCommonActionsContributor.REFRESH
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
@@ -36,9 +33,6 @@ public class MySqlActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
-            ResourceCommonActionsContributor.START,
-            ResourceCommonActionsContributor.STOP,
-            ResourceCommonActionsContributor.RESTART,
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(SERVER_ACTIONS, serverActionGroup);
