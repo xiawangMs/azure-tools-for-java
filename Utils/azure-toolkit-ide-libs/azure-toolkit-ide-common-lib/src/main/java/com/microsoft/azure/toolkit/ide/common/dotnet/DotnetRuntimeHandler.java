@@ -9,10 +9,8 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -50,26 +48,23 @@ public class DotnetRuntimeHandler {
     public static void installDotnet(final String path) {
         final String rawCommand = getInstallCommand(VERSION, path);
         final String installCommand = SystemUtils.IS_OS_WINDOWS ? String.format(WINDOWS_INSTALL_COMMAND, rawCommand) : rawCommand;
+        final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
         try {
             CommandUtils.exec(installCommand);
             Azure.az().config().setDotnetRuntimePath(path);
             AzureConfigInitializer.saveAzConfig();
             final String INSTALL_SUCCEED_MESSAGE = "Download and install .NET runtime successfully. Auto configured .NET runtime path in Azure Settings";
-            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, getOpenAzureSettingsAction());
+            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction);
         } catch (final IOException e) {
-            final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
             AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and set the path manually",
-                    generateDownloadAction(), openSettingsAction);
+                generateDownloadAction(), openSettingsAction);
         }
     }
 
     private static Action<?> generateDownloadAction() {
-        return new Action<Object>(Action.Id.of("bicep.download_dotnet"), new ActionView.Builder("Download .NET Runtime")) {
-            @Override
-            public void handle(Object source, Object e) {
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://dotnet.microsoft.com/en-us/download");
-            }
-        };
+        return new Action<>(Action.Id.of("bicep.download_dotnet"))
+            .withLabel("Download .NET Runtime")
+            .withHandler(a -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://dotnet.microsoft.com/en-us/download"));
     }
 
     private static String getInstallCommand(final String version, final String dotnetInstallDir) {
