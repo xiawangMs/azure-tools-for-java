@@ -32,8 +32,6 @@ import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 
 public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterProvider {
-    public static final String LIB_ROOT = Path.of(PluginPathManager.getPluginHomePath(CommonConst.PLUGIN_NAME), "lib").toString();
-
     @Override
     @AzureOperation("platform/bicep.get_editor_highlighter")
     public EditorHighlighter getEditorHighlighter(@Nullable Project project, @Nonnull FileType fileType, @Nullable VirtualFile virtualFile, @Nonnull EditorColorsScheme colors) {
@@ -55,8 +53,9 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
                     final Collection<BundleConfigBean> bundles = state.getBundles();
                     final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
                     newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
-                    newBundles.add(new BundleConfigBean("bicep", Path.of(LIB_ROOT, "textmate", "bicep").toString(), true));
-                    newBundles.add(new BundleConfigBean("bicepparam", Path.of(LIB_ROOT, "textmate", "bicepparam").toString(), true));
+                    final String pluginHome = PluginPathManager.getPluginHomePath(CommonConst.PLUGIN_NAME);
+                    newBundles.add(new BundleConfigBean("bicep", Path.of(pluginHome, "textmate", "bicep").toString(), true));
+                    newBundles.add(new BundleConfigBean("bicepparam", Path.of(pluginHome, "textmate", "bicepparam").toString(), true));
                     state.setBundles(newBundles);
                     TextMateService.getInstance().reloadEnabledBundles();
                 } finally {

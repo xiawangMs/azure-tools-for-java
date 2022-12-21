@@ -30,7 +30,7 @@ public class BicepFileType extends LanguageFileType {
     @NotNull
     @Override
     public String getDescription() {
-        return "Bicep language file";
+        return "Bicep file (Preview)";
     }
 
     @NotNull
