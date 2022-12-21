@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.function.BiConsumer;
 
 public class BicepActionsContributor implements IActionsContributor {
@@ -28,25 +27,13 @@ public class BicepActionsContributor implements IActionsContributor {
         final BiConsumer<Object, AnActionEvent> downloadFuncCoreToolsHandler = (v, e) -> {
             final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
             descriptor.setTitle("Select Path to Install .NET Runtime");
-            AzureTaskManager.getInstance().runLater(() -> FileChooser.chooseFile(descriptor, null, getDefaultDotnetPath(), files -> {
+            final VirtualFile defaultFile = LocalFileSystem.getInstance().findFileByIoFile(new File(System.getProperty("user.home")));
+            AzureTaskManager.getInstance().runLater(() -> FileChooser.chooseFile(descriptor, null, defaultFile, files -> {
                 final String installPath = files.getPath();
                 AzureTaskManager.getInstance().runInBackground("Download and Install .NET Runtime",
                         () -> DotnetRuntimeHandler.installDotnet(installPath));
             }));
         };
         am.registerHandler(ResourceCommonActionsContributor.INSTALL_DOTNET_RUNTIME, downloadFuncCoreToolsHandler);
-    }
-
-    private static VirtualFile getDefaultDotnetPath() {
-        try {
-            final File dotnet = Paths.get(System.getProperty("user.home"), ".dotnet-runtime").toFile();
-            if (!dotnet.exists()) {
-                dotnet.mkdirs();
-            }
-            return dotnet.isFile() ? null : LocalFileSystem.getInstance().findFileByIoFile(dotnet);
-        } catch (RuntimeException e) {
-            // swallow exception when get default location
-            return null;
-        }
     }
 }

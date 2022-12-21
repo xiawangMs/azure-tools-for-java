@@ -12,6 +12,8 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
+import com.microsoft.azure.toolkit.intellij.bicep.highlight.ZipResourceUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -21,14 +23,14 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.CommonConst;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.wso2.lsp4intellij.IntellijLanguageClient;
-import org.wso2.lsp4intellij.client.languageserver.serverdefinition.RawCommandServerDefinition;
+import org.wso2.lsp4intellij.client.languageserver.serverdefinition.ProcessBuilderServerDefinition;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.common.utils.CommandUtils.exec;
 
@@ -37,6 +39,9 @@ public class BicepStartupActivity implements StartupActivity {
     public static final String BICEP_LANGSERVER = "bicep-langserver";
     public static final String BICEP_LANG_SERVER_DLL = "Bicep.LangServer.dll";
     public static final String DOTNET = "dotnet";
+    public static final ComparableVersion BICEP_MIN_VERSION = new ComparableVersion("6.0.0");
+    public static final String STDIO = "--stdio";
+    public static final String BICEP = "bicep";
 
     @Override
     @ExceptionNotification
@@ -47,21 +52,25 @@ public class BicepStartupActivity implements StartupActivity {
             AzureMessager.getMessager().warning("Bicep Language Server was not found, disable related features.");
             return;
         }
-        final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
-        final String command = StringUtils.isEmpty(dotnetRuntimePath) ? DOTNET : Paths.get(dotnetRuntimePath, DOTNET).toString();
-        if (!isDotnetRuntimeReady(command)) {
+        if (!isDotnetRuntimeReady()) {
             final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-            AzureMessager.getMessager().warning(".NET runtime is required for Bicep language support, please configure the path for .NET runtime and reopen the project", null, openSettingsAction);
+            AzureMessager.getMessager().warning(".NET runtime is not found or is out of date, Bicep language support was disabled. To use bicep features, please configure the path for .NET runtime and reopen the project", null, openSettingsAction);
             return;
         }
-        IntellijLanguageClient.addServerDefinition(new RawCommandServerDefinition("bicep", new String[]{command, bicep.getAbsolutePath(), "--stdio"}));
+        final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
+        final ProcessBuilder process = new ProcessBuilder(DOTNET, bicep.getAbsolutePath(), STDIO);
+        Optional.ofNullable(dotnetRuntimePath)
+                .filter(StringUtils::isNotEmpty).map(File::new)
+                .filter(File::exists).ifPresent(process::directory);
+        IntellijLanguageClient.addServerDefinition(new ProcessBuilderServerDefinition(BICEP, process));
     }
 
-    private static boolean isDotnetRuntimeReady(final String command) {
-        try {
-            return StringUtils.isNoneBlank(exec(String.format("%s --version", command)));
-        } catch (final IOException e) {
+    private static boolean isDotnetRuntimeReady() {
+        final String version = DotnetRuntimeHandler.getDotnetVersion();
+        if (StringUtils.isEmpty(version)) {
             return false;
         }
+        final ComparableVersion dotnetVersion = new ComparableVersion(version);
+        return dotnetVersion.compareTo(BICEP_MIN_VERSION) >= 0;
     }
 }
