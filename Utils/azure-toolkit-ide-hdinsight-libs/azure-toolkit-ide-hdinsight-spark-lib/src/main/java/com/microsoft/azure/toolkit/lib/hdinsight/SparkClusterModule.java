@@ -48,6 +48,15 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
 
             List<Cluster> sourceList = c.list().stream().collect(Collectors.toList());
             List<Cluster> resultList = new ArrayList<Cluster>();
+
+            // Add additional clusters
+            List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
+            for (IClusterDetail detail : additionalClusterDetails) {
+                SDKAdditionalCluster sdkAdditionalCluster = new SDKAdditionalCluster();
+                sdkAdditionalCluster.setName(detail.getName());
+                resultList.add(sdkAdditionalCluster);
+            }
+
             // Remove duplicate clusters that share the same cluster name
             HashSet<String> clusterIdSet = new HashSet<>();
             for (Cluster cluster : sourceList)

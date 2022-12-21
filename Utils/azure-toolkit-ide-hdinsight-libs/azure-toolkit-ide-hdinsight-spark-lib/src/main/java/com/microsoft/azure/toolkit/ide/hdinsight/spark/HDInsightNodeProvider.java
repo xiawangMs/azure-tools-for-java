@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.ide.hdinsight.spark;
 
 import com.microsoft.azure.hdinsight.common.JobViewManager;
+import com.microsoft.azure.hdinsight.sdk.cluster.SDKAdditionalCluster;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
@@ -60,6 +61,12 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
             Node<SparkClusterNode> jobsNode = new Node<>(sparkClusterNode)
                     .view(new SparkJobNodeView(sparkClusterNode))
                     .clickAction(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW);
+            if (sparkClusterNode.getRemote(true) instanceof SDKAdditionalCluster)
+                return new Node<>(sparkClusterNode)
+                        .view(new SparkClusterNodeView(sparkClusterNode))
+                        .inlineAction(ResourceCommonActionsContributor.PIN)
+                        .actions(HDInsightActionsContributor.SPARK_ADDITIONAL_CLUSTER_ACTIONS)
+                        .addChild(jobsNode);
             return new Node<>(sparkClusterNode)
                     .view(new SparkClusterNodeView(sparkClusterNode))
                     .inlineAction(ResourceCommonActionsContributor.PIN)

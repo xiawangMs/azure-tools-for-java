@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.hdinsight.AzureHDInsightService;
 import com.microsoft.azure.toolkit.lib.hdinsight.SparkClusterNode;
 import com.microsoft.azure.toolkit.lib.hdinsight.StorageAccountNode;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -25,6 +26,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
 
 public class HDInsightActionsContributor implements IActionsContributor {
@@ -33,10 +35,12 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
     public static final String SERVICE_ACTIONS = "actions.hdinsight.service";
     public static final String SPARK_CLUSTER_ACTIONS = "actions.hdinsight.spark";
+    public static final String SPARK_ADDITIONAL_CLUSTER_ACTIONS = "actions.hdinsight_additional.spark";
     public static final String HDINSIGHT_STORAGE_ACTIONS = "actions.hdinsight.storage";
 
     public static final Action.Id<ResourceGroup> GROUP_CREATE_HDInsight_SERVICE = Action.Id.of("hdinsight.create_hdinsight.group");
     public static final Action.Id<Object> LINK_A_CLUSTER = Action.Id.of("hdinsight.link_a_cluster.spark");
+    public static final Action.Id<Object> UNLINK_A_CLUSTER = Action.Id.of("hdinsight.unlink_a_cluster.spark");
     public static final Action.Id<AzResource> OPEN_HDINSIGHT_JOB_VIEW = Action.Id.of("hdinsight.open_hdinsight_job_view.spark");
     public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("hdinsight.open_azure_storage_explorer.cluster");
     public static final Action.Id<AzResource> OPEN_AZURE_EXPLORER_AMBARI = Action.Id.of("hdinsight.open_azure_management_explorer.ambari");
@@ -50,10 +54,25 @@ public class HDInsightActionsContributor implements IActionsContributor {
         final ActionView.Builder openLinkAClusterView = new ActionView.Builder("Link A Cluster")
                 .title(s -> Optional.ofNullable(s).map(r -> description("hdinsight.link_a_cluster.spark", "")).orElse(null))
                 .enabled(s -> true);
-        //openLinkAClusterAction.setShortcuts(am.getIDEDefaultShortcuts().edit());
         am.registerAction(new Action<>(LINK_A_CLUSTER,(resource)->{},openLinkAClusterView)
-                .setShortcuts(am.getIDEDefaultShortcuts().edit()));//openLinkAClusterAction);
+                .setShortcuts(am.getIDEDefaultShortcuts().edit()));
 
+        final ActionView.Builder openUnLinkAClusterView = new ActionView.Builder("Unlink")
+                .title(s -> Optional.ofNullable(s).map(r -> description("hdinsight.unlink_a_cluster.spark", "")).orElse(null))
+                .enabled(s -> true);
+        am.registerAction(new Action<>(UNLINK_A_CLUSTER,(resource)->{
+            if (resource instanceof SparkClusterNode) {
+                SparkClusterNode sparkClusterNode = (SparkClusterNode) resource;
+                boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the HDInsight cluster?",
+                        "Unlink HDInsight Cluster", new String[]{"Yes", "No"}, null);
+                if (choice) {
+                    ClusterManagerEx.getInstance().removeAdditionalCluster(sparkClusterNode.getClusterDetail());
+                    AzureHDInsightService service = az(AzureHDInsightService.class);
+                    service.refresh();
+                }
+            }
+        },openUnLinkAClusterView)
+                .setShortcuts(am.getIDEDefaultShortcuts().edit()));
 
         final ActionView.Builder openHDInsightSparkJobsView = new ActionView.Builder("Open HDInsight Spark JobView")
                 .title(s -> Optional.ofNullable(s).map(r -> description("hdinsight.open_hdinsight_job_view.spark", ((AzResource) r).getName())).orElse(null))
@@ -167,6 +186,22 @@ public class HDInsightActionsContributor implements IActionsContributor {
                 this.OPEN_SPARK_HISTORY_UI
         );
         am.registerGroup(SPARK_CLUSTER_ACTIONS, sparkActionGroup);//
+
+        final ActionGroup sparkAdditionalActionGroup = new ActionGroup(
+                ResourceCommonActionsContributor.PIN,
+                "---",
+                ResourceCommonActionsContributor.REFRESH,
+                ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
+                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                "---",
+                this.OPEN_AZURE_STORAGE_EXPLORER,
+                this.OPEN_AZURE_EXPLORER_AMBARI,
+                this.OPEN_AZURE_EXPLORER_JUPYTER,
+                this.OPEN_SPARK_HISTORY_UI,
+                "---",
+                this.UNLINK_A_CLUSTER
+        );
+        am.registerGroup(SPARK_ADDITIONAL_CLUSTER_ACTIONS, sparkAdditionalActionGroup);//
 
         final ActionGroup storageActionGroup = new ActionGroup(
                 this.OPEN_AZURE_STORAGE_MANAGEMENT_EXPLORER

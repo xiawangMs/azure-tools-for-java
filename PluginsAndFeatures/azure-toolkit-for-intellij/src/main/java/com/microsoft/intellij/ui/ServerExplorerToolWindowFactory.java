@@ -94,7 +94,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         final AzureModule azureModule = new AzureModuleImpl(project);
-        HDInsightUtil.setHDInsightRootModule(azureModule);
+        //HDInsightUtil.setHDInsightRootModule(azureModule);
         azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
         azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
         // initialize aris service module

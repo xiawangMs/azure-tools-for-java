@@ -1,7 +1,11 @@
+plugins{
+    id "org.jetbrains.kotlin.jvm"
+}
 intellij {
 }
 
 dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.6.21'
     implementation project(':azure-intellij-plugin-lib')
     implementation project(':azure-intellij-resource-connector-lib')
     implementation project(':azure-intellij-resource-connector-lib-java')
