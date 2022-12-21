@@ -145,6 +145,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ContainerAppsActionsContributor.OPEN_LATEST_REVISION_IN_BROWSER,
+            ResourceCommonActionsContributor.SHOW_PROPERTIES,
             "---",
             ContainerAppsActionsContributor.ACTIVATE_LATEST_REVISION,
             ContainerAppsActionsContributor.DEACTIVATE_LATEST_REVISION,
