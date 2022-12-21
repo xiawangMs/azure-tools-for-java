@@ -4,6 +4,7 @@ import com.azure.resourcemanager.hdinsight.models.Cluster;
 import com.azure.resourcemanager.hdinsight.models.ClusterGetProperties;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.SDKAdditionalCluster;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +46,9 @@ public class SparkClusterNode extends AbstractAzResource<SparkClusterNode, HDIns
     @NotNull
     @Override
     public String loadStatus(@NotNull Cluster remote) {
+        if (remote instanceof SDKAdditionalCluster)
+            return "Linked";
+
         ClusterGetProperties p = remote.properties();
         return new StringBuffer().append("(Spark:")
                 .append(p.clusterDefinition().componentVersion().get("Spark")).append(")")
