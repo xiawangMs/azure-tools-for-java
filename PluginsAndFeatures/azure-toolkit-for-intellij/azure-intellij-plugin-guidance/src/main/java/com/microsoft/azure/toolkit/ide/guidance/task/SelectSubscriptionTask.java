@@ -45,7 +45,7 @@ public class SelectSubscriptionTask implements Task {
         return "task.auth.select_subscription";
     }
 
-    @AzureOperation(name = "internal/guidance.select_subscription", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/guidance.select_subscription")
     private void selectSubscription() {
         final Account account = Azure.az(AzureAccount.class).account();
         final List<Subscription> subscriptions = account.getSubscriptions();

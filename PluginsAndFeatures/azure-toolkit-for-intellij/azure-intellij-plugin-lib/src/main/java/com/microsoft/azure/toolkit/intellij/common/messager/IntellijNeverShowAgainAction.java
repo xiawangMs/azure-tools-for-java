@@ -30,7 +30,7 @@ public class IntellijNeverShowAgainAction extends NotificationAction {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/common.suppress_action", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/common.suppress_action")
     public void actionPerformed(@NotNull AnActionEvent event, @NotNull Notification notification) {
         Optional.ofNullable(ActionManager.getInstance().getId(this)).ifPresent(id -> {
             IntellijStore.getInstance().getState().getSuppressedActions().put(id, Boolean.TRUE);

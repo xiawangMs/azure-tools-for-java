@@ -85,7 +85,7 @@ public class CoursePanel {
         this.rootPanel.addMouseListener(coursePanelListener);
     }
 
-    @AzureOperation(name = "user/guidance.open_course.course", params = {"this.course.getTitle()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/guidance.open_course.course", params = {"this.course.getTitle()"})
     public void openGuidance() {
         if (!isStartedActionTriggered) {
             isStartedActionTriggered = true;

@@ -319,4 +319,6 @@ patchPluginXml {
 
 buildPlugin {
     archiveVersion = getPatchedVersion()
+    // copy bicep textmate bundles/language server files to root of the plugin zip, so that we don't need to unzip them manually from jar resources
+    from("$projectDir/azure-intellij-plugin-bicep/binaries")
 }

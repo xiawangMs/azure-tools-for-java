@@ -69,7 +69,7 @@ public class DotnetRuntimeHandler {
     }
 
     private static Action<?> generateDownloadAction() {
-        return new Action<>(Action.Id.of("bicep.download_dotnet"))
+        return new Action<>(Action.Id.of("user/bicep.download_dotnet"))
             .withLabel("Download .NET Runtime")
             .withHandler(a -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://dotnet.microsoft.com/en-us/download"));
     }

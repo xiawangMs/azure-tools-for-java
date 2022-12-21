@@ -77,7 +77,7 @@ public class CreateKubernetesServiceAction {
         return config;
     }
 
-    @AzureOperation(name = "user/kubernetes.create_cluster.cluster", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/kubernetes.create_cluster.cluster", params = {"config.getName()"})
     private static void doCreate(final KubernetesClusterDraft.Config config, final Project project) {
         final AzureString title = OperationBundle.description("user/kubernetes.create_cluster.cluster", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {

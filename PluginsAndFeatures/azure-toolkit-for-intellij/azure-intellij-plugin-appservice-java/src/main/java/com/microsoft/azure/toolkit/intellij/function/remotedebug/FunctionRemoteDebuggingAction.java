@@ -38,7 +38,7 @@ import java.util.Optional;
 
 public class FunctionRemoteDebuggingAction {
 
-    @AzureOperation(name = "user/function.start_remote_debugging.app", params = {"target.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/function.start_remote_debugging.app", params = {"target.getName()"})
     public static void startDebugging(@Nonnull FunctionAppBase<?, ?, ?> target, Project project) {
         if (!target.isRemoteDebugEnabled()) {
             showEnableDebuggingMessage(target);
@@ -93,7 +93,7 @@ public class FunctionRemoteDebuggingAction {
         return runTask;
     }
 
-    @AzureOperation(name = "boundary/function.start_debug_configuration.app", params = {"target.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/function.start_debug_configuration.app", params = {"target.getName()"})
     private static void executeRunConfiguration(@Nonnull FunctionAppBase<?, ?, ?> target, Project project) {
         final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, target);
         final RunManagerImpl managerImpl = new RunManagerImpl(project);

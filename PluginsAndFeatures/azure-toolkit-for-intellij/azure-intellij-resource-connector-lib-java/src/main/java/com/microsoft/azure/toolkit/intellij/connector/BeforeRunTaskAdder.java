@@ -38,7 +38,7 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "to_platform/connector.update_connection_task", type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "to_platform/connector.update_connection_task")
     public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
         final RunManagerEx rm = RunManagerEx.getInstanceEx(project);
         final List<RunConfiguration> configurations = rm.getAllConfigurationsList();

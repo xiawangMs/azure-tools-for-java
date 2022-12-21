@@ -62,7 +62,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
 
     @Nonnull
     @Override
-    @AzureOperation(name = "internal/ai.list_ais.subscription", params = {"this.subscription.getId()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/ai.list_ais.subscription", params = {"this.subscription.getId()"})
     protected List<? extends ApplicationInsightsConfig> loadItems() {
         final List<ApplicationInsightsConfig> existingItems =
             subscription == null ? Collections.emptyList() :
