@@ -64,13 +64,13 @@ task buildToolkitsLib {
     }
 }
 
-task prepareBicepSupport {
-    doLast {
-        logger.info('Downloading bicep language server ...')
-        def f = new File('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/src/main/resources/bicep-langserver.zip')
-        if (!f.exists()) {
-            new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream{ i -> f.withOutputStream{ it << i }}
-        }
+task prepareBicepSupport(type: Copy) {
+    logger.info('Downloading bicep language server ...')
+    def langServerDir = file('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/binaries/bicep/bicep-langserver')
+    if (!langServerDir.exists()) {
+        def zipFile = new File('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/build/bicep-langserver.zip')
+        new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream{ i -> zipFile.withOutputStream{ it << i }}
+        from zipTree(zipFile) into langServerDir
     }
 }
 
