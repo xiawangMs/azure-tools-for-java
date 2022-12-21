@@ -5,15 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.bicep.activities;
 
-import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.application.PluginPathManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
-import com.microsoft.azure.toolkit.intellij.bicep.highlight.ZipResourceUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -31,8 +27,6 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
-
-import static com.microsoft.azure.toolkit.lib.common.utils.CommandUtils.exec;
 
 public class BicepStartupActivity implements StartupActivity {
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
