@@ -231,6 +231,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     }
 
     private void save() {
+        // todo: add confirm when disable ingress like portal
         this.setEnabled(false);
         final IngressConfig ingressConfig = getConfig();
         final ContainerAppDraft.Config config = Optional.ofNullable(this.draft.getConfig()).orElseGet(ContainerAppDraft.Config::new);

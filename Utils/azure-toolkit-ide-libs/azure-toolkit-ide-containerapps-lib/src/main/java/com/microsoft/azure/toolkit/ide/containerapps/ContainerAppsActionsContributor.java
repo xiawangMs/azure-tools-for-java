@@ -8,12 +8,17 @@ package com.microsoft.azure.toolkit.ide.containerapps;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
+import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 
 public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -23,6 +28,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String CONTAINER_APP_ACTIONS = "actions.containerapps.containerapp";
     public static final String REVISION_ACTIONS = "actions.containerapps.revision";
 
+    public static final Action.Id<AzureContainerApps> CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment");
+    public static final Action.Id<ContainerAppsEnvironment> CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app");
     public static final Action.Id<ContainerApp> OPEN_LATEST_REVISION_IN_BROWSER = Action.Id.of("user/containerapps.open_in_browser.app");
     public static final Action.Id<ContainerApp> ACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.activate_latest_revision.app");
     public static final Action.Id<ContainerApp> DEACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.deactivate_latest_revision.app");
@@ -36,6 +43,29 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
+        // todo: extract common resource action to create resource in portal
+        new Action<>(CREATE_CONTAINER_APPS_ENVIRONMENT)
+                .withLabel("Create Container Apps Environment")
+                .withIcon(AzureIcons.Action.CREATE.getIconPath())
+                .enableWhen(s -> s instanceof AzureContainerApps)
+                .withHandler(s -> {
+                    final IAccount account = Azure.az(IAzureAccount.class).account();
+                    final String url = String.format("%s/#create/Microsoft.AppServiceEnvironmentCreation", account.getPortalUrl());
+                    am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+                })
+                .register(am);
+
+        new Action<>(CREATE_CONTAINER_APP)
+                .withLabel("Create Container App")
+                .withIcon(AzureIcons.Action.CREATE.getIconPath())
+                .enableWhen(s -> s instanceof ContainerAppsEnvironment && ((ContainerAppsEnvironment) s).getFormalStatus().isConnected())
+                .withHandler(s -> {
+                    final IAccount account = Azure.az(IAzureAccount.class).account();
+                    final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
+                    am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+                })
+                .register(am);
+
         new Action<>(OPEN_LATEST_REVISION_IN_BROWSER)
             .withLabel("Open In Browser")
             .withIcon(AzureIcons.Action.BROWSER.getIconPath())
@@ -122,7 +152,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
-            ResourceCommonActionsContributor.CREATE
+            ContainerAppsActionsContributor.CREATE_CONTAINER_APPS_ENVIRONMENT
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
@@ -133,7 +163,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
-            ResourceCommonActionsContributor.CREATE,
+            ContainerAppsActionsContributor.CREATE_CONTAINER_APP,
             ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(ENVIRONMENT_ACTIONS, environmentActionGroup);
