@@ -41,7 +41,7 @@ public class BicepStartupActivity implements StartupActivity {
     @AzureOperation(name = "platform/bicep.prepare_textmate_bundles")
     public void runActivity(@Nonnull Project project) {
         final String pluginHome = PluginPathManager.getPluginHomePath(CommonConst.PLUGIN_NAME);
-        final File bicep = FileUtils.getFile(pluginHome, BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
+        final File bicep = FileUtils.getFile(pluginHome, "bicep", BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
         if (Objects.isNull(bicep) || !bicep.exists()) {
             AzureMessager.getMessager().warning("Bicep Language Server was not found, disable related features.");
             return;

@@ -54,8 +54,8 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
                     final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
                     newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
                     final String pluginHome = PluginPathManager.getPluginHomePath(CommonConst.PLUGIN_NAME);
-                    newBundles.add(new BundleConfigBean("bicep", Path.of(pluginHome, "textmate", "bicep").toString(), true));
-                    newBundles.add(new BundleConfigBean("bicepparam", Path.of(pluginHome, "textmate", "bicepparam").toString(), true));
+                    newBundles.add(new BundleConfigBean("bicep", Path.of(pluginHome, "bicep", "textmate", "bicep").toString(), true));
+                    newBundles.add(new BundleConfigBean("bicepparam", Path.of(pluginHome, "bicep", "textmate", "bicepparam").toString(), true));
                     state.setBundles(newBundles);
                     TextMateService.getInstance().reloadEnabledBundles();
                 } finally {
