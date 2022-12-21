@@ -5,9 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.bicep.highlight;
 
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.PluginPathManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -53,9 +55,8 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
                     final Collection<BundleConfigBean> bundles = state.getBundles();
                     final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
                     newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
-                    final String pluginHome = PluginPathManager.getPluginHomePath(CommonConst.PLUGIN_NAME);
-                    newBundles.add(new BundleConfigBean("bicep", Path.of(pluginHome, "bicep", "textmate", "bicep").toString(), true));
-                    newBundles.add(new BundleConfigBean("bicepparam", Path.of(pluginHome, "bicep", "textmate", "bicepparam").toString(), true));
+                    newBundles.add(new BundleConfigBean("bicep", Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep").toString(), true));
+                    newBundles.add(new BundleConfigBean("bicepparam", Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam").toString(), true));
                     state.setBundles(newBundles);
                     TextMateService.getInstance().reloadEnabledBundles();
                 } finally {
