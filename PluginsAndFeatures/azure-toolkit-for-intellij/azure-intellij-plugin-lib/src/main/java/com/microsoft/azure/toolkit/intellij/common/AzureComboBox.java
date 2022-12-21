@@ -219,7 +219,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         this.reloader.debounce();
     }
 
-    @AzureOperation(name = "common.load_combobox_items.type", params = {"this.getLabel()"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "interal/common.load_combobox_items.type", params = {"this.getLabel()"})
     private void doReloadItems() {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             this.setLoading(true);

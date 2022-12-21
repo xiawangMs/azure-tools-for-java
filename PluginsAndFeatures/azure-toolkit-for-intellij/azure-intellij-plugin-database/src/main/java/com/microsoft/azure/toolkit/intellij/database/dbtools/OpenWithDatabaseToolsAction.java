@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 
 public class OpenWithDatabaseToolsAction {
-    @AzureOperation(name = "database.open_database_tools.server", params = {"server.getName()"}, type = AzureOperation.Type.TASK, target = AzureOperation.Target.PLATFORM)
+    @AzureOperation(name = "boundary/database.open_database_tools.server", params = {"server.getName()"})
     public static void openDataSourceManagerDialog(IDatabaseServer<?> server, Project project) {
         final DataSourceRegistry registry = new DataSourceRegistry(project);
         final DbPsiFacade dbPsiFacade = DbPsiFacade.getInstance(project);
@@ -26,7 +26,7 @@ public class OpenWithDatabaseToolsAction {
             .withDriverClass(server.getJdbcUrl().getDefaultDriverClass())
             .withUrl(server.getJdbcUrl().toString())
             .withJdbcAdditionalProperty(DatabaseServerParamEditor.KEY_DB_SERVER_ID, server.getId())
-            .withUser(String.format("%s@%s", server.getAdminName(), server.getName()))
+            .withUser(server.getFullAdminName())
             .withDbms(getDbms(server))
             .commit();
         DataSourceManagerDialog.showDialog(dbPsiFacade, registry);
