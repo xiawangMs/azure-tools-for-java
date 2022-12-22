@@ -177,11 +177,13 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ContainerAppsActionsContributor.OPEN_LATEST_REVISION_IN_BROWSER,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
             "---",
+            ContainerAppsActionsContributor.UPDATE_IMAGE,
+            "---",
+            ResourceCommonActionsContributor.DELETE,
+            "---",
             ContainerAppsActionsContributor.ACTIVATE_LATEST_REVISION,
             ContainerAppsActionsContributor.DEACTIVATE_LATEST_REVISION,
             ContainerAppsActionsContributor.RESTART_LATEST_REVISION,
-            ContainerAppsActionsContributor.UPDATE_IMAGE,
-            ResourceCommonActionsContributor.DELETE,
             "---",
             ContainerAppsActionsContributor.OPEN_LOG_STREAMS
         );
