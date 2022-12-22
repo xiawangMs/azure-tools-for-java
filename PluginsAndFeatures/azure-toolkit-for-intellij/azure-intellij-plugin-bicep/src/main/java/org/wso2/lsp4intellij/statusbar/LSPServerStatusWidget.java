@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Modifications copyright (c) Microsoft Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +21,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.*;
 
@@ -111,8 +113,8 @@ public class LSPServerStatusWidget implements StatusBarWidget {
             StatusBar statusBar = manager.getStatusBar(project);
             if (statusBar != null)
                 ApplicationUtils.invokeLater(() -> {
-                    StatusBarWidgetFactory factory = ServiceManager.getService(StatusBarWidgetFactory.class);
-                    factory.disposeWidget(this);
+                    final StatusBarWidgetFactory factory = ApplicationManager.getApplication().getService(StatusBarWidgetFactory.class);
+                    Optional.ofNullable(factory).ifPresent(f -> f.disposeWidget(this));
                 });
         }
     }
