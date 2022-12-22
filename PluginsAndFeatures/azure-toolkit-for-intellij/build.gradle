@@ -324,9 +324,21 @@ buildPlugin {
     from("$projectDir/azure-intellij-plugin-bicep/binaries")
 }
 
-task copyBicepBinaries(type: Copy) {
+prepareSandbox {
     from("$projectDir/azure-intellij-plugin-bicep/binaries") into("$projectDir/build/idea-sandbox/plugins/azure-toolkit-for-intellij/")
 }
 
-prepareSandbox.finalizedBy(copyBicepBinaries)
+task prepareBicepLanguageServer(type: Copy) {
+    def langServerDir = file('azure-intellij-plugin-bicep/binaries/bicep/bicep-langserver')
+    if (!langServerDir.exists()) {
+        logger.info('Downloading bicep language server ...')
+        def zipFile = new File('azure-intellij-plugin-bicep/downloaded.zip')
+        new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream { i -> zipFile.withOutputStream { it << i } }
+        logger.info('Unzipping bicep language server ...')
+        from zipTree(zipFile) into langServerDir
+    }
+}
+
+buildPlugin.dependsOn(prepareBicepLanguageServer)
+prepareSandbox.dependsOn(prepareBicepLanguageServer)
 
