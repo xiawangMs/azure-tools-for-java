@@ -30,7 +30,7 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
 
     @Nonnull
     @Override
-    @AzureOperation(name = "resource.load_resources_in_azure.type", params = {"this.getResourceTypeName()"}, type = AzureOperation.Type.REQUEST)
+    @AzureOperation(name = "resource.load_resources_in_azure.type", params = {"this.getResourceTypeName()"})
     protected Stream<Cluster> loadResourcesFromAzure() {
         //log.debug("[{}]:loadResourcesFromAzure()", this.getName());
         return Optional.ofNullable( this.getClient()).map((c) -> {
