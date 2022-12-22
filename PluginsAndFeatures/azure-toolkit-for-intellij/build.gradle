@@ -323,3 +323,10 @@ buildPlugin {
     // copy bicep textmate bundles/language server files to root of the plugin zip, so that we don't need to unzip them manually from jar resources
     from("$projectDir/azure-intellij-plugin-bicep/binaries")
 }
+
+task copyBicepBinaries(type: Copy) {
+    from("$projectDir/azure-intellij-plugin-bicep/binaries") into("$projectDir/build/idea-sandbox/plugins/azure-toolkit-for-intellij/")
+}
+
+prepareSandbox.finalizedBy(copyBicepBinaries)
+
