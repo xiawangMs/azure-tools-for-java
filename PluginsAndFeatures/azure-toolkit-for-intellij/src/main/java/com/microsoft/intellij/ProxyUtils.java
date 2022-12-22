@@ -6,9 +6,13 @@
 package com.microsoft.intellij;
 
 import com.intellij.util.net.HttpConfigurable;
+import com.intellij.util.net.ssl.CertificateManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.proxy.ProxyInfo;
 import com.microsoft.azure.toolkit.lib.common.proxy.ProxyManager;
+
+import java.io.File;
+import java.nio.file.Paths;
 
 public class ProxyUtils {
     public static void initProxy() {
@@ -23,6 +27,18 @@ public class ProxyUtils {
                 .build();
             Azure.az().config().setProxyInfo(proxy);
             ProxyManager.getInstance().applyProxy();
+        }
+        setTrustStoreProperties();
+    }
+
+    private static void setTrustStoreProperties() {
+        final CertificateManager certificateManager = CertificateManager.getInstance();
+        final String javaHome = System.getenv("JAVA_HOME");
+        final String trustStoreFilePath = Paths.get(javaHome,  "lib", "security", "cacerts").toString();
+        final File file = new File(trustStoreFilePath);
+        if (file.exists()) {
+            System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
+            System.setProperty("javax.net.ssl.trustStorePassword", certificateManager.getPassword());
         }
     }
 }
