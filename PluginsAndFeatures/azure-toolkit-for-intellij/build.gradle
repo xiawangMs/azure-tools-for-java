@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "1.10.1"
+    id "org.jetbrains.intellij" version "1.11.0"
     id "org.jetbrains.kotlin.jvm" version "1.7.20"
     id "de.undercouch.download" version "4.1.1"
     id "com.github.ben-manes.versions" version "0.39.0"
@@ -193,6 +193,7 @@ dependencies {
     implementation project(':azure-intellij-plugin-guidance')
     implementation project(':azure-intellij-plugin-cosmos')
     implementation project(':azure-intellij-plugin-bicep')
+    implementation project(':azure-intellij-plugin-containerapps')
     implementation 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     implementation 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'
