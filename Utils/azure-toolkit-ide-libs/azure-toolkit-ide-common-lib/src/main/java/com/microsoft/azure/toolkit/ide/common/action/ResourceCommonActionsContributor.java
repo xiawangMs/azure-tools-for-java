@@ -9,6 +9,9 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.AzService;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -45,6 +48,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AzResource> DEPLOY = Action.Id.of("user/resource.deploy_resource.resource");
     public static final Action.Id<AzResource> CONNECT = Action.Id.of("user/resource.connect_resource.resource");
     public static final Action.Id<Object> CREATE = Action.Id.of("user/resource.create_resource.type");
+    public static final Action.Id<AzService> CREATE_IN_PORTAL = Action.Id.of("user/resource.create_resource_in_portal.type");
     public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("user/resource.pin");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("user/common.open_url.url");
     public static final Action.Id<String> COPY_STRING = Action.Id.of("user/common.copy_string");
@@ -201,6 +205,17 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withShortcut(shortcuts.add())
             .enableWhen(s -> s instanceof AzService || s instanceof AzResourceModule ||
                 (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)))
+            .register(am);
+
+        new Action<>(CREATE_IN_PORTAL)
+            .withLabel("Create In Azure Portal")
+            .withIcon(AzureIcons.Action.CREATE.getIconPath())
+            .enableWhen(s -> s instanceof AzService)
+            .withHandler(s -> {
+                final IAccount account = Azure.az(IAzureAccount.class).account();
+                final String url = String.format("%s/#create/%s", account.getPortalUrl(), s.getName());
+                am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+            })
             .register(am);
 
         final Favorites favorites = Favorites.getInstance();
