@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.swing.*;
@@ -149,7 +150,8 @@ public class LSPServerStatusWidget implements StatusBarWidget {
                 JBPopupFactory.ActionSelectionAid mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS;
                 Component component = t.getComponent();
                 List<AnAction> actions = new ArrayList<>();
-                if (LanguageServerWrapper.forProject(project).getStatus() == ServerStatus.INITIALIZED) {
+                final LanguageServerWrapper wrapper = LanguageServerWrapper.forProject(project);
+                if (Objects.nonNull(wrapper) && wrapper.getStatus() == ServerStatus.INITIALIZED) {
                     actions.add(new ShowConnectedFiles());
                 }
                 actions.add(new ShowTimeouts());
