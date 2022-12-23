@@ -111,7 +111,8 @@ public class RateManager {
     public static class WhenToPopup implements StartupActivity, OperationListener {
         @Override
         public void runActivity(@Nonnull Project project) {
-            final char c = InstallationIdUtils.getHashMac().toLowerCase().charAt(0);
+            final String hashMac = InstallationIdUtils.getHashMac();
+            final char c = StringUtils.isBlank(hashMac) ? '0' : hashMac.toLowerCase().charAt(0);
             final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
             final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
             final String nextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER);
