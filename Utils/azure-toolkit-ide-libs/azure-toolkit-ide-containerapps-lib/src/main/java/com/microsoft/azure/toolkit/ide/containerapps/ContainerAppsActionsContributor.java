@@ -45,7 +45,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         // todo: extract common resource action to create resource in portal
         new Action<>(CREATE_CONTAINER_APPS_ENVIRONMENT)
-                .withLabel("Create Container Apps Environment")
+                .withLabel("Create Environment")
                 .withIcon(AzureIcons.Action.CREATE.getIconPath())
                 .enableWhen(s -> s instanceof AzureContainerApps)
                 .withHandler(s -> {
@@ -53,6 +53,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
                     final String url = String.format("%s/#create/Microsoft.AppServiceEnvironmentCreation", account.getPortalUrl());
                     am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
                 })
+                .withShortcut(am.getIDEDefaultShortcuts().add())
                 .register(am);
 
         new Action<>(CREATE_CONTAINER_APP)
@@ -64,6 +65,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
                     final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
                     am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
                 })
+                .withShortcut(am.getIDEDefaultShortcuts().add())
                 .register(am);
 
         new Action<>(OPEN_LATEST_REVISION_IN_BROWSER)
