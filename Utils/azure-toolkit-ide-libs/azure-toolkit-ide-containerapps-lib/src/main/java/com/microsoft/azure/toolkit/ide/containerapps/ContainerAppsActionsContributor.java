@@ -208,10 +208,11 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.REFRESH,
             ContainerAppsActionsContributor.OPEN_IN_BROWSER,
             "---",
+            ResourceCommonActionsContributor.DELETE,
+            "---",
             ContainerAppsActionsContributor.ACTIVATE,
             ContainerAppsActionsContributor.DEACTIVATE,
-            ContainerAppsActionsContributor.RESTART,
-            ResourceCommonActionsContributor.DELETE
+            ContainerAppsActionsContributor.RESTART
         );
         am.registerGroup(REVISION_ACTIONS, revisionActionGroup);
     }
