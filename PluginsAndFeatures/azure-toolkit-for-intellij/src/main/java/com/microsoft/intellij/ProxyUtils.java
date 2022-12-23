@@ -10,9 +10,12 @@ import com.intellij.util.net.ssl.CertificateManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.proxy.ProxyInfo;
 import com.microsoft.azure.toolkit.lib.common.proxy.ProxyManager;
+import org.apache.http.impl.client.HttpClientBuilder;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 public class ProxyUtils {
     public static void initProxy() {
@@ -40,11 +43,12 @@ public class ProxyUtils {
     private static void setTrustStoreProperties() {
         final CertificateManager certificateManager = CertificateManager.getInstance();
         final String javaHome = System.getenv("JAVA_HOME");
-        final String trustStoreFilePath = Paths.get(javaHome,  "lib", "security", "cacerts").toString();
-        final File file = new File(trustStoreFilePath);
-        if (file.exists()) {
-            System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
-            System.setProperty("javax.net.ssl.trustStorePassword", certificateManager.getPassword());
-        }
+        Optional.ofNullable(javaHome).ifPresent(it -> {
+            final Path trustStoreFilePath = Paths.get(it,  "lib", "security", "cacerts");
+            if (Files.exists(trustStoreFilePath)) {
+                System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath.toString());
+                System.setProperty("javax.net.ssl.trustStorePassword", certificateManager.getPassword());
+            }
+        });
     }
 }
