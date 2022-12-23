@@ -20,6 +20,8 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 
+import java.util.Objects;
+
 public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
 
@@ -80,7 +82,10 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Activate Latest Revision")
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .enableWhen(s -> s instanceof ContainerApp &&
+                ((ContainerApp) s).getFormalStatus().isConnected() &&
+                Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
+                !((ContainerApp) s).getLatestRevision().isActive())
             .withHandler(ContainerApp::activate)
             .register(am);
 
@@ -88,7 +93,10 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Deactivate Latest Revision")
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .enableWhen(s -> s instanceof ContainerApp &&
+                ((ContainerApp) s).getFormalStatus().isConnected() &&
+                Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
+                ((ContainerApp) s).getLatestRevision().isActive())
             .withHandler(ContainerApp::deactivate)
             .register(am);
 
@@ -96,7 +104,10 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Restart Latest Revision")
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .enableWhen(s -> s instanceof ContainerApp &&
+                ((ContainerApp) s).getFormalStatus().isConnected() &&
+                Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
+                ((ContainerApp) s).getLatestRevision().isActive())
             .withHandler(ContainerApp::restart)
             .register(am);
 
@@ -119,7 +130,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Activate")
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && !((Revision) s).isActive())
             .withHandler(Revision::activate)
             .register(am);
 
@@ -127,7 +138,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Deactivate")
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && ((Revision) s).isActive())
             .withHandler(Revision::deactivate)
             .register(am);
 
@@ -135,7 +146,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Restart")
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && ((Revision) s).isActive())
             .withHandler(Revision::restart)
             .register(am);
 
