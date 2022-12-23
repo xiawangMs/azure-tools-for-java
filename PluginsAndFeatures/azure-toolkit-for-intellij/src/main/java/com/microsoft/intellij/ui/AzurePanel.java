@@ -36,6 +36,7 @@ import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -136,7 +137,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig = config;
         final AzureEnvironment oldEnv = ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()), AzureEnvironment.AZURE);
         final String oldPasswordSaveType = config.getDatabasePasswordSaveType();
-        final Boolean oldTelemetryEnabled = config.getTelemetryEnabled();
+        final boolean oldTelemetryEnabled = BooleanUtils.isNotFalse(config.getTelemetryEnabled());
         final String oldFuncCoreToolsPath = config.getFunctionCoreToolsPath();
         azureEnvironmentComboBox.setSelectedItem(oldEnv);
         savePasswordComboBox.setSelectedItem(Optional.ofNullable(oldPasswordSaveType).map(Password.SaveType::valueOf).orElse(Password.SaveType.UNTIL_RESTART));
@@ -149,7 +150,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
         txtBatchSize.setValue(config.getCosmosBatchSize());
         dotnetRuntimePath.setValue(config.getDotnetRuntimePath());
-        txtLabelFields.setValue(config.getDocumentsLabelFields().stream().collect(Collectors.joining(";")));
+        txtLabelFields.setValue(String.join(";", config.getDocumentsLabelFields()));
     }
 
     public AzureConfiguration getData() {
