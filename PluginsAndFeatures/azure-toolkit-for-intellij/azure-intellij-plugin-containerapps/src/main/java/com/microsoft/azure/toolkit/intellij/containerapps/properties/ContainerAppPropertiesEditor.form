@@ -92,14 +92,13 @@
                       <text value="Resource group:"/>
                     </properties>
                   </component>
-                  <component id="e4cd3" class="javax.swing.JTextField" binding="resourceGroupTextField">
+                  <component id="ffa84" class="com.intellij.ui.components.JBLabel" binding="resourceGroupTextField">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
@@ -112,14 +111,13 @@
                       <text value="Provisioning Status:"/>
                     </properties>
                   </component>
-                  <component id="4e45a" class="javax.swing.JTextField" binding="txtProvisioningStatus">
+                  <component id="8f55d" class="com.intellij.ui.components.JBLabel" binding="txtProvisioningStatus">
                     <constraints>
                       <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <horizontalAlignment value="2"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
@@ -133,14 +131,13 @@
                       <text value="Revision Mode:"/>
                     </properties>
                   </component>
-                  <component id="b3aae" class="javax.swing.JTextField" binding="txtRevisionMode">
+                  <component id="f59ff" class="com.intellij.ui.components.JBLabel" binding="txtRevisionMode">
                     <constraints>
                       <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
@@ -153,14 +150,13 @@
                       <text value="Latest Revision Name"/>
                     </properties>
                   </component>
-                  <component id="f4b95" class="javax.swing.JTextField" binding="txtLatestRevisionName">
+                  <component id="67191" class="com.intellij.ui.components.JBLabel" binding="txtLatestRevisionName">
                     <constraints>
                       <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
@@ -173,14 +169,13 @@
                       <text value="Container Apps Environment"/>
                     </properties>
                   </component>
-                  <component id="bd846" class="javax.swing.JTextField" binding="txtContainerAppsEnvironment">
+                  <component id="c9be1" class="com.intellij.ui.components.JBLabel" binding="txtContainerAppsEnvironment">
                     <constraints>
                       <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
@@ -207,14 +202,13 @@
                       <text value="Location:"/>
                     </properties>
                   </component>
-                  <component id="4508b" class="javax.swing.JTextField" binding="locationTextField">
+                  <component id="7dfc1" class="com.intellij.ui.components.JBLabel" binding="locationTextField">
                     <constraints>
                       <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
@@ -227,14 +221,13 @@
                       <text value="Subscription:"/>
                     </properties>
                   </component>
-                  <component id="7a2ca" class="javax.swing.JTextField" binding="subscriptionTextField">
+                  <component id="de5b1" class="com.intellij.ui.components.JBLabel" binding="subscriptionTextField">
                     <constraints>
                       <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
@@ -247,14 +240,13 @@
                       <text value="Subscription ID:"/>
                     </properties>
                   </component>
-                  <component id="cb690" class="javax.swing.JTextField" binding="subscriptionIDTextField">
+                  <component id="b6525" class="com.intellij.ui.components.JBLabel" binding="subscriptionIDTextField">
                     <constraints>
                       <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <editable value="false"/>
                       <text value="&lt;Loading&gt;"/>
                     </properties>
                   </component>
