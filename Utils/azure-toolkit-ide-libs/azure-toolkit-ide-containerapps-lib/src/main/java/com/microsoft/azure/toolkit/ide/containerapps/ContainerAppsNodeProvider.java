@@ -58,7 +58,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
             return new Node<>(environment)
                     .view(new AzureResourceLabelView<>(environment))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .addChildren(env -> env.listContainerApps(), (app, envNode) -> this.createNode(app, envNode, manager))
+                    .addChildren(ContainerAppsEnvironment::listContainerApps, (app, envNode) -> this.createNode(app, envNode, manager))
                     .actions(ContainerAppsActionsContributor.ENVIRONMENT_ACTIONS);
         } else if (data instanceof ContainerApp) {
             final ContainerApp app = (ContainerApp) data;
