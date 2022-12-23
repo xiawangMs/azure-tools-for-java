@@ -318,17 +318,11 @@ patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
 }
 
-buildPlugin {
-    archiveVersion = getPatchedVersion()
-    // copy bicep textmate bundles/language server files to root of the plugin zip, so that we don't need to unzip them manually from jar resources
-    from("$projectDir/azure-intellij-plugin-bicep/binaries")
-}
-
-prepareSandbox {
+task prepareBicepBinariesForSandbox(type: Copy) {
     from("$projectDir/azure-intellij-plugin-bicep/binaries") into("$projectDir/build/idea-sandbox/plugins/azure-toolkit-for-intellij/")
 }
 
-task prepareBicepLanguageServer(type: Copy) {
+task downloadBicepLanguageServer(type: Copy) {
     def langServerDir = file('azure-intellij-plugin-bicep/binaries/bicep/bicep-langserver')
     if (!langServerDir.exists()) {
         logger.info('Downloading bicep language server ...')
@@ -339,6 +333,14 @@ task prepareBicepLanguageServer(type: Copy) {
     }
 }
 
-buildPlugin.dependsOn(prepareBicepLanguageServer)
-prepareSandbox.dependsOn(prepareBicepLanguageServer)
+buildPlugin {
+    dependsOn(downloadBicepLanguageServer)
+    archiveVersion = getPatchedVersion()
+    // copy bicep textmate bundles/language server files to root of the plugin zip, so that we don't need to unzip them manually from jar resources
+    from("$projectDir/azure-intellij-plugin-bicep/binaries")
+}
 
+prepareSandbox {
+    dependsOn(downloadBicepLanguageServer)
+    finalizedBy(prepareBicepBinariesForSandbox)
+}
