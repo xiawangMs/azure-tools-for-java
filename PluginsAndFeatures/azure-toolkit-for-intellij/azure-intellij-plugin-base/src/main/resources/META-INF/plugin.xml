@@ -24,7 +24,7 @@
   </change-notes>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="202.6397.94" until-build="202.*"/>
+  <idea-version since-build="222.2270.31" until-build="222.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.idea.maven</depends>
