@@ -185,7 +185,6 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.PIN,
             "---",
             ResourceCommonActionsContributor.REFRESH,
-            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             ContainerAppsActionsContributor.OPEN_LATEST_REVISION_IN_BROWSER,
             ResourceCommonActionsContributor.SHOW_PROPERTIES,
