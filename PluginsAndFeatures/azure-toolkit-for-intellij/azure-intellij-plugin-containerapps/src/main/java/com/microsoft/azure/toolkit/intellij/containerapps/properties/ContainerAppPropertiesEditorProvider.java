@@ -29,7 +29,7 @@ public class ContainerAppPropertiesEditorProvider implements FileEditorProvider,
     @NotNull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/containerapps.create_app_properties_editor.app", params = {"virtualFile.getName()"})
+    @AzureOperation(name = "user/containerapps.create_properties_editor.app", params = {"virtualFile.getName()"})
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final ContainerApp app = (ContainerApp) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert app != null;

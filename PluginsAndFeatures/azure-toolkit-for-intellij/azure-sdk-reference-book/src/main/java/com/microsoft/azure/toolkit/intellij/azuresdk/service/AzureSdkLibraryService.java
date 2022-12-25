@@ -175,7 +175,7 @@ public class AzureSdkLibraryService {
 
     @SneakyThrows(MalformedURLException.class)
     @Cacheable("sdk/packages/spring")
-    @AzureOperation(name = "to_3rd/sdk.load_spring_libs_metadata")
+    @AzureOperation(name = "boundary/sdk.load_spring_libs_metadata")
     private static List<AzureSdkServiceEntity> loadSpringSDKEntities() {
         final List<AzureSdkServiceEntity> remote = loadSpringSDKEntities(new URL(SPRING_SDK_METADATA_URL));
         if (CollectionUtils.isEmpty(remote)) {
@@ -186,7 +186,7 @@ public class AzureSdkLibraryService {
 
     @SneakyThrows(MalformedURLException.class)
     @Cacheable("sdk/packages")
-    @AzureOperation(name = "to_3rd/sdk.load_java_libs_meta_data")
+    @AzureOperation(name = "boundary/sdk.load_java_libs_meta_data")
     public static List<AzureJavaSdkEntity> loadAzureSDKEntities() {
         final List<AzureJavaSdkEntity> remote = loadAzureSDKEntities(new URL(CLIENT_MGMT_SDK_METADATA_URL));
         if (CollectionUtils.isEmpty(remote)) {
@@ -220,7 +220,7 @@ public class AzureSdkLibraryService {
     }
 
     @Cacheable("sdk/packages/whitelist")
-    @AzureOperation(name = "to_platform/sdk.load_whitelist_metadata")
+    @AzureOperation(name = "boundary/sdk.load_whitelist_metadata")
     private static Set<String> loadAzureSDKWhitelist() {
         try {
             final URL destination = AzureSdkLibraryService.class.getResource(SDK_ALLOW_LIST_CSV);
