@@ -7,6 +7,7 @@ package com.microsoft.intellij.util;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -39,6 +40,7 @@ public class MavenUtils {
         return MavenProjectsManager.getInstance(project).isMavenizedProject();
     }
 
+    @AzureOperation("boundary/common.list_maven_projects")
     public static List<MavenProject> getMavenProjects(Project project) {
         return MavenProjectsManager.getInstance(project).getProjects();
     }

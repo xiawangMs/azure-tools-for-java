@@ -109,7 +109,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         return container;
     }
 
-    @AzureOperation(name = "cosmos.signin_from_dbtools", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/cosmos.signin_from_dbtools")
     private void signInAndReloadItems(CosmosDbAccountComboBox combox, HyperlinkLabel notSignInTips) {
         OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
         AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
@@ -140,7 +140,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         return label;
     }
 
-    @AzureOperation(name = "cosmos.create_account_from_dbtools", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/cosmos.create_account_from_dbtools")
     private void createAccountInIde(InputEvent e) {
         OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
         final DataContext context = DataManager.getInstance().getDataContext(e.getComponent());
@@ -167,7 +167,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         }
     }
 
-    @AzureOperation(name = "cosmos.select_account_dbtools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/cosmos.select_account_dbtools.account", params = {"account.getName()"})
     private void setAccount(@Nullable CosmosDBAccount account) {
         Optional.ofNullable(account).ifPresent(a -> {
             OperationContext.action().setTelemetryProperty("subscriptionId", a.getSubscriptionId());

@@ -113,7 +113,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         return container;
     }
 
-    @AzureOperation(name = "database.signin_from_dbtools", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/database.signin_from_dbtools")
     private void signInAndReloadItems(SqlDbServerComboBox combox, HyperlinkLabel notSignInTips) {
         OperationContext.action().setTelemetryProperty("kind", this.clazz.getName());
         AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
@@ -144,7 +144,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         return label;
     }
 
-    @AzureOperation(name = "database.create_database_from_dbtools", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/database.create_database_from_dbtools")
     private void createServerInIde(InputEvent e) {
         OperationContext.action().setTelemetryProperty("kind", this.clazz.getName());
         final DataContext context = DataManager.getInstance().getDataContext(e.getComponent());
@@ -179,7 +179,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         }
     }
 
-    @AzureOperation(name = "database.select_server_dbtools.server", params = {"server.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "user/database.select_server_dbtools.server", params = {"server.getName()"})
     private void setServer(@Nullable IDatabaseServer<?> server) {
         Optional.ofNullable(server).ifPresent(a -> {
             OperationContext.action().setTelemetryProperty("subscriptionId", a.getSubscriptionId());
@@ -196,7 +196,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
                 this.updating = false;
                 return;
             }
-            final String user = String.format("%s@%s", server.getAdminName(), server.getName());
+            final String user = server.getFullAdminName();
             LocalDataSource.setUsername(interchange.getDataSource(), user);
             this.setUsername(user);
             this.setJdbcUrl(server.getJdbcUrl().toString());

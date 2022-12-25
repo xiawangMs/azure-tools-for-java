@@ -6,6 +6,8 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributor"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlActionsContributor"/>
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.mysql.single.MySqlNodeProvider"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.database.mysql.single.MySqlActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.mysql.IntellijMySqlActionsContributor"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerActionsContributor"/>

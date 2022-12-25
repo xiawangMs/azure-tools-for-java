@@ -40,7 +40,7 @@ public class AzureSdkExampleService {
 
     @Nullable
     @Cacheable(value = "sdk/examples/{url}", key = "${entity.getRawUrl()}")
-    @AzureOperation(name = "sdk.load_artifact_example.url", params = "entity.getRawUrl()", type = AzureOperation.Type.REQUEST)
+    @AzureOperation(name = "boundary/sdk.load_artifact_example.url", params = "entity.getRawUrl()")
     public static String loadArtifactExample(@Nonnull final AzureJavaSdkArtifactExampleEntity entity) {
         try {
             return IOUtils.toString(new URL(entity.getRawUrl()), Charset.defaultCharset());
@@ -60,7 +60,7 @@ public class AzureSdkExampleService {
 
     @Preload
     @Cacheable(value = "sdk/examples")
-    @AzureOperation(name = "sdk.load_all_examples", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "internal/sdk.load_all_examples")
     public static List<AzureJavaSdkArtifactExamplesEntity> loadAllExamples() {
         final Map<Integer, List<AzureJavaSdkArtifactExampleEntity>> exampleMap = loadAzureSDKExampleEntities().stream()
                 .collect(Collectors.groupingBy(e -> e.getReleaseId(), Collectors.mapping(e -> e, Collectors.toList())));
@@ -72,7 +72,7 @@ public class AzureSdkExampleService {
     }
 
     @Cacheable(value = "java-library-examples")
-    @AzureOperation(name = "sdk.load_library_examples_entities", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/sdk.load_library_examples_entities")
     private static List<AzureJavaSdkArtifactExamplesEntity> loadAzureSDKExamplesEntities() {
         final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkArtifactExamplesEntity.class).with(CsvSchema.emptySchema().withHeader());
         try (final InputStream stream = AzureSdkLibraryService.class.getResourceAsStream(JAVA_LIBRARY_EXAMPLE_INDEX_CSV)) {
@@ -85,7 +85,7 @@ public class AzureSdkExampleService {
     }
 
     @Cacheable(value = "java-library-example")
-    @AzureOperation(name = "sdk.load_library_example_entities", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "boundary/sdk.load_library_example_entities")
     private static List<AzureJavaSdkArtifactExampleEntity> loadAzureSDKExampleEntities() {
         final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkArtifactExampleEntity.class).with(CsvSchema.emptySchema().withHeader());
         try (final InputStream stream = AzureSdkLibraryService.class.getResourceAsStream(JAVA_LIBRARY_EXAMPLE_LIST_CSV)) {

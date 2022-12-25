@@ -132,6 +132,10 @@ public final class AzureIcons {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/ApacheSparkOnCosmos/ApacheSparkOnCosmos.svg").build();
     }
 
+    public static final class ContainerApps {
+        public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.App/default.svg").build();
+    }
+
     public static final class ContainerRegistry {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/ContainerRegistry/ContainerRegistry.svg").build();
     }
@@ -199,5 +203,10 @@ public final class AzureIcons {
 
     public static final class Connector {
         public static final AzureIcon CONNECT = AzureIcon.builder().iconPath("/icons/connector/connect.svg").build();
+    }
+
+    public static final class Files {
+        public static final AzureIcon BICEP16 = AzureIcon.builder().iconPath("/icons/Bicep/bicep16.svg").build();
+        public static final AzureIcon BICEP13 = AzureIcon.builder().iconPath("/icons/Bicep/bicep13.svg").build();
     }
 }
