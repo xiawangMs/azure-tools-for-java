@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.ide.common.experiment;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import lombok.Getter;
 
@@ -28,11 +30,14 @@ public class ExperimentationClient {
         return experimentationService;
     }
 
+    @AzureOperation(name = "internal/exp.assignment")
     private static void init() {
         try {
             final Map<String, String> audienceFilters = new HashMap<>();
             final Map<String, String> assignmentIds = new HashMap<>();
-            assignmentIds.put(ASSIGNMENT_UNIT_ID, InstallationIdUtils.getHashMac());
+            final String assignmentUnitId = InstallationIdUtils.getHashMac();
+            assignmentIds.put(ASSIGNMENT_UNIT_ID, assignmentUnitId);
+            OperationContext.action().setTelemetryProperty("ExpAssignmentUnit", assignmentUnitId);
             experimentationService = new ExperimentationService()
                     .withEndPoint(END_POINT)
                     .withAudienceFilters(audienceFilters)
