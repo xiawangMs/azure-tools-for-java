@@ -195,6 +195,7 @@ public class LanguageServerWrapper {
         return uriToLanguageServerWrapper.get(new ImmutablePair<>(editorToURIString(editor), editorToProjectFolderUri(editor)));
     }
 
+    @Nullable
     public static LanguageServerWrapper forProject(Project project) {
         return projectToLanguageServerWrapper.get(project);
     }
