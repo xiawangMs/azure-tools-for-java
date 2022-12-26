@@ -14,13 +14,16 @@ import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
@@ -47,6 +50,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final Action.Id<Revision> DEACTIVATE = Action.Id.of("user/containerapps.deactivate.revision");
     public static final Action.Id<Revision> RESTART = Action.Id.of("user/containerapps.restart.revision");
     public static final Action.Id<Revision> OPEN_IN_BROWSER = Action.Id.of("user/containerapps.open_in_browser.revision");
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app.group");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -171,6 +175,17 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
             .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getFqdn()))
             .register(am);
+
+        new Action<>(GROUP_CREATE_CONTAINER_APP)
+            .withLabel("Container App")
+            .withIdParam(AzResource::getName)
+            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .withHandler(s -> {
+                final IAccount account = Azure.az(IAzureAccount.class).account();
+                final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
+                am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+            })
+            .register(am);
     }
 
     @Override
@@ -228,6 +243,9 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ContainerAppsActionsContributor.RESTART
         );
         am.registerGroup(REVISION_ACTIONS, revisionActionGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_CONTAINER_APP);
     }
 
     @Override
