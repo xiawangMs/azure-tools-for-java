@@ -74,8 +74,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Open In Browser")
             .withIcon(AzureIcons.Action.BROWSER.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
-            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getLatestRevisionFqdn()))
+            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected() && Objects.nonNull(((ContainerApp) s).getIngressFqdn()))
+            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getIngressFqdn()))
             .register(am);
 
         new Action<>(ACTIVATE_LATEST_REVISION)

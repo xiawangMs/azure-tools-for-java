@@ -260,16 +260,16 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         txtRevisionMode.setText(Optional.ofNullable(containerApp.getRevisionMode()).map(RevisionMode::getValue).orElse(N_A));
         txtLatestRevisionName.setText(Optional.ofNullable(containerApp.getLatestRevisionName()).orElse(N_A));
         txtContainerAppsEnvironment.setText(Optional.ofNullable(containerApp.getManagedEnvironment()).map(AzResource::getName).orElse(N_A));
-        final String latestRevisionFqdn = containerApp.getLatestRevisionFqdn();
-        if (StringUtils.isEmpty(latestRevisionFqdn)) {
+        final String ingressFqdn = containerApp.getIngressFqdn();
+        if (StringUtils.isEmpty(ingressFqdn)) {
             linkApplicationUrl.setEnabled(false);
             linkApplicationUrl.setText("Ingress disabled");
             linkApplicationUrl.setHyperlinkTarget(N_A);
             linkApplicationUrl.setIcon(null);
         } else {
             linkApplicationUrl.setEnabled(true);
-            linkApplicationUrl.setHyperlinkText("https://" + latestRevisionFqdn);
-            linkApplicationUrl.setHyperlinkTarget("https://" + latestRevisionFqdn);
+            linkApplicationUrl.setHyperlinkText("https://" + ingressFqdn);
+            linkApplicationUrl.setHyperlinkTarget("https://" + ingressFqdn);
         }
         // ingress
         final IngressConfig ingressConfig = containerApp.getIngressConfig();
