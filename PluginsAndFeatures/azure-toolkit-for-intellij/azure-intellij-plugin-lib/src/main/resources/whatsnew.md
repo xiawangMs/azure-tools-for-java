@@ -1,6 +1,21 @@
 <!-- Version: 3.71.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.72.0
+### Added
+- Bicep Language Support (preview).
+- Resource Management of Azure Container Apps.
+- Resource Management of Azure Database for MySQL flexible server.
+- Support for proxy with certificate.
+
+### Changed
+- deprecated Resource Management support for Azure Database for MySQL (single server).
+
+### Fixed
+- installed Function Core Tools doesn't take effect right now when run/debug functions locally from line gutter.
+- Status/icon is wrong for a deleting resource.
+- links are not rendered correctly in notifications.
+
 ## 3.71.0
 ### Added
 - Code samples of management SDK are now available in Azure SDK Reference Book
