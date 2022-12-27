@@ -105,7 +105,7 @@ task buildEclipse {
 }
 
 task buildIntelliJ {
-    dependsOn buildUtils, buildAdditionalLibrary, prepareBicepSupport
+    dependsOn buildUtils, buildAdditionalLibrary
 
     doLast {
         logger.info('Building IntelliJ plugin ...')
