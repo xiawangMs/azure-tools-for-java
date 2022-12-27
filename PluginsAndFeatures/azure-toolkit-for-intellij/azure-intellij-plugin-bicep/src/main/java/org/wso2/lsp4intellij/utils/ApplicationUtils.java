@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Modifications copyright (c) Microsoft Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +17,6 @@
 package org.wso2.lsp4intellij.utils;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.NoAccessDuringPsiEvents;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Condition;
@@ -48,15 +48,18 @@ public class ApplicationUtils {
         ApplicationManager.getApplication().invokeLater(runnable);
     }
 
-    static public void pool(Runnable runnable) {
+    static synchronized public void pool(Runnable runnable) {
+        if (EXECUTOR_SERVICE.isShutdown() || EXECUTOR_SERVICE.isTerminated()) {
+            restartPool();
+        }
         EXECUTOR_SERVICE.submit(runnable);
     }
 
-    static public void restartPool() {
-        EXECUTOR_SERVICE.shutdown();
+    static synchronized public void restartPool() {
         try {
+            EXECUTOR_SERVICE.shutdown();
             EXECUTOR_SERVICE.awaitTermination(IntellijLanguageClient.getTimeout(Timeouts.SHUTDOWN), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ignored) {
+        } catch (final Exception ignored) {
         }
         EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -64,7 +67,8 @@ public class ApplicationUtils {
             public void run() {
                 EXECUTOR_SERVICE.shutdownNow();
             }
-        });    }
+        });
+    }
 
     static public <T> T computableReadAction(Computable<T> computable) {
         return ApplicationManager.getApplication().runReadAction(computable);
