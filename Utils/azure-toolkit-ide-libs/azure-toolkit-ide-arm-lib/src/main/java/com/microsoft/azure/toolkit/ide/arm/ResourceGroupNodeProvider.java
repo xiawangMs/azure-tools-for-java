@@ -51,9 +51,7 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof ResourceGroup) {
             final ResourceGroup rg = (ResourceGroup) data;
             return new Node<>(rg)
-                .view(new AzureResourceLabelView<>(rg,
-                    (r) -> Optional.ofNullable(r).map(ResourceGroup::getRegion).map(Region::getLabel).orElse(null),
-                    DEFAULT_AZURE_RESOURCE_ICON_PROVIDER))
+                .view(new AzureResourceLabelView<>(rg, ResourceGroupNodeProvider::getResourceDescription, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER))
                 .actions(ResourceGroupActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .addChild(ResourceGroup::deployments, (module, p) -> new Node<>(module)
@@ -68,5 +66,14 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
                     .collect(Collectors.toList()));
         }
         return null;
+    }
+
+    @Nullable
+    private static String getResourceDescription(@Nonnull final ResourceGroup r) {
+        if (r.getFormalStatus().isRunning()) {
+            return Optional.ofNullable(r.getRegion()).map(Region::getLabel).orElse(null);
+        } else {
+            return r.getStatus();
+        }
     }
 }

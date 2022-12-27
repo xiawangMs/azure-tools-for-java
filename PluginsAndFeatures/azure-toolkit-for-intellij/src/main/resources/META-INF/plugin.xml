@@ -263,7 +263,7 @@
       <separator/>
       <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
-      <reference ref="AzureToolkit.OpenSdkReferenceBook"/>
+      <reference ref="user/AzureToolkit.OpenSdkReferenceBook"/>
       <separator/>
       <reference ref="AzureToolkit.ViewDevBlogs"/>
       <reference ref="AzureToolkit.ViewToolingDocument"/>

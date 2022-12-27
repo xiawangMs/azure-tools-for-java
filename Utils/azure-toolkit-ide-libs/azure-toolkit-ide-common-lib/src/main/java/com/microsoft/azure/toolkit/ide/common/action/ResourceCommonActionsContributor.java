@@ -216,6 +216,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 final String url = String.format("%s/#create/%s", account.getPortalUrl(), s.getName());
                 am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
             })
+            .withShortcut(shortcuts.add())
             .register(am);
 
         final Favorites favorites = Favorites.getInstance();

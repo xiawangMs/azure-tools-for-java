@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
-import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
@@ -38,7 +37,6 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String CONTAINER_APP_ACTIONS = "actions.containerapps.containerapp";
     public static final String REVISION_ACTIONS = "actions.containerapps.revision";
 
-    public static final Action.Id<AzureContainerApps> CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment");
     public static final Action.Id<ContainerAppsEnvironment> CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app");
     public static final Action.Id<ContainerApp> BROWSE = Action.Id.of("user/containerapps.open_in_browser.app");
     public static final Action.Id<ContainerApp> ACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.activate_latest_revision.app");
@@ -54,23 +52,9 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        // todo: extract common resource action to create resource in portal
-        new Action<>(CREATE_CONTAINER_APPS_ENVIRONMENT)
-                .withLabel("Create Environment")
-                .withIcon(AzureIcons.Action.CREATE.getIconPath())
-                .enableWhen(s -> s instanceof AzureContainerApps)
-                .withHandler(s -> {
-                    final IAccount account = Azure.az(IAzureAccount.class).account();
-                    final String url = String.format("%s/#create/Microsoft.AppServiceEnvironmentCreation", account.getPortalUrl());
-                    am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
-                })
-                .withShortcut(am.getIDEDefaultShortcuts().add())
-                .register(am);
-
         new Action<>(CREATE_CONTAINER_APP)
                 .withLabel("Create Container App")
                 .withIcon(AzureIcons.Action.CREATE.getIconPath())
-                .enableWhen(s -> s instanceof ContainerAppsEnvironment && ((ContainerAppsEnvironment) s).getFormalStatus().isConnected())
                 .withHandler(s -> {
                     final IAccount account = Azure.az(IAzureAccount.class).account();
                     final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
@@ -194,7 +178,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
-            ContainerAppsActionsContributor.CREATE_CONTAINER_APPS_ENVIRONMENT
+            ContainerAppsActionsContributor.CREATE_CONTAINER_APP
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
