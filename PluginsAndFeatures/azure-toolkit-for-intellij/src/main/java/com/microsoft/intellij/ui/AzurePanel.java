@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
@@ -39,8 +40,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 
 import javax.annotation.Nonnull;
+import javax.swing.FocusManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -53,6 +56,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.INSTALL_DOTNET_RUNTIME;
+import static com.microsoft.azure.toolkit.intellij.bicep.BicepEditorNotificationProvider.BICEP_MIN_VERSION;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
@@ -144,8 +148,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureConfiguration data = new AzureConfiguration();
         data.setCloud(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
         data.setDatabasePasswordSaveType(Optional.ofNullable(savePasswordComboBox.getSelectedItem())
-                .map(i -> ((Password.SaveType) i).name())
-                .orElse(Password.SaveType.UNTIL_RESTART.name()));
+            .map(i -> ((Password.SaveType) i).name())
+            .orElse(Password.SaveType.UNTIL_RESTART.name()));
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
         if (Objects.nonNull(funcCoreToolsPath.getItem())) {
             data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
@@ -177,7 +181,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 azureEnvDesc.setIcon(AllIcons.General.Information);
             } else {
                 setTextToLabel(azureEnvDesc,
-                        String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
+                    String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
                 azureEnvDesc.setIcon(AllIcons.General.Warning);
             }
         } else {
@@ -226,7 +230,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setDatabasePasswordSaveType(newConfig.getDatabasePasswordSaveType());
         this.originalConfig.setFunctionCoreToolsPath(newConfig.getFunctionCoreToolsPath());
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
-                this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
+            this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
         this.originalConfig.setUserAgent(userAgent);
         this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         this.originalConfig.setCosmosBatchSize(newConfig.getCosmosBatchSize());
@@ -265,12 +269,13 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureEnvironment newEnv = AzureEnvironmentUtils.stringToAzureEnvironment(newConfig.getCloud());
         final AzureEnvironment oldEnv = AzureEnvironmentUtils.stringToAzureEnvironment(originalConfig.getCloud());
         return !Objects.equals(newEnv, oldEnv) ||
-                !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
-                !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
-                !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
-                !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
-                !Objects.equals(newConfig.getCosmosBatchSize(), originalConfig.getCosmosBatchSize()) ||
-                !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
+            !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
+            !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
+            !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
+            !StringUtils.equalsIgnoreCase(newConfig.getDotnetRuntimePath(), originalConfig.getDotnetRuntimePath()) ||
+            !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
+            !Objects.equals(newConfig.getCosmosBatchSize(), originalConfig.getCosmosBatchSize()) ||
+            !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
     }
 
     @Override
@@ -283,11 +288,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.funcCoreToolsPath.setPrototypeDisplayValue(StringUtils.EMPTY);
         this.txtStorageExplorer = new AzureFileInput();
         this.txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select Path of Azure Storage Explorer", null, txtStorageExplorer,
-                null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+            null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         this.txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.dotnetRuntimePath = new AzureFileInput();
         this.dotnetRuntimePath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select Path of .NET Runtime", null, dotnetRuntimePath,
-                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+            null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         this.dotnetRuntimePath.addValidator(this::validateDotnetRuntime);
         this.installFuncCoreToolsAction = new ActionLink("Install the latest version", e -> {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
@@ -325,6 +330,18 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
         if (!FileUtils.isDirectory(new File(path))) {
             return AzureValidationInfo.error(".NET runtime path should be a directory", dotnetRuntimePath);
+        }
+        try {
+            final String version = CommandUtils.exec("dotnet --version", path);
+            if (StringUtils.isEmpty(version)) {
+                return AzureValidationInfo.error("invalid .NET runtime path", dotnetRuntimePath);
+            }
+            final ComparableVersion dotnetVersion = new ComparableVersion(version);
+            if (dotnetVersion.compareTo(BICEP_MIN_VERSION) < 0) {
+                return AzureValidationInfo.error(String.format(".NET runtime (%s) is outdated.", version), dotnetRuntimePath);
+            }
+        } catch (final Exception e) {
+            return AzureValidationInfo.error("invalid .NET runtime", dotnetRuntimePath);
         }
         // todo: make sure dotnet exists in current folder
         return AzureValidationInfo.ok(dotnetRuntimePath);
