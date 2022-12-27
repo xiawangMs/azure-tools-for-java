@@ -164,7 +164,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             if (settingsFuncFile != null && settingsFuncFile.exists()) {
                 funcFile = settingsFuncFile;
                 functionRunConfiguration.setFuncPath(funcFile.getAbsolutePath());
-                final AzureString message = AzureString.format("the configured Function Core Tools for this Run Configuration doesn't exist, use the default one '{0}' instead.", funcFile.getAbsolutePath());
+                final AzureString message = AzureString.format("the configured Function Core Tools for this Run Configuration is not found, use the default one '{0}' instead.", funcFile.getAbsolutePath());
                 AzureMessager.getDefaultMessager().warning(message);
             } else {
                 throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
