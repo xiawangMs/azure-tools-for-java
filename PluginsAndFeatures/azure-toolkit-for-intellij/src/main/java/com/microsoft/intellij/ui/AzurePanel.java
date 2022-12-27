@@ -16,6 +16,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -28,7 +29,6 @@ import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
@@ -331,17 +331,13 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (!FileUtils.isDirectory(new File(path))) {
             return AzureValidationInfo.error(".NET runtime path should be a directory", dotnetRuntimePath);
         }
-        try {
-            final String version = CommandUtils.exec("dotnet --version", path);
-            if (StringUtils.isEmpty(version)) {
-                return AzureValidationInfo.error("invalid .NET runtime path", dotnetRuntimePath);
-            }
-            final ComparableVersion dotnetVersion = new ComparableVersion(version);
-            if (dotnetVersion.compareTo(BICEP_MIN_VERSION) < 0) {
-                return AzureValidationInfo.error(String.format(".NET runtime (%s) is outdated.", version), dotnetRuntimePath);
-            }
-        } catch (final Exception e) {
-            return AzureValidationInfo.error("invalid .NET runtime", dotnetRuntimePath);
+        final String version = DotnetRuntimeHandler.getDotnetVersion(path);
+        if (StringUtils.isEmpty(version)) {
+            return AzureValidationInfo.error("invalid .NET runtime path", dotnetRuntimePath);
+        }
+        final ComparableVersion dotnetVersion = new ComparableVersion(version);
+        if (dotnetVersion.compareTo(BICEP_MIN_VERSION) < 0) {
+            return AzureValidationInfo.error(String.format(".NET runtime (%s) is outdated.", version), dotnetRuntimePath);
         }
         // todo: make sure dotnet exists in current folder
         return AzureValidationInfo.ok(dotnetRuntimePath);

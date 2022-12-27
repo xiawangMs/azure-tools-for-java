@@ -27,7 +27,7 @@ public class BicepStartupActivity implements StartupActivity {
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
     public static final String BICEP_LANGSERVER = "bicep-langserver";
     public static final String BICEP_LANG_SERVER_DLL = "Bicep.LangServer.dll";
-    public static final String DOTNET = "dotnet";
+    public static final String DOTNET = "./dotnet";
     public static final String STDIO = "--stdio";
     public static final String BICEP = "bicep";
 

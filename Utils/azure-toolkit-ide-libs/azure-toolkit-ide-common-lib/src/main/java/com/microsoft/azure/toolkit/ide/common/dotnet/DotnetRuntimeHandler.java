@@ -36,11 +36,22 @@ public class DotnetRuntimeHandler {
             "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & %s }\"";
     public static final String VERSION = "6.0.9";
 
+    @Nullable
     public static String getDotnetVersion() {
         final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
         try {
-            return exec("dotnet --version", dotnetRuntimePath);
-        } catch (IOException e) {
+            return exec("./dotnet --version", dotnetRuntimePath);
+        } catch (final Throwable e) {
+            // swallow exception to get version
+            return null;
+        }
+    }
+
+    @Nullable
+    public static String getDotnetVersion(String dotnetRuntimePath) {
+        try {
+            return exec("./dotnet --version", dotnetRuntimePath);
+        } catch (final Throwable e) {
             // swallow exception to get version
             return null;
         }
