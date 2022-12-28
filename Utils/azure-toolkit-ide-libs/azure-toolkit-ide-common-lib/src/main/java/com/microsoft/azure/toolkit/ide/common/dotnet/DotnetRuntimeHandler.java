@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.annotation.Nonnull;
@@ -40,7 +39,8 @@ public class DotnetRuntimeHandler {
     public static String getDotnetVersion() {
         final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
         try {
-            return exec("./dotnet --version", dotnetRuntimePath);
+            final String command = SystemUtils.IS_OS_WINDOWS ? "powershell.exe ./dotnet --version" : "./dotnet --version";
+            return exec(command, dotnetRuntimePath);
         } catch (final Throwable e) {
             // swallow exception to get version
             return null;
@@ -50,7 +50,8 @@ public class DotnetRuntimeHandler {
     @Nullable
     public static String getDotnetVersion(String dotnetRuntimePath) {
         try {
-            return exec("./dotnet --version", dotnetRuntimePath);
+            final String command = SystemUtils.IS_OS_WINDOWS ? "powershell.exe ./dotnet --version" : "./dotnet --version";
+            return exec(command, dotnetRuntimePath);
         } catch (final Throwable e) {
             // swallow exception to get version
             return null;

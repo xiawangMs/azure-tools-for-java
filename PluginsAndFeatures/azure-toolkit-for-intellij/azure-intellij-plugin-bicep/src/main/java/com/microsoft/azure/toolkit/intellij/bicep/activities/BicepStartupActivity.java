@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.CommonConst;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.wso2.lsp4intellij.IntellijLanguageClient;
 import org.wso2.lsp4intellij.client.languageserver.serverdefinition.ProcessBuilderServerDefinition;
 
@@ -27,7 +28,6 @@ public class BicepStartupActivity implements StartupActivity {
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
     public static final String BICEP_LANGSERVER = "bicep-langserver";
     public static final String BICEP_LANG_SERVER_DLL = "Bicep.LangServer.dll";
-    public static final String DOTNET = "./dotnet";
     public static final String STDIO = "--stdio";
     public static final String BICEP = "bicep";
 
@@ -41,7 +41,9 @@ public class BicepStartupActivity implements StartupActivity {
             return;
         }
         final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
-        final ProcessBuilder process = new ProcessBuilder(DOTNET, bicep.getAbsolutePath(), STDIO);
+        final ProcessBuilder process = SystemUtils.IS_OS_WINDOWS ?
+            new ProcessBuilder("powershell.exe", "./dotnet", bicep.getAbsolutePath(), STDIO) :
+            new ProcessBuilder("./dotnet", bicep.getAbsolutePath(), STDIO);
         Optional.ofNullable(dotnetRuntimePath)
             .filter(StringUtils::isNotEmpty).map(File::new)
             .filter(File::exists).ifPresent(process::directory);
