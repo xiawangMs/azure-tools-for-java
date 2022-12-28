@@ -16,9 +16,9 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -27,7 +27,6 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 
 import javax.annotation.Nonnull;
@@ -83,11 +82,9 @@ public class AzureExplorer extends Tree {
     }
 
     public static void refreshAll() {
-        AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            AzureExplorer.manager.getRoots().stream().filter(r -> r instanceof AbstractAzResourceModule)
-                .forEach(r -> ((AbstractAzResourceModule<?, ?, ?>) r).refresh());
-            Favorites.getInstance().refresh();
-        });
+        AzureExplorer.manager.getRoots().stream().filter(r -> r instanceof AbstractAzResourceModule)
+            .forEach(r -> ((AbstractAzResourceModule<?, ?, ?>) r).refresh());
+        Favorites.getInstance().refresh();
     }
 
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
