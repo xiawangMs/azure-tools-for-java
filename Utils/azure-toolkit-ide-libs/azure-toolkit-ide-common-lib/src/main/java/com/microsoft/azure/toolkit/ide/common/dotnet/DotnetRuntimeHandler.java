@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.annotation.Nonnull;
@@ -21,23 +22,31 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.microsoft.azure.toolkit.lib.common.utils.CommandUtils.exec;
 
 public class DotnetRuntimeHandler {
-
-    public static final String SCRIPT_BASE_URL = "https://dot.net/v1/dotnet-install.";
-    public static final String WINDOWS_INSTALL_COMMAND = "powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command \"& { " +
-            "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & %s }\"";
+    public static final String SCRIPT_BASE_URL = "https://dot.net/v1/";
+    public static final String SCRIPT_NAME = "dotnet-install." + (SystemUtils.IS_OS_WINDOWS ? "ps1" : "sh");
+    public static final String SCRIPT_FULL_URL = SCRIPT_BASE_URL + SCRIPT_NAME;
+    public static final String UNIX_INSTALL_COMMAND = "./dotnet-install.sh --runtime dotnet --version 6.0.9 -install-dir .";
+    public static final String WINDOWS_INSTALL_RAW_COMMAND = "./dotnet-install.ps1 -Runtime dotnet -Version 6.0.9 -InstallDir .";
+    public static final String WINDOWS_INSTALL_COMMAND = String.format("powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command \"& { " +
+            "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & %s }\"",
+        WINDOWS_INSTALL_RAW_COMMAND);
+    public static final String INSTALL_COMMAND = SystemUtils.IS_OS_WINDOWS ? WINDOWS_INSTALL_COMMAND : UNIX_INSTALL_COMMAND;
     public static final String VERSION = "6.0.9";
 
     @Nullable
-    public static String getDotnetVersion() {
+    private static String getDotnetVersion() {
         final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
+        return getDotnetVersion(dotnetRuntimePath);
+    }
+
+    @Nullable
+    private static String getDotnetVersion(String dotnetRuntimePath) {
         try {
             final String command = SystemUtils.IS_OS_WINDOWS ? "powershell.exe ./dotnet --version" : "./dotnet --version";
             return exec(command, dotnetRuntimePath);
@@ -47,14 +56,17 @@ public class DotnetRuntimeHandler {
         }
     }
 
-    @Nullable
-    public static String getDotnetVersion(String dotnetRuntimePath) {
+    public static boolean isDotnetRuntimeInstalled() {
+        return isDotnetRuntimeInstalled(Azure.az().config().getDotnetRuntimePath());
+    }
+
+    public static boolean isDotnetRuntimeInstalled(@Nonnull final String path) {
         try {
-            final String command = SystemUtils.IS_OS_WINDOWS ? "powershell.exe ./dotnet --version" : "./dotnet --version";
-            return exec(command, dotnetRuntimePath);
+            final String command = SystemUtils.IS_OS_WINDOWS ? "powershell.exe ./dotnet --list-runtimes" : "./dotnet --list-runtimes";
+            return StringUtils.isNotBlank(exec(command, path));
         } catch (final Throwable e) {
             // swallow exception to get version
-            return null;
+            return false;
         }
     }
 
@@ -65,11 +77,10 @@ public class DotnetRuntimeHandler {
     }
 
     public static void installDotnet(final String path) {
-        final String rawCommand = getInstallCommand(VERSION, path);
-        final String installCommand = SystemUtils.IS_OS_WINDOWS ? String.format(WINDOWS_INSTALL_COMMAND, rawCommand) : rawCommand;
         final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+        final File installScript = prepareDotnetInstallScript(path);
         try {
-            CommandUtils.exec(installCommand);
+            CommandUtils.exec(INSTALL_COMMAND, path);
             Azure.az().config().setDotnetRuntimePath(path);
             AzureConfigInitializer.saveAzConfig();
             final String INSTALL_SUCCEED_MESSAGE = "Download and install .NET runtime successfully. Auto configured .NET runtime path in Azure Settings";
@@ -77,6 +88,8 @@ public class DotnetRuntimeHandler {
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and set the path manually",
                 generateDownloadAction(), openSettingsAction);
+        } finally {
+            FileUtils.deleteQuietly(installScript);
         }
     }
 
@@ -86,34 +99,13 @@ public class DotnetRuntimeHandler {
             .withHandler(a -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://dotnet.microsoft.com/en-us/download"));
     }
 
-    private static String getInstallCommand(final String version, final String dotnetInstallDir) {
-        final List<String> args = Arrays.asList(
-                "-InstallDir", escapeFilePath(dotnetInstallDir),
-                "-Version", version,
-                "-Runtime", "dotnet"
-        );
-        final String scriptPath = getDotnetInstallScript();
-        return String.format("%s %s", escapeFilePath(scriptPath), String.join(" ", args));
-    }
-
-    private static String getDotnetInstallScript() {
-        final String suffix = SystemUtils.IS_OS_WINDOWS ? "ps1" : "sh";
+    private static File prepareDotnetInstallScript(final String path) {
         try {
-            final File tempFile = Files.createTempFile("dotnet-install", "." + suffix).toFile();
-            tempFile.deleteOnExit();
-            FileUtils.copyURLToFile(new URL(SCRIPT_BASE_URL + suffix), tempFile);
-            return tempFile.getAbsolutePath();
+            final File dotnetInstall = Paths.get(path, SCRIPT_NAME).toFile();
+            FileUtils.copyURLToFile(new URL(SCRIPT_FULL_URL), dotnetInstall);
+            return dotnetInstall;
         } catch (final IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private static String escapeFilePath(@Nonnull final String path) {
-        if (SystemUtils.IS_OS_WINDOWS) {
-            // Surround with single quotes instead of double quotes (see https://github.com/dotnet/cli/issues/11521)
-            return String.format("'%s'", path.replace("'", "''"));
-        } else {
-            return String.format("\"%s\"", path);
         }
     }
 }

@@ -40,7 +40,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 
 import javax.annotation.Nonnull;
 import javax.swing.FocusManager;
@@ -56,7 +55,6 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.INSTALL_DOTNET_RUNTIME;
-import static com.microsoft.azure.toolkit.intellij.bicep.BicepEditorNotificationProvider.BICEP_MIN_VERSION;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
@@ -331,13 +329,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (!FileUtils.isDirectory(new File(path))) {
             return AzureValidationInfo.error(".NET runtime path should be a directory", dotnetRuntimePath);
         }
-        final String version = DotnetRuntimeHandler.getDotnetVersion(path);
-        if (StringUtils.isEmpty(version)) {
+        if (!DotnetRuntimeHandler.isDotnetRuntimeInstalled(path)) {
             return AzureValidationInfo.error("invalid .NET runtime path", dotnetRuntimePath);
-        }
-        final ComparableVersion dotnetVersion = new ComparableVersion(version);
-        if (dotnetVersion.compareTo(BICEP_MIN_VERSION) < 0) {
-            return AzureValidationInfo.error(String.format(".NET runtime (%s) is outdated.", version), dotnetRuntimePath);
         }
         // todo: make sure dotnet exists in current folder
         return AzureValidationInfo.ok(dotnetRuntimePath);
