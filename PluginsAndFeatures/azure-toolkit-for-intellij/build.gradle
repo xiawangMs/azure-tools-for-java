@@ -8,8 +8,8 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.28.0"
-    azureToolkitUtilsVersion = "3.72.0"
+    azureToolkitVersion = "0.29.0-SNAPSHOT"
+    azureToolkitUtilsVersion = "3.73.0-SNAPSHOT"
 }
 
 compileKotlin {
@@ -84,8 +84,8 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.28.0"
-        azureToolkitUtilsVersion = "3.72.0"
+        azureToolkitVersion = "0.29.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.73.0-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
@@ -215,13 +215,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.microsoft.azuretools:azuretools-core:3.72.0', {
+    implementation 'com.microsoft.azuretools:azuretools-core:3.73.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:azure-explorer-common:3.72.0', {
+    implementation 'com.microsoft.azuretools:azure-explorer-common:3.73.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.72.0', {
+    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.73.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
