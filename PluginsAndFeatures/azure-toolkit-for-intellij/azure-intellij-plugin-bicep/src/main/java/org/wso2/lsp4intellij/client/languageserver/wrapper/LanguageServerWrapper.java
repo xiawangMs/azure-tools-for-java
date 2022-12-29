@@ -237,7 +237,7 @@ public class LanguageServerWrapper {
                 }
             } catch (TimeoutException e) {
                 notifyFailure(INIT);
-                String msg = String.format("%s \n is not initialized after %d seconds",
+                String msg = String.format("%s \n is not initialized after %d seconds, be careful that .NET runtime (newer than v6.0) is required this.",
                         serverDefinition.toString(), getTimeout(INIT) / 1000);
                 LOG.warn(msg, e);
                 invokeLater(() -> {
