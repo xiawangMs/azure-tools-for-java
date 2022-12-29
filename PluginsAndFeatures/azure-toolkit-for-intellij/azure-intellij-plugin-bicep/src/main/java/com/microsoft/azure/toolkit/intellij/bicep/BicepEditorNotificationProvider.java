@@ -37,7 +37,7 @@ public class BicepEditorNotificationProvider implements EditorNotificationProvid
             if (!DotnetRuntimeHandler.isDotnetRuntimeInstalled()) {
                 return editor -> {
                     final EditorNotificationPanel panel = new EditorNotificationPanel(editor);
-                    panel.setText(".NET runtime (newer than v6.0) is required for Bicep language support, but it's not found or out of date.");
+                    panel.setText(".NET runtime (newer than v6.0) is required for full Bicep language support, but it's not found or out of date.");
                     final AzureActionManager am = AzureActionManager.getInstance();
                     final Action<Object> openSettingsAction = am.getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
                     panel.createActionLabel("Install .NET Runtime", () -> am.getAction(ResourceCommonActionsContributor.INSTALL_DOTNET_RUNTIME).handle(null));

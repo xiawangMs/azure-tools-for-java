@@ -83,8 +83,8 @@ public class DotnetRuntimeHandler {
             CommandUtils.exec(INSTALL_COMMAND, path);
             Azure.az().config().setDotnetRuntimePath(path);
             AzureConfigInitializer.saveAzConfig();
-            final String INSTALL_SUCCEED_MESSAGE = "Download and install .NET runtime successfully. Auto configured .NET runtime path in Azure Settings";
-            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction);
+            final String INSTALL_SUCCEED_MESSAGE = ".NET runtime is installed and configured successfully, please restart IDE to enable full Bicep language support.";
+            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction, ResourceCommonActionsContributor.RESTART_IDE);
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and set the path manually",
                 generateDownloadAction(), openSettingsAction);
