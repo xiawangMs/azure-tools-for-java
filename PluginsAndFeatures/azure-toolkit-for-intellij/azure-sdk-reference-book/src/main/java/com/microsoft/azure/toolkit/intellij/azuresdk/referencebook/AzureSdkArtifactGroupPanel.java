@@ -47,7 +47,6 @@ import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifa
 import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.MAVEN;
 
 public class AzureSdkArtifactGroupPanel {
-    public static final String SDK_EXAMPLE_REQUEST_URL = "https://github.com/Azure/azure-rest-api-specs-examples/issues/new?assignees=&labels=&template=sample_issue_report.yml&title=%5BSample+Issue%5D";
     @Getter
     private JPanel contentPanel;
     private EditorTextField viewer;
@@ -168,10 +167,6 @@ public class AzureSdkArtifactGroupPanel {
         this.toolbar.setForceMinimumSize(true);
         this.toolbar.setTargetComponent(this.viewer);
         this.pnlAddDependencies = new AzureSdkProjectDependencyPanel(project);
-        this.linkRequestExamples = new HyperlinkLabel("Request Examples");
-        // todo: fill example request with http parameters
-        this.linkRequestExamples.addHyperlinkListener(e ->
-                AzureActionManager.getInstance().getAction(OPEN_URL).handle(SDK_EXAMPLE_REQUEST_URL));
     }
 
     /**

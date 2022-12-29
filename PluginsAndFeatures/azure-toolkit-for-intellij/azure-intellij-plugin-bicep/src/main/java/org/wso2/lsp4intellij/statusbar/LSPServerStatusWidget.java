@@ -33,6 +33,7 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.Consumer;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -177,7 +178,9 @@ public class LSPServerStatusWidget implements StatusBarWidget {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 StringBuilder connectedFiles = new StringBuilder("Connected files :");
-                LanguageServerWrapper.forProject(project).getConnectedFiles().forEach(f -> connectedFiles.append(System.lineSeparator()).append(f));
+                Optional.ofNullable(LanguageServerWrapper.forProject(e.getProject()))
+                    .map(LanguageServerWrapper::getConnectedFiles).stream().flatMap(List::stream)
+                    .forEach(f -> connectedFiles.append(System.lineSeparator()).append(f));
                 Messages.showInfoMessage(connectedFiles.toString(), "Connected Files");
             }
         }
@@ -222,9 +225,13 @@ public class LSPServerStatusWidget implements StatusBarWidget {
 
             @Override
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-                LanguageServerWrapper.forProject(project).restart();
+                Optional.ofNullable(LanguageServerWrapper.forProject(anActionEvent.getProject())).ifPresent(LanguageServerWrapper::restart);
             }
 
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                e.getPresentation().setEnabled(ObjectUtils.allNotNull(e.getProject(), LanguageServerWrapper.forProject(e.getProject())));
+            }
         }
 
         @Override

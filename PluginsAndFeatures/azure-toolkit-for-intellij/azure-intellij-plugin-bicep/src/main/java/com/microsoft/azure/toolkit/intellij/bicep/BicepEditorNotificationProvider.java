@@ -20,7 +20,6 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,10 +34,10 @@ public class BicepEditorNotificationProvider implements EditorNotificationProvid
     @Override
     public @NotNull Function<? super @NotNull FileEditor, ? extends @Nullable JComponent> collectNotificationData(@NotNull Project project, @NotNull VirtualFile file) {
         if (file.getFileType() instanceof BicepFileType) {
-            if (!isDotnetRuntimeReady()) {
+            if (!DotnetRuntimeHandler.isDotnetRuntimeInstalled()) {
                 return editor -> {
                     final EditorNotificationPanel panel = new EditorNotificationPanel(editor);
-                    panel.setText(".NET runtime (newer than v6.0) is required for Bicep language support, but it's not found or out of date.");
+                    panel.setText(".NET runtime (newer than v6.0) is required for full Bicep language support, but it's not found or outdated.");
                     final AzureActionManager am = AzureActionManager.getInstance();
                     final Action<Object> openSettingsAction = am.getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
                     panel.createActionLabel("Install .NET Runtime", () -> am.getAction(ResourceCommonActionsContributor.INSTALL_DOTNET_RUNTIME).handle(null));
@@ -65,14 +64,5 @@ public class BicepEditorNotificationProvider implements EditorNotificationProvid
             }
         }
         return editor -> null;
-    }
-
-    private static boolean isDotnetRuntimeReady() {
-        final String version = DotnetRuntimeHandler.getDotnetVersion();
-        if (StringUtils.isEmpty(version)) {
-            return false;
-        }
-        final ComparableVersion dotnetVersion = new ComparableVersion(version);
-        return dotnetVersion.compareTo(BICEP_MIN_VERSION) >= 0;
     }
 }

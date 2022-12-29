@@ -7,6 +7,8 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ex.ApplicationEx;
+import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.FUSEventSource;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -16,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -36,6 +39,12 @@ public class IntellijActionsContributor implements IActionsContributor {
             AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_EXPLORER).handle(null, e);
         };
         am.registerHandler(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER, (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()), highlightResource);
+
+        final AzureTaskManager tm = AzureTaskManager.getInstance();
+        am.registerHandler(ResourceCommonActionsContributor.RESTART_IDE, (s, e) -> tm.runLater(() -> {
+            final ApplicationEx app = ApplicationManagerEx.getApplicationEx();
+            app.restart();
+        }));
     }
 
 

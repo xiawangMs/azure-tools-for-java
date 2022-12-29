@@ -38,10 +38,10 @@ import java.awt.datatransfer.StringSelection;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
-import static com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.AzureSdkArtifactGroupPanel.SDK_EXAMPLE_REQUEST_URL;
 
 public class AzureSdkArtifactExamplePanel {
-    private static final String NEED_MORE_SAMPLES = "Report Example Issue";
+    public static final String SDK_EXAMPLE_REQUEST_URL = "https://github.com/Azure/azure-rest-api-specs-examples/issues/new?assignees=&labels=&template=sample_issue_report_java.yml&title=%5BJava+Sample+Issue%5D";
+    private static final String NEED_MORE_SAMPLES = "Report Example Issues";
     private static final String NO_EXAMPLE_TEXT = "// No example available for current library, please click `Report Example Issue` to request more samples.";
     private EditorTextField viewer;
     private ExampleComboBox cbExample;
