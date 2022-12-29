@@ -31,7 +31,7 @@ public class DotnetRuntimeHandler {
     public static final String SCRIPT_BASE_URL = "https://dot.net/v1/";
     public static final String SCRIPT_NAME = "dotnet-install." + (SystemUtils.IS_OS_WINDOWS ? "ps1" : "sh");
     public static final String SCRIPT_FULL_URL = SCRIPT_BASE_URL + SCRIPT_NAME;
-    public static final String UNIX_INSTALL_COMMAND = "./dotnet-install.sh --runtime dotnet --version 6.0.9 -install-dir .";
+    public static final String UNIX_INSTALL_COMMAND = "./dotnet-install.sh --runtime dotnet --version 6.0.9 --install-dir .";
     public static final String WINDOWS_INSTALL_RAW_COMMAND = "./dotnet-install.ps1 -Runtime dotnet -Version 6.0.9 -InstallDir .";
     public static final String WINDOWS_INSTALL_COMMAND = String.format("powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command \"& { " +
             "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & %s }\"",
