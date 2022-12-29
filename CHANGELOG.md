@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.72.0](#3720)
   - [3.71.0](#3710)
   - [3.70.0](#3700)
   - [3.69.0](#3690)
@@ -90,6 +91,21 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.72.0
+### Added
+- Bicep Language Support (preview).
+- Resource Management of Azure Container Apps.
+- Resource Management of Azure Database for MySQL flexible server.
+- Support for proxy with certificate.
+
+### Changed
+- deprecated Resource Management support for Azure Database for MySQL (single server).
+
+### Fixed
+- installed Function Core Tools doesn't take effect right now when run/debug functions locally from line gutter.
+- Status/icon is wrong for a deleting resource.
+- links are not rendered correctly in notifications.
 
 ## 3.71.0
 ### Added

@@ -5,9 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.bicep.highlight;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.ex.util.EmptyEditorHighlighter;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.lib.common.exception.SystemException;
@@ -31,6 +34,8 @@ import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 
 public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterProvider {
+    protected static final Logger LOG = Logger.getInstance(BicepEditorHighlighterProvider.class);
+
     @Override
     @AzureOperation("platform/bicep.get_editor_highlighter")
     public EditorHighlighter getEditorHighlighter(@Nullable Project project, @Nonnull FileType fileType, @Nullable VirtualFile virtualFile, @Nonnull EditorColorsScheme colors) {
@@ -38,7 +43,12 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
         if (Objects.isNull(descriptor)) { // register textmate if not registered
             registerBicepTextMateBundleAndReload();
         }
-        return super.getEditorHighlighter(project, fileType, virtualFile, colors);
+        try {
+            return super.getEditorHighlighter(project, fileType, virtualFile, colors);
+        } catch (final ProcessCanceledException e) {
+            LOG.warn(e);
+            return new EmptyEditorHighlighter();
+        }
     }
 
     @AzureOperation("boundary/bicep.register_textmate_bundles")

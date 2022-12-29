@@ -16,6 +16,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -41,6 +42,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.swing.FocusManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -118,21 +120,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         setData(config);
     }
 
-    public AzureValidationInfo validateStorageExplorerPath() {
-        final String path = txtStorageExplorer.getValue();
-        if (StringUtils.isEmpty(path)) {
-            return AzureValidationInfo.ok(txtStorageExplorer);
-        }
-        if (!FileUtil.exists(path)) {
-            return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
-        }
-        final String fileName = FilenameUtils.getName(path);
-        if (!(StringUtils.containsIgnoreCase(fileName, "storage") && StringUtils.containsIgnoreCase(fileName, "explorer"))) {
-            return AzureValidationInfo.error("Please select correct path for storage explorer", txtStorageExplorer);
-        }
-        return AzureValidationInfo.ok(txtStorageExplorer);
-    }
-
     public void setData(AzureConfiguration config) {
         this.originalConfig = config;
         final AzureEnvironment oldEnv = ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()), AzureEnvironment.AZURE);
@@ -147,9 +134,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotBlank(config.getStorageExplorerPath())) {
             txtStorageExplorer.setValue(config.getStorageExplorerPath());
         }
+        if (StringUtils.isNotBlank(config.getDotnetRuntimePath())) {
+            dotnetRuntimePath.setValue(config.getDotnetRuntimePath());
+        }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
         txtBatchSize.setValue(config.getCosmosBatchSize());
-        dotnetRuntimePath.setValue(config.getDotnetRuntimePath());
         txtLabelFields.setValue(String.join(";", config.getDocumentsLabelFields()));
     }
 
@@ -157,8 +146,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureConfiguration data = new AzureConfiguration();
         data.setCloud(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
         data.setDatabasePasswordSaveType(Optional.ofNullable(savePasswordComboBox.getSelectedItem())
-                .map(i -> ((Password.SaveType) i).name())
-                .orElse(Password.SaveType.UNTIL_RESTART.name()));
+            .map(i -> ((Password.SaveType) i).name())
+            .orElse(Password.SaveType.UNTIL_RESTART.name()));
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
         if (Objects.nonNull(funcCoreToolsPath.getItem())) {
             data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
@@ -190,7 +179,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 azureEnvDesc.setIcon(AllIcons.General.Information);
             } else {
                 setTextToLabel(azureEnvDesc,
-                        String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
+                    String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
                 azureEnvDesc.setIcon(AllIcons.General.Warning);
             }
         } else {
@@ -239,7 +228,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setDatabasePasswordSaveType(newConfig.getDatabasePasswordSaveType());
         this.originalConfig.setFunctionCoreToolsPath(newConfig.getFunctionCoreToolsPath());
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
-                this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
+            this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
         this.originalConfig.setUserAgent(userAgent);
         this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         this.originalConfig.setCosmosBatchSize(newConfig.getCosmosBatchSize());
@@ -278,12 +267,13 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureEnvironment newEnv = AzureEnvironmentUtils.stringToAzureEnvironment(newConfig.getCloud());
         final AzureEnvironment oldEnv = AzureEnvironmentUtils.stringToAzureEnvironment(originalConfig.getCloud());
         return !Objects.equals(newEnv, oldEnv) ||
-                !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
-                !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
-                !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
-                !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
-                !Objects.equals(newConfig.getCosmosBatchSize(), originalConfig.getCosmosBatchSize()) ||
-                !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
+            !StringUtils.equalsIgnoreCase(newConfig.getDatabasePasswordSaveType(), originalConfig.getDatabasePasswordSaveType()) ||
+            !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
+            !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
+            !StringUtils.equalsIgnoreCase(newConfig.getDotnetRuntimePath(), originalConfig.getDotnetRuntimePath()) ||
+            !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
+            !Objects.equals(newConfig.getCosmosBatchSize(), originalConfig.getCosmosBatchSize()) ||
+            !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
     }
 
     @Override
@@ -295,12 +285,12 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(null, false);
         this.funcCoreToolsPath.setPrototypeDisplayValue(StringUtils.EMPTY);
         this.txtStorageExplorer = new AzureFileInput();
-        txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for Azure Storage Explorer", null, txtStorageExplorer,
-                null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
-        txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
+        this.txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select Path of Azure Storage Explorer", null, txtStorageExplorer,
+            null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.dotnetRuntimePath = new AzureFileInput();
-        this.dotnetRuntimePath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select path for .NET runtime", null, txtStorageExplorer,
-                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.dotnetRuntimePath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener("Select Path of .NET Runtime", null, dotnetRuntimePath,
+            null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         this.dotnetRuntimePath.addValidator(this::validateDotnetRuntime);
         this.installFuncCoreToolsAction = new ActionLink("Install the latest version", e -> {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
@@ -313,18 +303,36 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         });
     }
 
-    private AzureValidationInfo validateDotnetRuntime() {
+    public AzureValidationInfo validateStorageExplorerPath() {
         final String path = txtStorageExplorer.getValue();
         if (StringUtils.isEmpty(path)) {
             return AzureValidationInfo.ok(txtStorageExplorer);
         }
         if (!FileUtil.exists(path)) {
-            return AzureValidationInfo.error("Target directory does not exist", txtStorageExplorer);
+            return AzureValidationInfo.error("Target file does not exist", txtStorageExplorer);
+        }
+        final String fileName = FilenameUtils.getName(path);
+        if (!(StringUtils.containsIgnoreCase(fileName, "storage") && StringUtils.containsIgnoreCase(fileName, "explorer"))) {
+            return AzureValidationInfo.error("Please select correct path for storage explorer", txtStorageExplorer);
+        }
+        return AzureValidationInfo.ok(txtStorageExplorer);
+    }
+
+    private AzureValidationInfo validateDotnetRuntime() {
+        final String path = dotnetRuntimePath.getValue();
+        if (StringUtils.isEmpty(path)) {
+            return AzureValidationInfo.ok(dotnetRuntimePath);
+        }
+        if (!FileUtil.exists(path)) {
+            return AzureValidationInfo.error("Target directory does not exist", dotnetRuntimePath);
         }
         if (!FileUtils.isDirectory(new File(path))) {
-            return AzureValidationInfo.error(".NET runtime path should be a directory", txtStorageExplorer);
+            return AzureValidationInfo.error(".NET runtime path should be a directory", dotnetRuntimePath);
+        }
+        if (!DotnetRuntimeHandler.isDotnetRuntimeInstalled(path)) {
+            return AzureValidationInfo.error("invalid .NET runtime path", dotnetRuntimePath);
         }
         // todo: make sure dotnet exists in current folder
-        return AzureValidationInfo.ok(txtStorageExplorer);
+        return AzureValidationInfo.ok(dotnetRuntimePath);
     }
 }

@@ -45,13 +45,13 @@
 
     <actions>
         <!-- needed for hover -->
-        <action id="org.intellij.sdk.action.QuickDocAction" class="org.wso2.lsp4intellij.actions.LSPQuickDocAction"/>
+        <action id="org.intellij.sdk.action.QuickDocAction" class="org.wso2.lsp4intellij.actions.LSPQuickDocAction" text="Show Quick Doc"/>
         <action class="org.wso2.lsp4intellij.actions.LSPGotoDeclarationAction" id="GotoDeclaration" use-shortcut-of="GotoDeclaration"
-                overrides="true"/>
+                overrides="true" text="Go to Declaration or Usages"/>
         <action class="org.wso2.lsp4intellij.actions.LSPReformatAction" id="ReformatCode" use-shortcut-of="ReformatCode"
-                overrides="true"/>
+                overrides="true" text="Reformat Code" />
         <!-- needed for find references -->
-        <action class="org.wso2.lsp4intellij.actions.LSPReferencesAction" id="LSPFindUsages">
+        <action class="org.wso2.lsp4intellij.actions.LSPReferencesAction" id="LSPFindUsages" text="Find Usages">
             <keyboard-shortcut first-keystroke="shift alt F7" keymap="$default"/>
         </action>
     </actions>
