@@ -81,13 +81,27 @@ public class DotnetRuntimeHandler {
         final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
         final File installScript = prepareDotnetInstallScript(path);
         try {
-            CommandUtils.exec(INSTALL_COMMAND, path);
+            if (!SystemUtils.IS_OS_WINDOWS) {
+                // use ProcessBuilder to execute `dotnet-install.sh` to install dotnet runtime in macOS. `CommandUtils` is buggy
+                // TODO: re implement `CommandUtils`.
+                final File installPath = new File(path);
+                final ProcessBuilder builder = new ProcessBuilder();
+                builder.command("sh", "./dotnet-install.sh", "--runtime", "dotnet", "--version", "6.0.9", "--install-dir", ".");
+                builder.directory(installPath);
+                final Process process = builder.start();
+                final int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    throw new IOException("Failed to install dotnet runtime.");
+                }
+            } else {
+                CommandUtils.exec(INSTALL_COMMAND, path);
+            }
             Azure.az().config().setDotnetRuntimePath(path);
             AzureConfigInitializer.saveAzConfig();
             AzureEventBus.emit("dotnet_runtime.installed");
             final String INSTALL_SUCCEED_MESSAGE = ".NET runtime is installed and configured successfully.";
             AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction, ResourceCommonActionsContributor.RESTART_IDE);
-        } catch (final IOException e) {
+        } catch (final IOException | RuntimeException | InterruptedException e) {
             AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and configure the path manually",
                 generateDownloadAction(), openSettingsAction);
         } finally {
