@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.bicep.activities;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginInstaller;
+import com.intellij.ide.plugins.PluginStateListener;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
@@ -26,7 +29,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Optional;
 
-public class BicepStartupActivity implements StartupActivity {
+public class BicepStartupActivity implements StartupActivity, PluginStateListener {
     protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
     public static final String BICEP_LANGSERVER = "bicep-langserver";
     public static final String BICEP_LANG_SERVER_DLL = "Bicep.LangServer.dll";
@@ -46,6 +49,7 @@ public class BicepStartupActivity implements StartupActivity {
             AzureEventBus.on("dotnet_runtime.installed", new AzureEventBus.EventListener(e -> registerLanguageServerDefinition(project)));
             return;
         }
+        PluginInstaller.addStateListener(this);
         registerLanguageServerDefinition(project);
     }
 
@@ -60,5 +64,18 @@ public class BicepStartupActivity implements StartupActivity {
             .filter(StringUtils::isNotEmpty).map(File::new)
             .filter(File::exists).ifPresent(process::directory);
         IntellijLanguageClient.addServerDefinition(new ProcessBuilderServerDefinition(BICEP, process), project);
+    }
+
+    @Override
+    public void install(@Nonnull IdeaPluginDescriptor ideaPluginDescriptor) {
+    }
+
+    @Override
+    public void uninstall(@Nonnull IdeaPluginDescriptor ideaPluginDescriptor) {
+        if (ideaPluginDescriptor.getPluginId().getIdString().equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
+            LOG.info("-------------------------------------------------------");
+            LOG.info("stopping all language servers at uninstalling plugin " + ideaPluginDescriptor.getName());
+            IntellijLanguageClient.stopAllLanguageServers();
+        }
     }
 }

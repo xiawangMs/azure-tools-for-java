@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Modifications copyright (c) Microsoft Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +17,9 @@
 package org.wso2.lsp4intellij;
 
 import com.intellij.AppTopics;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginInstaller;
+import com.intellij.ide.plugins.PluginStateListener;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
@@ -28,6 +32,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.microsoft.intellij.CommonConst;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -81,7 +86,6 @@ public class IntellijLanguageClient implements ApplicationComponent, Disposable 
             // in case if JVM forcefully exit.
             Runtime.getRuntime().addShutdownHook(new Thread(() -> projectToLanguageWrappers.values().stream()
                     .flatMap(Collection::stream).filter(RUNNING).forEach(s -> s.stop(true))));
-
             LOG.info("Intellij Language Client initialized successfully");
         } catch (Exception e) {
             LOG.warn("Fatal error occurred when initializing Intellij language client.", e);
@@ -391,5 +395,15 @@ public class IntellijLanguageClient implements ApplicationComponent, Disposable 
                 LOG.info("Updated server definition for " + ext);
             }
         }
+    }
+
+    public static void stopAllLanguageServers() {
+        projectToLanguageWrappers.values().stream().flatMap(Collection::stream).filter(RUNNING).forEach(s -> {
+            try {
+                s.stop(true);
+            } catch (final Throwable ignored) {
+            }
+        });
+        extToServerDefinition.values().forEach(LanguageServerDefinition::stopAll);
     }
 }
