@@ -41,7 +41,9 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
     public EditorHighlighter getEditorHighlighter(@Nullable Project project, @Nonnull FileType fileType, @Nullable VirtualFile virtualFile, @Nonnull EditorColorsScheme colors) {
         final TextMateLanguageDescriptor descriptor = TextMateService.getInstance().getLanguageDescriptorByExtension("bicep");
         if (Objects.isNull(descriptor)) { // register textmate if not registered
-            registerBicepTextMateBundleAndReload();
+            if (registerBicepTextMateBundle()) {
+                TextMateService.getInstance().reloadEnabledBundles();
+            }
         }
         try {
             return super.getEditorHighlighter(project, fileType, virtualFile, colors);
@@ -52,7 +54,7 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
     }
 
     @AzureOperation("boundary/bicep.register_textmate_bundles")
-    private static synchronized void registerBicepTextMateBundleAndReload() {
+    public static synchronized boolean registerBicepTextMateBundle() {
         final TextMateSettingsState state = TextMateSettings.getInstance().getState();
         try {
             if (Objects.nonNull(state)) {
@@ -62,13 +64,13 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
                     final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
                     final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
                     final Collection<BundleConfigBean> bundles = state.getBundles();
-                    if (bundles.stream().noneMatch(b -> "bicep".equals(b.getName()) && Path.of(b.getPath()).equals(bicepTextmatePath))) {
+                    if (bicepTextmatePath.toFile().exists() && bundles.stream().noneMatch(b -> "bicep".equals(b.getName()) && b.isEnabled() && Path.of(b.getPath()).equals(bicepTextmatePath))) {
                         final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
                         newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
                         newBundles.add(new BundleConfigBean("bicep", bicepTextmatePath.toString(), true));
                         newBundles.add(new BundleConfigBean("bicepparam", bicepParamTextmatePath.toString(), true));
                         state.setBundles(newBundles);
-                        TextMateService.getInstance().reloadEnabledBundles();
+                        return true;
                     }
                 } finally {
                     registrationLock.unlock();
@@ -77,5 +79,6 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
         } catch (final IllegalAccessException e) {
             throw new SystemException("can not acquire lock of 'TextMateService'.", e);
         }
+        return false;
     }
 }
