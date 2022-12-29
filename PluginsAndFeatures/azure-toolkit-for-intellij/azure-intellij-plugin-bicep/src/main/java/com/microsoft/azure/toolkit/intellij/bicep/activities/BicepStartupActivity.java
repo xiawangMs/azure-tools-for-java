@@ -8,12 +8,15 @@ package com.microsoft.azure.toolkit.intellij.bicep.activities;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.ui.EditorNotifications;
+import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.CommonConst;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.wso2.lsp4intellij.IntellijLanguageClient;
@@ -21,7 +24,6 @@ import org.wso2.lsp4intellij.client.languageserver.serverdefinition.ProcessBuild
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.Objects;
 import java.util.Optional;
 
 public class BicepStartupActivity implements StartupActivity {
@@ -36,17 +38,27 @@ public class BicepStartupActivity implements StartupActivity {
     @AzureOperation(name = "platform/bicep.startup_language_server")
     public void runActivity(@Nonnull Project project) {
         final File bicep = FileUtils.getFile(CommonConst.PLUGIN_PATH, "bicep", BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
-        if (Objects.isNull(bicep) || !bicep.exists()) {
-            AzureMessager.getMessager().warning("Bicep Language Server was not found, disable related features.");
+        final String dotnet = Azure.az().config().getDotnetRuntimePath();
+        if (ObjectUtils.anyNull(bicep, dotnet) || !bicep.exists()) {
             return;
         }
-        final String dotnetRuntimePath = Azure.az().config().getDotnetRuntimePath();
+        if (!DotnetRuntimeHandler.isDotnetRuntimeInstalled(dotnet)) {
+            AzureEventBus.on("dotnet_runtime.installed", new AzureEventBus.EventListener(e -> registerLanguageServerDefinition(project)));
+            return;
+        }
+        registerLanguageServerDefinition(project);
+    }
+
+    public static void registerLanguageServerDefinition(@Nonnull Project project) {
+        EditorNotifications.getInstance(project).updateAllNotifications();
+        final File bicep = FileUtils.getFile(CommonConst.PLUGIN_PATH, "bicep", BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
+        final String dotnet = Azure.az().config().getDotnetRuntimePath();
         final ProcessBuilder process = SystemUtils.IS_OS_WINDOWS ?
             new ProcessBuilder("powershell.exe", "./dotnet", bicep.getAbsolutePath(), STDIO) :
             new ProcessBuilder("./dotnet", bicep.getAbsolutePath(), STDIO);
-        Optional.ofNullable(dotnetRuntimePath)
+        Optional.of(dotnet)
             .filter(StringUtils::isNotEmpty).map(File::new)
             .filter(File::exists).ifPresent(process::directory);
-        IntellijLanguageClient.addServerDefinition(new ProcessBuilderServerDefinition(BICEP, process));
+        IntellijLanguageClient.addServerDefinition(new ProcessBuilderServerDefinition(BICEP, process), project);
     }
 }

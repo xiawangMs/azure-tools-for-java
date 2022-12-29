@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -83,10 +84,11 @@ public class DotnetRuntimeHandler {
             CommandUtils.exec(INSTALL_COMMAND, path);
             Azure.az().config().setDotnetRuntimePath(path);
             AzureConfigInitializer.saveAzConfig();
-            final String INSTALL_SUCCEED_MESSAGE = "Download and install .NET runtime successfully. Auto configured .NET runtime path in Azure Settings";
-            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction);
+            AzureEventBus.emit("dotnet_runtime.installed");
+            final String INSTALL_SUCCEED_MESSAGE = ".NET runtime is installed and configured successfully.";
+            AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction, ResourceCommonActionsContributor.RESTART_IDE);
         } catch (final IOException e) {
-            AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and set the path manually",
+            AzureMessager.getMessager().error(e, "Failed to install .NET Runtime, please download and configure the path manually",
                 generateDownloadAction(), openSettingsAction);
         } finally {
             FileUtils.deleteQuietly(installScript);
