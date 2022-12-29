@@ -78,7 +78,7 @@ fun DataContext.isSparkContext(): Boolean {
 fun ConfigurationContext.getSparkMainClassWithElement(): PsiClass? {
     return location?.let {
         val elem = JavaExecutionUtil.stepIntoSingleClass(it).psiElement.takeIf { psiElem -> psiElem.isPhysical }
-
+        if (project.isDisposed) return null
         (elem as? PsiClass)?.findMainMethod()
                 ?: elem?.findJavaMainClass()
                 ?: elem?.findScalaObjectMainClass()
