@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
@@ -58,7 +59,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
             return new Node<>(environment)
                     .view(new AzureResourceLabelView<>(environment))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .addChildren(env -> env.listContainerApps(), (app, envNode) -> this.createNode(app, envNode, manager))
+                    .addChildren(ContainerAppsEnvironment::listContainerApps, (app, envNode) -> this.createNode(app, envNode, manager))
                     .actions(ContainerAppsActionsContributor.ENVIRONMENT_ACTIONS);
         } else if (data instanceof ContainerApp) {
             final ContainerApp app = (ContainerApp) data;
@@ -78,7 +79,12 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
     }
 
     private String getRevisionDescription(@Nonnull final Revision revision) {
+        final AzResourceBase.FormalStatus formalStatus = revision.getFormalStatus();
+        if (!formalStatus.isRunning() && !formalStatus.isStopped()) {
+            return revision.getStatus();
+        }
         final Revision latestRevision = revision.getParent().getLatestRevision();
-        return String.format(Objects.equals(latestRevision, revision) ? "%s (Latest)" : "%s", revision.isActive() ? "Active" : "Inactive");
+        final boolean latest = Objects.equals(latestRevision, revision);
+        return String.format(latest ? "%s (Latest)" : "%s", revision.isActive() ? "Active" : "Inactive");
     }
 }

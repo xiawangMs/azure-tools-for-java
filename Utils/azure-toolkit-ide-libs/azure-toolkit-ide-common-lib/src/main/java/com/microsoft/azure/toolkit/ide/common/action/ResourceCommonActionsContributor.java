@@ -9,6 +9,9 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.AzService;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -45,6 +48,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AzResource> DEPLOY = Action.Id.of("user/resource.deploy_resource.resource");
     public static final Action.Id<AzResource> CONNECT = Action.Id.of("user/resource.connect_resource.resource");
     public static final Action.Id<Object> CREATE = Action.Id.of("user/resource.create_resource.type");
+    public static final Action.Id<AzService> CREATE_IN_PORTAL = Action.Id.of("user/resource.create_resource_in_portal.type");
     public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("user/resource.pin");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("user/common.open_url.url");
     public static final Action.Id<String> COPY_STRING = Action.Id.of("user/common.copy_string");
@@ -53,6 +57,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> OPEN_AZURE_REFERENCE_BOOK = Action.Id.of("user/common.open_azure_reference_book");
     public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.highlight_resource_in_explorer");
     public static final Action.Id<Object> INSTALL_DOTNET_RUNTIME = Action.Id.of("user/bicep.install_dotnet_runtime");
+    public static final Action.Id<Object> RESTART_IDE = Action.Id.of("user/common.restart_ide");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
@@ -203,6 +208,18 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)))
             .register(am);
 
+        new Action<>(CREATE_IN_PORTAL)
+            .withLabel("Create In Azure Portal")
+            .withIcon(AzureIcons.Action.CREATE.getIconPath())
+            .enableWhen(s -> s instanceof AzService)
+            .withHandler(s -> {
+                final IAccount account = Azure.az(IAzureAccount.class).account();
+                final String url = String.format("%s/#create/%s", account.getPortalUrl(), s.getName());
+                am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+            })
+            .withShortcut(shortcuts.add())
+            .register(am);
+
         final Favorites favorites = Favorites.getInstance();
         new Action<>(PIN)
             .withLabel(s -> Objects.nonNull(s) && favorites.exists(s.getId()) ? "Unmark As Favorite" : "Mark As Favorite")
@@ -221,6 +238,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         new Action<>(INSTALL_DOTNET_RUNTIME)
             .withLabel("Install .Net Runtime")
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(RESTART_IDE)
+            .withLabel("Restart IDE")
             .withAuthRequired(false)
             .register(am);
     }

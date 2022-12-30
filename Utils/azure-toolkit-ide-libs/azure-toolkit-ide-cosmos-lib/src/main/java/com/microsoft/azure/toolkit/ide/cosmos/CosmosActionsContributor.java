@@ -40,7 +40,7 @@ public class CosmosActionsContributor implements IActionsContributor {
     public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("user/cosmos.open_data_explorer.account");
     public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("user/cosmos.copy_connection_string.account");
     public static final Action.Id<ICosmosDocumentContainer<?>> IMPORT_DOCUMENT = Action.Id.of("user/cosmos.import_document.container");
-    public static final Action.Id<ICosmosDocument> OPEN_DOCUMENT = Action.Id.of("internal/cosmos.open_document.document");
+    public static final Action.Id<ICosmosDocument> OPEN_DOCUMENT = Action.Id.of("user/cosmos.open_document.document");
     public static final Action.Id<ICosmosDocumentContainer<?>> LOAD_MODE_DOCUMENT = Action.Id.of("user/cosmos.load_more_documents.container");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_COSMOS_SERVICE = Action.Id.of("user/cosmos.create_cosmos_db_account.group");
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Modifications copyright (c) Microsoft Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +21,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -32,6 +33,7 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.Consumer;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +51,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.swing.*;
 
@@ -111,8 +115,8 @@ public class LSPServerStatusWidget implements StatusBarWidget {
             StatusBar statusBar = manager.getStatusBar(project);
             if (statusBar != null)
                 ApplicationUtils.invokeLater(() -> {
-                    StatusBarWidgetFactory factory = ServiceManager.getService(StatusBarWidgetFactory.class);
-                    factory.disposeWidget(this);
+                    final StatusBarWidgetFactory factory = ApplicationManager.getApplication().getService(StatusBarWidgetFactory.class);
+                    Optional.ofNullable(factory).ifPresent(f -> f.disposeWidget(this));
                 });
         }
     }
@@ -147,7 +151,8 @@ public class LSPServerStatusWidget implements StatusBarWidget {
                 JBPopupFactory.ActionSelectionAid mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS;
                 Component component = t.getComponent();
                 List<AnAction> actions = new ArrayList<>();
-                if (LanguageServerWrapper.forProject(project).getStatus() == ServerStatus.INITIALIZED) {
+                final LanguageServerWrapper wrapper = LanguageServerWrapper.forProject(project);
+                if (Objects.nonNull(wrapper) && wrapper.getStatus() == ServerStatus.INITIALIZED) {
                     actions.add(new ShowConnectedFiles());
                 }
                 actions.add(new ShowTimeouts());
@@ -173,7 +178,9 @@ public class LSPServerStatusWidget implements StatusBarWidget {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 StringBuilder connectedFiles = new StringBuilder("Connected files :");
-                LanguageServerWrapper.forProject(project).getConnectedFiles().forEach(f -> connectedFiles.append(System.lineSeparator()).append(f));
+                Optional.ofNullable(LanguageServerWrapper.forProject(e.getProject()))
+                    .map(LanguageServerWrapper::getConnectedFiles).stream().flatMap(List::stream)
+                    .forEach(f -> connectedFiles.append(System.lineSeparator()).append(f));
                 Messages.showInfoMessage(connectedFiles.toString(), "Connected Files");
             }
         }
@@ -218,9 +225,13 @@ public class LSPServerStatusWidget implements StatusBarWidget {
 
             @Override
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-                LanguageServerWrapper.forProject(project).restart();
+                Optional.ofNullable(LanguageServerWrapper.forProject(anActionEvent.getProject())).ifPresent(LanguageServerWrapper::restart);
             }
 
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                e.getPresentation().setEnabled(ObjectUtils.allNotNull(e.getProject(), LanguageServerWrapper.forProject(e.getProject())));
+            }
         }
 
         @Override

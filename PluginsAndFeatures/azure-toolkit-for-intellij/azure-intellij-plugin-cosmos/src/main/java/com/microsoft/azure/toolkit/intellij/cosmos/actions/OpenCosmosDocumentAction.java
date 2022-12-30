@@ -40,7 +40,7 @@ public class OpenCosmosDocumentAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String FILE_HAS_BEEN_SAVED = "File %s has been saved to Azure";
 
-    @AzureOperation(name = "internal/cosmos.open_document.document", params = {"target.getName()"})
+    @AzureOperation(name = "user/cosmos.open_document.document", params = {"target.getName()"})
     @SneakyThrows
     public static void open(ICosmosDocument target, Project project) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);

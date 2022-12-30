@@ -112,7 +112,8 @@ public class LSPAnnotator extends ExternalAnnotator<Object, Object> {
 
     @Override
     public void apply(@NotNull PsiFile file, Object annotationResult, @NotNull AnnotationHolder holder) {
-        if (LanguageServerWrapper.forVirtualFile(file.getVirtualFile(), file.getProject()).getStatus() != ServerStatus.INITIALIZED) {
+        final LanguageServerWrapper wrapper = LanguageServerWrapper.forVirtualFile(file.getVirtualFile(), file.getProject());
+        if (Objects.nonNull(wrapper) && wrapper.getStatus() != ServerStatus.INITIALIZED) {
             return;
         }
 

@@ -30,7 +30,9 @@ import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -156,9 +158,17 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     @Nullable
     @AzureOperation(name = "boundary/function.get_version.func", params = {"this.functionRunConfiguration.getFuncPath()"})
     private ComparableVersion getFuncVersion() {
-        final File funcFile = Optional.ofNullable(functionRunConfiguration.getFuncPath()).map(File::new).orElse(null);
+        File funcFile = Optional.ofNullable(functionRunConfiguration.getFuncPath()).filter(StringUtils::isNotBlank).map(File::new).orElse(null);
         if (funcFile == null || !funcFile.exists()) {
-            throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+            final File settingsFuncFile = Optional.ofNullable(Azure.az().config().getFunctionCoreToolsPath()).filter(StringUtils::isNotBlank).map(File::new).orElse(null);
+            if (settingsFuncFile != null && settingsFuncFile.exists()) {
+                funcFile = settingsFuncFile;
+                functionRunConfiguration.setFuncPath(funcFile.getAbsolutePath());
+                final AzureString message = AzureString.format("the configured Function Core Tools for this Run Configuration is not found, use the default one \"{0}\" instead.", funcFile.getAbsolutePath());
+                AzureMessager.getDefaultMessager().warning(message);
+            } else {
+                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
+            }
         }
         try {
             final String funcVersion = CommandUtils.exec(String.format("%s -v", funcFile.getName()), funcFile.getParent());

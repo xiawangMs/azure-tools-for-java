@@ -7,9 +7,10 @@ package com.microsoft.azure.toolkit.intellij.containerapps.properties;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.JBIntSpinner;
 import com.intellij.ui.components.ActionLink;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
@@ -37,8 +38,8 @@ import rx.schedulers.Schedulers;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,14 +50,14 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private JPanel propertyActionPanel;
     private JButton btnRefresh;
     private AzureHideableTitledSeparator overviewSeparator;
-    private JTextField resourceGroupTextField;
-    private JTextField txtProvisioningStatus;
-    private JTextField txtRevisionMode;
-    private JTextField locationTextField;
-    private JTextField txtLatestRevisionName;
-    private JTextField subscriptionTextField;
-    private JTextField txtContainerAppsEnvironment;
-    private JTextField subscriptionIDTextField;
+    private JBLabel resourceGroupTextField;
+    private JBLabel txtProvisioningStatus;
+    private JBLabel txtRevisionMode;
+    private JBLabel locationTextField;
+    private JBLabel txtLatestRevisionName;
+    private JBLabel subscriptionTextField;
+    private JBLabel txtContainerAppsEnvironment;
+    private JBLabel subscriptionIDTextField;
     private JPanel pnlNodePools;
     private JBTable revisionsTable;
     private JPanel pnlOverview;
@@ -73,7 +74,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private JLabel lblExternalAccess;
     private JLabel lblInsecureConnection;
     private JLabel lblTargetPort;
-    private JTextField txtTargetPort;
+    private JBIntSpinner txtTargetPort;
     private JLabel lblTransportMethod;
     private AzureHideableTitledSeparator ingressSeparator;
     private JPanel pnlNetworking;
@@ -86,9 +87,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private HyperlinkLabel linkApplicationUrl;
     private JTextField txtInsecureConnections;
     private JTextField txtTransportMethod;
-    private final JTextField[] readOnlyComponents = new JTextField[]{resourceGroupTextField, locationTextField,
-            subscriptionTextField, subscriptionIDTextField, txtRevisionMode, txtProvisioningStatus, txtLatestRevisionName,
-            txtContainerAppsEnvironment, txtInsecureConnections, txtTransportMethod};
+    private final JTextField[] readOnlyComponents = new JTextField[]{txtInsecureConnections, txtTransportMethod};
 
     private final ContainerApp containerApp;
     private final ContainerAppDraft draft;
@@ -118,16 +117,6 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         this.revisionsTable.getEmptyText().setText("Loading pools");
         this.revisionsTable.setBorder(BorderFactory.createEmptyBorder());
 
-        // Overview
-        this.lblResourceGroup.setLabelFor(resourceGroupTextField);
-        this.lblLocation.setLabelFor(locationTextField);
-        this.lblSubscription.setLabelFor(subscriptionTextField);
-        this.lblSubscriptionId.setLabelFor(subscriptionIDTextField);
-        this.lblProvisioningStatus.setLabelFor(txtProvisioningStatus);
-        this.lblRevisionMode.setLabelFor(txtRevisionMode);
-        this.lblLatestRevisionName.setLabelFor(txtLatestRevisionName);
-        this.lblContainerAppsEnvironment.setLabelFor(txtContainerAppsEnvironment);
-        this.lblApplicationUrl.setLabelFor(linkApplicationUrl);
         // Ingress
         this.lblIngress.setLabelFor(cbIngress);
         this.lblExternalAccess.setLabelFor(cbExternalAccess);
@@ -136,6 +125,10 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         this.lblTransportMethod.setLabelFor(txtInsecureConnections);
         TextFieldUtils.disableTextBoard(readOnlyComponents);
         TextFieldUtils.makeTextOpaque(readOnlyComponents);
+
+        this.txtTargetPort.setMax(65535);
+        this.txtTargetPort.setMin(1);
+        this.txtTargetPort.setNumber(80);
 
         initListeners();
         this.overviewSeparator.addContentComponent(pnlOverview);
@@ -150,18 +143,13 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         final String saveTitle = String.format("Saving updates of app(%s)", this.draft.getName());
         this.saveButton.addActionListener(e -> tm.runInBackground(saveTitle, this::save));
         final Runnable runnable = () -> AzureTaskManager.getInstance().runOnPooledThread(ContainerAppPropertiesEditor.this::refreshToolbar);
-        this.txtTargetPort.getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(@NotNull DocumentEvent e) {
-                runnable.run();
-            }
-        });
+        this.txtTargetPort.addChangeListener(e -> runnable.run());
         this.cbExternalAccess.addValueChangedListener(ignore -> runnable.run());
         this.cbIngress.addValueChangedListener(ignore -> toggleIngress());
     }
 
     private void toggleIngress() {
-        final Boolean enableIngress = Optional.ofNullable(cbIngress).map(AzureComboBox::getValue).orElse(false);
+        final boolean enableIngress = Optional.ofNullable(cbIngress).map(AzureComboBox::getValue).orElse(false);
         lblExternalAccess.setVisible(enableIngress);
         cbExternalAccess.setVisible(enableIngress);
         lblInsecureConnection.setVisible(enableIngress);
@@ -177,7 +165,6 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         this.resetButton.setVisible(enabled);
         this.saveButton.setEnabled(enabled);
         this.txtTargetPort.setEnabled(enabled);
-        this.txtTargetPort.setEditable(enabled);
         this.cbIngress.setEnabled(enabled);
         this.cbIngress.setEditable(enabled);
         this.cbExternalAccess.setEnabled(enabled);
@@ -219,11 +206,11 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         final boolean enableIngress = Optional.ofNullable(cbIngress).map(AzureComboBox::getValue).orElse(false);
         if (enableIngress) {
             final IngressConfig previous = Optional.ofNullable(this.containerApp.getIngressConfig())
-                    .orElseGet(() -> IngressConfig.builder().build());
+                .orElseGet(() -> IngressConfig.builder().build());
             final IngressConfig result = IngressConfig.fromIngress(previous.toIngress());
             result.setEnableIngress(true);
             result.setExternal(Optional.ofNullable(cbExternalAccess.getValue()).orElse(false));
-            result.setTargetPort(Integer.parseInt(txtTargetPort.getText()));
+            result.setTargetPort(txtTargetPort.getNumber());
             return result;
         } else {
             return IngressConfig.fromIngress(null);
@@ -248,8 +235,8 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private void refresh() {
         this.draft.reset();
         AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Refreshing...", containerApp::refresh))
-                .subscribeOn(Schedulers.io())
-                .subscribe(ignore -> rerender());
+            .subscribeOn(Schedulers.io())
+            .subscribe(ignore -> rerender());
     }
 
     @Override
@@ -270,12 +257,16 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         txtRevisionMode.setText(Optional.ofNullable(containerApp.getRevisionMode()).map(RevisionMode::getValue).orElse(N_A));
         txtLatestRevisionName.setText(Optional.ofNullable(containerApp.getLatestRevisionName()).orElse(N_A));
         txtContainerAppsEnvironment.setText(Optional.ofNullable(containerApp.getManagedEnvironment()).map(AzResource::getName).orElse(N_A));
-        final String latestRevisionFqdn = containerApp.getLatestRevisionFqdn();
-        if (StringUtils.isEmpty(latestRevisionFqdn)) {
-            linkApplicationUrl.setHyperlinkText(N_A);
+        final String ingressFqdn = containerApp.getIngressFqdn();
+        if (StringUtils.isEmpty(ingressFqdn)) {
+            linkApplicationUrl.setEnabled(false);
+            linkApplicationUrl.setText("Ingress disabled");
+            linkApplicationUrl.setHyperlinkTarget(N_A);
+            linkApplicationUrl.setIcon(null);
         } else {
-            linkApplicationUrl.setHyperlinkText("https://" + latestRevisionFqdn);
-            linkApplicationUrl.setHyperlinkTarget("https://" + latestRevisionFqdn);
+            linkApplicationUrl.setEnabled(true);
+            linkApplicationUrl.setHyperlinkText("https://" + ingressFqdn);
+            linkApplicationUrl.setHyperlinkTarget("https://" + ingressFqdn);
         }
         // ingress
         final IngressConfig ingressConfig = containerApp.getIngressConfig();
@@ -283,17 +274,21 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         cbExternalAccess.setValue(Optional.ofNullable(ingressConfig).map(IngressConfig::isExternal).orElse(false));
         txtInsecureConnections.setText(Optional.ofNullable(ingressConfig).map(IngressConfig::isAllowInsecure).map(String::valueOf).orElse("false"));
         txtTransportMethod.setText(Optional.ofNullable(ingressConfig).map(IngressConfig::getTransport).map(TransportMethod::getValue).orElse(null));
-        txtTargetPort.setText(Optional.ofNullable(ingressConfig).map(IngressConfig::getTargetPort).map(String::valueOf).orElse(N_A));
+        txtTargetPort.setNumber(Optional.ofNullable(ingressConfig).map(IngressConfig::getTargetPort).orElse(80));
 
-        AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Loading node pools", () -> this.containerApp.revisions().list()))
-                .subscribeOn(Schedulers.io())
-                .subscribe(pools -> AzureTaskManager.getInstance().runLater(() -> fillRevisions(pools)));
+        AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Loading revisions.", () -> this.containerApp.revisions().list()))
+            .subscribeOn(Schedulers.io())
+            .subscribe(pools -> AzureTaskManager.getInstance().runLater(() -> fillRevisions(pools)));
     }
 
     private void fillRevisions(List<Revision> pools) {
         final DefaultTableModel model = (DefaultTableModel) this.revisionsTable.getModel();
         model.setRowCount(0);
-        pools.forEach(i -> model.addRow(new Object[]{i.getName(), i.getCreatedTime(), i.getProvisioningState(), i.getTrafficWeight(), i.isActive()}));
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        pools.forEach(i -> {
+            final String date = Optional.ofNullable(i.getCreatedTime()).map(formatter::format).orElse(N_A);
+            model.addRow(new Object[]{i.getName(), date, i.getProvisioningState(), i.getTrafficWeight(), i.isActive()});
+        });
         final int rows = model.getRowCount() < 5 ? 5 : pools.size();
         model.setRowCount(rows);
         this.revisionsTable.setVisibleRowCount(rows);
@@ -302,5 +297,9 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     @Override
     public @NotNull JComponent getComponent() {
         return pnlRoot;
+    }
+
+    private void createUIComponents() {
+        this.txtTargetPort = new JBIntSpinner(80, 1, 65535);
     }
 }

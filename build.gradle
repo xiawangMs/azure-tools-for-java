@@ -64,16 +64,6 @@ task buildToolkitsLib {
     }
 }
 
-task prepareBicepSupport(type: Copy) {
-    logger.info('Downloading bicep language server ...')
-    def langServerDir = file('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/binaries/bicep/bicep-langserver')
-    if (!langServerDir.exists()) {
-        def zipFile = new File('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/downloaded.zip')
-        new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream{ i -> zipFile.withOutputStream{ it << i }}
-        from zipTree(zipFile) into langServerDir
-    }
-}
-
 task buildUtils {
     dependsOn buildToolkitsLib
     doLast {
@@ -115,7 +105,7 @@ task buildEclipse {
 }
 
 task buildIntelliJ {
-    dependsOn buildUtils, buildAdditionalLibrary, prepareBicepSupport
+    dependsOn buildUtils, buildAdditionalLibrary
 
     doLast {
         logger.info('Building IntelliJ plugin ...')

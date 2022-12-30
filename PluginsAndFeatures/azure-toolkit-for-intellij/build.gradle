@@ -8,8 +8,8 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.28.0-SNAPSHOT"
-    azureToolkitUtilsVersion = "3.72.0-SNAPSHOT"
+    azureToolkitVersion = "0.29.0-SNAPSHOT"
+    azureToolkitUtilsVersion = "3.73.0-SNAPSHOT"
     azureToolkitHDInsightVersion = "0.1.0"
 }
 
@@ -27,7 +27,8 @@ compileTestKotlin {
 }
 
 //import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
-import org.apache.tools.ant.filters.*
+
+import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
     duplicatesStrategy(DuplicatesStrategy.INCLUDE)
@@ -84,8 +85,8 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.28.0-SNAPSHOT"
-        azureToolkitUtilsVersion = "3.72.0-SNAPSHOT"
+        azureToolkitVersion = "0.29.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.73.0-SNAPSHOT"
         azureToolkitHDInsightVersion = "0.1.0"
     }
 
@@ -219,13 +220,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.microsoft.azuretools:azuretools-core:3.72.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:azuretools-core:3.73.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:azure-explorer-common:3.72.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:azure-explorer-common:3.73.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.72.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.73.0-SNAPSHOT', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
@@ -324,8 +325,32 @@ patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
 }
 
+task prepareBicepBinariesForSandbox(type: Copy) {
+    def bicepBinariesDir = file("$projectDir/build/idea-sandbox/plugins/azure-toolkit-for-intellij/bicep")
+    bicepBinariesDir.deleteDir();
+    from("$projectDir/azure-intellij-plugin-bicep/binaries") into("$projectDir/build/idea-sandbox/plugins/azure-toolkit-for-intellij/")
+}
+
+task downloadBicepLanguageServer(type: Copy) {
+    def langServerDir = file('azure-intellij-plugin-bicep/binaries/bicep/bicep-langserver')
+    if (!langServerDir.exists()) {
+        logger.info('Downloading bicep language server ...')
+        def zipFile = new File('azure-intellij-plugin-bicep/downloaded.zip')
+        new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream { i -> zipFile.withOutputStream { it << i } }
+        logger.info('Unzipping bicep language server ...')
+        from zipTree(zipFile) into langServerDir
+    }
+}
+
 buildPlugin {
     archiveVersion = getPatchedVersion()
+    from("$projectDir/NOTICE")
+    // buildPlugin zips result of `prepareSandbox`, so no need to copy again?
     // copy bicep textmate bundles/language server files to root of the plugin zip, so that we don't need to unzip them manually from jar resources
-    from("$projectDir/azure-intellij-plugin-bicep/binaries")
+    //    from("$projectDir/azure-intellij-plugin-bicep/binaries")
+}
+
+prepareSandbox {
+    dependsOn(downloadBicepLanguageServer)
+    finalizedBy(prepareBicepBinariesForSandbox)
 }

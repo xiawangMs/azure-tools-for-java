@@ -28,7 +28,7 @@ public class AzureSdkReferenceBookDialog extends DialogWrapper {
     }
 
     @Override
-    @AzureOperation(name = "internal/sdk.open_sdk_reference_book")
+    @AzureOperation(name = "ui/sdk.open_sdk_reference_book")
     public void show() {
         super.show();
     }

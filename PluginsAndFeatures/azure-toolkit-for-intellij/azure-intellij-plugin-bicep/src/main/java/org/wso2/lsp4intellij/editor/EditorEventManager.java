@@ -48,7 +48,6 @@ import com.intellij.openapi.editor.markup.HighlighterTargetArea;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
@@ -58,6 +57,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.Hint;
+import com.microsoft.azure.toolkit.intellij.bicep.BicepLanguage;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
@@ -320,7 +320,7 @@ public class EditorEventManager {
     }
 
     private boolean isSupportedLanguageFile(PsiFile file) {
-        return file.getLanguage().isKindOf(PlainTextLanguage.INSTANCE)
+        return file.getLanguage().isKindOf(BicepLanguage.INSTANCE)
                 || FileUtils.isFileSupported(file.getVirtualFile());
     }
 
@@ -331,19 +331,7 @@ public class EditorEventManager {
      * @param e The mouse event
      */
     public void mouseClicked(EditorMouseEvent e) {
-        if (e.getEditor() != editor) {
-            LOG.error("Wrong editor for EditorEventManager");
-            return;
-        }
-
-        if (getIsCtrlDown()) {
-            // If CTRL/CMD key is pressed, triggers goto definition/references and hover.
-            try {
-                trySourceNavigationAndHover(e);
-            } catch (Exception err) {
-                LOG.warn("Error occurred when trying source navigation", err);
-            }
-        }
+        // delegated to LSPGotoDeclarationAction
     }
 
     private void createCtrlRange(Position logicalPos, Range range) {
@@ -1309,18 +1297,21 @@ public class EditorEventManager {
         }
     }
 
+    public void gotoDeclaration(Editor editor) {
+        this.trySourceNavigationAndHover(editor.getCaretModel().getLogicalPosition());
+    }
+
     // Tries to go to definition / show usages based on the element which is
-    private void trySourceNavigationAndHover(EditorMouseEvent e) {
+    private void trySourceNavigationAndHover(LogicalPosition logicalPosition) {
         if (editor.isDisposed()) {
             return;
         }
-
-        createCtrlRange(DocumentUtils.logicalToLSPPos(editor.xyToLogicalPosition(e.getMouseEvent().getPoint()), editor),
+        createCtrlRange(DocumentUtils.logicalToLSPPos(logicalPosition, editor),
                 null);
         final CtrlRangeMarker ctrlRange = getCtrlRange();
 
         if (ctrlRange == null) {
-            int offset = editor.logicalPositionToOffset(editor.xyToLogicalPosition(e.getMouseEvent().getPoint()));
+            int offset = editor.logicalPositionToOffset(logicalPosition);
             LSPReferencesAction referencesAction = (LSPReferencesAction) ActionManager.getInstance()
                     .getAction("LSPFindUsages");
             if (referencesAction != null) {
@@ -1335,7 +1326,7 @@ public class EditorEventManager {
                 return;
             }
 
-            int offset = editor.logicalPositionToOffset(editor.xyToLogicalPosition(e.getMouseEvent().getPoint()));
+            int offset = editor.logicalPositionToOffset(logicalPosition);
             String locUri = FileUtils.sanitizeURI(loc.getUri());
 
             if (identifier.getUri().equals(locUri)

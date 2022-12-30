@@ -10,7 +10,7 @@
 
         <!-- register intellijLanguageClient as a Service OR as a plugin component (see readme)... -->
         <applicationService serviceImplementation="org.wso2.lsp4intellij.IntellijLanguageClient"/>
-
+        <editorNotificationProvider implementation="com.microsoft.azure.toolkit.intellij.bicep.BicepEditorNotificationProvider"/>
         <!-- register a listener on editor events, required for lsp file sync -->
         <editorFactoryListener implementation="org.wso2.lsp4intellij.listeners.LSPEditorListener"/>
         <fileDocumentManagerListener implementation="org.wso2.lsp4intellij.listeners.LSPFileDocumentManagerListener"/>
@@ -45,12 +45,13 @@
 
     <actions>
         <!-- needed for hover -->
-        <action id="org.intellij.sdk.action.QuickDocAction" class="org.wso2.lsp4intellij.actions.LSPQuickDocAction">
-        </action>
+        <action id="org.intellij.sdk.action.QuickDocAction" class="org.wso2.lsp4intellij.actions.LSPQuickDocAction" text="Show Quick Doc"/>
+        <action class="org.wso2.lsp4intellij.actions.LSPGotoDeclarationAction" id="GotoDeclaration" use-shortcut-of="GotoDeclaration"
+                overrides="true" text="Go to Declaration or Usages"/>
         <action class="org.wso2.lsp4intellij.actions.LSPReformatAction" id="ReformatCode" use-shortcut-of="ReformatCode"
-                overrides="true" text="Reformat Code"/>
+                overrides="true" text="Reformat Code" />
         <!-- needed for find references -->
-        <action class="org.wso2.lsp4intellij.actions.LSPReferencesAction" id="LSPFindUsages">
+        <action class="org.wso2.lsp4intellij.actions.LSPReferencesAction" id="LSPFindUsages" text="Find Usages">
             <keyboard-shortcut first-keystroke="shift alt F7" keymap="$default"/>
         </action>
     </actions>

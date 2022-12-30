@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowProper
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
@@ -117,7 +116,7 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
         final SpringCloudAppConfig config = getConfig();
         this.draft.setConfig(config);
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(config);
-        AzureTaskManager.getInstance().runInBackground("Saving updates", task::execute);
+        AzureTaskManager.getInstance().runInBackground("Saving updates", () -> task.execute());
     }
 
     private void reset() {
