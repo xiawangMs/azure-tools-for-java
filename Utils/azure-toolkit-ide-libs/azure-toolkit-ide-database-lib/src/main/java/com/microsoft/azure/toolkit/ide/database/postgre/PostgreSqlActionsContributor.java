@@ -30,14 +30,16 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(OPEN_DATABASE_TOOL)
-            .enableWhen(s -> s instanceof PostgreSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning())
-            .withIcon(AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .withLabel("Open with Database Tools")
+            .withIcon(AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .withIdParam(AzResource::getName)
+            .visibleWhen(s -> s instanceof PostgreSqlServer)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(GROUP_CREATE_POSTGRE)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withLabel("PostgreSQL Server")
             .withIdParam(AzResource::getName)
             .register(am);

@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
@@ -115,7 +114,8 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(SWAP_DEPLOYMENT_SLOT)
-            .enableWhen(s -> s instanceof FunctionAppDeploymentSlot && ((FunctionAppDeploymentSlot) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof FunctionAppDeploymentSlot)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Swap with Production")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
@@ -124,7 +124,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
             .withLabel("Refresh")
             .withIcon(AzureIcons.Action.REFRESH.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof FunctionApp)
+            .visibleWhen(s -> s instanceof FunctionApp)
             .withShortcut(am.getIDEDefaultShortcuts().refresh())
             .withHandler(s -> AzureEventBus.emit("appservice|function.functions.refresh", s))
             .register(am);
@@ -132,20 +132,22 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         new Action<>(TRIGGER_FUNCTION)
             .withLabel("Trigger Function")
             .withIdParam(FunctionEntity::getName)
-            .enableWhen(s -> s instanceof FunctionEntity && !AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s))
+            .visibleWhen(s -> s instanceof FunctionEntity)
+            .enableWhen(s -> !AzureFunctionsUtils.isHttpTrigger(s))
             .register(am);
 
         new Action<>(TRIGGER_FUNCTION_IN_BROWSER)
             .withLabel("Trigger Function In Browser")
             .withIdParam(FunctionEntity::getName)
-            .enableWhen(s -> s instanceof FunctionEntity && AzureFunctionsUtils.isHttpTrigger((FunctionEntity) s))
+            .visibleWhen(s -> s instanceof FunctionEntity)
+            .enableWhen(s -> AzureFunctionsUtils.isHttpTrigger(s))
             .withHandler(s -> new TriggerFunctionInBrowserAction(s).trigger())
             .register(am);
 
         new Action<>(TRIGGER_FUNCTION_WITH_HTTP_CLIENT)
             .withLabel("Trigger Function with Http Client")
             .withIdParam(FunctionEntity::getName)
-            .enableWhen(s -> s instanceof FunctionEntity)
+            .visibleWhen(s -> s instanceof FunctionEntity)
             .register(am);
 
         new Action<>(DOWNLOAD_CORE_TOOLS)
@@ -162,26 +164,30 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         new Action<>(GROUP_CREATE_FUNCTION)
             .withLabel("Function App")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(ENABLE_REMOTE_DEBUGGING)
             .withLabel("Enable Remote Debugging")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning() && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
+            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(DISABLE_REMOTE_DEBUGGING)
             .withLabel("Disable Remote Debugging")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning() && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
+            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(REMOTE_DEBUGGING)
             .withLabel("Attach Debugger")
             .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?>)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
     }
 

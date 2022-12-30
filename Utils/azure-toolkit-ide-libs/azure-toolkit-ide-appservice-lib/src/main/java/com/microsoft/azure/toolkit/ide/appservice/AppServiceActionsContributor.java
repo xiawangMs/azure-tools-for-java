@@ -34,7 +34,8 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withLabel("Open In Browser")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getHostName()))
             .register(am);
 
@@ -42,33 +43,37 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withLabel("Start Streaming Logs")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(STOP_STREAM_LOG)
             .withLabel("Stop Streaming Logs")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(PROFILE_FLIGHT_RECORD)
             .withLabel("Profile Flight Recorder")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(SSH_INTO_WEBAPP)
             .withLabel("SSH into Web App")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AppServiceAppBase && ((AppServiceAppBase<?, ?, ?>) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(REFRESH_DEPLOYMENT_SLOTS)
             .withLabel("Refresh")
             .withIcon(AzureIcons.Action.REFRESH.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AppServiceAppBase)
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
             .withHandler(app -> AzureEventBus.emit("appservice.slot.refresh", app))
             .withShortcut(am.getIDEDefaultShortcuts().refresh())
             .register(am);

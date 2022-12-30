@@ -205,7 +205,8 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         final Action<Favorites> unpinAllAction = new Action<>(Action.Id.<Favorites>of("user/resource.unpin_all"))
             .withLabel("Unmark All As Favorite")
             .withIcon(AzureIcons.Action.UNPIN.getIconPath())
-            .enableWhen(s -> s instanceof Favorites)
+            .visibleWhen(s -> s instanceof Favorites)
+            .enableWhen(s -> !Favorites.getInstance().favorites.isEmpty())
             .withHandler(Favorites::unpinAll)
             .withShortcut("control F11");
 

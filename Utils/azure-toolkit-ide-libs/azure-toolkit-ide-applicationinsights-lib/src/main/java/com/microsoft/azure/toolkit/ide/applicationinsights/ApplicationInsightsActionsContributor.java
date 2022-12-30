@@ -35,7 +35,8 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         new Action<>(COPY_CONNECTION_STRING)
             .withLabel("Copy Connection String")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ApplicationInsight)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(insight -> {
                 am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(insight.getConnectionString());
                 AzureMessager.getMessager().info("Connection string copied");
@@ -45,7 +46,8 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
         new Action<>(COPY_INSTRUMENTATION_KEY)
             .withLabel("Copy Instrumentation Key")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ApplicationInsight)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(insight -> {
                 am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(insight.getInstrumentationKey());
                 AzureMessager.getMessager().info("Instrumentation key copied");
@@ -56,7 +58,8 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
             .withLabel("Open Application Map")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ApplicationInsight)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(insight.getPortalUrl() + "/applicationMap"))
             .register(am);
 
@@ -64,7 +67,8 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
             .withLabel("Open Live Metrics")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ApplicationInsight)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(insight.getPortalUrl() + "/quickPulse"))
             .register(am);
 
@@ -72,14 +76,16 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
             .withLabel("Open Transaction Search")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ApplicationInsight && ((ApplicationInsight) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ApplicationInsight)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(insight -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(insight.getPortalUrl() + "/searchV1"))
             .register(am);
 
         new Action<>(GROUP_CREATE_APPLICATIONINSIGHT)
             .withLabel("Application Insights")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
     }
 

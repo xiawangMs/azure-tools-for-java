@@ -94,13 +94,15 @@ public class WebAppActionsContributor implements IActionsContributor {
         new Action<>(SWAP_DEPLOYMENT_SLOT)
             .withLabel("Swap With Production")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof WebAppDeploymentSlot && ((WebAppDeploymentSlot) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof WebAppDeploymentSlot)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(GROUP_CREATE_WEBAPP)
             .withLabel("Web App")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
     }
 
