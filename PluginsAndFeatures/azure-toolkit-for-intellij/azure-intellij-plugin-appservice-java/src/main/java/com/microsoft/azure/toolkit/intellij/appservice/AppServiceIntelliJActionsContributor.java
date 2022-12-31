@@ -211,9 +211,7 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         };
         am.registerHandler(FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS, downloadFuncCoreToolsHandler);
         AzureEventBus.on("function.download_func_core_tools_succeed.version", new AzureEventBus.EventListener((azureEvent) -> {
-            final Action<Object> openSettingsActionInMessage = new Action<>(Action.Id.of("user/common.open_azure_settings_dialog"))
-                .withLabel("Open Azure Settings")
-                .withHandler((source, e) -> tm.runLater(() -> am.getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS).handle(null, e)));
+            final Action<Object> openSettingsActionInMessage = am.getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
             final String INSTALL_SUCCEED_MESSAGE = "Download and install Azure Functions Core Tools successfully. Auto configured Azure Functions Core Tools path in Azure Settings";
             AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsActionInMessage);
         }));

@@ -5,22 +5,19 @@
 
 package com.microsoft.azure.toolkit.intellij.arm.action;
 
-import com.intellij.ide.actions.RevealFileAction;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.arm.creation.CreateDeploymentDialog;
 import com.microsoft.azure.toolkit.intellij.arm.template.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.arm.update.UpdateDeploymentDialog;
 import com.microsoft.azure.toolkit.intellij.common.FileChooser;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -126,22 +123,11 @@ public class DeploymentActions {
         IOUtils.write(parameters, new FileOutputStream(file), Charset.defaultCharset());
     }
 
-    private static Action<Void> newShowInExplorerAction(@Nonnull final File dest) {
-        final Action.Id<Void> REVEAL = Action.Id.of("user/common.reveal_file_in_explorer");
-        return new Action<>(REVEAL)
-            .withLabel(RevealFileAction.getActionName())
-            .withHandler(v -> VirtualFileActions.revealInExplorer(dest));
+    private static Action<File> newShowInExplorerAction(@Nonnull final File dest) {
+        return AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.REVEAL_FILE).bind(dest);
     }
 
-    private static Action<Void> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
-        final Action.Id<Void> OPEN = Action.Id.of("user/common.open_file_in_editor");
-        return new Action<>(OPEN)
-            .withLabel("Open In Editor")
-            .withHandler(v -> AzureTaskManager.getInstance().runLater(() -> {
-                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-                final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
-                VirtualFileActions.openFileInEditor(virtualFile, (a) -> false, () -> {
-                }, fileEditorManager);
-            }));
+    private static Action<File> newOpenInEditorAction(@Nonnull final File dest, @Nonnull final Project project) {
+        return AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_FILE).bind(dest);
     }
 }
