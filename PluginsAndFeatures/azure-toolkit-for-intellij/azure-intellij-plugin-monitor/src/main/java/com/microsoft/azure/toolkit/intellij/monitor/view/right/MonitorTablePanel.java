@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.azure.monitor.query.models.LogsTable;
 import com.azure.monitor.query.models.LogsTableCell;
-import com.intellij.ui.treeStructure.treetable.TreeTable;
+import com.intellij.ui.components.JBTreeTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable.LogDataNode;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable.LogDataModel;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class MonitorTablePanel {
     private JPanel contentPanel;
-    private TreeTable treeTableView;
+    private JBTreeTable treeTableView;
 
     public MonitorTablePanel() {
     }
@@ -41,7 +41,7 @@ public class MonitorTablePanel {
     }
 
     public void setStatus(String status) {
-        treeTableView.getEmptyText().setText(status);
+        treeTableView.getTable().getEmptyText().setText(status);
     }
 
     public JPanel getContentPanel() {
@@ -49,6 +49,6 @@ public class MonitorTablePanel {
     }
 
     private void createUIComponents() {
-        treeTableView = new TreeTable(new LogDataModel());
+        treeTableView = new JBTreeTable(new LogDataModel());
     }
 }
