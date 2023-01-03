@@ -1,58 +1,54 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable;
 
-import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LogDataModel extends DefaultTreeModel implements TreeTableModel {
-
-    static protected String[] columnNames = { "TimeGenerated [UTC]", "Message", "SeverityLevel", "Properties" };
-    static protected Class<?>[] columnTypes = { TreeTableModel.class, String.class, String.class, String.class };
-
+    private final List<String> columnNames;
     protected Object root;
 
-    public LogDataModel(LogDataNode rootNode) {
+    public LogDataModel() {
         super(null);
-        root = rootNode;
+        this.columnNames = new ArrayList<>();
     }
-    @Override
-    public int getColumnCount() {
-        return columnNames.length;
+
+    public LogDataModel(LogDataNode rootNode, List<String> columnNames) {
+        super(null);
+        this.root = rootNode;
+        this.columnNames = columnNames;
     }
 
     @Override
-    public @NlsContexts.ColumnName String getColumnName(int i) {
-        return columnNames[i];
+    public int getColumnCount() {
+        return columnNames.size();
+    }
+
+    @Override
+    public String getColumnName(int i) {
+        return columnNames.get(i);
     }
 
     @Override
     public Class getColumnClass(int i) {
-        return columnTypes[i];
+        if (i == 0) {
+            return TreeTableModel.class;
+        }
+        return String.class;
     }
 
     @Nullable
     @Override
     public Object getValueAt(Object o, int i) {
-        switch (i) {
-            case 0 -> {
-                return ((LogDataNode) o).getName();
-            }
-            case 1 -> {
-                return ((LogDataNode) o).getMessage();
-            }
-            case 2 -> {
-                return ((LogDataNode) o).getSeverityLevel();
-            }
-            case 3 -> {
-                return ((LogDataNode) o).getProperties();
-            }
-            default -> {
-            }
+        if (i >= ((LogDataNode) o).getColumnValues().size()) {
+            return StringUtils.EMPTY;
         }
-        return null;
+        return ((LogDataNode) o).getColumnValues().get(i);
     }
 
     @Override
@@ -62,7 +58,6 @@ public class LogDataModel extends DefaultTreeModel implements TreeTableModel {
 
     @Override
     public void setValueAt(Object o, Object o1, int i) {
-
     }
 
     @Override
@@ -92,5 +87,10 @@ public class LogDataModel extends DefaultTreeModel implements TreeTableModel {
     @Override
     public int getIndexOfChild(Object parent, Object child) {
         return 0;
+    }
+
+    public void clear() {
+//        this.root = null;
+        this.columnNames.clear();
     }
 }

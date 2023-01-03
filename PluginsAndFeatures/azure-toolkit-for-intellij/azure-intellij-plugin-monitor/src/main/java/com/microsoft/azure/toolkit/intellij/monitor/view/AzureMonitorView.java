@@ -34,25 +34,26 @@ public class AzureMonitorView {
 
     public AzureMonitorView(Project project, @Nonnull Subscription subscription, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace) {
         this.selectedWorkspace = logAnalyticsWorkspace;
+//        executeButton.addActionListener(e -> {
+//            final String queryString = String.format("AppTraces | where TimeGenerated > datetime(%s) and TimeGenerated < datetime(%s)", "12-01-2022", "12-14-2022");
+//            monitorTablePanel.setStatus("Loading");
+//            AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> monitorTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString)));
+//        });
+        monitorTablePanel.setStatus("Loading");
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading tables"), () -> this.monitorTreePanel.refresh());
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
+            final String queryString = "AppTraces | where TimeGenerated > ago(1d)";
+            monitorTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString));
+        });
     }
 
     public JPanel getCenterPanel() {
         return contentPanel;
     }
 
-    public void initListener() {
-//        Optional.ofNullable(selectedWorkspace).ifPresent(workspace -> workspaceName.setText(workspace.getName()));
-        executeButton.addActionListener(e -> {
-            final String queryString = String.format("AppTraces | where TimeGenerated > datetime(%s) and TimeGenerated < datetime(%s)", "12-01-2022", "12-14-2022");
-            monitorTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString));
-        });
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("loading Azure Monitor data"), () -> this.monitorTreePanel.refresh());
-    }
-
     private void createUIComponents() {
         selectAction = new AnActionLink("Select Workspace", ActionManager.getInstance().getAction(WhatsNewAction.ID));
         timeRangeComboBox = new TimeRangeComboBox();
-//        workspaceName = new JLabel();
     }
 
 }

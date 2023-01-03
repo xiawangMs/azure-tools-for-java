@@ -5,45 +5,27 @@ import java.util.List;
 
 public class LogDataNode {
 
-    private final String timeGenerated;
-    private final String message;
-    private final String severityLevel;
-    private final String properties;
-
     private List<LogDataNode> children;
+    private final List<String> columnValues;
 
-    public LogDataNode(String name, String message, String severityLevel, String properties, List<LogDataNode> children) {
-        this.timeGenerated = name;
-        this.message = message;
-        this.severityLevel = severityLevel;
-        this.properties = properties;
+    public LogDataNode(List<String> values, List<LogDataNode> children) {
+        this.columnValues = values;
         this.children = children;
         if (this.children == null) {
             this.children = Collections.emptyList();
         }
     }
 
-    public String getName() {
-        return timeGenerated;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getSeverityLevel() {
-        return severityLevel;
-    }
-
-    public String getProperties() {
-        return properties;
-    }
-
     public List<LogDataNode> getChildren() {
         return children;
     }
 
+    public List<String> getColumnValues() {
+        return this.columnValues;
+    }
+
+    @Override
     public String toString() {
-        return timeGenerated;
+        return this.columnValues.toString();
     }
 }
