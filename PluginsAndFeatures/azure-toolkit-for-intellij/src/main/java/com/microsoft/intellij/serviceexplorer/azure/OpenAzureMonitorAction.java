@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -32,15 +31,15 @@ public class OpenAzureMonitorAction extends NodeAction {
             protected void actionPerformed(NodeActionEvent nodeActionEvent) {
                 Optional.ofNullable(azureModule.getProject())
                         .ifPresent(project -> {
+                            LogAnalyticsWorkspace defaultWorkspace = null;
                             final AzureAccount az = Azure.az(AzureAccount.class);
-                            if (az.isLoggedIn() && az.account().getSelectedSubscriptions().size() > 0) {
+                            if (az.account().getSelectedSubscriptions().size() > 0) {
                                 final Subscription subscription = az.getAccount().getSelectedSubscriptions().get(0);
                                 final List<LogAnalyticsWorkspace> workspaceList = Azure.az(AzureLogAnalyticsWorkspace.class)
                                         .logAnalyticsWorkspaces(subscription.getId()).list().stream().collect(Collectors.toList());
-                                AzureMonitorManager.getInstance().openMonitorWindow((Project) project, subscription, workspaceList.get(0));
-                            } else {
-                                AzureMessager.getMessager().warning("Please log in first");
+                                defaultWorkspace = workspaceList.size() > 0 ? workspaceList.get(0) : null;
                             }
+                            AzureMonitorManager.getInstance().openMonitorWindow((Project) project, defaultWorkspace);
                         });
             }
         });
