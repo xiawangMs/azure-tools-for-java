@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.ui.RelativeFont;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -24,10 +25,10 @@ import java.util.Map;
 public class MonitorTreePanel {
     private JTabbedPane tabbedPane;
     private JPanel contentPanel;
-    private JPanel tablePanel;
-    private JPanel queryPanel;
     private Tree tableTree;
     private Tree queryTree;
+    private JBScrollPane tablePanel;
+    private JBScrollPane queryPanel;
     private DefaultTreeModel tableModel;
     private DefaultTreeModel queryModal;
 

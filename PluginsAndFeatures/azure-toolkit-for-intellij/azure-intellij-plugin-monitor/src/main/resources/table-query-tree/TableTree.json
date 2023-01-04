@@ -1,9 +1,9 @@
 {
   "Application Insights": [
-    "AppDependencies", "AppExceptions", "AppMetrics", "AppPerformanceCounters", "AppRequests"
+    "AppBrowserTimings", "AppDependencies", "AppEvents", "AppExceptions", "AppMetrics", "AppPageViews", "AppPerformanceCounters", "AppRequests", "AppSystemEvents", "AppTraces"
   ],
   "App Service": [
-    "AppServiceConsoleLogs", "AppServiceAppLogs", "AppServiceHTTPLogs", "AppServicePlatformLogs", "FunctionAppLogs"
+    "AppServiceAppLogs", "AppServiceConsoleLogs", "AppServiceAppLogs", "AppServiceHTTPLogs", "AppServicePlatformLogs", "FunctionAppLogs"
   ],
-  "Azure Spring Cloud": ["AppPlatformLogsforSpring"]
+  "Azure Spring Cloud": ["AppPlatformBuildLogs", "AppPlatformContainerEventLogs", "AppPlatformLogsforSpring", "AppPlatformSystemLogs"]
 }
