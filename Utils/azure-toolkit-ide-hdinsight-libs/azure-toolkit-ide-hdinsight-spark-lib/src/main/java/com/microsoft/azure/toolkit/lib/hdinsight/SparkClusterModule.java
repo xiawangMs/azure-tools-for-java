@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,8 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
             // Add additional clusters
             List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
             for (IClusterDetail detail : additionalClusterDetails) {
+                if (detail instanceof SqlBigDataLivyLinkClusterDetail)
+                    continue;
                 SDKAdditionalCluster sdkAdditionalCluster = new SDKAdditionalCluster();
                 sdkAdditionalCluster.setName(detail.getName());
                 resultList.add(sdkAdditionalCluster);
