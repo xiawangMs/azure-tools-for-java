@@ -31,10 +31,10 @@ public class AzureMonitorManager {
         return instance;
     }
 
-    public void openMonitorWindow(@Nonnull Project project, @Nonnull Subscription subscription, @Nullable LogAnalyticsWorkspace workspace) {
+    public void openMonitorWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace) {
         final ToolWindow azureMonitorWindow = getToolWindow(project);
         final ContentFactory contentFactory = ContentFactory.getInstance();
-        final AzureMonitorView monitorView = new AzureMonitorView(project, subscription, workspace);
+        final AzureMonitorView monitorView = new AzureMonitorView(project, workspace);
         final Content content = contentFactory.createContent(monitorView.getCenterPanel(), "", false);
         azureMonitorWindow.getContentManager().addContent(content);
         AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {

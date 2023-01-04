@@ -1,7 +1,10 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right.TreeTable;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class LogDataNode {
 
@@ -26,6 +29,9 @@ public class LogDataNode {
 
     @Override
     public String toString() {
-        return this.columnValues.toString();
+        if (Objects.isNull(columnValues) || this.columnValues.size() == 0) {
+            return StringUtils.EMPTY;
+        }
+        return this.columnValues.get(0);
     }
 }

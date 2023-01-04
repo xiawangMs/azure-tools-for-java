@@ -20,6 +20,8 @@ public class MonitorTablePanel {
 
     public void setTableModel(LogsTable tableModel) {
         if (tableModel.getAllTableCells().size() == 0) {
+            treeTableView.setModel(new LogDataModel());
+            treeTableView.repaint();
             return;
         }
         final List<LogDataNode> rowNodeList = new ArrayList<>();
@@ -37,7 +39,10 @@ public class MonitorTablePanel {
         });
         final List<String> columnNames = tableModel.getRows().get(0).getRow().stream().map(LogsTableCell::getColumnName).toList();
         final LogDataNode rootNode = new LogDataNode(columnNames, rowNodeList);
-        AzureTaskManager.getInstance().runLater(() -> treeTableView.setModel(new LogDataModel(rootNode, columnNames)));
+        AzureTaskManager.getInstance().runLater(() -> {
+            treeTableView.setModel(new LogDataModel(rootNode, columnNames));
+            treeTableView.repaint();
+        });
     }
 
     public void setStatus(String status) {
@@ -50,5 +55,6 @@ public class MonitorTablePanel {
 
     private void createUIComponents() {
         treeTableView = new JBTreeTable(new LogDataModel());
+        treeTableView.getTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     }
 }

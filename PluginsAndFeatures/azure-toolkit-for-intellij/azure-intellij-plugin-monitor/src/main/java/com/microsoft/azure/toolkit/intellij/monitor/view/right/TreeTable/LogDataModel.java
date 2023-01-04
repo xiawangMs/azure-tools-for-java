@@ -88,9 +88,4 @@ public class LogDataModel extends DefaultTreeModel implements TreeTableModel {
     public int getIndexOfChild(Object parent, Object child) {
         return 0;
     }
-
-    public void clear() {
-//        this.root = null;
-        this.columnNames.clear();
-    }
 }
