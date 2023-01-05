@@ -27,41 +27,29 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.jarRepository.JarRepositoryManager
-import com.intellij.jarRepository.RemoteRepositoriesConfiguration
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.util.DispatchThreadProgressWindow
 import com.intellij.openapi.projectRoots.JavaSdkType
 import com.intellij.openapi.projectRoots.JdkUtil
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
-import com.intellij.openapi.roots.impl.libraries.LibraryEx
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
-import com.intellij.openapi.roots.libraries.NewLibraryConfiguration
-import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEditor
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.search.ProjectScope
 import com.intellij.util.PathUtil.getJarPathForClass
 import com.microsoft.azure.hdinsight.spark.mock.SparkLocalConsoleMockFsAgent
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
-import com.microsoft.intellij.ui.ErrorWindow
-import com.microsoft.intellij.util.runInWriteAction
-import org.jdom.Element
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfiguration
+import org.jdom.Element
 import java.nio.file.Paths
 
 class SparkScalaLocalConsoleRunConfiguration(
-        private val scalaConsoleRunConfDelegate: ScalaConsoleRunConfiguration,
-        private val isMockFs: Boolean)
+    private val scalaConsoleRunConfDelegate: ScalaConsoleRunConfiguration,
+    private val isMockFs: Boolean)
     : ModuleBasedConfiguration<RunConfigurationModule, Element>(
-        scalaConsoleRunConfDelegate.name,
-        scalaConsoleRunConfDelegate.configurationModule,
-        scalaConsoleRunConfDelegate.factory!!)
+    scalaConsoleRunConfDelegate.name,
+    scalaConsoleRunConfDelegate.configurationModule,
+    scalaConsoleRunConfDelegate.factory!!)
 {
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
@@ -107,7 +95,7 @@ class SparkScalaLocalConsoleRunConfiguration(
 
     fun createJavaParams(): JavaParameters {
         val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel, null)
-                .createParams(executor = null, hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
+            .createParams(executor = null, hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
         val params = createScalaParams()
         params.classPath.clear()
         val replLibraryCoord = findReplCoord() ?: throw ExecutionException("""
@@ -117,22 +105,14 @@ class SparkScalaLocalConsoleRunConfiguration(
                 ( Refer to https://www.jetbrains.com/help/idea/library.html#add-library-to-module-dependencies )
         """.trimIndent())
 
-        // Check repl dependence and prompt the user to fix it
-        checkReplDependenceAndTryToFix(replLibraryCoord)
-        val replClassPath = getDependencyClassPaths(replLibraryCoord)
-        if (replClassPath != null)
-            params.classPath.addAll(replClassPath)
+        // Check repl dependence
+        params.classPath.addAll(getDependencyClassPaths(replLibraryCoord))
 
         // Workaround for Spark 2.3 jline issue, refer to:
         // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
         // - https://issues.apache.org/jira/browse/SPARK-13710
         val jlineLibraryCoord = "jline:jline:2.14.5"
-        if (getLibraryByCoord(jlineLibraryCoord) == null) {
-            promptAndFix(jlineLibraryCoord)
-        }
-        val jlineClassPath = getDependencyClassPaths(jlineLibraryCoord)
-        if (jlineClassPath != null)
-            params.classPath.addAll(jlineClassPath)
+        params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
         params.classPath.addAll(localRunParams.classPath.pathList)
         params.mainClass = mainClass
@@ -154,9 +134,12 @@ class SparkScalaLocalConsoleRunConfiguration(
         return params
     }
 
-    private fun getDependencyClassPaths(libraryCoord: String): List<String>? {
-        val library = getLibraryByCoord(libraryCoord)
-        if (library==null)return library
+    private fun getDependencyClassPaths(libraryCoord: String): List<String> {
+        val library = getLibraryByCoord(libraryCoord) ?: throw ExecutionException("""
+                The library $libraryCoord is not in project dependencies, please add it as the top one of list.
+                ( Refer to https://www.jetbrains.com/help/idea/library.html#add-library-to-module-dependencies )
+                """.trimIndent())
+
         return library.getFiles(OrderRootType.CLASSES).map { it.presentableUrl }
     }
 
@@ -180,53 +163,8 @@ class SparkScalaLocalConsoleRunConfiguration(
         return null
     }
 
-    private fun checkReplDependenceAndTryToFix(replLibraryCoord: String) {
-        if (getLibraryByCoord(replLibraryCoord) == null
-                && JavaPsiFacade.getInstance(project).findClass(replMain, ProjectScope.getLibrariesScope(project)) == null) {
-            // `repl.Main` is not in the project class path
-            promptAndFix(replLibraryCoord)
-        }
-    }
-
-    private fun promptAndFix(libraryCoord: String) {
-        AzureTaskManager.getInstance().runLater {
-            ErrorWindow.show(project,
-                "The library $libraryCoord is not in project dependencies, would you like to auto fix it?",
-                "Auto fix dependency issue to confirm",
-                "Auto Fix",
-                Runnable {
-                    val progress = DispatchThreadProgressWindow(false, project).apply {
-                        setRunnable {
-                            ProgressManager.getInstance().runProcess({
-                                text = "Download $libraryCoord ..."
-                                fixDependence(libraryCoord)
-                            }, this@apply)
-                        }
-                        title = "Auto fix dependency $libraryCoord"
-                    }
-                    progress.start()
-                })
-        }
-    }
-
-    private fun fixDependence(libraryCoord: String) {
-        runInWriteAction {
-            val projectRepositories = RemoteRepositoriesConfiguration.getInstance(project).repositories
-            val newLibConf: NewLibraryConfiguration = JarRepositoryManager.resolveAndDownload(
-                    project, libraryCoord, false, false, true, null, projectRepositories) ?: return@runInWriteAction
-            val libraryType = newLibConf.libraryType
-            val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Apache Spark Console(auto-fix): $libraryCoord")
-
-            val editor = NewLibraryEditor(libraryType, null)
-            newLibConf.addRoots(editor)
-            val model = library.modifiableModel
-            editor.applyTo(model as LibraryEx.ModifiableModelEx)
-            model.commit()
-        }
-    }
-
     private fun getLibraryByCoord(libraryCoord: String): Library? = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
-            .libraries.firstOrNull { it.name?.endsWith(libraryCoord) == true }
+        .libraries.firstOrNull { it.name?.endsWith(libraryCoord) == true }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val state = object : JavaCommandLineState(env) {
@@ -241,8 +179,8 @@ class SparkScalaLocalConsoleRunConfiguration(
         batchRunConfiguration.configurationModule.setModuleToAnyFirstIfNotSpecified()
 
         state.consoleBuilder = SparkScalaConsoleBuilder(project, batchRunConfiguration.modules.firstOrNull()
-                ?: throw ExecutionException(RuntimeConfigurationError(
-                        "The default module needs to be set in the local run tab of Run Configuration")))
+            ?: throw ExecutionException(RuntimeConfigurationError(
+                "The default module needs to be set in the local run tab of Run Configuration")))
 
         return state
     }
