@@ -36,9 +36,11 @@ public class AzureMonitorView {
 
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace) {
         this.selectedWorkspace = logAnalyticsWorkspace;
-        executeButton.addActionListener(e -> executeQuery());
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading tables"), () -> this.monitorTreePanel.refresh());
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), this::executeQuery);
+        this.executeButton.addActionListener(e -> executeQuery());
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
+            this.monitorTreePanel.refresh();
+            this.executeQuery();
+        });
     }
 
     public JPanel getCenterPanel() {
@@ -50,9 +52,9 @@ public class AzureMonitorView {
             AzureMessager.getMessager().warning("Please select log analytics workspace");
             return;
         }
-        final String tableName = "AppTraces";
+        final String tableName = monitorTreePanel.getLastSelectTableName();
         final List<String> queryParams = Arrays.asList(tableName, timeRangeComboBox.getValue().getKustoString());
-        final String queryString = StringUtils.join(queryParams, " | ");
+        final String queryString = monitorTreePanel.isQueriesTabSelected() ? monitorTreePanel.getLastSelectQueryString() : StringUtils.join(queryParams, " | ");
         AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> monitorTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString)));
     }
 

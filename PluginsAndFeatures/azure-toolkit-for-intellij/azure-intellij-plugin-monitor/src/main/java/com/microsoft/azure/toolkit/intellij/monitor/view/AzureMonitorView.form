@@ -69,8 +69,9 @@
               </nested-form>
             </children>
           </grid>
-          <scrollpane id="4d62c" binding="rightPane" class="com.intellij.ui.components.JBScrollPane">
+          <scrollpane id="4d62c" class="com.intellij.ui.components.JBScrollPane" binding="rightPane">
             <constraints border-constraint="East"/>
+            <properties/>
             <border type="none"/>
             <children>
               <nested-form id="efa15" form-file="com/microsoft/azure/toolkit/intellij/monitor/view/right/MonitorTablePanel.form" binding="monitorTablePanel">
