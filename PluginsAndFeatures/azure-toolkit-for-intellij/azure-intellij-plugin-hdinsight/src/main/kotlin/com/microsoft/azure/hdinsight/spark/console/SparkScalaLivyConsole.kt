@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.console.ConsoleHistoryController
 import com.intellij.execution.process.ProcessHandler
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.module.Module
 import org.jetbrains.plugins.scala.console.ScalaConsoleInfo
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
@@ -31,6 +32,11 @@ import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 class SparkScalaLivyConsole(module: Module) : ScalaLanguageConsole(module), SparkConsole {
     override fun indexCodes(codes: String) {
         super.textSent(codes)
+    }
+
+    override fun print(text: String, contentType: ConsoleViewContentType){
+        super.print(text,contentType)
+        SparkConsoleExecuteAction.UPDATE_PROMPT()
     }
 
     override fun attachToProcess(processHandler: ProcessHandler) {

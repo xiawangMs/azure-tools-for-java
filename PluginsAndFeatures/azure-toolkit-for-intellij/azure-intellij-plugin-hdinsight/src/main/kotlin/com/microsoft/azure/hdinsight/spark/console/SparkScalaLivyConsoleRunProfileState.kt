@@ -66,6 +66,7 @@ class SparkScalaLivyConsoleRunProfileState(
                     livySessionProcessHandler.execute(postStartCodes)
                     (console as? ScalaLanguageConsole)?.apply {
                         // Customize the Spark Livy interactive console
+                        SparkConsoleExecuteAction.STATIC_CONSOLE = console
                         prompt = "\nSpark>"
                     }
                 }, { err ->
