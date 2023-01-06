@@ -382,7 +382,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 }
                 TreeUtils.renderMyTreeNode(jtree, node, selected, this);
                 return;
-            } else if(value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode){
+            } else if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode) {
                 TreeUtils.renderLoadModeNode(jtree, (com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode) value, selected, this);
                 return;
             } else if (value instanceof LoadingNode) {
