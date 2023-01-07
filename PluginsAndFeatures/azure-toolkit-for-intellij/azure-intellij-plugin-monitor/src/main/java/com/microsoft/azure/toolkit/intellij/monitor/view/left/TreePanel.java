@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.ui.RelativeFont;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -25,13 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MonitorTreePanel {
-    private JTabbedPane tabbedPane;
+public class TreePanel extends JPanel{
     private JPanel contentPanel;
-    private Tree tableTree;
+    private Tree tree;
     private Tree queryTree;
-    private JBScrollPane tablePanel;
-    private JBScrollPane queryPanel;
     private DefaultTreeModel tableModel;
     private DefaultTreeModel queryModal;
     private TreePath lastTableNodePath;
@@ -44,17 +40,13 @@ public class MonitorTreePanel {
     public synchronized void refresh() {
         loadQueryData();
         loadTableData();
-        selectNode(this.tableTree, this.lastTableNodePath, "AppTraces");
+        selectNode(this.tree, this.lastTableNodePath, "AppTraces");
         selectNode(this.queryTree, this.lastQueryNodePath, "Exceptions causing request failures");
     }
 
-    public boolean isQueriesTabSelected() {
-        return tabbedPane.getSelectedIndex() == 1;
-    }
-
     private void initListener() {
-        this.tableTree.addTreeSelectionListener(e -> {
-            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tableTree.getLastSelectedPathComponent();
+        this.tree.addTreeSelectionListener(e -> {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tree.getLastSelectedPathComponent();
             if (Objects.nonNull(node) && node.isLeaf()) {
                 this.lastTableNodePath = TreeUtil.getPathFromRoot(node);
                 this.lastSelectTableName = node.toString();
@@ -127,7 +119,7 @@ public class MonitorTreePanel {
         } catch (final Exception ignored) {
         }
         this.tableModel.reload();
-        TreeUtil.expandAll(this.tableTree);
+        TreeUtil.expandAll(this.tree);
     }
 
     private Tree initTree(DefaultTreeModel treeModel) {
@@ -144,7 +136,7 @@ public class MonitorTreePanel {
 
     private void createUIComponents() {
         this.tableModel = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor Tables"));
-        this.tableTree = this.initTree(this.tableModel);
+        this.tree = this.initTree(this.tableModel);
         this.queryModal = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor Queries"));
         this.queryTree = this.initTree(this.queryModal);
         initListener();

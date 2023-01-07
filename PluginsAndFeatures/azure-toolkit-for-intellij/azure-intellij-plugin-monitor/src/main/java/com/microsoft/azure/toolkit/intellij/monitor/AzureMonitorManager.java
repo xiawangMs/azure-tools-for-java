@@ -12,7 +12,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +39,6 @@ public class AzureMonitorManager {
         AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {
             azureMonitorWindow.setAvailable(true);
             azureMonitorWindow.show();
-//                monitorView.initListener();
         }));
     }
 

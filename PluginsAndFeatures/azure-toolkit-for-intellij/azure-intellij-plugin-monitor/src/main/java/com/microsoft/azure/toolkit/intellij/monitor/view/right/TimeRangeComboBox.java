@@ -1,11 +1,10 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.top;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class TimeRangeComboBox extends AzureComboBox<TimeRangeComboBox.TimeRange> {

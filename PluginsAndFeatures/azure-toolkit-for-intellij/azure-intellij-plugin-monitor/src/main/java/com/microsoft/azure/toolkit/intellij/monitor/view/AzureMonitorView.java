@@ -1,18 +1,19 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view;
 
-import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
-import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
-import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
-import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTablePanel;
-import com.microsoft.azure.toolkit.intellij.monitor.view.top.TimeRangeComboBox;
+import com.microsoft.azure.toolkit.intellij.monitor.view.left.TreePanel;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.TablePanel;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.TimeRangeComboBox;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -22,23 +23,18 @@ import java.util.Objects;
 
 public class AzureMonitorView {
     private JPanel contentPanel;
-    private JPanel topPanel;
-    private JPanel bottomPanel;
     private JPanel leftPanel;
-    private JScrollPane rightPane;
-    private MonitorTreePanel monitorTreePanel;
-    private MonitorTablePanel monitorTablePanel;
-    private JButton executeButton;
-    private TimeRangeComboBox timeRangeComboBox;
-    private ActionLink selectAction;
+    private ActionLink changeWorkspace;
+    private TreePanel treePanel;
     private JLabel workspaceName;
+    private JPanel workspaceHeader;
+    private TablePanel monitorTablePanel;
     private LogAnalyticsWorkspace selectedWorkspace;
 
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace) {
         this.selectedWorkspace = logAnalyticsWorkspace;
-        this.executeButton.addActionListener(e -> executeQuery());
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
-            this.monitorTreePanel.refresh();
+            this.treePanel.refresh();
             this.executeQuery();
         });
     }
@@ -52,15 +48,19 @@ public class AzureMonitorView {
             AzureMessager.getMessager().warning("Please select log analytics workspace");
             return;
         }
-        final String tableName = monitorTreePanel.getLastSelectTableName();
-        final List<String> queryParams = Arrays.asList(tableName, timeRangeComboBox.getValue().getKustoString());
-        final String queryString = monitorTreePanel.isQueriesTabSelected() ? monitorTreePanel.getLastSelectQueryString() : StringUtils.join(queryParams, " | ");
+        final String tableName = "AppTraces";
+        final List<String> queryParams = Arrays.asList(tableName, TimeRangeComboBox.TimeRange.LAST_24_HOURS.getKustoString());
+        final String queryString = StringUtils.join(queryParams, " | ");
         AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> monitorTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString)));
     }
 
     private void createUIComponents() {
-        selectAction = new AnActionLink("Select Workspace", ActionManager.getInstance().getAction(WhatsNewAction.ID));
-        timeRangeComboBox = new TimeRangeComboBox();
+        this.changeWorkspace = new AnActionLink("Select Workspace", new AnAction() {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+
+            }
+        });
     }
 
 }

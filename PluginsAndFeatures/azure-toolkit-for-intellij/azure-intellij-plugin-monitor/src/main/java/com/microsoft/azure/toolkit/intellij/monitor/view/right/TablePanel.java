@@ -16,11 +16,13 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MonitorTablePanel {
+public class TablePanel {
     private JPanel contentPanel;
+    private JPanel filterPanel;
+    private JTable logTable;
     private JBTreeTable treeTableView;
 
-    public MonitorTablePanel() {
+    public TablePanel() {
     }
 
     public void setTableModel(LogsTable tableModel) {
