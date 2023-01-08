@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.azure.monitor.query.models.LogsTable;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.ActionLink;
+import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import lombok.Setter;
 
 import javax.annotation.Nonnull;
@@ -25,7 +26,7 @@ public class TablePanel {
 
     public TablePanel() {
         final Dimension runButtonSize = new Dimension(getStringWidth(runButton.getText(), runButton), runButton.getPreferredSize().height);
-        this.runButton.setMaximumSize(runButtonSize);
+        this.runButton.setSize(runButtonSize);
     }
 
     public void setTableModel(LogsTable tableModel) {
