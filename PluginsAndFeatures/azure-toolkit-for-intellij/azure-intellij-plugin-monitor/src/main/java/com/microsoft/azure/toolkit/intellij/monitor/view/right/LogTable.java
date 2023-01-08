@@ -20,8 +20,6 @@ public class LogTable extends JBTable {
         AzureTaskManager.getInstance().runLater(() -> {
             this.setLoading(true);
             this.logTableModel.addLogsTableRows(logsTableRows);
-            // fixme need repaint()?
-            this.repaint();
             this.setLoading(false);
         }, AzureTask.Modality.ANY);
     }
@@ -37,6 +35,8 @@ public class LogTable extends JBTable {
         if (isLoading) {
             this.clearModel();
             this.getEmptyText().setText(CommonConst.LOADING_TEXT);
+        } else {
+            this.getEmptyText().setText("Nothing");
         }
     }
 }

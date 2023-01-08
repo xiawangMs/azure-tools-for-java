@@ -68,12 +68,14 @@ public class AzureMonitorView {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
-                if (dialog.showAndGet()) {
-                    Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
-                        selectedWorkspace = w;
-                        workspaceName.setText(selectedWorkspace.getName());
-                    });
-                }
+                AzureTaskManager.getInstance().runLater(() -> {
+                    if (dialog.showAndGet()) {
+                        Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
+                            selectedWorkspace = w;
+                            workspaceName.setText(selectedWorkspace.getName());
+                        });
+                    }
+                });
             }
         });
     }
