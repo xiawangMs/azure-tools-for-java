@@ -28,11 +28,14 @@ public class AzureMonitorView {
     private TreePanel treePanel;
     private JLabel workspaceName;
     private JPanel workspaceHeader;
-    private TablePanel monitorTablePanel;
+    private TablePanel logTablePanel;
     private LogAnalyticsWorkspace selectedWorkspace;
+    private final boolean isTableTab;
 
-    public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace) {
+    public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab) {
         this.selectedWorkspace = logAnalyticsWorkspace;
+        this.isTableTab = isTableTab;
+        this.treePanel = new TreePanel(isTableTab);
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
             this.treePanel.refresh();
             this.executeQuery();
@@ -45,17 +48,20 @@ public class AzureMonitorView {
 
     private void executeQuery() {
         if (Objects.isNull(selectedWorkspace)) {
-            AzureMessager.getMessager().warning("Please select log analytics workspace");
+            AzureMessager.getMessager().warning("Please select log analytics workspace first");
             return;
         }
-        final String tableName = "AppTraces";
-        final List<String> queryParams = Arrays.asList(tableName, TimeRangeComboBox.TimeRange.LAST_24_HOURS.getKustoString());
-        final String queryString = StringUtils.join(queryParams, " | ");
-        AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> monitorTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString)));
+        final String queryString = this.isTableTab ? treePanel.getCurrentNodeText() : getQueryStringFromFilters();
+        AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> logTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString)));
+    }
+
+    private String getQueryStringFromFilters() {
+        final List<String> queryParams = Arrays.asList(treePanel.getCurrentNodeText(), TimeRangeComboBox.TimeRange.LAST_24_HOURS.getKustoString());
+        return StringUtils.join(queryParams, " | ");
     }
 
     private void createUIComponents() {
-        this.changeWorkspace = new AnActionLink("Select Workspace", new AnAction() {
+        this.changeWorkspace = new AnActionLink("Change", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
 

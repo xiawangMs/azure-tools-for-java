@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -33,9 +32,10 @@ public class AzureMonitorManager {
     public void openMonitorWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace) {
         final ToolWindow azureMonitorWindow = getToolWindow(project);
         final ContentFactory contentFactory = ContentFactory.getInstance();
-        final AzureMonitorView monitorView = new AzureMonitorView(project, workspace);
-        final Content content = contentFactory.createContent(monitorView.getCenterPanel(), "", false);
-        azureMonitorWindow.getContentManager().addContent(content);
+        final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true);
+        final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false);
+        azureMonitorWindow.getContentManager().addContent(contentFactory.createContent(monitorTableView.getCenterPanel(), "Tables", false));
+        azureMonitorWindow.getContentManager().addContent(contentFactory.createContent(monitorQueryView.getCenterPanel(), "Queries", false));
         AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {
             azureMonitorWindow.setAvailable(true);
             azureMonitorWindow.show();

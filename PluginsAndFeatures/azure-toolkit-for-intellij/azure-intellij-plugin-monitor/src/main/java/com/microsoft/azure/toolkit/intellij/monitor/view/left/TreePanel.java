@@ -27,36 +27,32 @@ import java.util.Objects;
 public class TreePanel extends JPanel{
     private JPanel contentPanel;
     private Tree tree;
-    private Tree queryTree;
-    private DefaultTreeModel tableModel;
-    private DefaultTreeModel queryModal;
-    private TreePath lastTableNodePath;
+    private DefaultTreeModel treeModel;
+    private TreePath currentTreeNodePath;
     @Getter
-    private String lastSelectTableName;
-    private TreePath lastQueryNodePath;
-    @Getter
-    private String lastSelectQueryString;
+    private String currentNodeText;
+    private final boolean isTableTab;
+
+    public TreePanel(boolean isTableTab) {
+        this.isTableTab = isTableTab;
+        initListener();
+    }
 
     public synchronized void refresh() {
-        loadQueryData();
-        loadTableData();
-        selectNode(this.tree, this.lastTableNodePath, "AppTraces");
-        selectNode(this.queryTree, this.lastQueryNodePath, "Exceptions causing request failures");
+        loadTreeData(getDataPath());
+        selectNode(this.tree, this.currentTreeNodePath, getDefaultNodeName());
     }
 
     private void initListener() {
         this.tree.addTreeSelectionListener(e -> {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tree.getLastSelectedPathComponent();
             if (Objects.nonNull(node) && node.isLeaf()) {
-                this.lastTableNodePath = TreeUtil.getPathFromRoot(node);
-                this.lastSelectTableName = node.toString();
-            }
-        });
-        this.queryTree.addTreeSelectionListener(e -> {
-            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.queryTree.getLastSelectedPathComponent();
-            if (Objects.nonNull(node) && node.isLeaf()) {
-                this.lastQueryNodePath = TreeUtil.getPathFromRoot(node);
-                this.lastSelectQueryString = ((QueryData) node.getUserObject()).getQueryString();
+                this.currentTreeNodePath = TreeUtil.getPathFromRoot(node);
+                if (node.getUserObject() instanceof QueryData) {
+                    this.currentNodeText = ((QueryData) node.getUserObject()).getQueryString();
+                } else {
+                    this.currentNodeText = node.toString();
+                }
             }
         });
     }
@@ -78,47 +74,25 @@ public class TreePanel extends JPanel{
         AzureTaskManager.getInstance().runAndWait(() -> TreeUtil.selectNode(tree, defaultNode));
     }
 
-    private void loadQueryData() {
-        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.queryModal.getRoot();
+    private void loadTreeData(String dataPath) {
+        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.treeModel.getRoot();
         root.removeAllChildren();
-        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("table-query-tree/QueryTree.json")) {
-            final Map<String, List<QueryData>> queryTreeData = new JsonMapper()
+        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(dataPath)) {
+            final Map<String, List<Object>> treeData = new JsonMapper()
                     .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(inputStream, new TypeReference<>() {});
-            queryTreeData.forEach((key,value) -> {
+            treeData.forEach((key,value) -> {
                 final DefaultMutableTreeNode resourceNode = new DefaultMutableTreeNode(key);
-                value.forEach(queryData -> {
-                    final DefaultMutableTreeNode queryNode = new DefaultMutableTreeNode(queryData);
-                    resourceNode.add(queryNode);
+                value.forEach(treeName -> {
+                    final DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(treeName);
+                    resourceNode.add(treeNode);
                 });
                 root.add(resourceNode);
             });
         } catch (final Exception ignored) {
         }
-        this.queryModal.reload();
-        TreeUtil.expandAll(this.queryTree);
-    }
-
-    private void loadTableData() {
-        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.tableModel.getRoot();
-        root.removeAllChildren();
-        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("table-query-tree/TableTree.json")) {
-            final Map<String, List<String>> tableTreeData = new JsonMapper()
-                    .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .readValue(inputStream, new TypeReference<>() {});
-            tableTreeData.forEach((key,value) -> {
-                final DefaultMutableTreeNode resourceNode = new DefaultMutableTreeNode(key);
-                value.forEach(tableName -> {
-                    final DefaultMutableTreeNode tableNode = new DefaultMutableTreeNode(tableName);
-                    resourceNode.add(tableNode);
-                });
-                root.add(resourceNode);
-            });
-        } catch (final Exception ignored) {
-        }
-        this.tableModel.reload();
+        this.treeModel.reload();
         TreeUtil.expandAll(this.tree);
     }
 
@@ -134,12 +108,17 @@ public class TreePanel extends JPanel{
         return tree;
     }
 
+    private String getDataPath() {
+        return this.isTableTab ? "table-query-tree/TableTree.json" : "table-query-tree/QueryTree.json";
+    }
+
+    private String getDefaultNodeName() {
+        return this.isTableTab ? "AppTraces" : "Exceptions causing request failures";
+    }
+
     private void createUIComponents() {
-        this.tableModel = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor Tables"));
-        this.tree = this.initTree(this.tableModel);
-        this.queryModal = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor Queries"));
-        this.queryTree = this.initTree(this.queryModal);
-        initListener();
+        this.treeModel = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor"));
+        this.tree = this.initTree(this.treeModel);
     }
 
     @Getter
