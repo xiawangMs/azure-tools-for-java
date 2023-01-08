@@ -20,9 +20,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class TreePanel extends JPanel{
     private JPanel contentPanel;
@@ -31,15 +29,15 @@ public class TreePanel extends JPanel{
     private TreePath currentTreeNodePath;
     @Getter
     private String currentNodeText;
-    private final boolean isTableTab;
-
-    public TreePanel(boolean isTableTab) {
-        this.isTableTab = isTableTab;
-        initListener();
-    }
+    @Setter
+    private boolean isTableTab;
 
     public synchronized void refresh() {
-        loadTreeData(getDataPath());
+        if (this.isTableTab) {
+            loadTableTreeData();
+        } else {
+            loadQueryTreeData();
+        }
         selectNode(this.tree, this.currentTreeNodePath, getDefaultNodeName());
     }
 
@@ -65,7 +63,7 @@ public class TreePanel extends JPanel{
         final DefaultMutableTreeNode defaultNode = TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), n -> {
             final String nodeName;
             if (n.getUserObject() instanceof QueryData) {
-                nodeName = ((QueryData) n.getUserObject()).displayName;
+                nodeName = ((QueryData) n.getUserObject()).getDisplayName();
             } else {
                 nodeName = (String) n.getUserObject();
             }
@@ -74,11 +72,35 @@ public class TreePanel extends JPanel{
         AzureTaskManager.getInstance().runAndWait(() -> TreeUtil.selectNode(tree, defaultNode));
     }
 
-    private void loadTreeData(String dataPath) {
+    private void loadTableTreeData() {
+        final String dataPath = "table-query-tree/TableTree.json";
         final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.treeModel.getRoot();
         root.removeAllChildren();
         try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(dataPath)) {
-            final Map<String, List<Object>> treeData = new JsonMapper()
+            final Map<String, List<String>> treeData = new JsonMapper()
+                    .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .readValue(inputStream, new TypeReference<>() {});
+            treeData.forEach((key,value) -> {
+                final DefaultMutableTreeNode resourceNode = new DefaultMutableTreeNode(key);
+                value.forEach(treeName -> {
+                    final DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(treeName);
+                    resourceNode.add(treeNode);
+                });
+                root.add(resourceNode);
+            });
+        } catch (final Exception ignored) {
+        }
+        this.treeModel.reload();
+        TreeUtil.expandAll(this.tree);
+    }
+
+    private void loadQueryTreeData() {
+        final String dataPath = "table-query-tree/QueryTree.json";
+        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.treeModel.getRoot();
+        root.removeAllChildren();
+        try (final InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(dataPath)) {
+            final Map<String, List<QueryData>> treeData = new JsonMapper()
                     .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(inputStream, new TypeReference<>() {});
@@ -108,10 +130,6 @@ public class TreePanel extends JPanel{
         return tree;
     }
 
-    private String getDataPath() {
-        return this.isTableTab ? "table-query-tree/TableTree.json" : "table-query-tree/QueryTree.json";
-    }
-
     private String getDefaultNodeName() {
         return this.isTableTab ? "AppTraces" : "Exceptions causing request failures";
     }
@@ -119,6 +137,7 @@ public class TreePanel extends JPanel{
     private void createUIComponents() {
         this.treeModel = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor"));
         this.tree = this.initTree(this.treeModel);
+        this.initListener();
     }
 
     @Getter

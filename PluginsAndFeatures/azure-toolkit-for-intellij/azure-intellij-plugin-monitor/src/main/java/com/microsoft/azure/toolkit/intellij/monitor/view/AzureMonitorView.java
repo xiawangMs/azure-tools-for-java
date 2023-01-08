@@ -35,7 +35,7 @@ public class AzureMonitorView {
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab) {
         this.selectedWorkspace = logAnalyticsWorkspace;
         this.isTableTab = isTableTab;
-        this.treePanel = new TreePanel(isTableTab);
+        this.treePanel.setTableTab(isTableTab);
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
             this.treePanel.refresh();
             this.executeQuery();
@@ -51,7 +51,7 @@ public class AzureMonitorView {
             AzureMessager.getMessager().warning("Please select log analytics workspace first");
             return;
         }
-        final String queryString = this.isTableTab ? treePanel.getCurrentNodeText() : getQueryStringFromFilters();
+        final String queryString = this.isTableTab ? getQueryStringFromFilters() : treePanel.getCurrentNodeText();
         AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> logTablePanel.setTableModel(selectedWorkspace.executeQuery(queryString)));
     }
 

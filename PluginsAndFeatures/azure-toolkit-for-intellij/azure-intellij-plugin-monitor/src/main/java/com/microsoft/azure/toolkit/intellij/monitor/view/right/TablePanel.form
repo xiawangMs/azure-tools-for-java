@@ -23,7 +23,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="42a07" class="com.intellij.ui.table.JBTable" binding="logTable">
+          <component id="42a07" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.LogTable" binding="logTable" custom-create="true">
             <constraints/>
             <properties/>
           </component>

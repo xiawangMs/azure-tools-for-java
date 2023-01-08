@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -34,8 +35,12 @@ public class AzureMonitorManager {
         final ContentFactory contentFactory = ContentFactory.getInstance();
         final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true);
         final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false);
-        azureMonitorWindow.getContentManager().addContent(contentFactory.createContent(monitorTableView.getCenterPanel(), "Tables", false));
-        azureMonitorWindow.getContentManager().addContent(contentFactory.createContent(monitorQueryView.getCenterPanel(), "Queries", false));
+        final Content tableContent = contentFactory.createContent(monitorTableView.getCenterPanel(), "Tables", true);
+        tableContent.setPinned(true);
+        final Content queryContent = contentFactory.createContent(monitorQueryView.getCenterPanel(), "Queries", true);
+        queryContent.setPinned(true);
+        azureMonitorWindow.getContentManager().addContent(tableContent);
+        azureMonitorWindow.getContentManager().addContent(queryContent);
         AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {
             azureMonitorWindow.setAvailable(true);
             azureMonitorWindow.show();

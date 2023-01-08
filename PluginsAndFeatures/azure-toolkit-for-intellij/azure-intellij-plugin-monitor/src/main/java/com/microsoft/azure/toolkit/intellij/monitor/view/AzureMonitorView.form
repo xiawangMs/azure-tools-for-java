@@ -13,6 +13,7 @@
           <firstComponent value="ff420"/>
           <orientation value="false"/>
           <proportion value="0.3"/>
+          <secondComponent value="3c3b1"/>
         </properties>
       </component>
       <grid id="ff420" binding="leftPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -21,9 +22,9 @@
         <properties/>
         <border type="none"/>
         <children>
-          <nested-form id="e4f89" form-file="com/microsoft/azure/toolkit/intellij/monitor/view/left/TreePanel.form" binding="treePanel" custom-create="true">
+          <nested-form id="e4f89" form-file="com/microsoft/azure/toolkit/intellij/monitor/view/left/TreePanel.form" binding="treePanel">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </nested-form>
           <grid id="b039b" binding="workspaceHeader" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -55,7 +56,7 @@
         <border type="none"/>
         <children>
           <nested-form id="a7700" form-file="com/microsoft/azure/toolkit/intellij/monitor/view/right/TablePanel.form" binding="logTablePanel">
-            <constraints border-constraint="West"/>
+            <constraints border-constraint="Center"/>
           </nested-form>
         </children>
       </grid>
