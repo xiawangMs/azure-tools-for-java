@@ -132,6 +132,9 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             DefaultLoader.setIdeHelper(new IDEHelperImpl());
             AzureTaskManager.register(new IntellijAzureTaskManager());
             AzureRxTaskManager.register();
+            AzureStoreManager.register(new DefaultMachineStore(PluginHelper.getTemplateFile("azure.json")),
+                IntellijStore.getInstance(), IntelliJSecureStore.getInstance());
+            AzureInitializer.initialize();
             AzureMessager.setDefaultMessager(new IntellijAzureMessager());
             IntellijAzureActionManager.register();
             Node.setNode2Actions(NodeActionsMap.NODE_ACTIONS);
@@ -140,14 +143,11 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
             HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
 
-            AzureStoreManager.register(new DefaultMachineStore(PluginHelper.getTemplateFile("azure.json")),
-                    IntellijStore.getInstance(), IntelliJSecureStore.getInstance());
             try {
                 loadPluginSettings();
             } catch (IOException e) {
                 PluginUtil.displayErrorDialogAndLog("Error", "An error occurred while attempting to load settings", e);
             }
-            AzureInitializer.initialize();
             if (!AzurePlugin.IS_ANDROID_STUDIO) {
                 // enable spark serverless node subscribe actions
                 ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
