@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.TreePanel;
+import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.TablePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.TimeRangeComboBox;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -20,6 +21,7 @@ import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class AzureMonitorView {
     private JPanel contentPanel;
@@ -34,6 +36,7 @@ public class AzureMonitorView {
 
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab) {
         this.selectedWorkspace = logAnalyticsWorkspace;
+        this.workspaceName.setText(Optional.ofNullable(selectedWorkspace).map(LogAnalyticsWorkspace::getName).orElse(StringUtils.EMPTY));
         this.isTableTab = isTableTab;
         this.treePanel.setTableTab(isTableTab);
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
@@ -64,7 +67,13 @@ public class AzureMonitorView {
         this.changeWorkspace = new AnActionLink("Change", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-
+                final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
+                if (dialog.showAndGet()) {
+                    Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
+                        selectedWorkspace = w;
+                        workspaceName.setText(selectedWorkspace.getName());
+                    });
+                }
             }
         });
     }

@@ -36,9 +36,9 @@ public class AzureMonitorManager {
         final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true);
         final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false);
         final Content tableContent = contentFactory.createContent(monitorTableView.getCenterPanel(), "Tables", true);
-        tableContent.setPinned(true);
+        tableContent.setCloseable(false);
         final Content queryContent = contentFactory.createContent(monitorQueryView.getCenterPanel(), "Queries", true);
-        queryContent.setPinned(true);
+        queryContent.setCloseable(false);
         azureMonitorWindow.getContentManager().addContent(tableContent);
         azureMonitorWindow.getContentManager().addContent(queryContent);
         AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {

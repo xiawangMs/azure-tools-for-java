@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component;
 
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.intellij.applicationinsights.creation.WorkspaceComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
+import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
