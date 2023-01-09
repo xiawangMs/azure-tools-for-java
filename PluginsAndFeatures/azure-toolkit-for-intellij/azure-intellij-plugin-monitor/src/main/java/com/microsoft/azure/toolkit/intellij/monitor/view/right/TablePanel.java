@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
+import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -41,6 +42,7 @@ public class TablePanel {
     public TablePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.runButton.addActionListener(e -> executeQuery());
+        this.logTable.setDefaultRenderer(String.class, new HighLightedCellRenderer(searchField.getTextEditor()));
 //        this.timeRangeComboBox.setMaximumSize(new Dimension(100, timeRangeComboBox.getPreferredSize().height));
 //        final Dimension runButtonSize = new Dimension(getStringWidth(runButton.getText(), runButton), runButton.getPreferredSize().height);
 //        this.runButton.setSize(runButtonSize);

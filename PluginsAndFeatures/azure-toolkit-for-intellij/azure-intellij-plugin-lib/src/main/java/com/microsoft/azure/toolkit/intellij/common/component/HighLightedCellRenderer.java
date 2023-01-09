@@ -1,9 +1,4 @@
-/*
- * Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- */
-
-package com.microsoft.azure.toolkit.intellij.legacy.appservice.table;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
@@ -41,4 +36,3 @@ public class HighLightedCellRenderer extends ColoredTableCellRenderer {
         }
     }
 }
-
