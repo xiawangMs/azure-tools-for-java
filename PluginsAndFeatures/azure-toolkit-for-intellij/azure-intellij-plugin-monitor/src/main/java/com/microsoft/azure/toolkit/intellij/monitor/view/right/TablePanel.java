@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -34,7 +35,6 @@ public class TablePanel {
     private JButton runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
-    @Setter
     private boolean isTableTab;
     @Setter
     private AzureMonitorView parentView;
@@ -42,18 +42,32 @@ public class TablePanel {
     public TablePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.runButton.addActionListener(e -> executeQuery());
-        this.logTable.setDefaultRenderer(String.class, new HighLightedCellRenderer(searchField.getTextEditor()));
-//        this.timeRangeComboBox.setMaximumSize(new Dimension(100, timeRangeComboBox.getPreferredSize().height));
-//        final Dimension runButtonSize = new Dimension(getStringWidth(runButton.getText(), runButton), runButton.getPreferredSize().height);
-//        this.runButton.setSize(runButtonSize);
+        this.customizeTableUi();
     }
 
 
+    public void setTableTab(boolean isTableTab) {
+        this.isTableTab = isTableTab;
+        this.setFiltersVisible(isTableTab);
+    }
 
     public JPanel getContentPanel() {
         return this.contentPanel;
     }
 
+
+    private void customizeTableUi() {
+        this.logTable.setDefaultRenderer(String.class, new HighLightedCellRenderer(searchField.getTextEditor()));
+        this.logTable.setFont(JBUI.Fonts.create("JetBrains Mono", 12));
+        this.logTable.getTableHeader().setFont(JBUI.Fonts.create("JetBrains Mono", 12));
+    }
+
+    private void setFiltersVisible(boolean isVisible) {
+        this.timeRangeComboBox.setVisible(isVisible);
+        this.comboBox2.setVisible(isVisible);
+        this.comboBox3.setVisible(isVisible);
+        this.comboBox4.setVisible(isVisible);
+    }
 
     private int getStringWidth(@Nonnull String preferredString, JComponent component) {
         final FontMetrics fontMetrics = component.getFontMetrics(component.getFont());

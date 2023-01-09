@@ -22,7 +22,7 @@ import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
 import java.util.*;
 
-public class TreePanel extends JPanel{
+public class TreePanel extends JPanel {
     private JPanel contentPanel;
     private Tree tree;
     private DefaultTreeModel treeModel;

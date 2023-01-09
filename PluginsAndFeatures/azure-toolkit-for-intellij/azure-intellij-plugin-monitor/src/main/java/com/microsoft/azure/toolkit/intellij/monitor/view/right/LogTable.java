@@ -17,6 +17,7 @@ public class LogTable extends JBTable {
         this.setAutoscrolls(true);
         this.setAutoResizeMode(JBTable.AUTO_RESIZE_OFF);
         this.setPreferredScrollableViewportSize(null);
+        this.setAutoCreateRowSorter(true);
     }
 
     public void setModel(List<LogsTableRow> logsTableRows) {
