@@ -24,6 +24,11 @@ public class LogTableModel implements TableModel {
     public LogTableModel() {
     }
 
+    public LogTableModel(List<LogsTableRow> logsTableRows ) {
+        this.columnNames.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnName).toList());
+        this.logsTableRows.addAll(logsTableRows);
+    }
+
     @Override
     public int getRowCount() {
         return this.logsTableRows.size();
@@ -47,10 +52,7 @@ public class LogTableModel implements TableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        if (isRowInvalid(rowIndex)) {
-            return false;
-        }
-        return true;
+        return !isRowInvalid(rowIndex);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class LogTableModel implements TableModel {
         if (isRowInvalid(rowIndex)) {
             return null;
         }
-        return this.logsTableRows.get(rowIndex).getRow().get(columnIndex);
+        return this.logsTableRows.get(rowIndex).getRow().get(columnIndex).getValueAsString();
     }
 
     @Override
@@ -86,19 +88,13 @@ public class LogTableModel implements TableModel {
         tableModelListenerList.remove(l);
     }
 
-    public void addLogsTableRows(List<LogsTableRow> logsTableRows) {
-        this.columnNames.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnName).toList());
-        this.logsTableRows.addAll(logsTableRows);
-        fireTableChanged();
-    }
-
     public void clear() {
         this.columnNames.clear();
         this.logsTableRows.clear();
         fireTableChanged();
     }
 
-    public void fireTableChanged() {
+    private void fireTableChanged() {
         tableModelListenerList.forEach(listener ->
                 AzureTaskManager.getInstance().runLater(() -> listener.tableChanged(new TableModelEvent(this))));
     }

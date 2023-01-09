@@ -2,41 +2,39 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.azure.monitor.query.models.LogsTableRow;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.CommonConst;
 
+import javax.swing.*;
 import java.util.List;
 
 public class LogTable extends JBTable {
-    private final LogTableModel logTableModel = new LogTableModel();
-    private boolean loading = false;
+    private LogTableModel logTableModel = new LogTableModel();
     public LogTable() {
         super();
+        this.setModel(logTableModel);
+        this.setCellSelectionEnabled(true);
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.setAutoscrolls(true);
         this.setAutoResizeMode(JBTable.AUTO_RESIZE_OFF);
+        this.setPreferredScrollableViewportSize(null);
     }
 
     public void setModel(List<LogsTableRow> logsTableRows) {
-        AzureTaskManager.getInstance().runLater(() -> {
-            this.setLoading(true);
-            this.logTableModel.addLogsTableRows(logsTableRows);
-            this.setLoading(false);
-        }, AzureTask.Modality.ANY);
+        logTableModel = new LogTableModel(logsTableRows);
+        this.setModel(logTableModel);
     }
 
     public void clearModel() {
         this.logTableModel.clear();
-        this.logTableModel.fireTableChanged();
+        this.setRowSorter(null);
     }
 
-    private void setLoading(boolean isLoading) {
-        this.loading = isLoading;
+    public void setLoading(boolean isLoading) {
         this.setEnabled(!isLoading);
         if (isLoading) {
-            this.clearModel();
             this.getEmptyText().setText(CommonConst.LOADING_TEXT);
         } else {
-            this.getEmptyText().setText("Nothing");
+            this.getEmptyText().setText("No results found");
         }
     }
 }

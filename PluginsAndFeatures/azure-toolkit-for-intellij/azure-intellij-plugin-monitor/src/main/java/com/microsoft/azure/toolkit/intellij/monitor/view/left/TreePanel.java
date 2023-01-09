@@ -32,6 +32,10 @@ public class TreePanel extends JPanel{
     @Setter
     private boolean isTableTab;
 
+    public TreePanel() {
+        $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
+    }
+
     public synchronized void refresh() {
         if (this.isTableTab) {
             loadTableTreeData();
@@ -132,6 +136,10 @@ public class TreePanel extends JPanel{
 
     private String getDefaultNodeName() {
         return this.isTableTab ? "AppTraces" : "Exceptions causing request failures";
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 
     private void createUIComponents() {
