@@ -59,6 +59,7 @@ public class MonitorLogTablePanel {
     public void loadTableModel(LogAnalyticsWorkspace selectedWorkspace, String queryString) {
         logTable.clearModel();
         logTable.setLoading(true);
+        runButton.setEnabled(false);
         AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> {
             final LogsTable result = selectedWorkspace.executeQuery(queryString);
             AzureTaskManager.getInstance().runLater(() -> {
@@ -66,6 +67,7 @@ public class MonitorLogTablePanel {
                     this.logTable.setModel(result.getRows());
                 }
                 this.logTable.setLoading(false);
+                runButton.setEnabled(true);
             }, AzureTask.Modality.ANY);
         });
     }

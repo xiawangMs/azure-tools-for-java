@@ -1,32 +1,25 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
-import com.intellij.openapi.ui.DialogBuilder;
-import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vcs.versionBrowser.DateFilterComponent;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
-import com.intellij.util.text.DateFormatUtil;
-import com.intellij.vcs.log.VcsLogDateFilter;
-import com.intellij.vcs.log.visible.filters.VcsLogFilterObject;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import java.awt.event.ItemEvent;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class TimeRangeComboBox extends AzureComboBox<TimeRangeComboBox.TimeRange> {
     private String customKustoString;
     public TimeRangeComboBox() {
+        super();
         this.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED && TimeRange.CUSTOM.equals(e.getItem())) {
-                final DateFilterComponent dateComponent = new DateFilterComponent(false, DateFormatUtil.getDateFormat().getDelegate());
-                final DialogBuilder db = new DialogBuilder(TimeRangeComboBox.this);
-                db.addOkAction();
-                db.setCenterPanel(dateComponent.getPanel());
-                db.setPreferredFocusComponent(dateComponent.getPanel());
-                db.setTitle("Select Time Range");
-                if (DialogWrapper.OK_EXIT_CODE == db.show()) {
-                    VcsLogDateFilter filter = VcsLogFilterObject.fromDates(dateComponent.getAfter(), dateComponent.getBefore());
+                final CustomTimeRangeDialog dialog = new CustomTimeRangeDialog();
+                if (dialog.showAndGet()) {
+                    customKustoString = dialog.getValue();
                 }
             }
         });
