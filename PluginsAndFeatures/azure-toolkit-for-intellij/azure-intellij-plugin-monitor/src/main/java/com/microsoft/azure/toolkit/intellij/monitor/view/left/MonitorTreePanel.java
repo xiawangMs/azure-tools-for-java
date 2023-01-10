@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -43,6 +44,10 @@ public class MonitorTreePanel extends JPanel {
             loadQueryTreeData();
         }
         selectNode(this.tree, this.currentTreeNodePath, getDefaultNodeName());
+    }
+
+    public void addTreeSelectionListener(TreeSelectionListener listener) {
+        this.tree.addTreeSelectionListener(listener);
     }
 
     private void initListener() {

@@ -24,6 +24,7 @@ public class AzureMonitorView {
     private JPanel contentPanel;
     private JPanel leftPanel;
     private ActionLink changeWorkspace;
+    @Getter
     private MonitorTreePanel monitorTreePanel;
     private JLabel workspaceName;
     private JPanel workspaceHeader;

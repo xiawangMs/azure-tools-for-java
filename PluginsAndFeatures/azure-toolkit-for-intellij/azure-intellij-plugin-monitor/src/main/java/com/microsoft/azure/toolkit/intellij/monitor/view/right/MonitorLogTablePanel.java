@@ -30,10 +30,11 @@ public class MonitorLogTablePanel {
     private TimeRangeComboBox timeRangeComboBox;
     private JComboBox comboBox2;
     private JComboBox comboBox3;
-    private JComboBox comboBox4;
     private JButton runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
+    private JPanel statusPanel;
+    private JLabel statusLabel;
     private boolean isTableTab;
 
     public MonitorLogTablePanel() {
@@ -102,7 +103,6 @@ public class MonitorLogTablePanel {
         this.timeRangeComboBox.setVisible(isVisible);
         this.comboBox2.setVisible(isVisible);
         this.comboBox3.setVisible(isVisible);
-        this.comboBox4.setVisible(isVisible);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
