@@ -22,7 +22,7 @@ import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
 import java.util.*;
 
-public class TreePanel extends JPanel {
+public class MonitorTreePanel extends JPanel {
     private JPanel contentPanel;
     private Tree tree;
     private DefaultTreeModel treeModel;
@@ -32,7 +32,7 @@ public class TreePanel extends JPanel {
     @Setter
     private boolean isTableTab;
 
-    public TreePanel() {
+    public MonitorTreePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
     }
 
