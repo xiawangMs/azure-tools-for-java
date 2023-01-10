@@ -24,12 +24,12 @@
         <children>
           <nested-form id="e4f89" form-file="com/microsoft/azure/toolkit/intellij/monitor/view/left/MonitorTreePanel.form" binding="monitorTreePanel" custom-create="true">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
           </nested-form>
-          <grid id="b039b" binding="workspaceHeader" layout-manager="BorderLayout" hgap="2" vgap="0">
+          <grid id="b039b" binding="workspaceHeader" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>

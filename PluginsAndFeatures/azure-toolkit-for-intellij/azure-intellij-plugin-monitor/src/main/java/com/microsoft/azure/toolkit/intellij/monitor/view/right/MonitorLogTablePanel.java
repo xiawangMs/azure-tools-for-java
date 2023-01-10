@@ -8,6 +8,7 @@ import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -15,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionListener;
@@ -77,10 +79,12 @@ public class MonitorLogTablePanel {
         this.runButton.addActionListener(listener);
     }
 
+    @Nullable
     public String getSelectedCellValue() {
         return (String) this.logTable.getValueAt(this.logTable.getSelectedRow(), this.logTable.getSelectedColumn());
     }
 
+    @Nullable
     public String getSelectedColumnName() {
         return this.logTable.getColumnName(this.logTable.getSelectedColumn());
     }
@@ -89,6 +93,7 @@ public class MonitorLogTablePanel {
         this.logTable.setDefaultRenderer(String.class, new HighLightedCellRenderer(searchField.getTextEditor()));
         this.logTable.setFont(JBUI.Fonts.create("JetBrains Mono", 12));
         this.logTable.getTableHeader().setFont(JBUI.Fonts.create("JetBrains Mono", 12));
+        searchField.addDocumentListener((TextDocumentListenerAdapter) () -> logTable.filter(searchField.getText()));
     }
 
     private void setFiltersVisible(boolean isVisible) {

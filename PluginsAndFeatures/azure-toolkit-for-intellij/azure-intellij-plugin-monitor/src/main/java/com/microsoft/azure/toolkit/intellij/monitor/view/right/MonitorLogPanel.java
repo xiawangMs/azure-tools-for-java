@@ -36,11 +36,12 @@ public class MonitorLogPanel {
 
     private void initListener() {
         this.monitorLogTablePanel.addTableSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
+            final String viewerTitle = monitorLogTablePanel.getSelectedColumnName();
+            final String viewerText = monitorLogTablePanel.getSelectedCellValue();
+            if (!e.getValueIsAdjusting() || Objects.isNull(viewerText) || Objects.isNull(viewerTitle)) {
                 return;
             }
-            this.monitorLogDetailsPanel.setStatus("Loading");
-            this.monitorLogDetailsPanel.setViewText(monitorLogTablePanel.getSelectedColumnName(), monitorLogTablePanel.getSelectedCellValue());
+            this.monitorLogDetailsPanel.setViewText(viewerTitle, viewerText);
         });
         this.monitorLogTablePanel.addRunActionListener(e -> executeQuery());
     }
