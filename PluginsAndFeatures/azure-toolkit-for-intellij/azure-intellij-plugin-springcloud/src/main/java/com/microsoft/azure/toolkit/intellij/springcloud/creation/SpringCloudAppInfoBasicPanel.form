@@ -102,7 +102,7 @@
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <selected value="true"/>
+          <selected value="false"/>
           <text value="Java 8"/>
         </properties>
       </component>
@@ -111,6 +111,7 @@
           <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
+          <selected value="true"/>
           <text value="Java 11"/>
         </properties>
       </component>
