@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.azure.monitor.query.models.LogsTableRow;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.intellij.CommonConst;
+import lombok.Getter;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -11,6 +12,7 @@ import javax.swing.table.TableRowSorter;
 import java.util.List;
 
 public class LogTable extends JBTable {
+    @Getter
     private LogTableModel logTableModel = new LogTableModel();
     public LogTable() {
         super();
@@ -67,10 +69,10 @@ public class LogTable extends JBTable {
     }
 
     private boolean isValidColumnIndex(int columnIndex) {
-        return columnIndex >=0 && columnIndex < getColumnCount();
+        return columnIndex >=0 && columnIndex < logTableModel.getColumnCount();
     }
 
     private boolean isValidRowIndex(int rowIndex) {
-        return rowIndex >=0 && rowIndex < getRowCount();
+        return rowIndex >=0 && rowIndex < logTableModel.getRowCount();
     }
 }

@@ -38,13 +38,18 @@
                 <constraints border-constraint="West"/>
                 <properties>
                   <font size="13"/>
+                  <horizontalAlignment value="2"/>
+                  <horizontalTextPosition value="2"/>
                   <text value="Default-workspace"/>
+                  <verticalAlignment value="0"/>
                 </properties>
               </component>
               <component id="f2ba1" class="com.intellij.ui.components.ActionLink" binding="changeWorkspace" custom-create="true">
                 <constraints border-constraint="East"/>
                 <properties>
                   <font size="13"/>
+                  <horizontalAlignment value="4"/>
+                  <horizontalTextPosition value="4"/>
                   <text value="Change"/>
                 </properties>
               </component>

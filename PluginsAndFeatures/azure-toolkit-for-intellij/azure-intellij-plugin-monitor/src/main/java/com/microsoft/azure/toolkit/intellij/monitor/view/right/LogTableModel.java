@@ -4,6 +4,7 @@ import com.azure.monitor.query.models.LogsColumnType;
 import com.azure.monitor.query.models.LogsTableCell;
 import com.azure.monitor.query.models.LogsTableRow;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.Getter;
 import org.jetbrains.annotations.Nls;
 
 import javax.annotation.Nullable;
@@ -16,7 +17,9 @@ import java.util.List;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class LogTableModel implements TableModel {
+    @Getter
     private final List<String> columnNames = new ArrayList<>();
+    @Getter
     private final List<LogsTableRow> logsTableRows = new ArrayList<>();
     private final List<TableModelListener> tableModelListenerList = new ArrayList<>();
 

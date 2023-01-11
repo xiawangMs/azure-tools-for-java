@@ -2,15 +2,25 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.azure.monitor.query.models.LogsTable;
 import com.azure.monitor.query.models.LogsTableCell;
+import com.azure.monitor.query.models.LogsTableRow;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileChooser.FileChooserFactory;
+import com.intellij.openapi.fileChooser.FileSaverDescriptor;
+import com.intellij.openapi.fileChooser.FileSaverDialog;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -22,10 +32,15 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
+
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class MonitorLogTablePanel {
     private JPanel contentPanel;
@@ -41,10 +56,12 @@ public class MonitorLogTablePanel {
     private JLabel statusLabel;
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
+    private final static String RESULT_CSV_FILE = "result.csv";
 
     public MonitorLogTablePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.customizeTableUi();
+        this.hideFilters();
         this.runButton.setIcon(AllIcons.Actions.Execute);
     }
 
@@ -156,6 +173,42 @@ public class MonitorLogTablePanel {
         this.levelComboBox.setVisible(false);
     }
 
+    private void exportQueryResult() {
+        final FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(message("azure.monitor.export.description"), "");
+        final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
+        final VirtualFile userHome = LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"));
+        final VirtualFileWrapper fileWrapper = dialog.save(userHome, RESULT_CSV_FILE);
+        final File file = Optional.ofNullable(fileWrapper).map(VirtualFileWrapper::getFile).orElse(null);
+        if (file != null) {
+            AzureTaskManager.getInstance().runInBackground("Export query data", () -> exportTableData(file, logTable.getLogTableModel()));
+        }
+    }
+
+    private void exportTableData(File target, LogTableModel tableModel) {
+        try {
+            if (target == null) {
+                return;
+            }
+            final File parentFolder = target.getParentFile();
+            if (!parentFolder.exists()) {
+                parentFolder.mkdirs();
+            }
+            if (!target.exists()) {
+                target.createNewFile();
+            }
+            final FileWriter writer = new FileWriter(target);
+            writer.write(StringUtils.join(tableModel.getColumnNames(), ","));
+            for (final LogsTableRow row : tableModel.getLogsTableRows()) {
+                writer.write(StringUtils.join(row.getRow().stream().map(LogsTableCell::getValueAsString).toList(), ","));
+            }
+            writer.close();
+            AzureMessager.getMessager().info(message("azure.monitor.export.succeed.message", target.getAbsolutePath()),
+                    message("azure.monitor.export.succeed.title"));
+        } catch (final Exception e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
+    }
+
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     void $$$setupUI$$$() {
     }
@@ -166,6 +219,7 @@ public class MonitorLogTablePanel {
         this.exportAction = new AnActionLink("Export", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
+                exportQueryResult();
             }
         });
         this.exportAction.setExternalLinkIcon();
@@ -176,6 +230,5 @@ public class MonitorLogTablePanel {
                 return Objects.nonNull(item) ? item.toString() : StringUtils.EMPTY;
             }
         };
-        this.hideFilters();
     }
 }
