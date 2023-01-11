@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.*;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -39,10 +40,12 @@ public class HDInsightActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> UNLINK_A_CLUSTER = Action.Id.of("user/hdinsight.unlink_a_cluster.spark");
     public static final Action.Id<AzResource> OPEN_HDINSIGHT_JOB_VIEW = Action.Id.of("user/hdinsight.open_hdinsight_job_view.spark");
     public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_EXPLORER = Action.Id.of("user/hdinsight.open_azure_storage_explorer.cluster");
+    public static final Action.Id<AzResourceModule> OPEN_AZURE_STORAGE_EXPLORER_ON_MODULE = Action.Id.of("user/hdinsight.open_azure_storage_explorer_form.cluster");
     public static final Action.Id<AzResource> OPEN_AZURE_EXPLORER_AMBARI = Action.Id.of("user/hdinsight.open_azure_management_explorer.ambari");
     public static final Action.Id<AzResource> OPEN_AZURE_EXPLORER_JUPYTER = Action.Id.of("user/hdinsight.open_jupyter_explorer.jupyter");
     public static final Action.Id<AzResource> OPEN_SPARK_HISTORY_UI = Action.Id.of("user/hdinsight.open_history_ui.spark");
     public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_MANAGEMENT_EXPLORER = Action.Id.of("user/hdinsight.open_azure_storage_explorer.storage");
+
 
 
     @Override
@@ -80,12 +83,18 @@ public class HDInsightActionsContributor implements IActionsContributor {
                 .enableWhen(s -> s instanceof SparkClusterNode)
                 .withHandler(resource -> {
                     IClusterDetail clusterDetail = ((SparkClusterNode) resource).getClusterDetail();
-                    final AzureString title = OperationBundle.description("hdinsight.open_azure_storage_explorer.cluster", clusterDetail.getName());
+                    final AzureString title = OperationBundle.description("user/hdinsight.open_azure_storage_explorer.cluster", clusterDetail.getName());
                     AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, () -> {
                         OpenHDIAzureStorageExplorerAction openHDIAzureStorageExplorerAction = new OpenHDIAzureStorageExplorerAction();
                         openHDIAzureStorageExplorerAction.openResource(clusterDetail);
                     }));
                 })
+                .withShortcut(am.getIDEDefaultShortcuts().edit())
+                .register(am);
+
+        new Action<>(OPEN_AZURE_STORAGE_EXPLORER_ON_MODULE)
+                .withLabel("Open Azure Storage Explorer!")
+                .enableWhen(s -> true)
                 .withShortcut(am.getIDEDefaultShortcuts().edit())
                 .register(am);
 
