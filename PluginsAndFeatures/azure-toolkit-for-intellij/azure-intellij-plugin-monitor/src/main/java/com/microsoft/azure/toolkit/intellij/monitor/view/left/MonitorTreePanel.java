@@ -28,7 +28,6 @@ public class MonitorTreePanel extends JPanel {
     private Tree tree;
     private DefaultTreeModel treeModel;
     private TreePath currentTreeNodePath;
-    @Getter
     private String currentNodeText;
     @Setter
     private boolean isTableTab;
@@ -48,6 +47,13 @@ public class MonitorTreePanel extends JPanel {
 
     public void addTreeSelectionListener(TreeSelectionListener listener) {
         this.tree.addTreeSelectionListener(listener);
+    }
+
+    public String getCurrentNodeText() {
+        if (Objects.isNull(currentNodeText)) {
+            return getDefaultNodeName();
+        }
+        return currentNodeText;
     }
 
     private void initListener() {

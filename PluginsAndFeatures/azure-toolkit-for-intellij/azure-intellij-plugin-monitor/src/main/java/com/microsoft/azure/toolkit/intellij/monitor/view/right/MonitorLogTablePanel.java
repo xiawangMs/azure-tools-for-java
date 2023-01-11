@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.azure.monitor.query.models.LogsTable;
+import com.azure.monitor.query.models.LogsTableCell;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -13,6 +14,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRend
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
+import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,32 +22,30 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class MonitorLogTablePanel {
     private JPanel contentPanel;
     private JPanel filterPanel;
     private LogTable logTable;
     private TimeRangeComboBox timeRangeComboBox;
-    private JComboBox comboBox2;
-    private JComboBox comboBox3;
+    private ResourceComboBox resourceComboBox;
+    private ResourceComboBox levelComboBox;
     private JButton runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
     private JPanel statusPanel;
     private JLabel statusLabel;
-    private boolean isTableTab;
+    private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
+    private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
 
     public MonitorLogTablePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.customizeTableUi();
         this.runButton.setIcon(AllIcons.Actions.Execute);
-    }
-
-    public void setTableTab(boolean isTableTab) {
-        this.isTableTab = isTableTab;
-        this.setFiltersVisible(isTableTab);
     }
 
     public JPanel getContentPanel() {
@@ -70,6 +70,34 @@ public class MonitorLogTablePanel {
                 this.logTable.setLoading(false);
                 runButton.setEnabled(true);
             }, AzureTask.Modality.ANY);
+        });
+    }
+
+    public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
+        statusPanel.setVisible(true);
+        timeRangeComboBox.setVisible(true);
+        AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
+            final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
+            final Pair<String, List<String>> resourceListPair = queryCellValueList(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns);
+            final Pair<String, List<String>> levelListPair = queryCellValueList(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns);
+            AzureTaskManager.getInstance().runLater(() -> {
+                if (resourceListPair.component2().size() > 0) {
+                    resourceComboBox.setVisible(true);
+                    resourceComboBox.setItemsLoader(resourceListPair::component2);
+                    resourceComboBox.setColumnName(resourceListPair.component1());
+                } else {
+                    resourceComboBox.setVisible(false);
+                }
+                if (levelListPair.component2().size() > 0) {
+                    levelComboBox.setVisible(true);
+                    levelComboBox.setItemsLoader(levelListPair::component2);
+                    levelComboBox.setColumnName(levelListPair.component1());
+                } else {
+                    levelComboBox.setVisible(false);
+                }
+                statusPanel.setVisible(false);
+                filterPanel.setVisible(true);
+            });
         });
     }
 
@@ -99,10 +127,26 @@ public class MonitorLogTablePanel {
         searchField.addDocumentListener((TextDocumentListenerAdapter) () -> logTable.filter(searchField.getText()));
     }
 
-    private void setFiltersVisible(boolean isVisible) {
-        this.timeRangeComboBox.setVisible(isVisible);
-        this.comboBox2.setVisible(isVisible);
-        this.comboBox3.setVisible(isVisible);
+    private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
+        return selectedWorkspace.executeQuery(String.format("%s | take 1", tableName))
+                .getAllTableCells().stream().map(LogsTableCell::getColumnName).toList();
+    }
+
+    private Pair<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
+                                                          String[] columnNames, List<String> tableColumns) {
+        for (final String columnName: columnNames) {
+            if (tableColumns.contains(columnName)) {
+                final String queryResource = String.format("%s | distinct %s | project %s", tableName, columnName, columnName);
+                return new Pair<>(columnName, selectedWorkspace.executeQuery(queryResource).getAllTableCells().stream().map(LogsTableCell::getValueAsString).toList());
+            }
+        }
+        return new Pair<>(StringUtils.EMPTY, new ArrayList<>());
+    }
+
+    private void hideFilters() {
+        this.timeRangeComboBox.setVisible(false);
+        this.resourceComboBox.setVisible(false);
+        this.levelComboBox.setVisible(false);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
@@ -119,5 +163,13 @@ public class MonitorLogTablePanel {
             }
         });
         this.exportAction.setExternalLinkIcon();
+        this.resourceComboBox = new ResourceComboBox();
+        this.levelComboBox = new ResourceComboBox() {
+            @Override
+            protected String getItemText(Object item) {
+                return Objects.nonNull(item) ? item.toString() : StringUtils.EMPTY;
+            }
+        };
+        this.hideFilters();
     }
 }
