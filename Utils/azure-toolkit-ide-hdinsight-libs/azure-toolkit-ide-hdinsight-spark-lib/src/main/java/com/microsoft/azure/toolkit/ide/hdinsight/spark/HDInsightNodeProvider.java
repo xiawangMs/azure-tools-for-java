@@ -66,7 +66,11 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
                         .view(new SparkClusterNodeView(sparkClusterNode))
                         .inlineAction(ResourceCommonActionsContributor.PIN)
                         .actions(HDInsightActionsContributor.SPARK_ADDITIONAL_CLUSTER_ACTIONS)
-                        .addChild(jobsNode);
+                        .addChild(jobsNode)
+                        .addChildren(SparkClusterNode::getSubModules,(module, p) -> new Node<>(module)
+                                .view(new StorageAccountModuleNodeView(module))
+                                .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager))
+                                .clickAction(HDInsightActionsContributor.OPEN_AZURE_STORAGE_EXPLORER_ON_MODULE));
             return new Node<>(sparkClusterNode)
                     .view(new SparkClusterNodeView(sparkClusterNode))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
