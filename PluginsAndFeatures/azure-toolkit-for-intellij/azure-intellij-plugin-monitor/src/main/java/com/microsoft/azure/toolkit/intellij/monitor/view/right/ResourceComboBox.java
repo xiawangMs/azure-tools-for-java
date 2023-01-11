@@ -11,7 +11,7 @@ public class ResourceComboBox extends AzureComboBox<String> {
     private String kustoString;
     @Setter
     private String columnName;
-    private final static String ALL = "All";
+    public final static String ALL = "All";
     public ResourceComboBox() {
         super();
     }
@@ -21,7 +21,7 @@ public class ResourceComboBox extends AzureComboBox<String> {
         if (Objects.equals(ALL, selected) || Objects.isNull(selected)) {
             return StringUtils.EMPTY;
         }
-        return String.format("where %s == %s", columnName, selected);
+        return String.format("where %s == \"%s\"", columnName, selected);
     }
 
     @Override

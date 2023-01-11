@@ -14,8 +14,8 @@ import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRend
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
-import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -23,9 +23,9 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class MonitorLogTablePanel {
     private JPanel contentPanel;
@@ -53,7 +53,9 @@ public class MonitorLogTablePanel {
     }
 
     public String getQueryStringFromFilters(String tableName) {
-        final List<String> queryParams = Arrays.asList(tableName, timeRangeComboBox.getKustoString());
+        final List<String> queryParams = Stream.of(tableName, timeRangeComboBox.getKustoString(),
+                resourceComboBox.getKustoString(), levelComboBox.getKustoString())
+                .filter(s -> !s.isBlank()).toList();
         return StringUtils.join(queryParams, " | ");
     }
 
@@ -75,26 +77,15 @@ public class MonitorLogTablePanel {
 
     public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
         statusPanel.setVisible(true);
+        filterPanel.setVisible(false);
         timeRangeComboBox.setVisible(true);
         AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
             final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
             final Pair<String, List<String>> resourceListPair = queryCellValueList(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns);
             final Pair<String, List<String>> levelListPair = queryCellValueList(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns);
             AzureTaskManager.getInstance().runLater(() -> {
-                if (resourceListPair.component2().size() > 0) {
-                    resourceComboBox.setVisible(true);
-                    resourceComboBox.setItemsLoader(resourceListPair::component2);
-                    resourceComboBox.setColumnName(resourceListPair.component1());
-                } else {
-                    resourceComboBox.setVisible(false);
-                }
-                if (levelListPair.component2().size() > 0) {
-                    levelComboBox.setVisible(true);
-                    levelComboBox.setItemsLoader(levelListPair::component2);
-                    levelComboBox.setColumnName(levelListPair.component1());
-                } else {
-                    levelComboBox.setVisible(false);
-                }
+                updateComboboxItems(resourceComboBox, resourceListPair);
+                updateComboboxItems(levelComboBox, levelListPair);
                 statusPanel.setVisible(false);
                 filterPanel.setVisible(true);
             });
@@ -127,6 +118,22 @@ public class MonitorLogTablePanel {
         searchField.addDocumentListener((TextDocumentListenerAdapter) () -> logTable.filter(searchField.getText()));
     }
 
+    private void updateComboboxItems(ResourceComboBox comboBox, Pair<String, List<String>> pair) {
+        if (pair.getValue().size() <=0 ) {
+            comboBox.setVisible(false);
+            return;
+        }
+        comboBox.setVisible(true);
+        comboBox.setItemsLoader(() -> {
+            final List<String> result = new ArrayList<>();
+            result.add(ResourceComboBox.ALL);
+            result.addAll(pair.getValue());
+            return result;
+        });
+        comboBox.setColumnName(pair.getKey());
+        comboBox.setValue(ResourceComboBox.ALL);
+    }
+
     private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
         return selectedWorkspace.executeQuery(String.format("%s | take 1", tableName))
                 .getAllTableCells().stream().map(LogsTableCell::getColumnName).toList();
@@ -137,10 +144,10 @@ public class MonitorLogTablePanel {
         for (final String columnName: columnNames) {
             if (tableColumns.contains(columnName)) {
                 final String queryResource = String.format("%s | distinct %s | project %s", tableName, columnName, columnName);
-                return new Pair<>(columnName, selectedWorkspace.executeQuery(queryResource).getAllTableCells().stream().map(LogsTableCell::getValueAsString).toList());
+                return Pair.of(columnName, selectedWorkspace.executeQuery(queryResource).getAllTableCells().stream().map(LogsTableCell::getValueAsString).toList());
             }
         }
-        return new Pair<>(StringUtils.EMPTY, new ArrayList<>());
+        return Pair.of(StringUtils.EMPTY, new ArrayList<>());
     }
 
     private void hideFilters() {
@@ -159,7 +166,6 @@ public class MonitorLogTablePanel {
         this.exportAction = new AnActionLink("Export", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-
             }
         });
         this.exportAction.setExternalLinkIcon();
