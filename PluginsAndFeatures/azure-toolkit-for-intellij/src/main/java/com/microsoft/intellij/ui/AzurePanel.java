@@ -70,7 +70,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private FunctionCoreToolsCombobox funcCoreToolsPath;
     private JLabel azureEnvDesc;
     private AzureFileInput txtStorageExplorer;
-    private AzureIntegerInput txtBatchSize;
+    private AzureIntegerInput txtPageSize;
     private AzureTextInput txtLabelFields;
     private ActionLink installFuncCoreToolsAction;
     private AzureFileInput dotnetRuntimePath;
@@ -101,7 +101,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 setText(value.title());
             }
         });
-        txtBatchSize.setMinValue(1);
+        txtPageSize.setMinValue(1);
 
         azureEnvDesc.setForeground(UIUtil.getContextHelpForeground());
         azureEnvDesc.setMaximumSize(new Dimension());
@@ -138,7 +138,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             dotnetRuntimePath.setValue(config.getDotnetRuntimePath());
         }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
-        txtBatchSize.setValue(config.getCosmosBatchSize());
+        txtPageSize.setValue(config.getPageSize());
         txtLabelFields.setValue(String.join(";", config.getDocumentsLabelFields()));
     }
 
@@ -157,8 +157,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotBlank(txtStorageExplorer.getValue())) {
             data.setStorageExplorerPath(txtStorageExplorer.getValue());
         }
-        if (Objects.nonNull(txtBatchSize.getValue())) {
-            data.setCosmosBatchSize(txtBatchSize.getValue());
+        if (Objects.nonNull(txtPageSize.getValue())) {
+            data.setPageSize(txtPageSize.getValue());
         }
         if (StringUtils.isNotEmpty(txtLabelFields.getValue())) {
             final List<String> fields = Arrays.stream(txtLabelFields.getValue().split(";")).collect(Collectors.toList());
@@ -231,7 +231,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
         this.originalConfig.setUserAgent(userAgent);
         this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
-        this.originalConfig.setCosmosBatchSize(newConfig.getCosmosBatchSize());
+        this.originalConfig.setPageSize(newConfig.getPageSize());
         this.originalConfig.setDocumentsLabelFields(newConfig.getDocumentsLabelFields());
         this.originalConfig.setDotnetRuntimePath(newConfig.getDotnetRuntimePath());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
@@ -272,7 +272,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
             !StringUtils.equalsIgnoreCase(newConfig.getDotnetRuntimePath(), originalConfig.getDotnetRuntimePath()) ||
             !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
-            !Objects.equals(newConfig.getCosmosBatchSize(), originalConfig.getCosmosBatchSize()) ||
+            !Objects.equals(newConfig.getPageSize(), originalConfig.getPageSize()) ||
             !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
     }
 

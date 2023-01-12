@@ -40,7 +40,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureContainerApps || data instanceof ContainerAppsEnvironment ||
-                data instanceof ContainerApp || data instanceof Revision;
+            data instanceof ContainerApp || data instanceof Revision;
     }
 
     @Nullable
@@ -49,31 +49,33 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
         if (data instanceof AzureContainerApps) {
             final AzureContainerApps service = ((AzureContainerApps) data);
             final Function<AzureContainerApps, List<ContainerAppsEnvironment>> registries = asc -> asc.list().stream()
-                    .flatMap(m -> m.environments().list().stream())
-                    .collect(Collectors.toList());
+                .flatMap(m -> m.environments().list().stream())
+                .collect(Collectors.toList());
             return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
-                    .actions(ContainerAppsActionsContributor.SERVICE_ACTIONS)
-                    .addChildren(registries, (server, serviceNode) -> this.createNode(server, serviceNode, manager));
+                .actions(ContainerAppsActionsContributor.SERVICE_ACTIONS)
+                .addChildren(registries, (server, serviceNode) -> this.createNode(server, serviceNode, manager));
         } else if (data instanceof ContainerAppsEnvironment) {
             final ContainerAppsEnvironment environment = (ContainerAppsEnvironment) data;
             return new Node<>(environment)
-                    .view(new AzureResourceLabelView<>(environment))
-                    .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .addChildren(ContainerAppsEnvironment::listContainerApps, (app, envNode) -> this.createNode(app, envNode, manager))
-                    .actions(ContainerAppsActionsContributor.ENVIRONMENT_ACTIONS);
+                .view(new AzureResourceLabelView<>(environment))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
+                .addChildren(ContainerAppsEnvironment::listContainerApps, (app, envNode) -> this.createNode(app, envNode, manager))
+                .actions(ContainerAppsActionsContributor.ENVIRONMENT_ACTIONS);
         } else if (data instanceof ContainerApp) {
             final ContainerApp app = (ContainerApp) data;
             return new Node<>(app)
-                    .view(new AzureResourceLabelView<>(app))
-                    .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .addChildren(containerApp -> containerApp.revisions().list(), (revision, appNode) -> this.createNode(revision, appNode, manager))
-                    .actions(ContainerAppsActionsContributor.CONTAINER_APP_ACTIONS);
+                .view(new AzureResourceLabelView<>(app))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
+                .addChildren(containerApp -> containerApp.revisions().list(), (revision, appNode) -> this.createNode(revision, appNode, manager))
+                .hasMoreChildren(a -> a.revisions().hasMoreResources())
+                .loadMoreChildren(a -> a.revisions().loadMoreResources())
+                .actions(ContainerAppsActionsContributor.CONTAINER_APP_ACTIONS);
         } else if (data instanceof Revision) {
             final Revision revision = (Revision) data;
             return new Node<>(revision)
-                    .view(new AzureResourceLabelView<>(revision, this::getRevisionDescription, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER))
-                    .inlineAction(ResourceCommonActionsContributor.PIN)
-                    .actions(ContainerAppsActionsContributor.REVISION_ACTIONS);
+                .view(new AzureResourceLabelView<>(revision, this::getRevisionDescription, DEFAULT_AZURE_RESOURCE_ICON_PROVIDER))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
+                .actions(ContainerAppsActionsContributor.REVISION_ACTIONS);
         }
         return null;
     }

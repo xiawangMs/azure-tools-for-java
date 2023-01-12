@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.favorite;
 
+import com.azure.core.http.rest.Page;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.page.ItemPage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
@@ -43,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -82,6 +85,12 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         final List<Favorite> result = new LinkedList<>(super.list());
         result.sort(Comparator.comparing(item -> this.favorites.indexOf(item.getName().toLowerCase())));
         return result;
+    }
+
+    @Nonnull
+    @Override
+    protected Iterator<? extends Page<AbstractAzResource<?, ?, ?>>> loadResourcePagesFromAzure() {
+        return Collections.singletonList(new ItemPage<>(this.loadResourcesFromAzure())).iterator();
     }
 
     @Nonnull
