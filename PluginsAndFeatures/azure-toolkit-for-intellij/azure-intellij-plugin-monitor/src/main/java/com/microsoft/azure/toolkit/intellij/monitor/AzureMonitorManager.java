@@ -20,10 +20,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 
 public class AzureMonitorManager {
-    private static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
+    public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
     private static final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
@@ -31,7 +33,24 @@ public class AzureMonitorManager {
     }
 
     public void openMonitorWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace) {
-        final ToolWindow azureMonitorWindow = getToolWindow(project);
+        final ToolWindow azureMonitorWindow = getToolWindow(project, workspace);
+        Optional.ofNullable(azureMonitorWindow).ifPresent(it -> AzureTaskManager.getInstance().runLater(
+                () -> it.activate(() -> {
+                    it.setAvailable(true);
+                    it.show();
+                }))
+        );
+    }
+
+    @Nullable
+    private ToolWindow getToolWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace) {
+        if (toolWindowMap.containsKey(project)) {
+            return toolWindowMap.get(project);
+        }
+        final ToolWindow azureMonitorWindow = ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW);
+        if (Objects.isNull(azureMonitorWindow)) {
+            return null;
+        }
         final ContentFactory contentFactory = ContentFactory.getInstance();
         final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true);
         final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false);
@@ -41,17 +60,6 @@ public class AzureMonitorManager {
         queryContent.setCloseable(false);
         azureMonitorWindow.getContentManager().addContent(tableContent);
         azureMonitorWindow.getContentManager().addContent(queryContent);
-        AzureTaskManager.getInstance().runLater(() -> azureMonitorWindow.activate(() -> {
-            azureMonitorWindow.setAvailable(true);
-            azureMonitorWindow.show();
-        }));
-    }
-
-    private ToolWindow getToolWindow(Project project) {
-        if (toolWindowMap.containsKey(project)) {
-            return toolWindowMap.get(project);
-        }
-        final ToolWindow azureMonitorWindow = ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW);
         toolWindowMap.put(project, azureMonitorWindow);
         return azureMonitorWindow;
     }

@@ -24,6 +24,8 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -34,11 +36,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -70,9 +68,13 @@ public class MonitorLogTablePanel {
     }
 
     public String getQueryStringFromFilters(String tableName) {
-        final List<String> queryParams = Stream.of(tableName, timeRangeComboBox.getKustoString(),
-                resourceComboBox.getKustoString(), levelComboBox.getKustoString())
-                .filter(s -> !s.isBlank()).toList();
+        final List<String> queryParams = new ArrayList<>(Arrays.asList(tableName, timeRangeComboBox.getKustoString()));
+        if (resourceComboBox.isVisible() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
+            queryParams.add(resourceComboBox.getKustoString());
+        }
+        if (levelComboBox.isVisible() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
+            queryParams.add(levelComboBox.getKustoString());
+        }
         return StringUtils.join(queryParams, " | ");
     }
 
@@ -178,10 +180,8 @@ public class MonitorLogTablePanel {
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
         final VirtualFile userHome = LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"));
         final VirtualFileWrapper fileWrapper = dialog.save(userHome, RESULT_CSV_FILE);
-        final File file = Optional.ofNullable(fileWrapper).map(VirtualFileWrapper::getFile).orElse(null);
-        if (file != null) {
-            AzureTaskManager.getInstance().runInBackground("Export query data", () -> exportTableData(file, logTable.getLogTableModel()));
-        }
+        Optional.ofNullable(fileWrapper).map(VirtualFileWrapper::getFile).ifPresent(it ->
+                AzureTaskManager.getInstance().runInBackground("Export query data", () -> exportTableData(it, logTable.getLogTableModel())));
     }
 
     private void exportTableData(File target, LogTableModel tableModel) {
@@ -196,12 +196,12 @@ public class MonitorLogTablePanel {
             if (!target.exists()) {
                 target.createNewFile();
             }
-            final FileWriter writer = new FileWriter(target);
-            writer.write(StringUtils.join(tableModel.getColumnNames(), ","));
+            final CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(target),
+                    CSVFormat.Builder.create().setHeader(tableModel.getColumnNames().toArray(new String[0])).build());
             for (final LogsTableRow row : tableModel.getLogsTableRows()) {
-                writer.write(StringUtils.join(row.getRow().stream().map(LogsTableCell::getValueAsString).toList(), ","));
+                csvPrinter.printRecord(row.getRow().stream().map(LogsTableCell::getValueAsString).toList());
             }
-            writer.close();
+            csvPrinter.close();
             AzureMessager.getMessager().info(message("azure.monitor.export.succeed.message", target.getAbsolutePath()),
                     message("azure.monitor.export.succeed.title"));
         } catch (final Exception e) {
