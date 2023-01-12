@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.right;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter;
 
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;

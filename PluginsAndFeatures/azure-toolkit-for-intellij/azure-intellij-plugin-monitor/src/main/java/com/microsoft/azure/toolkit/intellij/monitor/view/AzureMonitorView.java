@@ -30,6 +30,7 @@ public class AzureMonitorView {
     private JPanel workspaceHeader;
     private JBSplitter rightSplitter;
     @Getter
+    @Nullable
     private LogAnalyticsWorkspace selectedWorkspace;
     private MonitorLogPanel monitorLogPanel;
 

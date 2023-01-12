@@ -23,7 +23,7 @@ public class WorkspaceSelectionDialog extends DialogWrapper {
     private WorkspaceComboBox workspaceComboBox;
     private LogAnalyticsWorkspace selectedWorkspace;
 
-    public WorkspaceSelectionDialog(@Nullable final Project project, LogAnalyticsWorkspace value) {
+    public WorkspaceSelectionDialog(@Nullable final Project project, @Nullable LogAnalyticsWorkspace value) {
         super(project, false);
         setTitle("Select Log Analytics Workspace");
         init();
@@ -35,15 +35,17 @@ public class WorkspaceSelectionDialog extends DialogWrapper {
                 workspaceComboBox.setSubscription(null);
             }
         });
-        subComboBox.setValue(value.getSubscription());
-        workspaceComboBox.setValue(
-                LogAnalyticsWorkspaceConfig.builder()
-                        .newCreate(false)
-                        .subscriptionId(value.getSubscriptionId())
-                        .resourceId(value.getId())
-                        .name(value.getName())
-                        .regionName(Optional.ofNullable(value.getRegion()).map(Region::getName).orElse(StringUtils.EMPTY))
-                        .build());
+        Optional.ofNullable(value).ifPresent(workspace -> {
+            subComboBox.setValue(workspace.getSubscription());
+            workspaceComboBox.setValue(
+                    LogAnalyticsWorkspaceConfig.builder()
+                            .newCreate(false)
+                            .subscriptionId(workspace.getSubscriptionId())
+                            .resourceId(workspace.getId())
+                            .name(workspace.getName())
+                            .regionName(Optional.ofNullable(workspace.getRegion()).map(Region::getName).orElse(StringUtils.EMPTY))
+                            .build());
+        });
     }
 
     @Override

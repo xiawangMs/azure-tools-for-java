@@ -49,7 +49,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="fb843" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.TimeRangeComboBox" binding="timeRangeComboBox" custom-create="true">
+              <component id="fb843" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox" binding="timeRangeComboBox" custom-create="true">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="8" fill="0" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -75,7 +75,7 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="9eef2" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.ResourceComboBox" binding="resourceComboBox" custom-create="true">
+              <component id="9eef2" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.ResourceComboBox" binding="resourceComboBox" custom-create="true">
                 <constraints>
                   <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -86,7 +86,7 @@
                   <usePreferredSizeAsMinimum value="false"/>
                 </properties>
               </component>
-              <component id="f6ddb" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.ResourceComboBox" binding="levelComboBox" custom-create="true">
+              <component id="f6ddb" class="com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.ResourceComboBox" binding="levelComboBox" custom-create="true">
                 <constraints>
                   <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>

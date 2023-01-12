@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.right;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter;
 
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vcs.versionBrowser.DateFilterComponent;

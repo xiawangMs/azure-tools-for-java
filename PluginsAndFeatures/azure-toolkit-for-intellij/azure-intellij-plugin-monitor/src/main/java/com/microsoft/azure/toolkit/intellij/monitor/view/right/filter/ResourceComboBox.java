@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.right;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;

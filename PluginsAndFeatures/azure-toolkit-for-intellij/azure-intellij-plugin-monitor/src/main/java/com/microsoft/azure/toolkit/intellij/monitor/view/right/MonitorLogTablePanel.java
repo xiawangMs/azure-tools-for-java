@@ -19,6 +19,9 @@ import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.ResourceComboBox;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -75,12 +78,8 @@ public class MonitorLogTablePanel {
         if (levelComboBox.isVisible() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
             queryParams.add(levelComboBox.getKustoString());
         }
-        final String filterNullColumn = """
-                evaluate narrow()
-                | where isnotempty(Value)
-                | evaluate pivot(Column, any(Value), Row)
-                | take 500""";
-        queryParams.add(filterNullColumn);
+        final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
+        queryParams.add(rowNumberLimitation);
         return StringUtils.join(queryParams, " | ");
     }
 
