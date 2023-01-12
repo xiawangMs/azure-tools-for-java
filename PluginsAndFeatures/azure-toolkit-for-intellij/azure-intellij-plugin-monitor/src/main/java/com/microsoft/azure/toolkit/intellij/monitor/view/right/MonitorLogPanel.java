@@ -7,7 +7,9 @@ import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MonitorLogPanel {
     @Getter
@@ -35,7 +37,13 @@ public class MonitorLogPanel {
 
     public void setParentView(AzureMonitorView monitorView) {
         this.parentView = monitorView;
-        this.parentView.getMonitorTreePanel().addTreeSelectionListener(e -> loadFilters(e.getNewLeadSelectionPath().getLastPathComponent().toString()));
+        this.parentView.getMonitorTreePanel().addTreeSelectionListener(e -> Optional.ofNullable(e.getNewLeadSelectionPath())
+                .ifPresent(it -> {
+                    final DefaultMutableTreeNode node = (DefaultMutableTreeNode) it.getLastPathComponent();
+                    if (Objects.nonNull(node) && node.isLeaf()) {
+                        loadFilters(node.getUserObject().toString());
+                    }
+                }));
     }
 
     private void initListener() {

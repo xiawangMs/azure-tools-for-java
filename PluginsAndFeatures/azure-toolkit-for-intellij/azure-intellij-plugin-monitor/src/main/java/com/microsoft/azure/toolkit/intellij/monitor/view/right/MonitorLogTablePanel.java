@@ -75,6 +75,12 @@ public class MonitorLogTablePanel {
         if (levelComboBox.isVisible() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
             queryParams.add(levelComboBox.getKustoString());
         }
+        final String filterNullColumn = """
+                evaluate narrow()
+                | where isnotempty(Value)
+                | evaluate pivot(Column, any(Value), Row)
+                | take 500""";
+        queryParams.add(filterNullColumn);
         return StringUtils.join(queryParams, " | ");
     }
 
@@ -83,14 +89,21 @@ public class MonitorLogTablePanel {
         logTable.setLoading(true);
         runButton.setEnabled(false);
         AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> {
-            final LogsTable result = selectedWorkspace.executeQuery(queryString);
-            AzureTaskManager.getInstance().runLater(() -> {
-                if (result.getAllTableCells().size() > 0) {
-                    this.logTable.setModel(result.getRows());
-                }
-                this.logTable.setLoading(false);
-                runButton.setEnabled(true);
-            }, AzureTask.Modality.ANY);
+            try {
+                final LogsTable result = selectedWorkspace.executeQuery(queryString);
+                AzureTaskManager.getInstance().runLater(() -> {
+                    if (result.getAllTableCells().size() > 0) {
+                        this.logTable.setModel(result.getRows());
+                    }
+                }, AzureTask.Modality.ANY);
+            } catch (final Exception e) {
+                throw new AzureToolkitRuntimeException(e);
+            } finally {
+                AzureTaskManager.getInstance().runLater(() -> {
+                    logTable.setLoading(false);
+                    runButton.setEnabled(true);
+                }, AzureTask.Modality.ANY);
+            }
         });
     }
 
@@ -99,15 +112,22 @@ public class MonitorLogTablePanel {
         filterPanel.setVisible(false);
         timeRangeComboBox.setVisible(true);
         AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
-            final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
-            final Pair<String, List<String>> resourceListPair = queryCellValueList(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns);
-            final Pair<String, List<String>> levelListPair = queryCellValueList(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns);
-            AzureTaskManager.getInstance().runLater(() -> {
-                updateComboboxItems(resourceComboBox, resourceListPair);
-                updateComboboxItems(levelComboBox, levelListPair);
-                statusPanel.setVisible(false);
-                filterPanel.setVisible(true);
-            });
+            try {
+                final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
+                final Pair<String, List<String>> resourceListPair = queryCellValueList(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns);
+                final Pair<String, List<String>> levelListPair = queryCellValueList(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns);
+                AzureTaskManager.getInstance().runLater(() -> {
+                    updateComboboxItems(resourceComboBox, resourceListPair);
+                    updateComboboxItems(levelComboBox, levelListPair);
+                }, AzureTask.Modality.ANY);
+            } catch (final Exception e) {
+                throw new AzureToolkitRuntimeException(e);
+            } finally {
+                AzureTaskManager.getInstance().runLater(() -> {
+                    statusPanel.setVisible(false);
+                    filterPanel.setVisible(true);
+                }, AzureTask.Modality.ANY);
+            }
         });
     }
 
