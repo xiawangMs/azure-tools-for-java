@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +59,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.highlight_resource_in_explorer");
     public static final Action.Id<Object> INSTALL_DOTNET_RUNTIME = Action.Id.of("user/bicep.install_dotnet_runtime");
     public static final Action.Id<Object> RESTART_IDE = Action.Id.of("user/common.restart_ide");
+    public static final Action.Id<File> REVEAL_FILE = Action.Id.of("user/common.reveal_file_in_explorer");
+    public static final Action.Id<File> OPEN_FILE = Action.Id.of("user/common.open_file_in_editor");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 

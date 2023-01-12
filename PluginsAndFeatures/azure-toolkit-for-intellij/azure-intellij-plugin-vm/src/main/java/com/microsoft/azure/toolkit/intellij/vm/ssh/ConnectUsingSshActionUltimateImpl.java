@@ -68,8 +68,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
     }
 
     private Action<?> openSshConfigurationAction(final @NotNull Project project, RemoteCredentials sshCredential) {
-        final Action.Id<Void> id = Action.Id.of("boundary/vm.open_ssh_configuration");
-        return new Action<>(id)
+        return new Action<>(Action.Id.of("boundary/vm.open_ssh_configuration"))
             .withLabel("Modify SSH Configuration")
             .withHandler(v -> AzureTaskManager.getInstance().runLater(() -> openSshConfiguration(project, sshCredential)));
     }

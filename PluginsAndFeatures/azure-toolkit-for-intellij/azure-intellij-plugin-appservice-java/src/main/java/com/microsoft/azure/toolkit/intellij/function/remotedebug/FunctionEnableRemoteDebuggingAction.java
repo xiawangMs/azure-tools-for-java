@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.function.remotedebug;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -74,11 +73,6 @@ public class FunctionEnableRemoteDebuggingAction {
     }
 
     private static Action<?> generateDebugAction(@Nonnull FunctionAppBase<?, ?, ?> app, @Nullable Project project) {
-        final Action<FunctionAppBase<?, ?, ?>> remoteDebuggingAction = AzureActionManager.getInstance()
-            .getAction(FunctionAppActionsContributor.REMOTE_DEBUGGING);
-        return new Action<>(Action.Id.of("user/function.start_remote_debugging"))
-            .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
-            .withLabel("Attach Debugger")
-            .withHandler((d, e) -> remoteDebuggingAction.handle(app, e));
+        return AzureActionManager.getInstance().getAction(FunctionAppActionsContributor.REMOTE_DEBUGGING).bind(app);
     }
 }
