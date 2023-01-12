@@ -41,6 +41,13 @@ import rx.Observable
 import java.nio.charset.StandardCharsets.UTF_8
 
 class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
+    companion object{
+        var STATIC_CONSOLE : LanguageConsoleImpl? = null;
+        fun UPDATE_PROMPT() {
+            STATIC_CONSOLE?.prompt = "scala> "
+        }
+    }
+
     override fun update(e: AnActionEvent) {
         val editor = e.getData(EDITOR) ?: return
 
@@ -89,6 +96,9 @@ class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
                 editor.selectionModel.setSelection(range.startOffset, range.endOffset)
                 langConsole?.addToHistory(range, langConsole.consoleEditor, true)
                 consoleDetail.model.addToHistory(text)
+
+                STATIC_CONSOLE = langConsole
+                UPDATE_PROMPT()
 
                 editor.caretModel.moveToOffset(0)
                 editor.document.setText("")

@@ -142,6 +142,8 @@ public final class AzureIcons {
 
     public static final class HDInsight {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/HDInsight/HDInsight.svg").build();
+        public static final AzureIcon CLUSTERS = AzureIcon.builder().iconPath("/icons/Cluster.png").build();
+        public static final AzureIcon JOBS = AzureIcon.builder().iconPath("/icons/StorageAccountFolder.png").build();
     }
 
     public static final class RedisCache {

@@ -10,6 +10,7 @@ plugins {
 ext {
     azureToolkitVersion = "0.29.0-SNAPSHOT"
     azureToolkitUtilsVersion = "3.73.0-SNAPSHOT"
+    azureToolkitHDInsightVersion = "0.1.0"
 }
 
 compileKotlin {
@@ -86,6 +87,7 @@ subprojects {
     ext {
         azureToolkitVersion = "0.29.0-SNAPSHOT"
         azureToolkitUtilsVersion = "3.73.0-SNAPSHOT"
+        azureToolkitHDInsightVersion = "0.1.0"
     }
 
     sourceCompatibility = javaVersion
@@ -110,6 +112,7 @@ subprojects {
             mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
             mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
             mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
+            mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
         }
     }
 
@@ -168,6 +171,7 @@ dependencyManagement {
         mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
         mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
         mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
+        mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
     }
 }
 
@@ -195,6 +199,8 @@ dependencies {
     implementation project(':azure-intellij-plugin-cosmos')
     implementation project(':azure-intellij-plugin-bicep')
     implementation project(':azure-intellij-plugin-containerapps')
+    implementation project(':azure-intellij-plugin-hdinsight')
+    implementation 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-spark-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     implementation 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'
