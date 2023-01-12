@@ -33,27 +33,31 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
             .withLabel("Edit SSH Configuration")
             .withIcon(AzureIcons.Action.ADD.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof VirtualMachine)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(CONNECT_SSH)
             .withLabel("Connect Using SSH")
             .withIcon(AzureIcons.Action.CONSOLE.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof VirtualMachine)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(SFTP_CONNECTION)
             .withLabel("Browse Files Using SFTP")
             .withIcon(AzureIcons.Action.SFTP.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof VirtualMachine)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(GROUP_CREATE_VM)
             .withLabel("Virtual Machine")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
     }
 

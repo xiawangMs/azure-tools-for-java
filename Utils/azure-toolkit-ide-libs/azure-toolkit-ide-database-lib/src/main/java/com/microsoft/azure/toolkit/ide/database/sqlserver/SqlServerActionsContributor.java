@@ -30,14 +30,16 @@ public class SqlServerActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(OPEN_DATABASE_TOOL)
-            .enableWhen(s -> s instanceof MicrosoftSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof MicrosoftSqlServer)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withIcon(AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .withLabel("Open with Database Tools")
             .withIdParam(AzResource::getName)
             .register(am);
 
         new Action<>(GROUP_CREATE_SQLSERVER)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withLabel("SQL Server")
             .withIdParam(AzResource::getName)
             .register(am);

@@ -30,14 +30,16 @@ public class MySqlActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(OPEN_DATABASE_TOOL)
-            .enableWhen(s -> s instanceof MySqlServer && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof MySqlServer)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withIcon(AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .withLabel("Open with Database Tools")
             .withIdParam(AzResource::getName)
             .register(am);
 
         new Action<>(GROUP_CREATE_MYSQL)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withLabel("MySQL server")
             .withIdParam(AzResource::getName)
             .register(am);

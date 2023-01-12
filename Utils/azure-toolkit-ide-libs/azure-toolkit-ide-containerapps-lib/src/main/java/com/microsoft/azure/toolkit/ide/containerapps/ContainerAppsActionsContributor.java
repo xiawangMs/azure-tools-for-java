@@ -52,21 +52,22 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(CREATE_CONTAINER_APP)
-                .withLabel("Create Container App")
-                .withIcon(AzureIcons.Action.CREATE.getIconPath())
-                .withHandler(s -> {
-                    final IAccount account = Azure.az(IAzureAccount.class).account();
-                    final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
-                    am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
-                })
-                .withShortcut(am.getIDEDefaultShortcuts().add())
-                .register(am);
+            .withLabel("Create Container App")
+            .withIcon(AzureIcons.Action.CREATE.getIconPath())
+            .withHandler(s -> {
+                final IAccount account = Azure.az(IAzureAccount.class).account();
+                final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
+                am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
+            })
+            .withShortcut(am.getIDEDefaultShortcuts().add())
+            .register(am);
 
         new Action<>(BROWSE)
             .withLabel("Open In Browser")
             .withIcon(AzureIcons.Action.BROWSER.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ContainerApp)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler((s, e) -> {
                 if (!s.isIngressEnabled() || StringUtils.isBlank(s.getIngressFqdn())) {
                     final Action<AzResourceBase> action = new Action<>(SHOW_PROPERTIES)
@@ -83,7 +84,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Activate Latest Revision")
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp &&
+            .visibleWhen(s -> s instanceof ContainerApp &&
                 ((ContainerApp) s).getFormalStatus().isConnected() &&
                 Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
                 !((ContainerApp) s).getLatestRevision().isActive())
@@ -94,7 +95,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Deactivate Latest Revision")
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp &&
+            .visibleWhen(s -> s instanceof ContainerApp &&
                 ((ContainerApp) s).getFormalStatus().isConnected() &&
                 Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
                 ((ContainerApp) s).getLatestRevision().isActive())
@@ -105,7 +106,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Restart Latest Revision")
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp &&
+            .visibleWhen(s -> s instanceof ContainerApp &&
                 ((ContainerApp) s).getFormalStatus().isConnected() &&
                 Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
                 ((ContainerApp) s).getLatestRevision().isActive())
@@ -116,14 +117,16 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Update Image")
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ContainerApp)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(OPEN_LOG_STREAMS)
             .withLabel("Open Log Streams")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof ContainerApp && ((ContainerApp) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ContainerApp)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getPortalUrl() + "/logstream"))
             .register(am);
 
@@ -131,7 +134,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Activate")
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && !((Revision) s).isActive())
+            .visibleWhen(s -> s instanceof Revision && !((Revision) s).isActive())
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(Revision::activate)
             .register(am);
 
@@ -139,7 +143,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Deactivate")
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && ((Revision) s).isActive())
+            .visibleWhen(s -> s instanceof Revision && ((Revision) s).isActive())
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(Revision::deactivate)
             .register(am);
 
@@ -147,7 +152,9 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Restart")
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && ((Revision) s).isActive())
+            .visibleWhen(s -> s instanceof Revision)
+            .visibleWhen(s -> s instanceof Revision && ((Revision) s).isActive())
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(Revision::restart)
             .register(am);
 
@@ -155,14 +162,16 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Open In Browser")
             .withIcon(AzureIcons.Action.BROWSER.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .enableWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof Revision)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getFqdn()))
             .register(am);
 
         new Action<>(GROUP_CREATE_CONTAINER_APP)
             .withLabel("Container App")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(s -> {
                 final IAccount account = Azure.az(IAzureAccount.class).account();
                 final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());

@@ -34,7 +34,8 @@ public class DeploymentActionsContributor implements IActionsContributor {
             .withLabel("Edit Deployment")
             .withIcon(AzureIcons.Action.EDIT.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable())
+            .visibleWhen(s -> s instanceof ResourceDeployment)
+            .enableWhen(s -> s.getFormalStatus().isWritable())
             .withShortcut(am.getIDEDefaultShortcuts().view())
             .register(am);
 
@@ -42,27 +43,31 @@ public class DeploymentActionsContributor implements IActionsContributor {
             .withLabel("Export Template File")
             .withIcon(AzureIcons.Action.EDIT.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceDeployment)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(EXPORT_PARAMETER)
             .withLabel("Export Parameter File")
             .withIcon(AzureIcons.Action.EDIT.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceDeployment)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(UPDATE)
             .withLabel("Update Deployment")
             .withIcon(AzureIcons.Action.EDIT.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceDeployment && ((ResourceDeployment) s).getFormalStatus().isWritable())
+            .visibleWhen(s -> s instanceof ResourceDeployment)
+            .enableWhen(s -> s.getFormalStatus().isWritable())
             .register(am);
 
         new Action<>(GROUP_CREATE_DEPLOYMENT)
             .withLabel("Deployment")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
     }
 
