@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBIntSpinner;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
@@ -64,10 +65,17 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     private ImageForm pnlContainer;
     private AzureContainerAppsEnvironmentComboBox cbEnvironment;
     private TitledSeparator titleContainerDetails;
-    private TitledSeparator titleIngress;
+    private AzureHideableTitledSeparator titleIngress;
     private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
     private JLabel lblEnv;
     private JCheckBox chkExternalTraffic;
+    private AzureHideableTitledSeparator titleAppSettings;
+    private AzureHideableTitledSeparator titleProjectDetails;
+    private AzureHideableTitledSeparator titleContainerAppsEnvironment;
+    private JPanel pnlIngressSettings;
+    private JPanel pnlAppSettings;
+    private JPanel pnlProjectDetails;
+    private JPanel pnlContainerAppsEnvironment;
 
     public static final ContainerAppDraft.ImageConfig QUICK_START_IMAGE = ContainerAppDraft.ImageConfig.builder()
             .fullImageName("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest").environmentVariables(new ArrayList<>()).build();
@@ -105,6 +113,16 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.lblResourceGroup.setLabelFor(cbResourceGroup);
         this.lblContainerAppName.setLabelFor(txtContainerAppName);
         this.lblRegion.setLabelFor(cbRegion);
+
+        this.titleProjectDetails.addContentComponent(pnlProjectDetails);
+        this.titleContainerAppsEnvironment.addContentComponent(pnlContainerAppsEnvironment);
+        this.titleAppSettings.addContentComponent(pnlAppSettings);
+        this.titleIngress.addContentComponent(pnlIngressSettings);
+
+        this.titleProjectDetails.expand();
+        this.titleContainerAppsEnvironment.expand();
+        this.titleAppSettings.expand();
+        this.titleIngress.collapse();
     }
 
     private void mergeContainerConfiguration(final ImageForm target, final ContainerAppDraft.ImageConfig value) {
@@ -179,6 +197,11 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.pnlContainer.setEnabled(!useQuickStartImage);
         this.pnlContainer.setVisible(!useQuickStartImage);
         this.titleIngress.setEnabled(!useQuickStartImage);
+        if (!useQuickStartImage) {
+            titleIngress.expand();
+        } else {
+            titleIngress.collapse();
+        }
         this.lblIngress.setEnabled(!useQuickStartImage);
         this.chkIngress.setEnabled(!useQuickStartImage);
         this.lblExternalTraffic.setEnabled(!useQuickStartImage);
