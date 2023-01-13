@@ -50,6 +50,8 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
             put("Microsoft.Insights/components", "Monitor Ingestion");
             put("Microsoft.DocumentDB", "Cosmos DB");
             put("Microsoft.DocumentDB/databaseAccounts", "Cosmos DB");
+            put("Microsoft.HDInsight", "HDInsight");
+            put("Microsoft.HDInsight/clusters", "HDInsight");
         }
     };
 
