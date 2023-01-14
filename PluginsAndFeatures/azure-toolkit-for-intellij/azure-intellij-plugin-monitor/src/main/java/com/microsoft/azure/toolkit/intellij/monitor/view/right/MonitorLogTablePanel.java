@@ -92,6 +92,9 @@ public class MonitorLogTablePanel {
             try {
                 final LogsTable result = selectedWorkspace.executeQuery(queryString);
                 AzureTaskManager.getInstance().runLater(() -> {
+                    if (Objects.isNull(result)) {
+                        return;
+                    }
                     if (result.getAllTableCells().size() > 0) {
                         this.logTable.setModel(result.getRows());
                     }
@@ -174,8 +177,9 @@ public class MonitorLogTablePanel {
     }
 
     private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
-        return selectedWorkspace.executeQuery(String.format("%s | take 1", tableName))
-                .getAllTableCells().stream().map(LogsTableCell::getColumnName).toList();
+        return Optional.ofNullable(selectedWorkspace.executeQuery(String.format("%s | take 1", tableName)))
+                .map(LogsTable::getAllTableCells).orElse(new ArrayList<>())
+                .stream().map(LogsTableCell::getColumnName).toList();
     }
 
     private Pair<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
@@ -183,7 +187,9 @@ public class MonitorLogTablePanel {
         for (final String columnName: columnNames) {
             if (tableColumns.contains(columnName)) {
                 final String queryResource = String.format("%s | distinct %s | project %s", tableName, columnName, columnName);
-                return Pair.of(columnName, selectedWorkspace.executeQuery(queryResource).getAllTableCells().stream().map(LogsTableCell::getValueAsString).toList());
+                return Pair.of(columnName, Optional.ofNullable(selectedWorkspace.executeQuery(queryResource))
+                        .map(LogsTable::getAllTableCells).orElse(new ArrayList<>())
+                        .stream().map(LogsTableCell::getValueAsString).toList());
             }
         }
         return Pair.of(StringUtils.EMPTY, new ArrayList<>());
