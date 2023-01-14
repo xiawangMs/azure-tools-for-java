@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +33,7 @@ public class AzureMonitorManager {
         return instance;
     }
 
+    @AzureOperation(name="user/monitor.open_azure_monitor")
     public void openMonitorWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace) {
         final ToolWindow azureMonitorWindow = getToolWindow(project, workspace);
         Optional.ofNullable(azureMonitorWindow).ifPresent(it -> AzureTaskManager.getInstance().runLater(

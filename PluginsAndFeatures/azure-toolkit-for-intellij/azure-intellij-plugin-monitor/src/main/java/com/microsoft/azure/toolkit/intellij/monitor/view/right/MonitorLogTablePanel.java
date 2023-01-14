@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeC
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -194,6 +195,7 @@ public class MonitorLogTablePanel {
         this.levelComboBox.setVisible(false);
     }
 
+    @AzureOperation(name = "user/monitor.export_query_result")
     private void exportQueryResult() {
         final FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(message("azure.monitor.export.description"), "");
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);

@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.intellij.ui.JBSplitter;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,6 +59,7 @@ public class MonitorLogPanel {
         this.monitorLogTablePanel.addRunActionListener(e -> loadLogs());
     }
 
+    @AzureOperation(name = "user/monitor.execute_query")
     private void loadLogs() {
         final LogAnalyticsWorkspace selectedWorkspace = this.parentView.getSelectedWorkspace();
         if (Objects.isNull(selectedWorkspace)) {
