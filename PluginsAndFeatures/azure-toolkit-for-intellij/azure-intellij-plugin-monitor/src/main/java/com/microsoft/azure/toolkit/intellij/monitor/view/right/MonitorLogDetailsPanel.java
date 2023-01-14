@@ -8,6 +8,7 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -33,6 +34,7 @@ public class MonitorLogDetailsPanel {
         this.statusLabel.setText(statusText);
     }
 
+    @AzureOperation(name = "user/monitor.select_table_cell")
     public void setViewText(String viewerTitle, String viewerText) {
         this.cellDetailsPanel.setVisible(true);
         this.statusPanel.setVisible(false);
