@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -120,12 +121,10 @@ public class MonitorLogTablePanel {
         AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
-                final Pair<String, List<String>> resourceListPair = queryCellValueList(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns);
-                final Pair<String, List<String>> levelListPair = queryCellValueList(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns);
-                AzureTaskManager.getInstance().runLater(() -> {
-                    updateComboboxItems(resourceComboBox, resourceListPair);
-                    updateComboboxItems(levelComboBox, levelListPair);
-                }, AzureTask.Modality.ANY);
+                final CountDownLatch countDownLatch = new CountDownLatch(2);
+                loadFilters(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns, resourceComboBox, countDownLatch);
+                loadFilters(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns, levelComboBox, countDownLatch);
+                countDownLatch.await();
             } catch (final Exception e) {
                 throw new AzureToolkitRuntimeException(e);
             } finally {
@@ -196,6 +195,21 @@ public class MonitorLogTablePanel {
             }
         }
         return Pair.of(StringUtils.EMPTY, new ArrayList<>());
+    }
+
+    private void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName,
+                             String[] columnNames, List<String> tableColumns,
+                             ResourceComboBox comboBox, CountDownLatch latch) {
+        AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
+            try {
+                final Pair<String, List<String>> valueListPair = queryCellValueList(selectedWorkspace, tableName, columnNames, tableColumns);
+                AzureTaskManager.getInstance().runLater(() -> updateComboboxItems(comboBox, valueListPair), AzureTask.Modality.ANY);
+            } catch (final Exception e) {
+                throw new AzureToolkitRuntimeException(e);
+            } finally {
+                latch.countDown();
+            }
+        });
     }
 
     private void hideFilters() {
