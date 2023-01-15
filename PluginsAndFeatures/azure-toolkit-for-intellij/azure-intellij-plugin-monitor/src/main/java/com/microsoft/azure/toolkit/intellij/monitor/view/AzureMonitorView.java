@@ -3,12 +3,11 @@ package com.microsoft.azure.toolkit.intellij.monitor.view;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
-import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorLogPanel;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -28,11 +27,11 @@ public class AzureMonitorView {
     private MonitorTreePanel monitorTreePanel;
     private JLabel workspaceName;
     private JPanel workspaceHeader;
-    private JBSplitter rightSplitter;
+    private JPanel rightPanel;
+    private MonitorTabbedPane tabbedPanePanel;
     @Getter
     @Nullable
     private LogAnalyticsWorkspace selectedWorkspace;
-    private MonitorLogPanel monitorLogPanel;
 
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab) {
         this.selectedWorkspace = logAnalyticsWorkspace;
@@ -40,20 +39,17 @@ public class AzureMonitorView {
         this.workspaceName.setText(Optional.ofNullable(selectedWorkspace).map(LogAnalyticsWorkspace::getName).orElse(StringUtils.EMPTY));
         this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
-        this.monitorLogPanel.setTableTab(isTableTab);
-        this.monitorLogPanel.setParentView(this);
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
-            this.monitorTreePanel.refresh();
-            this.monitorLogPanel.refresh();
-        });
+        this.tabbedPanePanel.setTableTab(isTableTab);
+        this.tabbedPanePanel.setParentView(this);
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
+    }
+
+    public String getQueryString(String queryName) {
+        return this.getMonitorTreePanel().getQueryString(queryName);
     }
 
     public JPanel getCenterPanel() {
         return contentPanel;
-    }
-
-    public String getCurrentTreeNodeText() {
-        return this.monitorTreePanel.getCurrentNodeText();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
@@ -76,8 +72,8 @@ public class AzureMonitorView {
             }
         });
         this.monitorTreePanel = new MonitorTreePanel();
-        this.monitorLogPanel = new MonitorLogPanel();
-        this.rightSplitter = this.monitorLogPanel.getSplitter();
+        this.tabbedPanePanel = new MonitorTabbedPane();
+        this.rightPanel = tabbedPanePanel.getContentPanel();
     }
 
 }

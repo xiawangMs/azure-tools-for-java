@@ -21,6 +21,8 @@ import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.ResourceComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -114,6 +116,7 @@ public class MonitorLogTablePanel {
         statusPanel.setVisible(true);
         filterPanel.setVisible(false);
         timeRangeComboBox.setVisible(true);
+        runButton.setVisible(true);
         AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
@@ -199,6 +202,7 @@ public class MonitorLogTablePanel {
         this.timeRangeComboBox.setVisible(false);
         this.resourceComboBox.setVisible(false);
         this.levelComboBox.setVisible(false);
+        this.runButton.setVisible(false);
     }
 
     @AzureOperation(name = "user/monitor.export_query_result")

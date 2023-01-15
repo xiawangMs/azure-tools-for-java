@@ -2,49 +2,43 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.intellij.ui.JBSplitter;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
-import lombok.Setter;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Objects;
-import java.util.Optional;
 
-public class MonitorLogPanel {
+public class MonitorSingleTab {
     @Getter
-    private final JBSplitter splitter;
-    private final MonitorLogTablePanel monitorLogTablePanel;
-    private final MonitorLogDetailsPanel monitorLogDetailsPanel;
-    @Setter
-    private boolean isTableTab;
-    private AzureMonitorView parentView;
+    private JBSplitter splitter;
+    private MonitorLogTablePanel monitorLogTablePanel;
+    private MonitorLogDetailsPanel monitorLogDetailsPanel;
+    private final boolean isTableTab;
+    private final String tabName;
+    private final AzureMonitorView parentView;
 
-    public MonitorLogPanel() {
+    public MonitorSingleTab(boolean isTableTab, String tabName, AzureMonitorView parentView) {
+        this.isTableTab = isTableTab;
+        this.tabName = tabName;
+        this.parentView = parentView;
+        this.initUI();
+        this.initListener();
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
+            loadFilters(tabName);
+            loadLogs();
+        });
+    }
+
+    private void initUI() {
         this.splitter = new JBSplitter();
         this.monitorLogTablePanel = new MonitorLogTablePanel();
         this.monitorLogDetailsPanel = new MonitorLogDetailsPanel();
         this.splitter.setProportion(0.8f);
         this.splitter.setFirstComponent(this.monitorLogTablePanel.getContentPanel());
         this.splitter.setSecondComponent(this.monitorLogDetailsPanel.getContentPanel());
-        this.initListener();
-    }
-
-    public void refresh() {
-        loadFilters(this.parentView.getCurrentTreeNodeText());
-        loadLogs();
-    }
-
-    public void setParentView(AzureMonitorView monitorView) {
-        this.parentView = monitorView;
-        this.parentView.getMonitorTreePanel().addTreeSelectionListener(e -> Optional.ofNullable(e.getNewLeadSelectionPath())
-                .ifPresent(it -> {
-                    final DefaultMutableTreeNode node = (DefaultMutableTreeNode) it.getLastPathComponent();
-                    if (Objects.nonNull(node) && node.isLeaf()) {
-                        loadFilters(node.getUserObject().toString());
-                    }
-                }));
     }
 
     private void initListener() {
@@ -66,7 +60,7 @@ public class MonitorLogPanel {
             AzureMessager.getMessager().warning("Please select log analytics workspace first");
             return;
         }
-        final String queryString = this.isTableTab ? this.monitorLogTablePanel.getQueryStringFromFilters(this.parentView.getCurrentTreeNodeText()) : this.parentView.getCurrentTreeNodeText();
+        final String queryString = this.isTableTab ? this.monitorLogTablePanel.getQueryStringFromFilters(tabName) : this.parentView.getQueryString(tabName);
         this.monitorLogTablePanel.loadTableModel(selectedWorkspace, queryString);
         this.monitorLogDetailsPanel.setStatus("No table cell is selected");
     }

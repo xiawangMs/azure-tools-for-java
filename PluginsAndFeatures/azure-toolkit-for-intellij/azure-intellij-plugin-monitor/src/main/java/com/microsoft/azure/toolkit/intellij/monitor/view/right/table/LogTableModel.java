@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.right;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.table;
 
 import com.azure.monitor.query.models.LogsColumnType;
 import com.azure.monitor.query.models.LogsTableCell;

@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.monitor.view.right;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.table;
 
 import com.azure.monitor.query.models.LogsTableRow;
 import com.intellij.ui.table.JBTable;

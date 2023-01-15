@@ -13,6 +13,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
@@ -33,6 +34,7 @@ public class MonitorTreePanel extends JPanel {
     private boolean isTableTab;
 
     public MonitorTreePanel() {
+        super();
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
     }
 
@@ -49,11 +51,16 @@ public class MonitorTreePanel extends JPanel {
         this.tree.addTreeSelectionListener(listener);
     }
 
-    public String getCurrentNodeText() {
-        if (Objects.isNull(currentNodeText)) {
-            return getDefaultNodeName();
+    public String getQueryString(String nodeDisplayName) {
+        final DefaultMutableTreeNode node = TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), n -> Objects.equals(n.toString(), nodeDisplayName));
+        if (Objects.isNull(node)) {
+            return StringUtils.EMPTY;
         }
-        return currentNodeText;
+        if (node.getUserObject() instanceof QueryData) {
+            return ((QueryData) node.getUserObject()).getQueryString();
+        } else {
+            return node.toString();
+        }
     }
 
     private void initListener() {
