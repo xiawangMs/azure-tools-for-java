@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.azure.monitor.query.models.LogsTable;
@@ -117,7 +122,6 @@ public class MonitorLogTablePanel {
         statusPanel.setVisible(true);
         filterPanel.setVisible(false);
         timeRangeComboBox.setVisible(true);
-        runButton.setVisible(true);
         AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
@@ -216,7 +220,6 @@ public class MonitorLogTablePanel {
         this.timeRangeComboBox.setVisible(false);
         this.resourceComboBox.setVisible(false);
         this.levelComboBox.setVisible(false);
-        this.runButton.setVisible(false);
     }
 
     @AzureOperation(name = "user/monitor.export_query_result")
