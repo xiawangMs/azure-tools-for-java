@@ -7,6 +7,9 @@ import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,14 +42,57 @@ public class MonitorTabbedPane {
     private void selectTab(String tabName) {
         if (!openedTabs.contains(tabName)) {
             final MonitorSingleTab singleTab = new MonitorSingleTab(this.isTableTab, tabName, this.parentView);
-            this.closeableTabbedPane.addTab(tabName, AllIcons.Actions.Close, singleTab.getSplitter());
-            final JLabel label = new JLabel(tabName);
-            label.setHorizontalTextPosition(SwingConstants.LEFT);
-            label.setIcon(AllIcons.Actions.Close);
-            this.closeableTabbedPane.setTabComponentAt(this.closeableTabbedPane.getTabCount() - 1, label);
+            this.closeableTabbedPane.addTab(tabName, singleTab.getSplitter());
+            this.closeableTabbedPane.setTabComponentAt(this.closeableTabbedPane.getTabCount() - 1, createTabTitle(tabName));
             this.openedTabs.add(tabName);
         }
         final int toSelectIndex = this.closeableTabbedPane.indexOfTab(tabName);
         this.closeableTabbedPane.setSelectedIndex(toSelectIndex);
+    }
+
+    private JPanel createTabTitle(String tabName) {
+        final JPanel tabTitle = new JPanel(new GridBagLayout());
+        tabTitle.setOpaque(false);
+        final JLabel iconLabel = new JLabel(AllIcons.Actions.Close);
+        final JLabel textLabel = new JLabel(tabName);
+        final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        tabTitle.add(textLabel, gbc);
+        gbc.gridx++;
+        gbc.weightx = 0;
+        tabTitle.add(iconLabel, gbc);
+        iconLabel.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                final int i = closeableTabbedPane.indexOfTabComponent(tabTitle);
+                if (i != -1) {
+                    closeableTabbedPane.remove(i);
+                    openedTabs.remove(tabName);
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                iconLabel.setIcon(AllIcons.Actions.CloseHovered);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                iconLabel.setIcon(AllIcons.Actions.Close);
+            }
+        });
+        return tabTitle;
     }
 }
