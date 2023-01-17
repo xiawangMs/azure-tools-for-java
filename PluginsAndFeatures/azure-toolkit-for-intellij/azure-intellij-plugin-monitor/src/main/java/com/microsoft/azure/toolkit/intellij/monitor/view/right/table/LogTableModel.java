@@ -60,7 +60,7 @@ public class LogTableModel implements TableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return !isRowInvalid(rowIndex);
+        return false;
     }
 
     @Override
