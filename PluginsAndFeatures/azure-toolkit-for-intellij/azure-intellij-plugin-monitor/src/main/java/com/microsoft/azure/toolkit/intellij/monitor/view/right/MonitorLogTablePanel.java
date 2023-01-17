@@ -64,6 +64,9 @@ public class MonitorLogTablePanel {
     private SearchTextField searchField;
     private JPanel statusPanel;
     private JLabel statusLabel;
+    private JPanel timeRangePanel;
+    private JPanel levelPanel;
+    private JPanel resourcePanel;
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
     private final static String RESULT_CSV_FILE = "result.csv";
@@ -121,14 +124,14 @@ public class MonitorLogTablePanel {
     public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
         statusPanel.setVisible(true);
         filterPanel.setVisible(false);
-        timeRangeComboBox.setVisible(true);
+        timeRangePanel.setVisible(true);
         AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
-                final CountDownLatch countDownLatch = new CountDownLatch(2);
-                loadFilters(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns, resourceComboBox, countDownLatch);
-                loadFilters(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns, levelComboBox, countDownLatch);
-                countDownLatch.await();
+                final List<String> specificColumnNames = new ArrayList<>(Arrays.asList(RESOURCE_COMBOBOX_COLUMN_NAMES));
+                specificColumnNames.addAll(Arrays.asList(LEVEL_COMBOBOX_COLUMN));
+                final Map<String, List<String>> result = queryCellValueList(selectedWorkspace, tableName, specificColumnNames, tableColumns);
+                AzureTaskManager.getInstance().runLater(() -> updateCombobox(result), AzureTask.Modality.ANY);
             } catch (final Exception e) {
                 throw new AzureToolkitRuntimeException(e);
             } finally {
@@ -166,19 +169,26 @@ public class MonitorLogTablePanel {
         searchField.addDocumentListener((TextDocumentListenerAdapter) () -> logTable.filter(searchField.getText()));
     }
 
-    private void updateComboboxItems(ResourceComboBox comboBox, Pair<String, List<String>> pair) {
-        if (pair.getValue().size() <=0 ) {
-            comboBox.setVisible(false);
+    private void updateCombobox(Map<String, List<String>> map) {
+        Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
+                .ifPresent(it -> updateComboboxItems(resourcePanel, resourceComboBox, map.get(it), it));
+        Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(s -> map.containsKey(s)).findFirst()
+                .ifPresent(it -> updateComboboxItems(levelPanel, levelComboBox, map.get(it), it));
+    }
+
+    private void updateComboboxItems(JPanel panel, ResourceComboBox comboBox, List<String> items, String key) {
+        if (items.size() <=0 ) {
+            panel.setVisible(false);
             return;
         }
-        comboBox.setVisible(true);
+        panel.setVisible(true);
         comboBox.setItemsLoader(() -> {
             final List<String> result = new ArrayList<>();
             result.add(ResourceComboBox.ALL);
-            result.addAll(pair.getValue());
+            result.addAll(items);
             return result;
         });
-        comboBox.setColumnName(pair.getKey());
+        comboBox.setColumnName(key);
         comboBox.setValue(ResourceComboBox.ALL);
     }
 
@@ -188,38 +198,26 @@ public class MonitorLogTablePanel {
                 .stream().map(LogsTableCell::getColumnName).toList();
     }
 
-    private Pair<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
-                                                          String[] columnNames, List<String> tableColumns) {
-        for (final String columnName: columnNames) {
-            if (tableColumns.contains(columnName)) {
-                final String queryResource = String.format("%s | distinct %s | project %s", tableName, columnName, columnName);
-                return Pair.of(columnName, Optional.ofNullable(selectedWorkspace.executeQuery(queryResource))
-                        .map(LogsTable::getAllTableCells).orElse(new ArrayList<>())
-                        .stream().map(LogsTableCell::getValueAsString).toList());
-            }
-        }
-        return Pair.of(StringUtils.EMPTY, new ArrayList<>());
-    }
-
-    private void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName,
-                             String[] columnNames, List<String> tableColumns,
-                             ResourceComboBox comboBox, CountDownLatch latch) {
-        AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
-            try {
-                final Pair<String, List<String>> valueListPair = queryCellValueList(selectedWorkspace, tableName, columnNames, tableColumns);
-                AzureTaskManager.getInstance().runLater(() -> updateComboboxItems(comboBox, valueListPair), AzureTask.Modality.ANY);
-            } catch (final Exception e) {
-                throw new AzureToolkitRuntimeException(e);
-            } finally {
-                latch.countDown();
-            }
-        });
+    private Map<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
+                                                          List<String> specificColumnNames, List<String> columnNamesInTable) {
+        String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
+                .filter(s -> columnNamesInTable.contains(s)).toList(), ",");
+        final String queryString = String.format("%s | distinct %s | project %s", tableName, kustoColumnNames, kustoColumnNames);
+        Map<String, List<String>> result = new HashMap<>();
+        Optional.ofNullable(selectedWorkspace.executeQuery(queryString))
+                .map(LogsTable::getAllTableCells).orElse(new ArrayList<>()).forEach(logsTableCell -> {
+                    if (!result.containsKey(logsTableCell.getColumnName())) {
+                        result.put(logsTableCell.getColumnName(), new ArrayList<>());
+                    }
+                    result.get(logsTableCell.getColumnName()).add(logsTableCell.getValueAsString());
+                });
+        return result;
     }
 
     private void hideFilters() {
-        this.timeRangeComboBox.setVisible(false);
-        this.resourceComboBox.setVisible(false);
-        this.levelComboBox.setVisible(false);
+        this.timeRangePanel.setVisible(false);
+        this.resourcePanel.setVisible(false);
+        this.levelPanel.setVisible(false);
     }
 
     @AzureOperation(name = "user/monitor.export_query_result")
