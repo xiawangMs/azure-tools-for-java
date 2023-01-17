@@ -62,11 +62,11 @@ public class MonitorLogTablePanel {
     private JButton runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
-    private JPanel statusPanel;
-    private JLabel statusLabel;
     private JPanel timeRangePanel;
     private JPanel levelPanel;
     private JPanel resourcePanel;
+    private JLabel logLevelLabel;
+    private JLabel resourceLabel;
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
     private final static String RESULT_CSV_FILE = "result.csv";
@@ -84,10 +84,10 @@ public class MonitorLogTablePanel {
 
     public String getQueryStringFromFilters(String tableName) {
         final List<String> queryParams = new ArrayList<>(Arrays.asList(tableName, timeRangeComboBox.getKustoString()));
-        if (resourceComboBox.isVisible() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
+        if (resourceLabel.isEnabled() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
             queryParams.add(resourceComboBox.getKustoString());
         }
-        if (levelComboBox.isVisible() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
+        if (logLevelLabel.isEnabled() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
             queryParams.add(levelComboBox.getKustoString());
         }
         final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
@@ -122,23 +122,22 @@ public class MonitorLogTablePanel {
     }
 
     public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
-        statusPanel.setVisible(true);
-        filterPanel.setVisible(false);
         timeRangePanel.setVisible(true);
+        resourcePanel.setVisible(true);
+        levelPanel.setVisible(true);
+        logLevelLabel.setEnabled(false);
+        resourceLabel.setEnabled(false);
         AzureTaskManager.getInstance().runInBackground("loading filters", () -> {
+            final Map<String, List<String>> result = new HashMap<>();
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
                 final List<String> specificColumnNames = new ArrayList<>(Arrays.asList(RESOURCE_COMBOBOX_COLUMN_NAMES));
                 specificColumnNames.addAll(Arrays.asList(LEVEL_COMBOBOX_COLUMN));
-                final Map<String, List<String>> result = queryCellValueList(selectedWorkspace, tableName, specificColumnNames, tableColumns);
-                AzureTaskManager.getInstance().runLater(() -> updateCombobox(result), AzureTask.Modality.ANY);
+                result.putAll(queryCellValueList(selectedWorkspace, tableName, specificColumnNames, tableColumns));
             } catch (final Exception e) {
                 throw new AzureToolkitRuntimeException(e);
             } finally {
-                AzureTaskManager.getInstance().runLater(() -> {
-                    statusPanel.setVisible(false);
-                    filterPanel.setVisible(true);
-                }, AzureTask.Modality.ANY);
+                AzureTaskManager.getInstance().runLater(() -> updateCombobox(result), AzureTask.Modality.ANY);
             }
         });
     }
@@ -170,18 +169,21 @@ public class MonitorLogTablePanel {
     }
 
     private void updateCombobox(Map<String, List<String>> map) {
+        resourcePanel.setVisible(false);
+        levelPanel.setVisible(false);
         Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
-                .ifPresent(it -> updateComboboxItems(resourcePanel, resourceComboBox, map.get(it), it));
+                .ifPresent(it -> updateComboboxItems(resourcePanel, map.get(it), it));
         Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(s -> map.containsKey(s)).findFirst()
-                .ifPresent(it -> updateComboboxItems(levelPanel, levelComboBox, map.get(it), it));
+                .ifPresent(it -> updateComboboxItems(levelPanel, map.get(it), it));
     }
 
-    private void updateComboboxItems(JPanel panel, ResourceComboBox comboBox, List<String> items, String key) {
+    private void updateComboboxItems(JPanel panel, List<String> items, String key) {
         if (items.size() <=0 ) {
-            panel.setVisible(false);
             return;
         }
         panel.setVisible(true);
+        panel.getComponent(0).setEnabled(true);
+        final ResourceComboBox comboBox = (ResourceComboBox) panel.getComponent(1);
         comboBox.setItemsLoader(() -> {
             final List<String> result = new ArrayList<>();
             result.add(ResourceComboBox.ALL);
@@ -200,10 +202,10 @@ public class MonitorLogTablePanel {
 
     private Map<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
                                                           List<String> specificColumnNames, List<String> columnNamesInTable) {
-        String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
+        final Map<String, List<String>> result = new HashMap<>();
+        final String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
                 .filter(s -> columnNamesInTable.contains(s)).toList(), ",");
         final String queryString = String.format("%s | distinct %s | project %s", tableName, kustoColumnNames, kustoColumnNames);
-        Map<String, List<String>> result = new HashMap<>();
         Optional.ofNullable(selectedWorkspace.executeQuery(queryString))
                 .map(LogsTable::getAllTableCells).orElse(new ArrayList<>()).forEach(logsTableCell -> {
                     if (!result.containsKey(logsTableCell.getColumnName())) {
