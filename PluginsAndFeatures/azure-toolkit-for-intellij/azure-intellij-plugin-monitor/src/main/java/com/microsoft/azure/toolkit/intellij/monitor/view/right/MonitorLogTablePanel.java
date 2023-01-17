@@ -99,7 +99,7 @@ public class MonitorLogTablePanel {
         logTable.clearModel();
         logTable.setLoading(true);
         runButton.setEnabled(false);
-        AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> {
+        AzureTaskManager.getInstance().runInBackground("loading Azure Monitor data", () -> {
             try {
                 final LogsTable result = selectedWorkspace.executeQuery(queryString);
                 AzureTaskManager.getInstance().runLater(() -> {
@@ -125,7 +125,7 @@ public class MonitorLogTablePanel {
         statusPanel.setVisible(true);
         filterPanel.setVisible(false);
         timeRangePanel.setVisible(true);
-        AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
+        AzureTaskManager.getInstance().runInBackground("loading filters", () -> {
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
                 final List<String> specificColumnNames = new ArrayList<>(Arrays.asList(RESOURCE_COMBOBOX_COLUMN_NAMES));
