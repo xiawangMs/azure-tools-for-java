@@ -75,6 +75,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private ActionLink installFuncCoreToolsAction;
     private AzureFileInput dotnetRuntimePath;
     private ActionLink installDotnetRuntime;
+    private AzureIntegerInput queryRowNumber;
 
     private AzureConfiguration originalConfig;
 
@@ -102,6 +103,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         });
         txtPageSize.setMinValue(1);
+        queryRowNumber.setMinValue(1);
+        queryRowNumber.setMaxValue(5000);
 
         azureEnvDesc.setForeground(UIUtil.getContextHelpForeground());
         azureEnvDesc.setMaximumSize(new Dimension());
@@ -139,6 +142,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
         txtPageSize.setValue(config.getPageSize());
+        queryRowNumber.setValue(config.getMonitorQueryRowNumber());
         txtLabelFields.setValue(String.join(";", config.getDocumentsLabelFields()));
     }
 
@@ -159,6 +163,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
         if (Objects.nonNull(txtPageSize.getValue())) {
             data.setPageSize(txtPageSize.getValue());
+        }
+        if (Objects.nonNull(queryRowNumber.getValue())) {
+            data.setMonitorQueryRowNumber(queryRowNumber.getValue());
         }
         if (StringUtils.isNotEmpty(txtLabelFields.getValue())) {
             final List<String> fields = Arrays.stream(txtLabelFields.getValue().split(";")).collect(Collectors.toList());
@@ -234,6 +241,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setPageSize(newConfig.getPageSize());
         this.originalConfig.setDocumentsLabelFields(newConfig.getDocumentsLabelFields());
         this.originalConfig.setDotnetRuntimePath(newConfig.getDotnetRuntimePath());
+        this.originalConfig.setMonitorQueryRowNumber(newConfig.getMonitorQueryRowNumber());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
 
         if (StringUtils.isNotBlank(newConfig.getCloud())) {
@@ -273,6 +281,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             !StringUtils.equalsIgnoreCase(newConfig.getDotnetRuntimePath(), originalConfig.getDotnetRuntimePath()) ||
             !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
             !Objects.equals(newConfig.getPageSize(), originalConfig.getPageSize()) ||
+            !Objects.equals(newConfig.getMonitorQueryRowNumber(), originalConfig.getMonitorQueryRowNumber()) ||
             !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
     }
 

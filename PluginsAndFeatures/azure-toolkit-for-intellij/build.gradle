@@ -199,6 +199,7 @@ dependencies {
     implementation project(':azure-intellij-plugin-cosmos')
     implementation project(':azure-intellij-plugin-bicep')
     implementation project(':azure-intellij-plugin-containerapps')
+    implementation project(':azure-intellij-plugin-monitor')
     implementation project(':azure-intellij-plugin-hdinsight')
     implementation 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-spark-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'

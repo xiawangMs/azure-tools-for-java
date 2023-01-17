@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.toolkit.ide.common.experiment;
 
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -35,9 +35,8 @@ public class ExperimentationClient {
         try {
             final Map<String, String> audienceFilters = new HashMap<>();
             final Map<String, String> assignmentIds = new HashMap<>();
-            final String assignmentUnitId = InstallationIdUtils.getHashMac();
-            assignmentIds.put(ASSIGNMENT_UNIT_ID, assignmentUnitId);
-            OperationContext.action().setTelemetryProperty("ExpAssignmentUnit", assignmentUnitId);
+            final AzureConfiguration config = Azure.az().config();
+            assignmentIds.put(ASSIGNMENT_UNIT_ID, config.getMachineId());
             experimentationService = new ExperimentationService()
                     .withEndPoint(END_POINT)
                     .withAudienceFilters(audienceFilters)
