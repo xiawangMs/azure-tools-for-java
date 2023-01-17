@@ -7,6 +7,7 @@ package com.microsoft.intellij.serviceexplorer.azure;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -59,6 +60,6 @@ public class OpenAzureMonitorAction extends NodeAction {
 
     @Override
     public AzureIcon getIconSymbol() {
-        return super.getIconSymbol();
+        return AzureIcons.Common.AZURE_MONITOR;
     }
 }
