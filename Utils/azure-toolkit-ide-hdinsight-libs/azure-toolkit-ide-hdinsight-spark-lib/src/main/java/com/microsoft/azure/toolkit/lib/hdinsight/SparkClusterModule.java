@@ -25,6 +25,8 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
 
     public static final String NAME = "clusters";
 
+    public static HashSet<String> additionalClusterSet = new HashSet<>();
+
     public SparkClusterModule(@Nonnull HDInsightServiceSubscription parent) {
         super(NAME, parent);
     }
@@ -53,7 +55,8 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
             // Add additional clusters
             List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
             for (IClusterDetail detail : additionalClusterDetails) {
-                if (detail instanceof SqlBigDataLivyLinkClusterDetail)
+                if (detail instanceof SqlBigDataLivyLinkClusterDetail
+                        || !this.additionalClusterSet.add(detail.getName()))
                     continue;
                 SDKAdditionalCluster sdkAdditionalCluster = new SDKAdditionalCluster();
                 sdkAdditionalCluster.setName(detail.getName());
@@ -88,6 +91,12 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
             return this.list().stream().filter(c -> StringUtils.equalsIgnoreCase(name, c.getName())).findAny().orElse(null);
         }
         return super.get(name, resourceGroup);
+    }
+
+    @Override
+    public void refresh() {
+        this.additionalClusterSet.clear();
+        super.refresh();
     }
 
     @NotNull
