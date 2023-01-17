@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
+import lombok.Setter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +71,8 @@ public class MonitorLogTablePanel {
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
     private final static String RESULT_CSV_FILE = "result.csv";
+    @Setter
+    private String initResourceId;
 
     public MonitorLogTablePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -84,7 +87,9 @@ public class MonitorLogTablePanel {
 
     public String getQueryStringFromFilters(String tableName) {
         final List<String> queryParams = new ArrayList<>(Arrays.asList(tableName, timeRangeComboBox.getKustoString()));
-        if (resourceLabel.isEnabled() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
+        if (Objects.nonNull(initResourceId)) {
+            queryParams.add(String.format("where _ResourceId == \"%s\"", initResourceId));
+        } else if (resourceLabel.isEnabled() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
             queryParams.add(resourceComboBox.getKustoString());
         }
         if (logLevelLabel.isEnabled() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
@@ -172,9 +177,17 @@ public class MonitorLogTablePanel {
         resourcePanel.setVisible(false);
         levelPanel.setVisible(false);
         Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
-                .ifPresent(it -> updateComboboxItems(resourcePanel, map.get(it), it));
+                .ifPresent(it -> {
+                    final List<String> items = map.get(it);
+                    Optional.ofNullable(initResourceId).ifPresent(resourceId -> items.add(String.format("[From Explorer] %s", resourceId)));
+                    updateComboboxItems(resourcePanel, items, it);
+                    resourceComboBox.setValue(Objects.isNull(initResourceId) ? ResourceComboBox.ALL : initResourceId);
+                });
         Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(s -> map.containsKey(s)).findFirst()
-                .ifPresent(it -> updateComboboxItems(levelPanel, map.get(it), it));
+                .ifPresent(it -> {
+                    updateComboboxItems(levelPanel, map.get(it), it);
+                    levelComboBox.setValue(ResourceComboBox.ALL);
+                });
     }
 
     private void updateComboboxItems(JPanel panel, List<String> items, String key) {
@@ -191,7 +204,6 @@ public class MonitorLogTablePanel {
             return result;
         });
         comboBox.setColumnName(key);
-        comboBox.setValue(ResourceComboBox.ALL);
     }
 
     private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
@@ -205,6 +217,9 @@ public class MonitorLogTablePanel {
         final Map<String, List<String>> result = new HashMap<>();
         final String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
                 .filter(s -> columnNamesInTable.contains(s)).toList(), ",");
+        if (StringUtils.isBlank(kustoColumnNames)) {
+            return result;
+        }
         final String queryString = String.format("%s | distinct %s | project %s", tableName, kustoColumnNames, kustoColumnNames);
         Optional.ofNullable(selectedWorkspace.executeQuery(queryString))
                 .map(LogsTable::getAllTableCells).orElse(new ArrayList<>()).forEach(logsTableCell -> {

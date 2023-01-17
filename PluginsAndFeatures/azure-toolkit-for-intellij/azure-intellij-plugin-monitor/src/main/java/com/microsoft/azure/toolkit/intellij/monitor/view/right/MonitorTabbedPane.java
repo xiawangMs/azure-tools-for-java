@@ -28,6 +28,8 @@ public class MonitorTabbedPane {
     private boolean isTableTab;
     private AzureMonitorView parentView;
     private final List<String> openedTabs = new ArrayList<>();
+    @Setter
+    private String initResourceId;
 
     public MonitorTabbedPane() {
 
@@ -44,15 +46,18 @@ public class MonitorTabbedPane {
             }));
     }
 
-    private void selectTab(String tabName) {
-        if (!openedTabs.contains(tabName)) {
-            final MonitorSingleTab singleTab = new MonitorSingleTab(this.isTableTab, tabName, this.parentView);
+    public void selectTab(String tabName) {
+        if (!openedTabs.contains(tabName) || Objects.nonNull(initResourceId)) {
+            final MonitorSingleTab singleTab = new MonitorSingleTab(this.isTableTab, tabName, this.parentView, initResourceId);
             this.closeableTabbedPane.addTab(tabName, singleTab.getSplitter());
             this.closeableTabbedPane.setTabComponentAt(this.closeableTabbedPane.getTabCount() - 1, createTabTitle(tabName));
-            this.openedTabs.add(tabName);
+            if (!this.openedTabs.contains(tabName)) {
+                this.openedTabs.add(tabName);
+            }
         }
         final int toSelectIndex = this.closeableTabbedPane.indexOfTab(tabName);
         this.closeableTabbedPane.setSelectedIndex(toSelectIndex);
+        this.initResourceId = null;
     }
 
     private JPanel createTabTitle(String tabName) {

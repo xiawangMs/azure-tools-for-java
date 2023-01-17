@@ -9,7 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -20,8 +22,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class OpenAzureMonitorAction extends NodeAction {
     public OpenAzureMonitorAction(@Nonnull AzureModule azureModule) {
@@ -32,14 +37,21 @@ public class OpenAzureMonitorAction extends NodeAction {
                 Optional.ofNullable(azureModule.getProject())
                         .ifPresent(project -> {
                             LogAnalyticsWorkspace defaultWorkspace = null;
-                            final AzureAccount az = Azure.az(AzureAccount.class);
-                            if (az.account().getSelectedSubscriptions().size() > 0) {
-                                final Subscription subscription = az.getAccount().getSelectedSubscriptions().get(0);
+                            final Account account = Azure.az(AzureAccount.class).account();
+                            if (Objects.nonNull(account) && account.getSelectedSubscriptions().size() > 0) {
+                                final Subscription subscription = account.getSelectedSubscriptions().get(0);
                                 final List<LogAnalyticsWorkspace> workspaceList = Azure.az(AzureLogAnalyticsWorkspace.class)
                                         .logAnalyticsWorkspaces(subscription.getId()).list().stream().collect(Collectors.toList());
-                                defaultWorkspace = workspaceList.size() > 0 ? workspaceList.get(0) : null;
+                                if (workspaceList.size() == 0) {
+                                    AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFound", subscription.getId()));
+                                    return;
+                                }
+                                defaultWorkspace = workspaceList.get(0);
+                            } else {
+                                AzureMessager.getMessager().info(message("azure.monitor.info.selectSubscription"));
+                                return;
                             }
-                            AzureMonitorManager.getInstance().openMonitorWindow((Project) project, defaultWorkspace);
+                            AzureMonitorManager.getInstance().openMonitorWindow((Project) project, defaultWorkspace, null);
                         });
             }
         });

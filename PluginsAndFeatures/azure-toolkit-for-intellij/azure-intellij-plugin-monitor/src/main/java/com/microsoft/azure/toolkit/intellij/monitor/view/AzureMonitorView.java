@@ -20,6 +20,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Optional;
@@ -35,22 +36,33 @@ public class AzureMonitorView {
     private JPanel rightPanel;
     private MonitorTabbedPane tabbedPanePanel;
     @Getter
-    @Nullable
+    @Nonnull
     private LogAnalyticsWorkspace selectedWorkspace;
 
-    public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab) {
+    public AzureMonitorView(Project project, @Nonnull LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        this.workspaceName.setText(Optional.ofNullable(selectedWorkspace).map(LogAnalyticsWorkspace::getName).orElse(StringUtils.EMPTY));
+        this.workspaceName.setText(selectedWorkspace.getName());
         this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setParentView(this);
+        this.tabbedPanePanel.setInitResourceId(resourceId);
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
     }
 
     public String getQueryString(String queryName) {
         return this.getMonitorTreePanel().getQueryString(queryName);
+    }
+
+    public void setSelectedWorkspace(LogAnalyticsWorkspace workspace) {
+        this.selectedWorkspace = workspace;
+        this.workspaceName.setText(workspace.getName());
+    }
+
+    public void setInitResourceId(String resourceId) {
+        this.tabbedPanePanel.setInitResourceId(resourceId);
+        tabbedPanePanel.selectTab("AppTraces");
     }
 
     public JPanel getCenterPanel() {
