@@ -76,7 +76,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         final boolean isDebugEnabled = Optional.of((LivySparkBatchJobRunConfiguration) profile)
                                                .map(LivySparkBatchJobRunConfiguration::getSubmitModel)
                                                .map(SparkSubmitModel::getAdvancedConfigModel)
-                                               .map(advModel -> advModel.enableRemoteDebug && advModel.isValid())
+                                               .map(advModel -> advModel.enableRemoteDebug)
                                                .orElse(false);
 
         // Only support debug now, will enable run in future
