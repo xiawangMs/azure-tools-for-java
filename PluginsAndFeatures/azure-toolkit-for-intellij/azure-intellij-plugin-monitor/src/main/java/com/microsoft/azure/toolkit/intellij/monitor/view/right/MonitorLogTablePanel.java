@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.azure.monitor.query.models.LogsTable;
 import com.azure.monitor.query.models.LogsTableCell;
 import com.azure.monitor.query.models.LogsTableRow;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -179,7 +180,7 @@ public class MonitorLogTablePanel {
         Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
                 .ifPresent(it -> {
                     final List<String> items = map.get(it);
-                    Optional.ofNullable(initResourceId).ifPresent(resourceId -> items.add(String.format("[From Explorer] %s", resourceId)));
+                    Optional.ofNullable(initResourceId).ifPresent(resourceId -> items.add(String.format("[From Explorer] %s", ResourceId.fromString(resourceId).name())));
                     updateComboboxItems(resourcePanel, items, it);
                     resourceComboBox.setValue(Objects.isNull(initResourceId) ? ResourceComboBox.ALL : initResourceId);
                 });

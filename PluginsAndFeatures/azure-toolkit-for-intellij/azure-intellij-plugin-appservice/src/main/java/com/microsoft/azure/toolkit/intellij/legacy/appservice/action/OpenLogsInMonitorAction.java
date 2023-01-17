@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +46,8 @@ public class OpenLogsInMonitorAction {
     }
 
     public void execute() {
-        Optional.ofNullable(getWorkspace(appService)).ifPresent(it -> AzureMonitorManager.getInstance().openMonitorWindow(project, it, resourceId));
+        Optional.ofNullable(getWorkspace(appService)).ifPresent(it -> AzureTaskManager.getInstance().runLater(() ->
+                AzureMonitorManager.getInstance().openMonitorWindow(project, it, resourceId)));
     }
 
     @Nullable
