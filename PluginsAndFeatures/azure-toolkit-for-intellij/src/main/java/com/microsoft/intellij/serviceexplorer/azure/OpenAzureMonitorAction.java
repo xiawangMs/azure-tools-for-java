@@ -31,7 +31,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class OpenAzureMonitorAction extends NodeAction {
     public OpenAzureMonitorAction(@Nonnull AzureModule azureModule) {
-        super(azureModule, "Open Azure Monitor");
+        super(azureModule, "Open Logs");
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent nodeActionEvent) {

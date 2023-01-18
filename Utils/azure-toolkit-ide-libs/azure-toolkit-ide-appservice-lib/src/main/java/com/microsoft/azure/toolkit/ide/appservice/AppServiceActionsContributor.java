@@ -80,10 +80,11 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(OPEN_LOGS_IN_MONITOR)
-            .withLabel("Open logs")
-            .withIcon(AzureIcons.Action.LOG.getIconPath())
+            .withLabel("Open Logs")
+            .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
     }
 

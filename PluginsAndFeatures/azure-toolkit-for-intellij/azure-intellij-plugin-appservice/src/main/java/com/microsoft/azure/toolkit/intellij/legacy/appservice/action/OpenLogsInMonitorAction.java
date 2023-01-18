@@ -46,12 +46,12 @@ public class OpenLogsInMonitorAction {
     }
 
     public void execute() {
-        Optional.ofNullable(getWorkspace(appService)).ifPresent(it -> AzureTaskManager.getInstance().runLater(() ->
+        Optional.ofNullable(getWorkspace()).ifPresent(it -> AzureTaskManager.getInstance().runLater(() ->
                 AzureMonitorManager.getInstance().openMonitorWindow(project, it, resourceId)));
     }
 
     @Nullable
-    private LogAnalyticsWorkspace getWorkspace(AppServiceAppBase<?, ?, ?> appService) {
+    private LogAnalyticsWorkspace getWorkspace() {
         final String aiKey = Optional.ofNullable(appService.getAppSettings()).map(settings -> settings.get(APPINSIGHTS_INSTRUMENTATIONKEY)).orElse(null);
         if (StringUtils.isEmpty(aiKey)) {
             throw new AzureToolkitRuntimeException(message("azure.monitor.error.aiNotConfiged"));

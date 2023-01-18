@@ -29,6 +29,7 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
     public static final Action.Id<ApplicationInsight> COPY_INSTRUMENTATION_KEY = Action.Id.of("user/ai.copy_instrumentation_key.ai");
     public static final Action.Id<ApplicationInsight> COPY_CONNECTION_STRING = Action.Id.of("user/ai.copy_connection_string.ai");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_APPLICATIONINSIGHT = Action.Id.of("user/ai.create_ai.group");
+    public static final Action.Id<ApplicationInsight> OPEN_LOGS_IN_MONITOR = Action.Id.of("user/ai.open_azure_monitor.ai");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -87,6 +88,14 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
             .visibleWhen(s -> s instanceof ResourceGroup)
             .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
+
+        new Action<>(OPEN_LOGS_IN_MONITOR)
+            .withLabel("Open Logs")
+            .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
+            .withIdParam(AzResource::getName)
+            .visibleWhen(s -> s instanceof ApplicationInsight)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
+            .register(am);
     }
 
     @Override
@@ -114,7 +123,9 @@ public class ApplicationInsightsActionsContributor implements IActionsContributo
             "---",
             ApplicationInsightsActionsContributor.OPEN_APPLICATION_MAP,
             ApplicationInsightsActionsContributor.OPEN_LIVE_METRICS,
-            ApplicationInsightsActionsContributor.OPEN_TRANSACTION_SEARCH
+            ApplicationInsightsActionsContributor.OPEN_TRANSACTION_SEARCH,
+            "---",
+            ApplicationInsightsActionsContributor.OPEN_LOGS_IN_MONITOR
         );
         am.registerGroup(INSIGHT_ACTIONS, accountActionGroup);
 
