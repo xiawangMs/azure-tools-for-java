@@ -105,6 +105,7 @@ public class MonitorLogTablePanel {
         logTable.clearModel();
         logTable.setLoading(true);
         runButton.setEnabled(false);
+        exportAction.setEnabled(false);
         AzureTaskManager.getInstance().runInBackground("loading Azure Monitor data", () -> {
             try {
                 final LogsTable result = selectedWorkspace.executeQuery(queryString);
@@ -113,6 +114,7 @@ public class MonitorLogTablePanel {
                         return;
                     }
                     if (result.getAllTableCells().size() > 0) {
+                        this.exportAction.setEnabled(true);
                         this.logTable.setModel(result.getRows());
                     }
                 }, AzureTask.Modality.ANY);
@@ -291,6 +293,7 @@ public class MonitorLogTablePanel {
             }
         });
         this.exportAction.setExternalLinkIcon();
+        this.exportAction.setAutoHideOnDisable(false);
         this.resourceComboBox = new KustoFilterComboBox();
         this.levelComboBox = new KustoFilterComboBox() {
             @Override
