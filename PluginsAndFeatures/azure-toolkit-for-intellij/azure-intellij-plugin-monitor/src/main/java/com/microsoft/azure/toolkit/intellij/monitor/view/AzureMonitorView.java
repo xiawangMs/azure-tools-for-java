@@ -13,6 +13,7 @@ import com.intellij.ui.components.AnActionLink;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -52,7 +53,7 @@ public class AzureMonitorView {
     }
 
     public String getQueryString(String queryName) {
-        return this.getMonitorTreePanel().getQueryString(queryName);
+        return String.format("%s | take %s", this.getMonitorTreePanel().getQueryString(queryName), Azure.az().config().getMonitorQueryRowNumber());
     }
 
     public void setSelectedWorkspace(LogAnalyticsWorkspace workspace) {
