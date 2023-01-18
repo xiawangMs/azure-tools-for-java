@@ -44,7 +44,7 @@ public class OpenAzureMonitorAction extends NodeAction {
                                 final List<LogAnalyticsWorkspace> workspaceList = Azure.az(AzureLogAnalyticsWorkspace.class)
                                         .logAnalyticsWorkspaces(subscription.getId()).list().stream().collect(Collectors.toList());
                                 if (workspaceList.size() == 0) {
-                                    AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFound", subscription.getId()));
+                                    AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFoundInSub", subscription.getId()));
                                     return;
                                 }
                                 defaultWorkspace = workspaceList.get(0);

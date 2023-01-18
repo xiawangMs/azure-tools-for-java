@@ -33,6 +33,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
     private static final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
+    private static final Map<Project, AzureMonitorView> monitorViewMap = new HashMap<>();
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
         return instance;
@@ -52,11 +53,8 @@ public class AzureMonitorManager {
     @Nullable
     private ToolWindow getToolWindow(@Nonnull Project project, @Nonnull LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         if (toolWindowMap.containsKey(project)) {
-            final ToolWindow currentToolWindow = toolWindowMap.get(project);
-            final Content tableContent = currentToolWindow.getContentManager().findContent("Tables");
-            if (Objects.nonNull(tableContent)) {
-                currentToolWindow.getContentManager().setSelectedContent(tableContent);
-                AzureMonitorView tableView = (AzureMonitorView) tableContent;
+            final AzureMonitorView tableView = monitorViewMap.get(project);
+            if (Objects.nonNull(tableView)) {
                 tableView.setSelectedWorkspace(workspace);
                 tableView.setInitResourceId(resourceId);
             }
@@ -69,13 +67,14 @@ public class AzureMonitorManager {
         final ContentFactory contentFactory = ContentFactory.getInstance();
         final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true, resourceId);
         final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false, resourceId);
-        final Content tableContent = contentFactory.createContent(monitorTableView.getCenterPanel(), "Tables", true);
+        final Content tableContent = contentFactory.createContent(monitorTableView.getContentPanel(), "Tables", true);
         tableContent.setCloseable(false);
-        final Content queryContent = contentFactory.createContent(monitorQueryView.getCenterPanel(), "Queries", true);
+        final Content queryContent = contentFactory.createContent(monitorQueryView.getContentPanel(), "Queries", true);
         queryContent.setCloseable(false);
         azureMonitorWindow.getContentManager().addContent(tableContent);
         azureMonitorWindow.getContentManager().addContent(queryContent);
         toolWindowMap.put(project, azureMonitorWindow);
+        monitorViewMap.put(project, monitorTableView);
         return azureMonitorWindow;
     }
 

@@ -47,13 +47,18 @@ public class MonitorTabbedPane {
     }
 
     public void selectTab(String tabName) {
-        if (!openedTabs.contains(tabName) || Objects.nonNull(initResourceId)) {
+        if (Objects.nonNull(initResourceId)) {
+            final int removeIndex = closeableTabbedPane.indexOfTab(tabName);
+            if (removeIndex != -1) {
+                closeableTabbedPane.remove(removeIndex);
+                openedTabs.remove(tabName);
+            }
+        }
+        if (!openedTabs.contains(tabName)) {
             final MonitorSingleTab singleTab = new MonitorSingleTab(this.isTableTab, tabName, this.parentView, initResourceId);
             this.closeableTabbedPane.addTab(tabName, singleTab.getSplitter());
             this.closeableTabbedPane.setTabComponentAt(this.closeableTabbedPane.getTabCount() - 1, createTabTitle(tabName));
-            if (!this.openedTabs.contains(tabName)) {
-                this.openedTabs.add(tabName);
-            }
+            this.openedTabs.add(tabName);
         }
         final int toSelectIndex = this.closeableTabbedPane.indexOfTab(tabName);
         this.closeableTabbedPane.setSelectedIndex(toSelectIndex);

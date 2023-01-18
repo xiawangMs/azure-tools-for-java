@@ -62,11 +62,11 @@ public class OpenLogsInMonitorAction {
                 .stream()
                 .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
                 .findFirst()
-                .orElseThrow(() -> new AzureToolkitRuntimeException(message("azure.monitor.error.aiNotFound")));
+                .orElseThrow(() -> new AzureToolkitRuntimeException(message("azure.monitor.error.aiNotFound", subscriptionId)));
         final String workspaceResourceId = Optional.ofNullable(target.getRemote())
                 .map(ApplicationInsightsComponent::workspaceResourceId).orElse(StringUtils.EMPTY);
         if (StringUtils.isBlank(workspaceResourceId)) {
-            AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFoundInAI"), target.getName());
+            AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFoundInAI", target.getName()));
             return null;
         }
         return Azure.az(AzureLogAnalyticsWorkspace.class).getById(workspaceResourceId);

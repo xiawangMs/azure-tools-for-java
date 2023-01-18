@@ -65,7 +65,7 @@ public class AzureMonitorView {
         tabbedPanePanel.selectTab("AppTraces");
     }
 
-    public JPanel getCenterPanel() {
+    public JPanel getContentPanel() {
         return contentPanel;
     }
 
