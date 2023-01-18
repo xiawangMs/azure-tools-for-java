@@ -9,12 +9,16 @@ import com.azure.monitor.query.models.LogsTableRow;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.intellij.CommonConst;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 public class LogTable extends JBTable {
     @Getter
@@ -45,6 +49,7 @@ public class LogTable extends JBTable {
     public void setModel(List<LogsTableRow> logsTableRows) {
         logTableModel = new LogTableModel(logsTableRows);
         this.setModel(logTableModel);
+        this.setColumnWidth();
     }
 
     public void clearModel() {
@@ -71,6 +76,24 @@ public class LogTable extends JBTable {
         if (this.getRowSorter() instanceof TableRowSorter<? extends TableModel>) {
             ((TableRowSorter<? extends TableModel>) this.getRowSorter()).setRowFilter(rf);
         }
+    }
+
+    private void setColumnWidth() {
+        final int columnSize = this.getColumnCount();
+        for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
+            final String columnName = Optional.ofNullable(this.getColumnName(columnIndex)).orElse(StringUtils.EMPTY);
+            final int width = Math.max(getStringWidth(columnName), getColumnWidth(columnIndex));
+            columnModel.getColumn(columnIndex).setPreferredWidth(width);
+        }
+    }
+
+    private int getStringWidth(@Nonnull String columnName) {
+        final FontMetrics fontMetrics = getFontMetrics(getFont());
+        return fontMetrics.stringWidth(columnName) + 20;
+    }
+
+    private int getColumnWidth(int index) {
+        return columnModel.getColumn(index).getWidth();
     }
 
     private boolean isValidColumnIndex(int columnIndex) {
