@@ -25,7 +25,7 @@ import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
-import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.ResourceComboBox;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.KustoFilterComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
@@ -40,7 +40,6 @@ import lombok.Setter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -50,7 +49,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -59,8 +57,8 @@ public class MonitorLogTablePanel {
     private JPanel filterPanel;
     private LogTable logTable;
     private TimeRangeComboBox timeRangeComboBox;
-    private ResourceComboBox resourceComboBox;
-    private ResourceComboBox levelComboBox;
+    private KustoFilterComboBox resourceComboBox;
+    private KustoFilterComboBox levelComboBox;
     private JButton runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
@@ -180,14 +178,18 @@ public class MonitorLogTablePanel {
         Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
                 .ifPresent(it -> {
                     final List<String> items = map.get(it);
-                    Optional.ofNullable(initResourceId).ifPresent(resourceId -> items.add(String.format("[From Explorer] %s", ResourceId.fromString(resourceId).name())));
+                    Optional.ofNullable(initResourceId).ifPresent(resourceId -> {
+                        if (!items.contains(initResourceId)) {
+                            items.add(initResourceId);
+                        }
+                    });
                     updateComboboxItems(resourcePanel, items, it);
-                    resourceComboBox.setValue(Objects.isNull(initResourceId) ? ResourceComboBox.ALL : initResourceId);
+                    resourceComboBox.setValue(Objects.isNull(initResourceId) ? KustoFilterComboBox.ALL : initResourceId);
                 });
         Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(s -> map.containsKey(s)).findFirst()
                 .ifPresent(it -> {
                     updateComboboxItems(levelPanel, map.get(it), it);
-                    levelComboBox.setValue(ResourceComboBox.ALL);
+                    levelComboBox.setValue(KustoFilterComboBox.ALL);
                 });
     }
 
@@ -197,10 +199,10 @@ public class MonitorLogTablePanel {
         }
         panel.setVisible(true);
         panel.getComponent(0).setEnabled(true);
-        final ResourceComboBox comboBox = (ResourceComboBox) panel.getComponent(1);
+        final KustoFilterComboBox comboBox = (KustoFilterComboBox) panel.getComponent(1);
         comboBox.setItemsLoader(() -> {
             final List<String> result = new ArrayList<>();
-            result.add(ResourceComboBox.ALL);
+            result.add(KustoFilterComboBox.ALL);
             result.addAll(items);
             return result;
         });
@@ -287,8 +289,8 @@ public class MonitorLogTablePanel {
             }
         });
         this.exportAction.setExternalLinkIcon();
-        this.resourceComboBox = new ResourceComboBox();
-        this.levelComboBox = new ResourceComboBox() {
+        this.resourceComboBox = new KustoFilterComboBox();
+        this.levelComboBox = new KustoFilterComboBox() {
             @Override
             protected String getItemText(Object item) {
                 return Objects.nonNull(item) ? item.toString() : StringUtils.EMPTY;
