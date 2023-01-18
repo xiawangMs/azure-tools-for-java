@@ -44,7 +44,7 @@ public class AzureMonitorView {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.workspaceName.setText(selectedWorkspace.getName());
-        this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setParentView(this);
