@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelection
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
@@ -49,6 +50,11 @@ public class AzureMonitorView {
         this.tabbedPanePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setParentView(this);
         this.tabbedPanePanel.setInitResourceId(resourceId);
+        AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> {
+            final LogAnalyticsWorkspace workspace = (LogAnalyticsWorkspace) e.getSource();
+            this.selectedWorkspace = workspace;
+            this.workspaceName.setText(workspace.getName());
+        }));
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
     }
 
@@ -82,8 +88,7 @@ public class AzureMonitorView {
                 AzureTaskManager.getInstance().runLater(() -> {
                     if (dialog.showAndGet()) {
                         Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
-                            selectedWorkspace = w;
-                            workspaceName.setText(selectedWorkspace.getName());
+                            AzureEventBus.emit("azure.monitor.change_workspace", w);
                         });
                     }
                 });

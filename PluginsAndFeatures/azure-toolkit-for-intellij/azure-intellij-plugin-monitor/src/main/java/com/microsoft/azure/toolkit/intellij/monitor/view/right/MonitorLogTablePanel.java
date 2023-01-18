@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeC
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -78,6 +79,7 @@ public class MonitorLogTablePanel {
         this.customizeTableUi();
         this.hideFilters();
         this.runButton.setIcon(AllIcons.Actions.Execute);
+        AzureEventBus.on("", new AzureEventBus.EventListener(e -> initResourceId = null));
     }
 
     public JPanel getContentPanel() {
