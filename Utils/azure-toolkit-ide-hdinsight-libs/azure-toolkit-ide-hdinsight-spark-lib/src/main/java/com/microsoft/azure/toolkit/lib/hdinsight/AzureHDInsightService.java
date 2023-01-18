@@ -35,6 +35,12 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
         return rm.clusters();
     }
 
+    @Override
+    public void refresh() {
+        SparkClusterModule.additionalClusterSet.clear();
+        super.refresh();
+    }
+
     @Nonnull
     @Override
     protected HDInsightServiceSubscription newResource(@Nonnull HDInsightManager manager) {
