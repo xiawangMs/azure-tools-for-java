@@ -84,8 +84,8 @@ public class AzureMonitorView {
         this.changeWorkspace = new AnActionLink("Change", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
                 AzureTaskManager.getInstance().runLater(() -> {
+                    final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
                     if (dialog.showAndGet()) {
                         Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
                             AzureEventBus.emit("azure.monitor.change_workspace", w);
