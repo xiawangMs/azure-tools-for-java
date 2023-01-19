@@ -96,6 +96,8 @@ public class MonitorLogTablePanel {
         if (logLevelLabel.isEnabled() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
             queryParams.add(levelComboBox.getKustoString());
         }
+        // display logs with latest time
+        queryParams.add("sort by TimeGenerated desc");
         final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
         queryParams.add(rowNumberLimitation);
         return StringUtils.join(queryParams, " | ");
