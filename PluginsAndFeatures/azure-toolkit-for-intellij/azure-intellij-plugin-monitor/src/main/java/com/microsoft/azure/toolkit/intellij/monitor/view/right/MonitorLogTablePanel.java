@@ -211,6 +211,7 @@ public class MonitorLogTablePanel {
             return result;
         });
         comboBox.setColumnName(key);
+        comboBox.reloadItems();
     }
 
     private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
