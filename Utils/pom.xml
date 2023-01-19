@@ -42,6 +42,7 @@
         <azure.toolkit-ide-lib.version>0.29.0-SNAPSHOT</azure.toolkit-ide-lib.version>
         <hdinsight.toolkit-ide-lib.version>0.1.0</hdinsight.toolkit-ide-lib.version>
         <jetty.version>9.4.48.v20220622</jetty.version>
+        <woodstox.version>6.4.0</woodstox.version>
     </properties>
     <modules>
         <module>azure-toolkit-ide-libs</module>
@@ -299,6 +300,11 @@
                         <artifactId>woodstox-core</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency><!--CVE-2022-40153-->
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
