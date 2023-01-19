@@ -108,7 +108,7 @@ public class MonitorLogTablePanel {
         logTable.setLoading(true);
         runButton.setEnabled(false);
         exportAction.setEnabled(false);
-        AzureTaskManager.getInstance().runInBackground("loading Azure Monitor data", () -> {
+        AzureTaskManager.getInstance().runInBackground("load Azure Monitor data", () -> {
             try {
                 final LogsTable result = selectedWorkspace.executeQuery(queryString);
                 AzureTaskManager.getInstance().runLater(() -> {
@@ -137,7 +137,7 @@ public class MonitorLogTablePanel {
         levelPanel.setVisible(true);
         logLevelLabel.setEnabled(false);
         resourceLabel.setEnabled(false);
-        AzureTaskManager.getInstance().runInBackground("loading filters", () -> {
+        AzureTaskManager.getInstance().runInBackground("load filters", () -> {
             final Map<String, List<String>> result = new HashMap<>();
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
