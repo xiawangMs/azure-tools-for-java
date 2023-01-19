@@ -62,7 +62,8 @@ public class StorageActionsContributor implements IActionsContributor {
         new Action<>(OPEN_AZURE_STORAGE_EXPLORER)
             .withLabel("Open Azure Storage Explorer")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> (s instanceof StorageAccount && ((AzResource) s).getFormalStatus().isConnected()) || s instanceof AzResource)
+            .visibleWhen(s -> s instanceof AzResource)
+            .enableWhen(s -> !(s instanceof StorageAccount) || s.getFormalStatus().isConnected())
             .withHandler(resource -> {
                 if (resource instanceof StorageAccount) {
                     new OpenAzureStorageExplorerAction().openResource((StorageAccount) resource);
@@ -79,7 +80,8 @@ public class StorageActionsContributor implements IActionsContributor {
         new Action<>(COPY_CONNECTION_STRING)
             .withLabel("Copy Connection String")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof StorageAccount)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(r -> {
                 copyContentToClipboard(r.getConnectionString());
                 AzureMessager.getMessager().info("Connection string copied");
@@ -89,7 +91,8 @@ public class StorageActionsContributor implements IActionsContributor {
         new Action<>(COPY_PRIMARY_KEY)
             .withLabel("Copy Primary Key")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageAccount && ((StorageAccount) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof StorageAccount)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(resource -> {
                 copyContentToClipboard(resource.getKey());
                 AzureMessager.getMessager().info("Primary key copied");
@@ -99,82 +102,82 @@ public class StorageActionsContributor implements IActionsContributor {
         new Action<>(OPEN_FILE)
             .withLabel("Open in Editor")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile)
+            .visibleWhen(s -> s instanceof StorageFile)
             .register(am);
 
         new Action<>(CREATE_BLOB)
             .withLabel("Create Empty Blob")
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof IBlobFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof IBlobFile && ((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(CREATE_FILE)
             .withLabel("Create Empty File")
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(CREATE_DIRECTORY)
             .withLabel("Create Subdirectory")
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(CREATE_DIRECTORY)
             .withLabel("Upload Files")
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(UPLOAD_FILES)
             .withLabel("Upload Files")
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(UPLOAD_FILE)
             .withLabel("Upload File")
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(UPLOAD_FOLDER)
             .withLabel("Upload Folder")
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(DOWNLOAD_FILE)
             .withLabel("Download")
             .withIcon(AzureIcons.Action.DOWNLOAD.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory())
             .register(am);
 
         new Action<>(COPY_FILE_URL)
             .withLabel("Copy URL")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile)
+            .visibleWhen(s -> s instanceof StorageFile)
             .register(am);
 
         new Action<>(COPY_FILE_SAS_URL)
             .withLabel("Generate and Copy SAS Token and URL")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile)
+            .visibleWhen(s -> s instanceof StorageFile)
             .register(am);
 
         new Action<>(DELETE_DIRECTORY)
             .withLabel("Delete Directory")
             .withIcon(AzureIcons.Action.DELETE.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
+            .visibleWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
             .withHandler(s -> {
                 if (AzureMessager.getMessager().confirm(AzureString.format("Are you sure to delete directory \"%s\" and all its contents?", s.getName()))) {
                     ((Deletable) s).delete();
@@ -186,7 +189,8 @@ public class StorageActionsContributor implements IActionsContributor {
         new Action<>(GROUP_CREATE_ACCOUNT)
             .withLabel("Storage Account")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
     }
 

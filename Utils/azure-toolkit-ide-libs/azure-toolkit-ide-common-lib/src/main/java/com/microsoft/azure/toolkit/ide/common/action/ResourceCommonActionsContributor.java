@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +59,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.highlight_resource_in_explorer");
     public static final Action.Id<Object> INSTALL_DOTNET_RUNTIME = Action.Id.of("user/bicep.install_dotnet_runtime");
     public static final Action.Id<Object> RESTART_IDE = Action.Id.of("user/common.restart_ide");
+    public static final Action.Id<File> REVEAL_FILE = Action.Id.of("user/common.reveal_file_in_explorer");
+    public static final Action.Id<File> OPEN_FILE = Action.Id.of("user/common.open_file_in_editor");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
@@ -69,8 +72,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.start())
-            .enableWhen(s -> s instanceof AzResource)
-            .withHandler((s) -> s instanceof Startable && ((Startable) s).isStartable(), s -> ((Startable) s).start())
+            .visibleWhen(s -> s instanceof AzResource && s instanceof Startable && ((Startable) s).isStartable())
+            .withHandler(s -> ((Startable) s).start())
             .register(am);
 
         new Action<>(STOP)
@@ -78,8 +81,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.stop())
-            .enableWhen(s -> s instanceof AzResource)
-            .withHandler((s) -> s instanceof Startable && ((Startable) s).isStoppable(), s -> ((Startable) s).stop())
+            .visibleWhen(s -> s instanceof AzResource && s instanceof Startable && ((Startable) s).isStoppable())
+            .withHandler(s -> ((Startable) s).stop())
             .register(am);
 
         new Action<>(RESTART)
@@ -87,8 +90,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.restart())
-            .enableWhen(s -> s instanceof AzResource)
-            .withHandler((s) -> s instanceof Startable && ((Startable) s).isRestartable(), s -> ((Startable) s).restart())
+            .visibleWhen(s -> s instanceof AzResource && s instanceof Startable && ((Startable) s).isRestartable())
+            .withHandler(s -> ((Startable) s).restart())
             .register(am);
 
         new Action<>(DELETE)
@@ -96,12 +99,13 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.DELETE.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.delete())
+            .visibleWhen(s -> s instanceof AzResource && s instanceof Deletable)
             .enableWhen(s -> {
                 if (s instanceof AbstractAzResource) {
                     final AbstractAzResource<?, ?, ?> r = (AbstractAzResource<?, ?, ?>) s;
-                    return s instanceof Deletable && !r.getFormalStatus().isDeleted() && !r.isDraftForCreating();
+                    return !r.getFormalStatus().isDeleted() && !r.isDraftForCreating();
                 }
-                return s instanceof Deletable;
+                return true;
             })
             .withHandler((s) -> {
                 if (AzureMessager.getMessager().confirm(String.format("Are you sure to delete %s \"%s\"", s.getResourceTypeName(), s.getName()))) {
@@ -121,7 +125,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 throw new IllegalArgumentException("Unsupported type: " + r.getClass());
             }).orElse(null))
             .withShortcut(shortcuts.refresh())
-            .enableWhen(s -> s instanceof Refreshable)
+            .visibleWhen(s -> s instanceof Refreshable)
             .withHandler(Refreshable::refresh)
             .register(am);
 
@@ -130,7 +134,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
-            .enableWhen(s -> s instanceof AzResource)
+            .visibleWhen(s -> s instanceof AzResource)
             .withHandler(s -> am.getAction(OPEN_URL).handle(s.getPortalUrl()))
             .register(am);
 
@@ -150,14 +154,16 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withLabel("Connect to Project")
             .withIcon(AzureIcons.Connector.CONNECT.getIconPath())
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof AzResourceBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(SHOW_PROPERTIES)
             .withLabel("Show Properties")
             .withIcon(AzureIcons.Action.PROPERTIES.getIconPath())
             .withIdParam(AzResourceBase::getName)
-            .enableWhen(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof AzResourceBase)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withShortcut(shortcuts.edit())
             .register(am);
 
@@ -166,7 +172,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.DEPLOY.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
-            .enableWhen(s -> s instanceof AzResourceBase && ((AzResourceBase) s).getFormalStatus().isWritable())
+            .visibleWhen(s -> s instanceof AzResourceBase)
+            .enableWhen(s -> s.getFormalStatus().isWritable())
             .withShortcut(shortcuts.deploy())
             .register(am);
 
@@ -204,14 +211,14 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 return r.getClass().getSimpleName();
             })
             .withShortcut(shortcuts.add())
-            .enableWhen(s -> s instanceof AzService || s instanceof AzResourceModule ||
-                (s instanceof AzResource && !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING)))
+            .visibleWhen(s -> s instanceof AzService || s instanceof AzResourceModule || s instanceof AzResource)
+            .enableWhen(s -> !(s instanceof AzResource) || !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING))
             .register(am);
 
         new Action<>(CREATE_IN_PORTAL)
             .withLabel("Create In Azure Portal")
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
-            .enableWhen(s -> s instanceof AzService)
+            .visibleWhen(s -> s instanceof AzService)
             .withHandler(s -> {
                 final IAccount account = Azure.az(IAzureAccount.class).account();
                 final String url = String.format("%s/#create/%s", account.getPortalUrl(), s.getName());
@@ -225,7 +232,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withLabel(s -> Objects.nonNull(s) && favorites.exists(s.getId()) ? "Unmark As Favorite" : "Mark As Favorite")
             .withIcon(s -> Objects.nonNull(s) && favorites.exists(s.getId()) ? AzureIcons.Action.PIN.getIconPath() : AzureIcons.Action.UNPIN.getIconPath())
             .withShortcut("F11")
-            .enableWhen(s -> s instanceof AbstractAzResource)
+            .visibleWhen(s -> s instanceof AbstractAzResource)
             .withHandler((r) -> {
                 if (favorites.exists(r.getId())) {
                     favorites.unpin(r.getId());

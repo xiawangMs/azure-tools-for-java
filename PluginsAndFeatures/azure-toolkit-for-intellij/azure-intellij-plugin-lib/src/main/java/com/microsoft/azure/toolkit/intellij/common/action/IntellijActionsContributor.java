@@ -6,12 +6,17 @@
 package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.ide.BrowserUtil;
+import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ex.ApplicationEx;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.FUSEventSource;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -47,7 +52,6 @@ public class IntellijActionsContributor implements IActionsContributor {
         }));
     }
 
-
     @AzureOperation(name = "boundary/resource.open_url.url", params = {"u"})
     private static void browseUrl(String u) {
         BrowserUtil.browse(u);
@@ -58,6 +62,21 @@ public class IntellijActionsContributor implements IActionsContributor {
         new Action<>(TRY_ULTIMATE)
             .withLabel("Try IntelliJ IDEA Ultimate")
             .withHandler((r, e) -> FUSEventSource.NOTIFICATION.openDownloadPageAndLog(((AnActionEvent) e).getProject(), IDE_DOWNLOAD_URL))
+            .register(am);
+
+        new Action<>(ResourceCommonActionsContributor.REVEAL_FILE)
+            .withLabel(RevealFileAction.getActionName())
+            .withHandler(VirtualFileActions::revealInExplorer)
+            .register(am);
+
+        new Action<>(ResourceCommonActionsContributor.OPEN_FILE)
+            .withLabel("Open In Editor")
+            .withHandler((file, e) -> AzureTaskManager.getInstance().runLater(() -> {
+                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(((AnActionEvent) e).getProject());
+                final VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, true);
+                VirtualFileActions.openFileInEditor(virtualFile, (a) -> false, () -> {
+                }, fileEditorManager);
+            }))
             .register(am);
     }
 

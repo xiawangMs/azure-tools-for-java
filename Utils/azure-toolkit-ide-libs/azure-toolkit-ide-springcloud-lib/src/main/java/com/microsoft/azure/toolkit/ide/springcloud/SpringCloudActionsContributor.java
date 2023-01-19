@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
@@ -41,7 +40,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(OPEN_PUBLIC_URL)
-            .enableWhen(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected() && ((SpringCloudApp) s).isPublicEndpointEnabled())
+            .visibleWhen(s -> s instanceof SpringCloudApp)
+            .enableWhen(s -> s.getFormalStatus().isRunning() && s.isPublicEndpointEnabled())
             .withLabel("Access Public Endpoint")
             .withIcon(AzureIcons.Action.BROWSER.getIconPath())
             .withIdParam(AbstractAzResource::getName)
@@ -50,7 +50,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(OPEN_TEST_URL)
-            .enableWhen(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof SpringCloudApp)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Access Test Endpoint")
             .withIcon(AzureIcons.Action.BROWSER.getIconPath())
             .withIdParam(AbstractAzResource::getName)
@@ -58,48 +59,53 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(STREAM_LOG_APP)
-            .enableWhen(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof SpringCloudApp)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Start Streaming Logs")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(STREAM_LOG)
-            .enableWhen(s -> s instanceof SpringCloudAppInstance && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof SpringCloudAppInstance)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Start Streaming Logs")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(GROUP_CREATE_CLUSTER)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withLabel("Spring Apps")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(ENABLE_REMOTE_DEBUGGING)
-            .enableWhen(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning() &&
-                Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(deployment -> !deployment.isRemoteDebuggingEnabled()).orElse(false))
+            .visibleWhen(s -> s instanceof SpringCloudApp && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(deployment -> !deployment.isRemoteDebuggingEnabled()).orElse(false))
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Enable Remote Debugging")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(DISABLE_REMOTE_DEBUGGING)
-            .enableWhen(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning() &&
-                Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false))
+            .visibleWhen(s -> s instanceof SpringCloudApp && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false))
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Disable Remote Debugging")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(ATTACH_DEBUGGER_APP)
-            .enableWhen(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof SpringCloudApp)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withLabel("Attach Debugger")
             .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(ATTACH_DEBUGGER)
-            .enableWhen(s -> s instanceof SpringCloudAppInstance)
+            .visibleWhen(s -> s instanceof SpringCloudAppInstance)
+            .enableWhen(s -> s.getParent().getParent().getFormalStatus().isRunning())
             .withLabel("Attach Debugger")
             .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
             .withIdParam(AbstractAzResource::getName)

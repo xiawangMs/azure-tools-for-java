@@ -22,7 +22,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBusConnection;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.portforwarder.SpringPortForwarder;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstanceSelectionDialog;
@@ -140,9 +139,7 @@ public class AttachDebuggerAction {
     private static void showEnableDebuggingMessage(@Nonnull SpringCloudAppInstance appInstance) {
         final String confirmEnableDebuggingMessage = "Remote debugging should be enabled first before debugging. Would you like to enable it?";
         final AzureActionManager am = AzureActionManager.getInstance();
-        final Action<Object> action = new Action<>(Action.Id.of("user/springcloud.enable_remote_debugging_dialog"))
-            .withLabel("Enable Remote Debugging")
-            .withHandler((s, e) -> am.getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING).handle(appInstance.getParent().getParent(), e));
+        final Action<SpringCloudApp> action = am.getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING).bind(appInstance.getParent().getParent());
         AzureMessager.getMessager().warning(confirmEnableDebuggingMessage, null, action);
     }
 
@@ -154,16 +151,11 @@ public class AttachDebuggerAction {
 
     @Nullable
     private static Action<?> generateAccessPublicUrlAction(@Nonnull SpringCloudApp app) {
-        return !app.isPublicEndpointEnabled() ? null : new Action<>(Action.Id.of("user/springcloud.open_public_url.app"))
-            .withLabel("Access Public Endpoint")
-            .withIdParam(app.getName())
-            .withHandler(a -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getApplicationUrl()));
+        final AzureActionManager am = AzureActionManager.getInstance();
+        return !app.isPublicEndpointEnabled() ? null : am.getAction(SpringCloudActionsContributor.OPEN_PUBLIC_URL).bind(app);
     }
 
     private static Action<?> generateAccessTestUrlAction(@Nonnull SpringCloudApp app) {
-        return new Action<>(Action.Id.of("user/springcloud.open_test_url.app"))
-            .withLabel("Access Test Endpoint")
-            .withIdParam(app.getName())
-            .withHandler(a -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(app.getTestUrl()));
+        return AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_TEST_URL).bind(app);
     }
 }

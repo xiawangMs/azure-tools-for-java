@@ -34,31 +34,36 @@ public class ContainerServiceActionsContributor implements IActionsContributor {
         new Action<>(GROUP_CREATE_KUBERNETES_SERVICE)
             .withLabel("Kubernetes service")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof ResourceGroup)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(DOWNLOAD_CONFIG_ADMIN)
             .withLabel("Download Kubeconfig (Admin)")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof KubernetesCluster)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(DOWNLOAD_CONFIG_USER)
             .withLabel("Download Kubeconfig (User)")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof KubernetesCluster)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(GET_CREDENTIAL_ADMIN)
             .withLabel("Set as Current Cluster (Admin)")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof KubernetesCluster)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
 
         new Action<>(GET_CREDENTIAL_USER)
             .withLabel("Set as Current Cluster (User)")
             .withIdParam(AzResource::getName)
-            .enableWhen(s -> s instanceof KubernetesCluster && ((KubernetesCluster) s).getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof KubernetesCluster)
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
     }
 

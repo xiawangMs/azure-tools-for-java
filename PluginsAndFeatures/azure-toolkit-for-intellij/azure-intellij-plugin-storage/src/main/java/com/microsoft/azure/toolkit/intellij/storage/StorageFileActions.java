@@ -17,11 +17,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.storage.component.FileCreationDialog;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -244,11 +241,5 @@ public class StorageFileActions {
         CopyPasteManager.getInstance().setContents(new StringSelection(url));
         final AzureString message = AzureString.format("SAS Token and URL of %s copied to clipboard: %s. SAS token will expire after %s day.", file.getName(), url, 1);
         AzureMessager.getMessager().success(message, "SAS Token and URL copied");
-    }
-
-    private static Action<Void> openUrl(@Nonnull final String url) {
-        return new Action<>(Action.Id.<Void>of("common.open_in_browser"))
-            .withLabel("Open with Browser")
-            .withHandler(v -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url));
     }
 }

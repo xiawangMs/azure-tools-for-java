@@ -108,10 +108,7 @@ public class FunctionRemoteDebuggingAction {
     private static void showEnableDebuggingMessage(@Nonnull FunctionAppBase<?, ?, ?> target) {
         final String confirmEnableDebuggingMessage = "Remote debugging should be enabled first before debugging. Would you like to enable it?";
         final AzureActionManager am = AzureActionManager.getInstance();
-        final Action.Id<Object> ENABLE_REMOTE_DEBUGGING = Action.Id.of("user/function.enable_remote_debugging_notification");
-        final Action<Object> enableRemoteDebugging = new Action<>(ENABLE_REMOTE_DEBUGGING)
-            .withLabel("Enable Remote Debugging")
-            .withHandler((d, e) -> am.getAction(FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING).handle(target, e));
+        final Action<FunctionAppBase<?, ?, ?>> enableRemoteDebugging = am.getAction(FunctionAppActionsContributor.ENABLE_REMOTE_DEBUGGING).bind(target);
         AzureMessager.getMessager().warning(confirmEnableDebuggingMessage, null, enableRemoteDebugging);
     }
 }
