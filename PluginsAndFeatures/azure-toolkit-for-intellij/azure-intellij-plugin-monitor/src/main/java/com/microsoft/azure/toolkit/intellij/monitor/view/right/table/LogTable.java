@@ -53,8 +53,8 @@ public class LogTable extends JBTable {
     }
 
     public void clearModel() {
-        this.logTableModel.clear();
-        this.setRowSorter(null);
+        this.logTableModel = new LogTableModel();
+        this.setModel(logTableModel);
     }
 
     public void setLoading(boolean isLoading) {
