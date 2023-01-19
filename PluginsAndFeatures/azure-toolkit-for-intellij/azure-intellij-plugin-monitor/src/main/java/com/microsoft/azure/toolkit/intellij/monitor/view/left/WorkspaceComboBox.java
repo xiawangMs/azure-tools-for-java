@@ -35,7 +35,7 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
             this.clear();
             return;
         }
-        this.loadItems();
+        this.reloadItems();
     }
 
     public void setRegion(Region region) {
@@ -50,6 +50,7 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         item.ifPresentOrElse(
                 (value) -> {
                     this.draftItems.clear();
+                    this.reloadItems();
                     this.setValue(value);},
                 () -> this.setValue(LogAnalyticsWorkspaceConfig.builder().newCreate(true)
                         .name(finalWorkspaceName).subscriptionId(subscription.getId()).regionName(region.getName()).build()));
@@ -67,8 +68,8 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         if (Objects.nonNull(val) && val.isNewCreate()) {
             this.draftItems.clear();
             this.draftItems.add(0, val);
+            this.reloadItems();
         }
-        this.reloadItems();
         super.setValue(val);
     }
 
