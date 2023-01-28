@@ -7,6 +7,9 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,7 +35,7 @@ public class MonitorTabbedPane {
     private String initResourceId;
 
     public MonitorTabbedPane() {
-
+        AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> reloadSelectedTab()));
     }
 
     public void setParentView(AzureMonitorView parentView) {
@@ -63,6 +66,17 @@ public class MonitorTabbedPane {
         final int toSelectIndex = this.closeableTabbedPane.indexOfTab(tabName);
         this.closeableTabbedPane.setSelectedIndex(toSelectIndex);
         this.initResourceId = null;
+    }
+
+    private void reloadSelectedTab() {
+        this.initResourceId = null;
+        this.openedTabs.clear();
+        AzureTaskManager.getInstance().runLater(() -> {
+            final int selectedIndex = this.closeableTabbedPane.getSelectedIndex();
+            final String selectedTabName = this.closeableTabbedPane.getTitleAt(selectedIndex);
+            this.closeableTabbedPane.removeAll();
+            this.selectTab(selectedTabName);
+        }, AzureTask.Modality.ANY);
     }
 
     private JPanel createTabTitle(String tabName) {
