@@ -82,15 +82,13 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(ENABLE_REMOTE_DEBUGGING)
-            .visibleWhen(s -> s instanceof SpringCloudApp && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(deployment -> !deployment.isRemoteDebuggingEnabled()).orElse(false))
-            .enableWhen(s -> s.getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isRunning() && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(deployment -> !deployment.isRemoteDebuggingEnabled()).orElse(false))
             .withLabel("Enable Remote Debugging")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(DISABLE_REMOTE_DEBUGGING)
-            .visibleWhen(s -> s instanceof SpringCloudApp && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false))
-            .enableWhen(s -> s.getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isRunning() && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false))
             .withLabel("Disable Remote Debugging")
             .withIdParam(AbstractAzResource::getName)
             .register(am);

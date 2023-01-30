@@ -171,15 +171,13 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         new Action<>(ENABLE_REMOTE_DEBUGGING)
             .withLabel("Enable Remote Debugging")
             .withIdParam(AzResource::getName)
-            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
-            .enableWhen(s -> s.getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((FunctionAppBase<?, ?, ?>) s).getFormalStatus().isRunning() && !((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
             .register(am);
 
         new Action<>(DISABLE_REMOTE_DEBUGGING)
             .withLabel("Disable Remote Debugging")
             .withIdParam(AzResource::getName)
-            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
-            .enableWhen(s -> s.getFormalStatus().isRunning())
+            .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && ((FunctionAppBase<?, ?, ?>) s).getFormalStatus().isRunning() && ((FunctionAppBase<?, ?, ?>) s).isRemoteDebugEnabled())
             .register(am);
 
         new Action<>(REMOTE_DEBUGGING)

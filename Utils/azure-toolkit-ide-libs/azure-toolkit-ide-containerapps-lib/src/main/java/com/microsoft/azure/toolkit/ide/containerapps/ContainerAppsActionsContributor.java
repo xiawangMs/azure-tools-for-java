@@ -134,8 +134,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Activate")
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .visibleWhen(s -> s instanceof Revision && !((Revision) s).isActive())
-            .enableWhen(s -> s.getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && !((Revision) s).isActive())
             .withHandler(Revision::activate)
             .register(am);
 
@@ -143,8 +142,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withLabel("Deactivate")
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AbstractAzResource::getName)
-            .visibleWhen(s -> s instanceof Revision && ((Revision) s).isActive())
-            .enableWhen(s -> s.getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && ((Revision) s).isActive())
             .withHandler(Revision::deactivate)
             .register(am);
 
@@ -153,8 +151,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof Revision)
-            .visibleWhen(s -> s instanceof Revision && ((Revision) s).isActive())
             .enableWhen(s -> s.getFormalStatus().isConnected())
+            .visibleWhen(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected() && ((Revision) s).isActive())
             .withHandler(Revision::restart)
             .register(am);
 
