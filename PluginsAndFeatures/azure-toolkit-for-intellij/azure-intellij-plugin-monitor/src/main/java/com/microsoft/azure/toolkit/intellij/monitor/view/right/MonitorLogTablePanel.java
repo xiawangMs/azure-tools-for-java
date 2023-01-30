@@ -162,7 +162,8 @@ public class MonitorLogTablePanel {
 
     @Nullable
     public String getSelectedCellValue() {
-        return (String) this.logTable.getValueAt(this.logTable.getSelectedRow(), this.logTable.getSelectedColumn());
+        final Object value = this.logTable.getValueAt(this.logTable.getSelectedRow(), this.logTable.getSelectedColumn());
+        return Optional.ofNullable(value).map(Object::toString).orElse(StringUtils.EMPTY);
     }
 
     @Nullable
