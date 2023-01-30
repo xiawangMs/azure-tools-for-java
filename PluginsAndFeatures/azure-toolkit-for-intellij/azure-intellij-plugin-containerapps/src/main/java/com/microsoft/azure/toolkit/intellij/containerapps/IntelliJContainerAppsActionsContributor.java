@@ -40,7 +40,8 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         am.registerHandler(ContainerAppsActionsContributor.UPDATE_IMAGE, UpdateContainerImageAction::openUpdateDialog);
 
         am.registerHandler(ContainerAppsActionsContributor.CREATE_CONTAINER_APP,
-                (Object r, AnActionEvent e) -> CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(r, null)));
+                (ContainerAppsEnvironment r, AnActionEvent e) -> r.getFormalStatus().isConnected(),
+                (ContainerAppsEnvironment r, AnActionEvent e) -> CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(r, null)));
         am.registerHandler(ContainerAppsActionsContributor.GROUP_CREATE_CONTAINER_APP,
                 (ResourceGroup r, AnActionEvent e) -> CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(null, r)));
         am.registerHandler(ContainerAppsActionsContributor.CREATE_CONTAINER_APPS_ENVIRONMENT,
@@ -49,22 +50,25 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 (ResourceGroup r, AnActionEvent e) -> CreateContainerAppsEnvironmentAction.create(e.getProject(), getContainerAppsEnvironmentDefaultConfig(r)));
     }
 
-    private ContainerAppDraft.Config getContainerAppDefaultConfig(final Object o, final ResourceGroup resourceGroup) {
+    private ContainerAppDraft.Config getContainerAppDefaultConfig(final ContainerAppsEnvironment o, final ResourceGroup resourceGroup) {
         final ContainerAppDraft.Config result = new ContainerAppDraft.Config();
         result.setName(Utils.generateRandomResourceName("aca", 32));
         final List<Subscription> subs = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions();
         final Subscription historySub = CacheManager.getUsageHistory(Subscription.class).peek(subs::contains);
         final Subscription sub = Optional.ofNullable(historySub).orElseGet(() -> subs.get(0));
         result.setSubscription(sub);
-        final List<Region> regions = az(AzureAccount.class).listRegions(sub.getId());
-        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek(regions::contains);
-        result.setRegion(historyRegion);
-        final ContainerAppsEnvironment cae = o instanceof ContainerAppsEnvironment ? (ContainerAppsEnvironment) o : CacheManager.getUsageHistory(ContainerAppsEnvironment.class)
-                .peek(r -> r.getSubscriptionId().equals(sub.getId()));
+        final ContainerAppsEnvironment cae = Optional.ofNullable(o).orElseGet(() -> CacheManager.getUsageHistory(ContainerAppsEnvironment.class)
+                .peek(r -> r.getSubscriptionId().equals(sub.getId())));
         result.setEnvironment(cae);
         final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
                 .peek(r -> r.getSubscriptionId().equals(sub.getId()));
-        result.setResourceGroup(Optional.ofNullable(cae).map(ContainerAppsEnvironment::getResourceGroup).orElse(historyRg));
+        final ResourceGroup rg = Optional.ofNullable(resourceGroup).orElseGet(() ->
+                Optional.ofNullable(cae).map(ContainerAppsEnvironment::getResourceGroup).orElse(historyRg));
+        result.setResourceGroup(rg);
+        final List<Region> regions = az(AzureAccount.class).listRegions(sub.getId());
+        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek(regions::contains);
+        final Region region = Optional.ofNullable(cae).map(ContainerAppsEnvironment::getRegion).orElse(historyRegion);
+        result.setRegion(region);
         return result;
     }
 

@@ -9,8 +9,8 @@ import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBIntSpinner;
 import com.intellij.ui.TitledSeparator;
-import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.StringUtils;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
@@ -22,10 +22,14 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Availability;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.model.IngressConfig;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -41,7 +45,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Config> implements AzureForm<ContainerAppDraft.Config> {
-    private static final Pattern CONTAINER_APP_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9\\-]*[a-z0-9]$");
+    private static final Pattern CONTAINER_APP_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9\\-]{0,30}[a-z0-9]$");
     private static final String CONTAINER_APP_NAME_VALIDATION_MESSAGE = "A name must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character and cannot have '--'. The length must not be more than 32 characters.";
     private JLabel lblSubscription;
     private SubscriptionComboBox cbSubscription;
@@ -52,8 +56,6 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     private JLabel lblRegion;
     private RegionComboBox cbRegion;
     private JPanel pnlRoot;
-    private JPanel pnlBasic;
-    private JTabbedPane pnlAppSettings;
     private JCheckBox chkUseQuickStart;
     private JLabel lblIngress;
     private JCheckBox chkIngress;
@@ -63,10 +65,17 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     private ImageForm pnlContainer;
     private AzureContainerAppsEnvironmentComboBox cbEnvironment;
     private TitledSeparator titleContainerDetails;
-    private TitledSeparator titleIngress;
+    private AzureHideableTitledSeparator titleIngress;
     private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
     private JLabel lblEnv;
     private JCheckBox chkExternalTraffic;
+    private AzureHideableTitledSeparator titleAppSettings;
+    private AzureHideableTitledSeparator titleProjectDetails;
+    private AzureHideableTitledSeparator titleContainerAppsEnvironment;
+    private JPanel pnlIngressSettings;
+    private JPanel pnlAppSettings;
+    private JPanel pnlProjectDetails;
+    private JPanel pnlContainerAppsEnvironment;
 
     public static final ContainerAppDraft.ImageConfig QUICK_START_IMAGE = ContainerAppDraft.ImageConfig.builder()
             .fullImageName("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest").environmentVariables(new ArrayList<>()).build();
@@ -93,7 +102,8 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.txtTargetPort.setMin(1);
         this.txtTargetPort.setMax(65535);
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
-        this.cbResourceGroup.addItemListener(e -> this.txtContainerAppName.validateValueAsync()); // trigger validation after resource group changed
+        this.cbRegion.addItemListener(this::onRegionChanged); // trigger validation after resource group changed
+        this.cbResourceGroup.addItemListener(this::onResourceGroupChanged);
         this.chkUseQuickStart.addItemListener(e -> this.onSelectQuickImage(chkUseQuickStart.isSelected()));
         this.chkIngress.addItemListener(e -> this.onSelectIngress(chkIngress.isSelected()));
 
@@ -103,6 +113,46 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.lblResourceGroup.setLabelFor(cbResourceGroup);
         this.lblContainerAppName.setLabelFor(txtContainerAppName);
         this.lblRegion.setLabelFor(cbRegion);
+
+        this.titleProjectDetails.addContentComponent(pnlProjectDetails);
+        this.titleContainerAppsEnvironment.addContentComponent(pnlContainerAppsEnvironment);
+        this.titleAppSettings.addContentComponent(pnlAppSettings);
+        this.titleIngress.addContentComponent(pnlIngressSettings);
+
+        this.titleProjectDetails.expand();
+        this.titleContainerAppsEnvironment.expand();
+        this.titleAppSettings.expand();
+        this.titleIngress.collapse();
+    }
+
+    private void mergeContainerConfiguration(final ImageForm target, final ContainerAppDraft.ImageConfig value) {
+        try {
+            final ContainerAppDraft.ImageConfig targetValue = target.getValue();
+            if (ObjectUtils.allNotNull(targetValue, value)) {
+                if (!Objects.equals(targetValue.getContainerRegistry(), value.getContainerRegistry()) ||
+                        !Objects.equals(targetValue.getFullImageName(), value.getFullImageName())) {
+                    target.setValue(value);
+                }
+            }
+        } catch (final RuntimeException e) {
+            // swallow exception as required parameters may be null
+            target.setValue(value);
+        }
+    }
+
+    private void onResourceGroupChanged(ItemEvent itemEvent) {
+        if (itemEvent.getStateChange() == ItemEvent.SELECTED && itemEvent.getItem() instanceof ResourceGroup) {
+            final ResourceGroup resourceGroup = (ResourceGroup) itemEvent.getItem();
+            this.cbEnvironment.setResourceGroup(resourceGroup);
+        }
+    }
+
+    private void onRegionChanged(ItemEvent itemEvent) {
+        if (itemEvent.getStateChange() == ItemEvent.SELECTED && itemEvent.getItem() instanceof Region) {
+            final Region region = (Region) itemEvent.getItem();
+            this.txtContainerAppName.validateValueAsync();
+            this.cbEnvironment.setRegion(region);
+        }
     }
 
     private void onSubscriptionChanged(ItemEvent itemEvent) {
@@ -110,6 +160,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
             final Subscription subscription = (Subscription) itemEvent.getItem();
             this.cbResourceGroup.setSubscription(subscription);
             this.cbRegion.setSubscription(subscription);
+            this.cbEnvironment.setSubscription(subscription);
         }
     }
 
@@ -143,9 +194,14 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
             this.setIngressConfig(QUICK_START_INGRESS);
         }
         // toggle app settings enable status
-        this.titleContainerDetails.setEnabled(!useQuickStartImage);
         this.pnlContainer.setEnabled(!useQuickStartImage);
+        this.pnlContainer.setVisible(!useQuickStartImage);
         this.titleIngress.setEnabled(!useQuickStartImage);
+        if (!useQuickStartImage) {
+            titleIngress.expand();
+        } else {
+            titleIngress.collapse();
+        }
         this.lblIngress.setEnabled(!useQuickStartImage);
         this.chkIngress.setEnabled(!useQuickStartImage);
         this.lblExternalTraffic.setEnabled(!useQuickStartImage);
