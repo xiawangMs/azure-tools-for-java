@@ -62,10 +62,12 @@ public class WorkspaceSelectionDialog extends DialogWrapper {
     protected void doOKAction() {
         final LogAnalyticsWorkspaceConfig config = this.workspaceComboBox.getValue();
         final Subscription subscription = this.subComboBox.getValue();
-        selectedWorkspace = Azure.az(AzureLogAnalyticsWorkspace.class)
-                .logAnalyticsWorkspaces(subscription.getId()).list().stream()
-                .filter(logAnalyticsWorkspace -> Objects.equals(logAnalyticsWorkspace.getId(), config.getResourceId()))
-                .findFirst().orElse(null);
+        if (Objects.nonNull(subscription) && Objects.nonNull(config)) {
+            selectedWorkspace = Azure.az(AzureLogAnalyticsWorkspace.class)
+                    .logAnalyticsWorkspaces(subscription.getId()).list().stream()
+                    .filter(logAnalyticsWorkspace -> Objects.equals(logAnalyticsWorkspace.getId(), config.getResourceId()))
+                    .findFirst().orElse(null);
+        }
         super.doOKAction();
     }
 
