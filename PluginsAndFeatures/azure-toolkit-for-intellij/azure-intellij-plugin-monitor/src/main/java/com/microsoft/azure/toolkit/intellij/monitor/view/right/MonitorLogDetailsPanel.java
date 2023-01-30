@@ -30,7 +30,8 @@ public class MonitorLogDetailsPanel {
     private EditorTextField cellContentViewer;
 
     public MonitorLogDetailsPanel() {
-
+        $$$setupUI$$$();
+        this.cellTitle.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
     }
 
     public void setStatus(String statusText) {
@@ -77,6 +78,10 @@ public class MonitorLogDetailsPanel {
         } catch (final Exception e) {
             return null;
         }
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 
     private void createUIComponents() {
