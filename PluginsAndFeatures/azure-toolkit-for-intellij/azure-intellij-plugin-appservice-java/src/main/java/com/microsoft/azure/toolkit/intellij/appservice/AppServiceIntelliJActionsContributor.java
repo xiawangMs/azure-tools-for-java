@@ -24,10 +24,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.actions.AppServiceFileAct
 import com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePropertyViewAction;
 import com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionEnableRemoteDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionRemoteDebuggingAction;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.ProfileFlightRecordAction;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.SSHIntoWebAppAction;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StartStreamingLogsAction;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StopStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.*;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.action.PushToContainerRegistryAction;
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction;
@@ -109,6 +106,10 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> stopStreamingLogHandler = (c, e) ->
             tm.runLater(() -> new StopStreamingLogsAction(c, e.getProject()).execute());
         am.registerHandler(AppServiceActionsContributor.STOP_STREAM_LOG, nonLinuxFunction, stopStreamingLogHandler);
+
+        final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> openLogsInMonitorHandler = (c, e) ->
+                new OpenLogsInMonitorAction(c, e.getProject()).execute();
+        am.registerHandler(AppServiceActionsContributor.OPEN_LOGS_IN_MONITOR, isAppService, openLogsInMonitorHandler);
 
         final BiPredicate<AppServiceAppBase<?, ?, ?>, AnActionEvent> isWebApp = (r, e) -> r instanceof WebApp;
         final BiConsumer<AppServiceAppBase<?, ?, ?>, AnActionEvent> sshHandler = (c, e) ->

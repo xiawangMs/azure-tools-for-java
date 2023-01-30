@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.azure.monitor.query.models.LogsTable;
 import com.azure.monitor.query.models.LogsTableCell;
 import com.azure.monitor.query.models.LogsTableRow;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -24,21 +25,22 @@ import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
-import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.ResourceComboBox;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.KustoFilterComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
+import lombok.Setter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -48,7 +50,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -57,22 +58,28 @@ public class MonitorLogTablePanel {
     private JPanel filterPanel;
     private LogTable logTable;
     private TimeRangeComboBox timeRangeComboBox;
-    private ResourceComboBox resourceComboBox;
-    private ResourceComboBox levelComboBox;
+    private KustoFilterComboBox resourceComboBox;
+    private KustoFilterComboBox levelComboBox;
     private JButton runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
-    private JPanel statusPanel;
-    private JLabel statusLabel;
+    private JPanel timeRangePanel;
+    private JPanel levelPanel;
+    private JPanel resourcePanel;
+    private JLabel logLevelLabel;
+    private JLabel resourceLabel;
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
     private final static String RESULT_CSV_FILE = "result.csv";
+    @Setter
+    private String initResourceId;
 
     public MonitorLogTablePanel() {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.customizeTableUi();
         this.hideFilters();
         this.runButton.setIcon(AllIcons.Actions.Execute);
+        AzureEventBus.on("", new AzureEventBus.EventListener(e -> initResourceId = null));
     }
 
     public JPanel getContentPanel() {
@@ -81,12 +88,16 @@ public class MonitorLogTablePanel {
 
     public String getQueryStringFromFilters(String tableName) {
         final List<String> queryParams = new ArrayList<>(Arrays.asList(tableName, timeRangeComboBox.getKustoString()));
-        if (resourceComboBox.isVisible() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
+        if (Objects.nonNull(initResourceId)) {
+            queryParams.add(String.format("where _ResourceId == \"%s\"", initResourceId));
+        } else if (resourceLabel.isEnabled() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
             queryParams.add(resourceComboBox.getKustoString());
         }
-        if (levelComboBox.isVisible() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
+        if (logLevelLabel.isEnabled() && StringUtils.isNotBlank(levelComboBox.getKustoString())) {
             queryParams.add(levelComboBox.getKustoString());
         }
+        // display logs with latest time
+        queryParams.add("sort by TimeGenerated desc");
         final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
         queryParams.add(rowNumberLimitation);
         return StringUtils.join(queryParams, " | ");
@@ -96,7 +107,8 @@ public class MonitorLogTablePanel {
         logTable.clearModel();
         logTable.setLoading(true);
         runButton.setEnabled(false);
-        AzureTaskManager.getInstance().runInBackground("Loading Azure Monitor data", () -> {
+        exportAction.setEnabled(false);
+        AzureTaskManager.getInstance().runInBackground("load Azure Monitor data", () -> {
             try {
                 final LogsTable result = selectedWorkspace.executeQuery(queryString);
                 AzureTaskManager.getInstance().runLater(() -> {
@@ -104,6 +116,7 @@ public class MonitorLogTablePanel {
                         return;
                     }
                     if (result.getAllTableCells().size() > 0) {
+                        this.exportAction.setEnabled(true);
                         this.logTable.setModel(result.getRows());
                     }
                 }, AzureTask.Modality.ANY);
@@ -119,23 +132,22 @@ public class MonitorLogTablePanel {
     }
 
     public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
-        statusPanel.setVisible(true);
-        filterPanel.setVisible(false);
-        timeRangeComboBox.setVisible(true);
-        AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
+        timeRangePanel.setVisible(true);
+        resourcePanel.setVisible(true);
+        levelPanel.setVisible(true);
+        logLevelLabel.setEnabled(false);
+        resourceLabel.setEnabled(false);
+        AzureTaskManager.getInstance().runInBackground("load filters", () -> {
+            final Map<String, List<String>> result = new HashMap<>();
             try {
                 final List<String> tableColumns = queryColumnNameList(selectedWorkspace, tableName);
-                final CountDownLatch countDownLatch = new CountDownLatch(2);
-                loadFilters(selectedWorkspace, tableName, RESOURCE_COMBOBOX_COLUMN_NAMES, tableColumns, resourceComboBox, countDownLatch);
-                loadFilters(selectedWorkspace, tableName, LEVEL_COMBOBOX_COLUMN, tableColumns, levelComboBox, countDownLatch);
-                countDownLatch.await();
+                final List<String> specificColumnNames = new ArrayList<>(Arrays.asList(RESOURCE_COMBOBOX_COLUMN_NAMES));
+                specificColumnNames.addAll(Arrays.asList(LEVEL_COMBOBOX_COLUMN));
+                result.putAll(queryCellValueList(selectedWorkspace, tableName, specificColumnNames, tableColumns));
             } catch (final Exception e) {
                 throw new AzureToolkitRuntimeException(e);
             } finally {
-                AzureTaskManager.getInstance().runLater(() -> {
-                    statusPanel.setVisible(false);
-                    filterPanel.setVisible(true);
-                }, AzureTask.Modality.ANY);
+                AzureTaskManager.getInstance().runLater(() -> updateCombobox(result), AzureTask.Modality.ANY);
             }
         });
     }
@@ -166,20 +178,42 @@ public class MonitorLogTablePanel {
         searchField.addDocumentListener((TextDocumentListenerAdapter) () -> logTable.filter(searchField.getText()));
     }
 
-    private void updateComboboxItems(ResourceComboBox comboBox, Pair<String, List<String>> pair) {
-        if (pair.getValue().size() <=0 ) {
-            comboBox.setVisible(false);
+    private void updateCombobox(Map<String, List<String>> map) {
+        resourcePanel.setVisible(false);
+        levelPanel.setVisible(false);
+        Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
+                .ifPresent(it -> {
+                    final List<String> items = map.get(it);
+                    Optional.ofNullable(initResourceId).ifPresent(resourceId -> {
+                        if (!items.contains(initResourceId)) {
+                            items.add(initResourceId);
+                        }
+                    });
+                    updateComboboxItems(resourcePanel, items, it);
+                    resourceComboBox.setValue(Objects.isNull(initResourceId) ? KustoFilterComboBox.ALL : initResourceId);
+                });
+        Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(s -> map.containsKey(s)).findFirst()
+                .ifPresent(it -> {
+                    updateComboboxItems(levelPanel, map.get(it), it);
+                    levelComboBox.setValue(KustoFilterComboBox.ALL);
+                });
+    }
+
+    private void updateComboboxItems(JPanel panel, List<String> items, String key) {
+        if (items.size() <=0 ) {
             return;
         }
-        comboBox.setVisible(true);
+        panel.setVisible(true);
+        panel.getComponent(0).setEnabled(true);
+        final KustoFilterComboBox comboBox = (KustoFilterComboBox) panel.getComponent(1);
         comboBox.setItemsLoader(() -> {
             final List<String> result = new ArrayList<>();
-            result.add(ResourceComboBox.ALL);
-            result.addAll(pair.getValue());
+            result.add(KustoFilterComboBox.ALL);
+            result.addAll(items);
             return result;
         });
-        comboBox.setColumnName(pair.getKey());
-        comboBox.setValue(ResourceComboBox.ALL);
+        comboBox.setColumnName(key);
+        comboBox.reloadItems();
     }
 
     private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
@@ -188,38 +222,29 @@ public class MonitorLogTablePanel {
                 .stream().map(LogsTableCell::getColumnName).toList();
     }
 
-    private Pair<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
-                                                          String[] columnNames, List<String> tableColumns) {
-        for (final String columnName: columnNames) {
-            if (tableColumns.contains(columnName)) {
-                final String queryResource = String.format("%s | distinct %s | project %s", tableName, columnName, columnName);
-                return Pair.of(columnName, Optional.ofNullable(selectedWorkspace.executeQuery(queryResource))
-                        .map(LogsTable::getAllTableCells).orElse(new ArrayList<>())
-                        .stream().map(LogsTableCell::getValueAsString).toList());
-            }
+    private Map<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
+                                                          List<String> specificColumnNames, List<String> columnNamesInTable) {
+        final Map<String, List<String>> result = new HashMap<>();
+        final String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
+                .filter(s -> columnNamesInTable.contains(s)).toList(), ",");
+        if (StringUtils.isBlank(kustoColumnNames)) {
+            return result;
         }
-        return Pair.of(StringUtils.EMPTY, new ArrayList<>());
-    }
-
-    private void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName,
-                             String[] columnNames, List<String> tableColumns,
-                             ResourceComboBox comboBox, CountDownLatch latch) {
-        AzureTaskManager.getInstance().runInBackground("Loading filters", () -> {
-            try {
-                final Pair<String, List<String>> valueListPair = queryCellValueList(selectedWorkspace, tableName, columnNames, tableColumns);
-                AzureTaskManager.getInstance().runLater(() -> updateComboboxItems(comboBox, valueListPair), AzureTask.Modality.ANY);
-            } catch (final Exception e) {
-                throw new AzureToolkitRuntimeException(e);
-            } finally {
-                latch.countDown();
-            }
-        });
+        final String queryString = String.format("%s | distinct %s | project %s", tableName, kustoColumnNames, kustoColumnNames);
+        Optional.ofNullable(selectedWorkspace.executeQuery(queryString))
+                .map(LogsTable::getAllTableCells).orElse(new ArrayList<>()).forEach(logsTableCell -> {
+                    if (!result.containsKey(logsTableCell.getColumnName())) {
+                        result.put(logsTableCell.getColumnName(), new ArrayList<>());
+                    }
+                    result.get(logsTableCell.getColumnName()).add(logsTableCell.getValueAsString());
+                });
+        return result;
     }
 
     private void hideFilters() {
-        this.timeRangeComboBox.setVisible(false);
-        this.resourceComboBox.setVisible(false);
-        this.levelComboBox.setVisible(false);
+        this.timeRangePanel.setVisible(false);
+        this.resourcePanel.setVisible(false);
+        this.levelPanel.setVisible(false);
     }
 
     @AzureOperation(name = "user/monitor.export_query_result")
@@ -271,8 +296,9 @@ public class MonitorLogTablePanel {
             }
         });
         this.exportAction.setExternalLinkIcon();
-        this.resourceComboBox = new ResourceComboBox();
-        this.levelComboBox = new ResourceComboBox() {
+        this.exportAction.setAutoHideOnDisable(false);
+        this.resourceComboBox = new KustoFilterComboBox();
+        this.levelComboBox = new KustoFilterComboBox() {
             @Override
             protected String getItemText(Object item) {
                 return Objects.nonNull(item) ? item.toString() : StringUtils.EMPTY;

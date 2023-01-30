@@ -123,7 +123,7 @@
       "queryString": "AppServiceHTTPLogs\n| top-nested of _ResourceId by dummy=max(0), top-nested 5 of CIp by count()\n| project-away dummy"
     }
   ],
-  "Azure Spring Cloud": [
+  "Azure Spring Apps": [
     {
       "displayName": "Show the application logs which contain the \"error\" or \"exception\" terms",
       "queryString": "AppPlatformLogsforSpring\n| where TimeGenerated > ago(1h)\n| where Log contains \"error\" or Log contains \"exception\"\n| project TimeGenerated , ServiceName , AppName , InstanceName , Log , _ResourceId "

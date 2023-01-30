@@ -7,6 +7,9 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,9 +31,11 @@ public class MonitorTabbedPane {
     private boolean isTableTab;
     private AzureMonitorView parentView;
     private final List<String> openedTabs = new ArrayList<>();
+    @Setter
+    private String initResourceId;
 
     public MonitorTabbedPane() {
-
+        AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> reloadSelectedTab()));
     }
 
     public void setParentView(AzureMonitorView parentView) {
@@ -44,15 +49,34 @@ public class MonitorTabbedPane {
             }));
     }
 
-    private void selectTab(String tabName) {
+    public void selectTab(String tabName) {
+        if (Objects.nonNull(initResourceId)) {
+            final int removeIndex = closeableTabbedPane.indexOfTab(tabName);
+            if (removeIndex != -1) {
+                closeableTabbedPane.remove(removeIndex);
+                openedTabs.remove(tabName);
+            }
+        }
         if (!openedTabs.contains(tabName)) {
-            final MonitorSingleTab singleTab = new MonitorSingleTab(this.isTableTab, tabName, this.parentView);
+            final MonitorSingleTab singleTab = new MonitorSingleTab(this.isTableTab, tabName, this.parentView, initResourceId);
             this.closeableTabbedPane.addTab(tabName, singleTab.getSplitter());
             this.closeableTabbedPane.setTabComponentAt(this.closeableTabbedPane.getTabCount() - 1, createTabTitle(tabName));
             this.openedTabs.add(tabName);
         }
         final int toSelectIndex = this.closeableTabbedPane.indexOfTab(tabName);
         this.closeableTabbedPane.setSelectedIndex(toSelectIndex);
+        this.initResourceId = null;
+    }
+
+    private void reloadSelectedTab() {
+        this.initResourceId = null;
+        this.openedTabs.clear();
+        AzureTaskManager.getInstance().runLater(() -> {
+            final int selectedIndex = this.closeableTabbedPane.getSelectedIndex();
+            final String selectedTabName = this.closeableTabbedPane.getTitleAt(selectedIndex);
+            this.closeableTabbedPane.removeAll();
+            this.selectTab(selectedTabName);
+        }, AzureTask.Modality.ANY);
     }
 
     private JPanel createTabTitle(String tabName) {

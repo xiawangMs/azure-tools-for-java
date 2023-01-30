@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.connection.ApplicationInsightsResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.applicationinsights.creation.CreateApplicationInsightsAction;
+import com.microsoft.azure.toolkit.intellij.applicationinsights.task.OpenLogsInMonitorAction;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -61,6 +62,10 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
                     dialog.show();
                 });
         am.registerHandler(ResourceCommonActionsContributor.CONNECT, connectCondition, connectHandler);
+
+        final BiConsumer<ApplicationInsight, AnActionEvent> openLogsInMonitorHandler = (c, e) ->
+                new OpenLogsInMonitorAction(c, e.getProject()).execute();
+        am.registerHandler(ApplicationInsightsActionsContributor.OPEN_LOGS_IN_MONITOR, openLogsInMonitorHandler);
     }
 
     private static ApplicationInsightDraft getDraftApplicationInsight(@Nullable final ResourceGroup resourceGroup) {

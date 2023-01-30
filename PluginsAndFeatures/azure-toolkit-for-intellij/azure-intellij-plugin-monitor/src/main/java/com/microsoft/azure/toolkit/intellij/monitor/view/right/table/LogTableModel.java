@@ -16,6 +16,8 @@ import javax.annotation.Nullable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class LogTableModel implements TableModel {
     @Getter
     private final List<String> columnNames = new ArrayList<>();
+    private final List<LogsColumnType> columnClasses = new ArrayList<>();
     @Getter
     private final List<LogsTableRow> logsTableRows = new ArrayList<>();
     private final List<TableModelListener> tableModelListenerList = new ArrayList<>();
@@ -33,6 +36,7 @@ public class LogTableModel implements TableModel {
     }
 
     public LogTableModel(List<LogsTableRow> logsTableRows ) {
+        this.columnClasses.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnType).toList());
         this.columnNames.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnName).toList());
         this.logsTableRows.addAll(logsTableRows);
     }
@@ -55,12 +59,22 @@ public class LogTableModel implements TableModel {
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
+        final LogsColumnType type = this.columnClasses.get(columnIndex);
+        if (LogsColumnType.BOOL.equals(type)) {
+            return Boolean.class;
+        }
+        if (LogsColumnType.INT.equals(type)) {
+            return Integer.class;
+        }
+        if (LogsColumnType.LONG.equals(type)) {
+            return Long.class;
+        }
         return String.class;
     }
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return !isRowInvalid(rowIndex);
+        return false;
     }
 
     @Override
@@ -68,6 +82,21 @@ public class LogTableModel implements TableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (isRowInvalid(rowIndex)) {
             return null;
+        }
+        final LogsColumnType type = this.columnClasses.get(columnIndex);
+        if (LogsColumnType.BOOL.equals(type)) {
+            return this.logsTableRows.get(rowIndex).getRow().get(columnIndex).getValueAsBoolean();
+        }
+        if (LogsColumnType.INT.equals(type)) {
+            return this.logsTableRows.get(rowIndex).getRow().get(columnIndex).getValueAsInteger();
+        }
+        if (LogsColumnType.LONG.equals(type)) {
+            return this.logsTableRows.get(rowIndex).getRow().get(columnIndex).getValueAsLong();
+        }
+        if (LogsColumnType.DATETIME.equals(type)) {
+            final OffsetDateTime dateTime = this.logsTableRows.get(rowIndex).getRow().get(columnIndex).getValueAsDateTime();
+            final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnn");
+            return dateTime.format(dateTimeFormatter);
         }
         return this.logsTableRows.get(rowIndex).getRow().get(columnIndex).getValueAsString();
     }

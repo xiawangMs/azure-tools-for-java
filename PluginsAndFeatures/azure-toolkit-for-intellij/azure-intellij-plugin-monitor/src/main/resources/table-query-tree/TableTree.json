@@ -5,5 +5,5 @@
   "App Service": [
     "AppServiceAppLogs", "AppServiceConsoleLogs", "AppServiceAppLogs", "AppServiceHTTPLogs", "AppServicePlatformLogs", "FunctionAppLogs"
   ],
-  "Azure Spring Cloud": ["AppPlatformBuildLogs", "AppPlatformContainerEventLogs", "AppPlatformLogsforSpring", "AppPlatformSystemLogs"]
+  "Azure Spring Apps": ["AppPlatformBuildLogs", "AppPlatformContainerEventLogs", "AppPlatformLogsforSpring", "AppPlatformSystemLogs"]
 }

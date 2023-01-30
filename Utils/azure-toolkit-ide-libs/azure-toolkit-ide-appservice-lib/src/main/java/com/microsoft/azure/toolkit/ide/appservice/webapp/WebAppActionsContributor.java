@@ -61,7 +61,8 @@ public class WebAppActionsContributor implements IActionsContributor {
             AppServiceActionsContributor.PROFILE_FLIGHT_RECORD,
             AppServiceActionsContributor.SSH_INTO_WEBAPP,
             AppServiceActionsContributor.START_STREAM_LOG,
-            AppServiceActionsContributor.STOP_STREAM_LOG
+            AppServiceActionsContributor.STOP_STREAM_LOG,
+            AppServiceActionsContributor.OPEN_LOGS_IN_MONITOR
         );
         am.registerGroup(WEBAPP_ACTIONS, webAppActionGroup);
 
