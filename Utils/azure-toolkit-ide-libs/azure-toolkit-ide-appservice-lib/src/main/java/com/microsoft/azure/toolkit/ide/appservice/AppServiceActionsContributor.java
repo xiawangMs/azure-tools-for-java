@@ -23,6 +23,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> START_STREAM_LOG = Action.Id.of("user/appservice.open_log_stream.app");
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> STOP_STREAM_LOG = Action.Id.of("user/appservice.close_log_stream.app");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_LOGS_IN_MONITOR = Action.Id.of("user/appservice.open_azure_monitor.app");
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("user/appservice.refresh_deployments.app");
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_IN_BROWSER = Action.Id.of("user/webapp.open_in_browser.app");
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> SSH_INTO_WEBAPP = Action.Id.of("user/webapp.connect_ssh.app");
@@ -76,6 +77,14 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .visibleWhen(s -> s instanceof AppServiceAppBase)
             .withHandler(app -> AzureEventBus.emit("appservice.slot.refresh", app))
             .withShortcut(am.getIDEDefaultShortcuts().refresh())
+            .register(am);
+
+        new Action<>(OPEN_LOGS_IN_MONITOR)
+            .withLabel("Open Logs")
+            .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
+            .withIdParam(AzResource::getName)
+            .visibleWhen(s -> s instanceof AppServiceAppBase)
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
     }
 

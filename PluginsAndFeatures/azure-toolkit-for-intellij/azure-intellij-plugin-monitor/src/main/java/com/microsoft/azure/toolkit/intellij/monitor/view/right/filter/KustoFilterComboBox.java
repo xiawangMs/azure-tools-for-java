@@ -12,18 +12,18 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
-public class ResourceComboBox extends AzureComboBox<String> {
+public class KustoFilterComboBox extends AzureComboBox<String> {
     private String kustoString;
     @Setter
     private String columnName;
     public final static String ALL = "All";
-    public ResourceComboBox() {
+    public KustoFilterComboBox() {
         super();
     }
 
     public String getKustoString() {
         final String selected = this.getValue();
-        if (Objects.equals(ALL, selected) || Objects.isNull(selected)) {
+        if (Objects.isNull(selected) || Objects.equals(ALL, selected)) {
             return StringUtils.EMPTY;
         }
         return String.format("where %s == \"%s\"", columnName, selected);

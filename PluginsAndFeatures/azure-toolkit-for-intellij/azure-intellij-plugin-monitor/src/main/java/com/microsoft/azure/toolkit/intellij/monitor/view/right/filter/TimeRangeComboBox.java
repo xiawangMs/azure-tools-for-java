@@ -7,27 +7,36 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter;
 
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.awt.event.ItemEvent;
-import java.util.Arrays;
-import java.util.Collections;
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public class TimeRangeComboBox extends AzureComboBox<TimeRangeComboBox.TimeRange> {
     private String customKustoString;
+    private boolean isClicked = false;
     public TimeRangeComboBox() {
         super();
-        this.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED && TimeRange.CUSTOM.equals(e.getItem())) {
-                final CustomTimeRangeDialog dialog = new CustomTimeRangeDialog();
-                if (dialog.showAndGet()) {
-                    customKustoString = dialog.getValue();
+        final Component component = this.getEditor().getEditorComponent();
+        if (component instanceof JTextField) {
+            ((JTextField) component).getDocument().addDocumentListener((TextDocumentListenerAdapter) () -> {
+                final TimeRange timeRange = (TimeRange) getSelectedItem();
+                final String selectedText = Optional.ofNullable(timeRange).map(TimeRange::getLabel).orElse(StringUtils.EMPTY);
+                final String text = ((JTextField) component).getText();
+                if (isClicked && Objects.equals(TimeRange.CUSTOM.label, text)) {
+                    final CustomTimeRangeDialog dialog = new CustomTimeRangeDialog();
+                    if (dialog.showAndGet()) {
+                        customKustoString = dialog.getValue();
+                    }
                 }
-            }
-        });
+                isClicked = !Objects.equals(selectedText, text);
+            });
+        }
     }
 
     public String getKustoString() {

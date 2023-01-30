@@ -79,7 +79,8 @@ public class FunctionAppActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE,
             "---",
             AppServiceActionsContributor.START_STREAM_LOG,
-            AppServiceActionsContributor.STOP_STREAM_LOG
+            AppServiceActionsContributor.STOP_STREAM_LOG,
+            AppServiceActionsContributor.OPEN_LOGS_IN_MONITOR
             // todo: add profile actions like log streaming
         );
         am.registerGroup(FUNCTION_APP_ACTIONS, functionAppActionGroup);

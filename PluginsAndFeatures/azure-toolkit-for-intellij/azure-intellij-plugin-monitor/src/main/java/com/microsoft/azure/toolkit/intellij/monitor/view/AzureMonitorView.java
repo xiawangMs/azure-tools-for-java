@@ -13,13 +13,16 @@ import com.intellij.ui.components.AnActionLink;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Optional;
@@ -35,25 +38,41 @@ public class AzureMonitorView {
     private JPanel rightPanel;
     private MonitorTabbedPane tabbedPanePanel;
     @Getter
-    @Nullable
+    @Nonnull
     private LogAnalyticsWorkspace selectedWorkspace;
 
-    public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab) {
+    public AzureMonitorView(Project project, @Nonnull LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        this.workspaceName.setText(Optional.ofNullable(selectedWorkspace).map(LogAnalyticsWorkspace::getName).orElse(StringUtils.EMPTY));
-        this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        this.workspaceName.setText(selectedWorkspace.getName());
+        this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setParentView(this);
+        this.tabbedPanePanel.setInitResourceId(resourceId);
+        AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> {
+            final LogAnalyticsWorkspace workspace = (LogAnalyticsWorkspace) e.getSource();
+            this.selectedWorkspace = workspace;
+            this.workspaceName.setText(workspace.getName());
+        }));
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
     }
 
     public String getQueryString(String queryName) {
-        return this.getMonitorTreePanel().getQueryString(queryName);
+        return String.format("%s | take %s", this.getMonitorTreePanel().getQueryString(queryName), Azure.az().config().getMonitorQueryRowNumber());
     }
 
-    public JPanel getCenterPanel() {
+    public void setSelectedWorkspace(LogAnalyticsWorkspace workspace) {
+        this.selectedWorkspace = workspace;
+        this.workspaceName.setText(workspace.getName());
+    }
+
+    public void setInitResourceId(String resourceId) {
+        this.tabbedPanePanel.setInitResourceId(resourceId);
+        tabbedPanePanel.selectTab("AppTraces");
+    }
+
+    public JPanel getContentPanel() {
         return contentPanel;
     }
 
@@ -65,12 +84,11 @@ public class AzureMonitorView {
         this.changeWorkspace = new AnActionLink("Change", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
                 AzureTaskManager.getInstance().runLater(() -> {
+                    final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
                     if (dialog.showAndGet()) {
                         Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
-                            selectedWorkspace = w;
-                            workspaceName.setText(selectedWorkspace.getName());
+                            AzureEventBus.emit("azure.monitor.change_workspace", w);
                         });
                     }
                 });

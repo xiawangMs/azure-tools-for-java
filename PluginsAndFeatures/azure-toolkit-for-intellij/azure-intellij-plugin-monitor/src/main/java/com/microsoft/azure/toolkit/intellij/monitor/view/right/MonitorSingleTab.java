@@ -25,12 +25,13 @@ public class MonitorSingleTab {
     private final String tabName;
     private final AzureMonitorView parentView;
 
-    public MonitorSingleTab(boolean isTableTab, String tabName, AzureMonitorView parentView) {
+    public MonitorSingleTab(boolean isTableTab, String tabName, AzureMonitorView parentView, String resourceId) {
         this.isTableTab = isTableTab;
         this.tabName = tabName;
         this.parentView = parentView;
         this.initUI();
         this.initListener();
+        this.monitorLogTablePanel.setInitResourceId(resourceId);
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> {
             loadFilters(tabName);
             loadLogs();
@@ -61,10 +62,6 @@ public class MonitorSingleTab {
     @AzureOperation(name = "user/monitor.execute_query")
     private void loadLogs() {
         final LogAnalyticsWorkspace selectedWorkspace = this.parentView.getSelectedWorkspace();
-        if (Objects.isNull(selectedWorkspace)) {
-            AzureMessager.getMessager().warning("Please select log analytics workspace first");
-            return;
-        }
         final String queryString = this.isTableTab ? this.monitorLogTablePanel.getQueryStringFromFilters(tabName) : this.parentView.getQueryString(tabName);
         this.monitorLogTablePanel.loadTableModel(selectedWorkspace, queryString);
         this.monitorLogDetailsPanel.setStatus("No table cell is selected");
