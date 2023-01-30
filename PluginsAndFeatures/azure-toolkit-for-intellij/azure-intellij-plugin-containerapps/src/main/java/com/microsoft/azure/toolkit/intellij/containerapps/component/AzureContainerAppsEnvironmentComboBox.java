@@ -2,8 +2,8 @@ package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
-import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceDraft;
+import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
+import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspaceDraft;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
