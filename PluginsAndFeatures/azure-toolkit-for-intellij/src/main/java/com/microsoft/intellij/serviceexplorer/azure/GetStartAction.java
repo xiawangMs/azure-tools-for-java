@@ -28,6 +28,7 @@ public class GetStartAction extends NodeAction {
 
     public GetStartAction(@Nonnull AzureModule azureModule) {
         super(azureModule, "Getting Started");
+        this.setGroup(101);
         addListener(new NodeActionListener() {
             @Override
             @AzureOperation(name = "user/guidance.show_courses_view")

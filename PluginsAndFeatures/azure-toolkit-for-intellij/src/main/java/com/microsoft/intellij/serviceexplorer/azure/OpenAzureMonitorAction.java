@@ -36,6 +36,7 @@ public class OpenAzureMonitorAction extends NodeAction {
 
     public OpenAzureMonitorAction(@Nonnull AzureModule azureModule) {
         super(azureModule, "Open Logs in Azure Monitor");
+        this.setGroup(101);
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent nodeActionEvent) {
