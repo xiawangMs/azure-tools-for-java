@@ -75,9 +75,11 @@ public class MonitorTabbedPane {
         this.openedTabs.clear();
         AzureTaskManager.getInstance().runLater(() -> {
             final int selectedIndex = this.closeableTabbedPane.getSelectedIndex();
-            final String selectedTabName = this.closeableTabbedPane.getTitleAt(selectedIndex);
-            this.closeableTabbedPane.removeAll();
-            this.selectTab(selectedTabName);
+            if (selectedIndex != -1 && selectedIndex < this.closeableTabbedPane.getTabCount()) {
+                final String selectedTabName = this.closeableTabbedPane.getTitleAt(selectedIndex);
+                this.closeableTabbedPane.removeAll();
+                this.selectTab(selectedTabName);
+            }
         }, AzureTask.Modality.ANY);
     }
 
