@@ -35,7 +35,7 @@ public class OpenAzureMonitorAction extends NodeAction {
     private static final String AZURE_MONITOR_TRIGGERED = "AzureMonitor.Triggered";
 
     public OpenAzureMonitorAction(@Nonnull AzureModule azureModule) {
-        super(azureModule, "Open Azure Monitor");
+        super(azureModule, "Open Logs");
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent nodeActionEvent) {
