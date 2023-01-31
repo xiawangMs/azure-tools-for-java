@@ -16,6 +16,8 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.JBIntSpinner;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.ActionLink;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
@@ -208,7 +210,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     @Override
     public JComponent getPanel() {
-        return contentPane;
+        final JBScrollPane pane = new JBScrollPane(contentPane);
+        pane.setBorder(JBUI.Borders.empty());
+        return pane;
     }
 
     @Override
