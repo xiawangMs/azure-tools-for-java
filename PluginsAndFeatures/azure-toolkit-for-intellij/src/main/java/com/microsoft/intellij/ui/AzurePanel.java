@@ -79,6 +79,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private AzureFileInput dotnetRuntimePath;
     private ActionLink installDotnetRuntime;
     private JBIntSpinner queryRowNumber;
+    private JCheckBox enableAuthPersistence;
 
     private AzureConfiguration originalConfig;
 
@@ -128,6 +129,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final AzureEnvironment oldEnv = ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()), AzureEnvironment.AZURE);
         final String oldPasswordSaveType = config.getDatabasePasswordSaveType();
         final boolean oldTelemetryEnabled = BooleanUtils.isNotFalse(config.getTelemetryEnabled());
+        final boolean oldEnableAuthPersistence = config.isAuthPersistenceEnabled();
         final String oldFuncCoreToolsPath = config.getFunctionCoreToolsPath();
         azureEnvironmentComboBox.setSelectedItem(oldEnv);
         savePasswordComboBox.setSelectedItem(Optional.ofNullable(oldPasswordSaveType).map(Password.SaveType::valueOf).orElse(Password.SaveType.UNTIL_RESTART));
@@ -141,6 +143,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             dotnetRuntimePath.setValue(config.getDotnetRuntimePath());
         }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
+        enableAuthPersistence.setSelected(oldEnableAuthPersistence);
         txtPageSize.setNumber(config.getPageSize());
         queryRowNumber.setValue(config.getMonitorQueryRowNumber());
         txtLabelFields.setValue(String.join(";", config.getDocumentsLabelFields()));
@@ -153,6 +156,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             .map(i -> ((Password.SaveType) i).name())
             .orElse(Password.SaveType.UNTIL_RESTART.name()));
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
+        data.setAuthPersistenceEnabled(enableAuthPersistence.isSelected());
         if (Objects.nonNull(funcCoreToolsPath.getSelectedItem())) {
             data.setFunctionCoreToolsPath((String) funcCoreToolsPath.getSelectedItem());
         } else if (funcCoreToolsPath.getRawValue() instanceof String) {
@@ -234,6 +238,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         // set partial config to global config
         this.originalConfig.setCloud(newConfig.getCloud());
         this.originalConfig.setTelemetryEnabled(newConfig.getTelemetryEnabled());
+        this.originalConfig.setAuthPersistenceEnabled(newConfig.isAuthPersistenceEnabled());
         this.originalConfig.setDatabasePasswordSaveType(newConfig.getDatabasePasswordSaveType());
         this.originalConfig.setFunctionCoreToolsPath(newConfig.getFunctionCoreToolsPath());
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
@@ -284,7 +289,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             !StringUtils.equalsIgnoreCase(newConfig.getFunctionCoreToolsPath(), originalConfig.getFunctionCoreToolsPath()) ||
             !StringUtils.equalsIgnoreCase(newConfig.getStorageExplorerPath(), originalConfig.getStorageExplorerPath()) ||
             !StringUtils.equalsIgnoreCase(newConfig.getDotnetRuntimePath(), originalConfig.getDotnetRuntimePath()) ||
-            !Objects.equals(newConfig.getTelemetryEnabled(), newConfig.getTelemetryEnabled()) ||
+            !Objects.equals(newConfig.getTelemetryEnabled(), originalConfig.getTelemetryEnabled()) ||
+            !Objects.equals(newConfig.isAuthPersistenceEnabled(), originalConfig.isAuthPersistenceEnabled()) ||
             !Objects.equals(newConfig.getPageSize(), originalConfig.getPageSize()) ||
             !Objects.equals(newConfig.getMonitorQueryRowNumber(), originalConfig.getMonitorQueryRowNumber()) ||
             !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
