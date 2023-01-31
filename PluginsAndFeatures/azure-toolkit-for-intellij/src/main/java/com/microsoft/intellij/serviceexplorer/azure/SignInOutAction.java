@@ -22,7 +22,7 @@ public class SignInOutAction extends NodeAction {
 
     SignInOutAction(AzureModule azureModule) {
         super(azureModule, "Sign In/Out");
-        this.setGroup(200);
+        this.setGroup(MenuGroup.GROUP_3.getGroupNumber());
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
