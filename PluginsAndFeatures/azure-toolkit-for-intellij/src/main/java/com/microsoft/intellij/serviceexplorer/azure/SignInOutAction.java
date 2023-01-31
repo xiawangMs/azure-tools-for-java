@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -22,7 +23,7 @@ public class SignInOutAction extends NodeAction {
 
     SignInOutAction(AzureModule azureModule) {
         super(azureModule, "Sign In/Out");
-        this.setGroup(MenuGroup.GROUP_3.getGroupNumber());
+        this.setGroup(Groupable.DIAGNOSTIC_GROUP);
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
