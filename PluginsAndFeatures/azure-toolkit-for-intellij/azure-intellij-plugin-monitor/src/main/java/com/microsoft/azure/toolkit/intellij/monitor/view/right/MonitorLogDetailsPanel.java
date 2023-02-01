@@ -30,7 +30,8 @@ public class MonitorLogDetailsPanel {
     private EditorTextField cellContentViewer;
 
     public MonitorLogDetailsPanel() {
-
+        $$$setupUI$$$();
+        this.cellTitle.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
     }
 
     public void setStatus(String statusText) {
@@ -58,11 +59,12 @@ public class MonitorLogDetailsPanel {
         final Project project = ProjectManager.getInstance().getOpenProjects()[0];
         final DocumentImpl document = new DocumentImpl("", true);
         final EditorTextField result = new EditorTextField(document, project, PlainTextFileType.INSTANCE, true, false);
-        result.addSettingsProvider(editor -> { // add scrolling/line number features/show gutter
+        result.addSettingsProvider(editor -> { // add scrolling/line number features/show gutter/soft wrap
             editor.setHorizontalScrollbarVisible(true);
             editor.setVerticalScrollbarVisible(true);
             editor.getSettings().setLineNumbersShown(true);
             editor.getSettings().setGutterIconsShown(true);
+            editor.getSettings().setUseSoftWraps(true);
         });
         return result;
     }
@@ -76,6 +78,10 @@ public class MonitorLogDetailsPanel {
         } catch (final Exception e) {
             return null;
         }
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 
     private void createUIComponents() {
