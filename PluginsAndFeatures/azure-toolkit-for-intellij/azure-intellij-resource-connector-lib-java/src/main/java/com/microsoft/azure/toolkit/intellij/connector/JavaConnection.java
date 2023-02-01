@@ -11,8 +11,6 @@ import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.module.Module;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -28,8 +26,6 @@ import java.util.Objects;
  *            it can only be {@link ModuleResource} for now({@code v3.52.0})
  * @since 3.52.0
  */
-@Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class JavaConnection<TResource, TConsumer> extends Connection<TResource, TConsumer> {
 
     private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
