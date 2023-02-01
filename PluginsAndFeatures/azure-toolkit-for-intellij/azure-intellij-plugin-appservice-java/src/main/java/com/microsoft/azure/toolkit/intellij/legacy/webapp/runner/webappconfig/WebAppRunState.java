@@ -87,8 +87,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     @Override
     @AzureOperation(name = "user/webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"})
     public WebAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
-        final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
-        OperationContext.current().setMessager(messenger);
+        OperationContext.current().setMessager(getProcessHandlerMessenger());
         artifact = new File(getTargetPath());
         if (!artifact.exists()) {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", artifact.getAbsolutePath()));
@@ -227,7 +226,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         }
         // todo: add new boolean indicator instead of comparing string values
         if (StringUtils.equals(webAppSettingModel.getSlotName(), Constants.CREATE_NEW_SLOT)) {
-            return createDeploymentSlot(webApp, processHandler);
+            return AzureWebAppMvpModel.getInstance().createDeploymentSlotFromSettingModel(webApp, webAppSettingModel);
         } else {
             return Objects.requireNonNull(webApp.slots().get(webAppSettingModel.getSlotName(), webAppSettingModel.getResourceGroup()));
         }
@@ -261,17 +260,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
             throw new AzureToolkitRuntimeException(error);
         }
         return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
-    }
-
-    @AzureOperation(name = "internal/webapp.create_deployment.app", params = {"this.webAppConfiguration.getName()"})
-    private WebAppDeploymentSlot createDeploymentSlot(final WebApp webApp, @NotNull RunProcessHandler processHandler) {
-        processHandler.setText(message("webapp.deploy.hint.creatingDeploymentSlot"));
-        try {
-            return AzureWebAppMvpModel.getInstance().createDeploymentSlotFromSettingModel(webApp, webAppSettingModel);
-        } catch (final RuntimeException e) {
-            processHandler.setText(message("webapp.deploy.error.noWebApp"));
-            throw e;
-        }
     }
 
     @NotNull

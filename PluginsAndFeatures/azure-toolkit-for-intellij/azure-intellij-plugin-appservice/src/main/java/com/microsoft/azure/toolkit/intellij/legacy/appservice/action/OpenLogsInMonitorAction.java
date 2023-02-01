@@ -39,8 +39,8 @@ public class OpenLogsInMonitorAction {
     }
 
     public void execute() {
-        Optional.ofNullable(getWorkspace()).ifPresent(it -> AzureTaskManager.getInstance().runLater(() ->
-                AzureMonitorManager.getInstance().openMonitorWindow(project, it, resourceId)));
+        AzureTaskManager.getInstance().runLater(() ->
+                AzureMonitorManager.getInstance().openMonitorWindow(project, getWorkspace(), resourceId));
     }
 
     @Nullable

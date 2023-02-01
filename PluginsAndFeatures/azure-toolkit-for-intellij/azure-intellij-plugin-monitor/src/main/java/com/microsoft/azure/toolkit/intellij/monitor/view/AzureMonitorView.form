@@ -43,7 +43,7 @@
                   <maximumSize width="220" height="-1"/>
                   <minimumSize width="220" height="-1"/>
                   <preferredSize width="220" height="28"/>
-                  <text value="Default-workspace"/>
+                  <text value="Log Analytics workspace"/>
                   <verticalAlignment value="0"/>
                 </properties>
               </component>
