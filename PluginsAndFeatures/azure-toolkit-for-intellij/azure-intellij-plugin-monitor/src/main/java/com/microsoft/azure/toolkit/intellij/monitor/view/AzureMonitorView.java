@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Optional;
@@ -37,13 +36,13 @@ public class AzureMonitorView {
     private JPanel rightPanel;
     private MonitorTabbedPane tabbedPanePanel;
     @Getter
-    @Nonnull
+    @Nullable
     private LogAnalyticsWorkspace selectedWorkspace;
 
-    public AzureMonitorView(Project project, @Nonnull LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
+    public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        this.workspaceName.setText(selectedWorkspace.getName());
+        Optional.ofNullable(selectedWorkspace).ifPresent(e -> this.workspaceName.setText(e.getName()));
         this.workspaceName.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
@@ -61,9 +60,9 @@ public class AzureMonitorView {
         return String.format("%s | take %s", this.getMonitorTreePanel().getQueryString(queryName), Azure.az().config().getMonitorQueryRowNumber());
     }
 
-    public void setSelectedWorkspace(LogAnalyticsWorkspace workspace) {
+    public void setSelectedWorkspace(@Nullable LogAnalyticsWorkspace workspace) {
         this.selectedWorkspace = workspace;
-        this.workspaceName.setText(workspace.getName());
+        Optional.ofNullable(workspace).ifPresent(e -> this.workspaceName.setText(e.getName()));
     }
 
     public void setInitResourceId(String resourceId) {
@@ -80,7 +79,7 @@ public class AzureMonitorView {
     }
 
     private void createUIComponents() {
-        this.changeWorkspace = new AnActionLink("Change", new AnAction() {
+        this.changeWorkspace = new AnActionLink("Select", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 AzureTaskManager.getInstance().runLater(() -> {

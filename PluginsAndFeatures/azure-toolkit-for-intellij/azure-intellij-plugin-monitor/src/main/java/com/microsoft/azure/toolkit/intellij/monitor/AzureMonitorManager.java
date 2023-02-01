@@ -12,19 +12,19 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-
+import java.util.*;
 
 public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
@@ -36,7 +36,7 @@ public class AzureMonitorManager {
     }
 
     @AzureOperation(name="user/monitor.open_azure_monitor")
-    public void openMonitorWindow(@Nonnull Project project, @Nonnull LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
+    public void openMonitorWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         final ToolWindow azureMonitorWindow = getToolWindow(project, workspace, resourceId);
         Optional.ofNullable(azureMonitorWindow).ifPresent(it -> AzureTaskManager.getInstance().runLater(
                 () -> it.activate(() -> {
@@ -47,7 +47,7 @@ public class AzureMonitorManager {
     }
 
     @Nullable
-    private ToolWindow getToolWindow(@Nonnull Project project, @Nonnull LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
+    private ToolWindow getToolWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         if (toolWindowMap.containsKey(project)) {
             final AzureMonitorView tableView = monitorViewMap.get(project);
             if (Objects.nonNull(tableView)) {
@@ -77,11 +77,34 @@ public class AzureMonitorManager {
     public static class AzureMonitorFactory implements ToolWindowFactory {
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+            if (!toolWindowMap.containsKey(project)) {
+                final ToolWindow azureMonitorWindow = instance.getToolWindow(project, getDefaultWorkspace(), null);
+                toolWindow = Objects.nonNull(azureMonitorWindow) ? azureMonitorWindow : toolWindow;
+            }
+            toolWindow.show();
         }
 
         @Override
         public boolean shouldBeAvailable(@NotNull Project project) {
-            return false;
+            return true;
+        }
+
+        @Nullable
+        private LogAnalyticsWorkspace getDefaultWorkspace() {
+            if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+                return null;
+            }
+            LogAnalyticsWorkspace defaultWorkspace = null;
+            final Account account = Azure.az(AzureAccount.class).account();
+            if (Objects.nonNull(account) && account.getSelectedSubscriptions().size() > 0) {
+                final Subscription subscription = account.getSelectedSubscriptions().get(0);
+                final List<LogAnalyticsWorkspace> workspaceList = Azure.az(AzureLogAnalyticsWorkspace.class)
+                        .logAnalyticsWorkspaces(subscription.getId()).list().stream().toList();
+                if (workspaceList.size() > 0) {
+                    defaultWorkspace = workspaceList.get(0);
+                }
+            }
+            return defaultWorkspace;
         }
     }
 

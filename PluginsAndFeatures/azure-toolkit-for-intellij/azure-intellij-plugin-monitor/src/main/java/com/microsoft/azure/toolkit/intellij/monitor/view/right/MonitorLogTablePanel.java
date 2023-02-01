@@ -15,6 +15,7 @@ import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.FileSaverDescriptor;
 import com.intellij.openapi.fileChooser.FileSaverDialog;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
@@ -24,11 +25,13 @@ import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
+import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.KustoFilterComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -78,7 +81,7 @@ public class MonitorLogTablePanel {
         this.customizeTableUi();
         this.hideFilters();
         this.runButton.setIcon(AllIcons.Actions.Execute);
-        AzureEventBus.on("", new AzureEventBus.EventListener(e -> initResourceId = null));
+        AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> initResourceId = null));
     }
 
     public JPanel getContentPanel() {
@@ -102,7 +105,11 @@ public class MonitorLogTablePanel {
         return StringUtils.join(queryParams, " | ");
     }
 
-    public void loadTableModel(LogAnalyticsWorkspace selectedWorkspace, String queryString) {
+    public void loadTableModel(@Nullable LogAnalyticsWorkspace selectedWorkspace, String queryString) {
+        if (Objects.isNull(selectedWorkspace)) {
+            AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction());
+            return;
+        }
         logTable.clearModel();
         logTable.setLoading(true);
         runButton.setEnabled(false);
@@ -130,7 +137,11 @@ public class MonitorLogTablePanel {
         });
     }
 
-    public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
+    public void loadFilters(@Nullable LogAnalyticsWorkspace selectedWorkspace, String tableName) {
+        if (Objects.isNull(selectedWorkspace)) {
+            AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction());
+            return;
+        }
         timeRangePanel.setVisible(true);
         resourcePanel.setVisible(true);
         levelPanel.setVisible(true);
@@ -280,6 +291,18 @@ public class MonitorLogTablePanel {
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
+    }
+
+    private Action<?> selectWorkspaceAction() {
+        final Project project = ProjectManager.getInstance().getDefaultProject();
+        return new Action<>(Action.Id.of("user/monitor.select_workspace"))
+            .withLabel("Select")
+            .withHandler((s, e) -> AzureTaskManager.getInstance().runLater(() -> {
+                final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(project, null);
+                if (dialog.showAndGet()) {
+                    Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> AzureEventBus.emit("azure.monitor.change_workspace", w));
+                }
+            }));
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
