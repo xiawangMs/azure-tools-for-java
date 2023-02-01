@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -45,7 +44,7 @@ public class AzureMonitorView {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.workspaceName.setText(selectedWorkspace.getName());
-        this.workspaceName.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
+        this.workspaceName.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setParentView(this);
@@ -87,9 +86,7 @@ public class AzureMonitorView {
                 AzureTaskManager.getInstance().runLater(() -> {
                     final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(e.getProject(), selectedWorkspace);
                     if (dialog.showAndGet()) {
-                        Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> {
-                            AzureEventBus.emit("azure.monitor.change_workspace", w);
-                        });
+                        Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> AzureEventBus.emit("azure.monitor.change_workspace", w));
                     }
                 });
             }

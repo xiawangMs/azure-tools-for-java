@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
@@ -49,6 +50,7 @@ public class MonitorTabbedPane {
             }));
     }
 
+    @AzureOperation(name = "user/monitor.change_table_tab", params = {"tabName"})
     public void selectTab(String tabName) {
         if (Objects.nonNull(initResourceId)) {
             final int removeIndex = closeableTabbedPane.indexOfTab(tabName);
@@ -73,9 +75,11 @@ public class MonitorTabbedPane {
         this.openedTabs.clear();
         AzureTaskManager.getInstance().runLater(() -> {
             final int selectedIndex = this.closeableTabbedPane.getSelectedIndex();
-            final String selectedTabName = this.closeableTabbedPane.getTitleAt(selectedIndex);
-            this.closeableTabbedPane.removeAll();
-            this.selectTab(selectedTabName);
+            if (selectedIndex != -1 && selectedIndex < this.closeableTabbedPane.getTabCount()) {
+                final String selectedTabName = this.closeableTabbedPane.getTitleAt(selectedIndex);
+                this.closeableTabbedPane.removeAll();
+                this.selectTab(selectedTabName);
+            }
         }, AzureTask.Modality.ANY);
     }
 

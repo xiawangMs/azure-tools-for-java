@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -28,6 +29,7 @@ public class GetStartAction extends NodeAction {
 
     public GetStartAction(@Nonnull AzureModule azureModule) {
         super(azureModule, "Getting Started");
+        this.setGroup(Groupable.MAINTENANCE_GROUP);
         addListener(new NodeActionListener() {
             @Override
             @AzureOperation(name = "user/guidance.show_courses_view")
