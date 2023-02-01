@@ -58,11 +58,6 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
         new Action<>(CREATE_CONTAINER_APP)
             .withLabel("Create Container App")
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
-            .withHandler(s -> {
-                final IAccount account = Azure.az(IAzureAccount.class).account();
-                final String url = String.format("%s/#create/Microsoft.ContainerApp", account.getPortalUrl());
-                am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url);
-            })
             .withShortcut(am.getIDEDefaultShortcuts().add())
             .register(am);
 
