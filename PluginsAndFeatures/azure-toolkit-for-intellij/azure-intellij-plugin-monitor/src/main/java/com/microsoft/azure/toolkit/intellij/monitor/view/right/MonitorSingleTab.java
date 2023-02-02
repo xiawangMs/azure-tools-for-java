@@ -5,15 +5,24 @@
 
 package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.JBSplitter;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
+import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 
 import java.util.Objects;
+import java.util.Optional;
+
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class MonitorSingleTab {
     @Getter
@@ -55,7 +64,8 @@ public class MonitorSingleTab {
             }
             this.monitorLogDetailsPanel.setViewText(viewerTitle, viewerText);
         });
-        this.monitorLogTablePanel.addRunActionListener(e -> loadLogs());
+        this.monitorLogTablePanel.addRunActionListener(e -> Optional.ofNullable(this.parentView.getSelectedWorkspace()).ifPresentOrElse(t -> loadLogs(),
+                () -> AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction())));
     }
 
     @AzureOperation(name = "user/monitor.execute_query")
@@ -72,6 +82,18 @@ public class MonitorSingleTab {
         }
         final LogAnalyticsWorkspace selectedWorkspace = this.parentView.getSelectedWorkspace();
         this.monitorLogTablePanel.loadFilters(selectedWorkspace, tableName);
+    }
+
+    private Action<?> selectWorkspaceAction() {
+        final Project project = ProjectManager.getInstance().getDefaultProject();
+        return new Action<>(Action.Id.of("user/monitor.select_workspace"))
+                .withLabel("Select")
+                .withHandler((s, e) -> AzureTaskManager.getInstance().runLater(() -> {
+                    final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(project, null);
+                    if (dialog.showAndGet()) {
+                        Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> AzureEventBus.emit("azure.monitor.change_workspace", w));
+                    }
+                }));
     }
 
 }
