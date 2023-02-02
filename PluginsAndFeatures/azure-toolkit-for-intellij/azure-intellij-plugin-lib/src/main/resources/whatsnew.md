@@ -1,6 +1,28 @@
 <!-- Version: 3.71.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.73.0
+### Added
+- [Azure Monitor] Azure Monitor to view history logs with rich filters.    
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.azure-monitor.gif" alt="gif of Azure Monitor"/>
+- [Azure Container Apps] Creation of Azure Container Apps Environment.    
+- [Azure Explorer] Pagination support in Azure Explorer.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.loadmore.png" alt="load more in azure explorer"/>
+
+### Changed
+- Update default Java runtime to Java 11 when creating Azure Spring App.
+- Add setting item to allow users to choose whether to enable authentication cache.    
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.enableauthcache.png" alt="setting item to enable auth cache"/>
+
+### Fixed
+- [#7272](https://github.com/microsoft/azure-tools-for-java/issues/7272): `corelibs.log` duplicates all the logs from the IDE.
+- [#7248](https://github.com/microsoft/azure-tools-for-java/issues/7248): Uncaught Exception java.lang.NullPointerException: Cannot invoke "Object.hashCode()" because "key" is null.
+- No error message about failing to create a slot when the app pricing tier is Basic.
+- Transport method for container app in properties window is different with in portal.
+- Unable to download functional core tools from "Settings/Azure" on macOS when Proxy with certificate is configured.
+- Error pops up when deleting App setting in property view of Azure Functions/Web app.
+- Can't connect multiple Azure resources to modules using resource connection feature.
+
 ## 3.72.0
 ### Added
 - Bicep Language Support (preview).
