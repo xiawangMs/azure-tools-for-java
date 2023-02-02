@@ -102,7 +102,7 @@ public class MonitorLogTablePanel {
         queryParams.add("sort by TimeGenerated desc");
         final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
         queryParams.add(rowNumberLimitation);
-        return StringUtils.join(queryParams, " | ");
+        return StringUtils.join(queryParams.stream().filter(StringUtils::isNotBlank).toList(), " | ");
     }
 
     public void loadTableModel(@Nullable LogAnalyticsWorkspace selectedWorkspace, String queryString) {
