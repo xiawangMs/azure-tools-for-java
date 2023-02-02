@@ -56,6 +56,11 @@ public class AzureMonitorManager {
             }
             return toolWindowMap.get(project);
         }
+        return initToolWindow(project, workspace, resourceId);
+    }
+
+    @Nullable
+    private ToolWindow initToolWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         final ToolWindow azureMonitorWindow = ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW);
         if (Objects.isNull(azureMonitorWindow)) {
             return null;
@@ -78,10 +83,8 @@ public class AzureMonitorManager {
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
             if (!toolWindowMap.containsKey(project)) {
-                final ToolWindow azureMonitorWindow = instance.getToolWindow(project, getDefaultWorkspace(), null);
-                toolWindow = Objects.nonNull(azureMonitorWindow) ? azureMonitorWindow : toolWindow;
+                instance.initToolWindow(project, null, null);
             }
-            toolWindow.show();
         }
 
         @Override
