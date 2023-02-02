@@ -5,12 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.monitor;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -28,6 +31,7 @@ import java.util.*;
 
 public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
+    public static final String AZURE_MONITOR_TRIGGERED = "AzureMonitor.Triggered";
     private static final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
     private static final Map<Project, AzureMonitorView> monitorViewMap = new HashMap<>();
     private static final AzureMonitorManager instance = new AzureMonitorManager();
@@ -80,8 +84,13 @@ public class AzureMonitorManager {
     }
 
     public static class AzureMonitorFactory implements ToolWindowFactory {
+        private boolean isTriggered = false;
         @Override
         public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+            if (!isTriggered) {
+                isTriggered = PropertiesComponent.getInstance().getBoolean(AzureMonitorManager.AZURE_MONITOR_TRIGGERED);
+            }
+            toolWindow.setIcon(isTriggered ? IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE_MONITOR) : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE_MONITOR_NEW));
             if (!toolWindowMap.containsKey(project)) {
                 instance.initToolWindow(project, null, null);
             }
