@@ -6,7 +6,7 @@
 - [Azure Monitor] Azure Monitor to view history logs with rich filters.    
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.azure-monitor.gif" alt="gif of Azure Monitor"/>
 - [Azure Container Apps] Creation of Azure Container Apps Environment.    
-- [Azure Explorer] Pagination support in Azure Explorer.
+- [Azure Explorer] Pagination support in Azure Explorer.    
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.loadmore.png" alt="load more in azure explorer"/>
 
 ### Changed
