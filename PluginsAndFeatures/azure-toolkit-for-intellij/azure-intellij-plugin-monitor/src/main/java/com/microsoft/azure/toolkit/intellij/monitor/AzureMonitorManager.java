@@ -33,7 +33,8 @@ public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
     public static final String AZURE_MONITOR_TRIGGERED = "AzureMonitor.Triggered";
     private static final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
-    private static final Map<Project, AzureMonitorView> monitorViewMap = new HashMap<>();
+    private static final Map<Project, AzureMonitorView> monitorTableViewMap = new HashMap<>();
+    private static final Map<Project, AzureMonitorView> monitorQueryViewMap = new HashMap<>();
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
         return instance;
@@ -53,11 +54,11 @@ public class AzureMonitorManager {
     @Nullable
     private ToolWindow getToolWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         if (toolWindowMap.containsKey(project)) {
-            final AzureMonitorView tableView = monitorViewMap.get(project);
-            if (Objects.nonNull(tableView)) {
-                tableView.setSelectedWorkspace(workspace);
-                tableView.setInitResourceId(resourceId);
-            }
+            Optional.ofNullable(monitorTableViewMap.get(project)).ifPresent(t -> {
+                t.setSelectedWorkspace(workspace);
+                t.setInitResourceId(resourceId);
+            });
+            Optional.ofNullable(monitorQueryViewMap.get(project)).ifPresent(t -> t.setSelectedWorkspace(workspace));
             return toolWindowMap.get(project);
         }
         return initToolWindow(project, workspace, resourceId);
@@ -79,7 +80,8 @@ public class AzureMonitorManager {
         azureMonitorWindow.getContentManager().addContent(tableContent);
         azureMonitorWindow.getContentManager().addContent(queryContent);
         toolWindowMap.put(project, azureMonitorWindow);
-        monitorViewMap.put(project, monitorTableView);
+        monitorTableViewMap.put(project, monitorTableView);
+        monitorQueryViewMap.put(project, monitorQueryView);
         return azureMonitorWindow;
     }
 
