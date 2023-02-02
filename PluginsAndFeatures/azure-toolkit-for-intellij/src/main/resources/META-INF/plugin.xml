@@ -25,23 +25,16 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3>3.72.0</h2>
+      <h3>3.73.0</h2>
       <h4 id="added">Added</h4>
       <ul>
-        <li>Bicep Language Support (preview).</li>
-        <li>Resource Management of Azure Container Apps.</li>
-        <li>Resource Management of Azure Database for MySQL flexible server.</li>
-        <li>Support for proxy with certificate.</li>
+        <li>Azure Monitor to view history logs with rich filters.</li>
+        <li>Creation of Azure Container Apps Environment.</li>
+        <li>Pagination in Azure Explorer.</li>
       </ul>
       <h4 id="changed">Changed</h4>
       <ul>
-        <li>deprecated Resource Management support for Azure Database for MySQL (single server).</li>
-      </ul>
-      <h4 id="fixed">Fixed</h4>
-      <ul>
-        <li>installed Function Core Tools doesn&#39;t take effect right now when run/debug functions locally from line gutter.</li>
-        <li>status/icon is wrong for a deleting resource.</li>
-        <li>links are not rendered correctly in notifications.</li>
+        <li>update default JVM runtime to Java 11 when create Azure Spring App.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

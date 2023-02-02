@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.73.0](#3730)
   - [3.72.0](#3720)
   - [3.71.0](#3710)
   - [3.70.0](#3700)
@@ -91,6 +92,15 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.73.0
+### Added
+- Azure Monitor to view history logs with rich filters.
+- Creation of Azure Container Apps Environment.
+- Pagination in Azure Explorer.
+
+### Changed
+- update default JVM runtime to Java 11 when create Azure Spring App.
 
 ## 3.72.0
 ### Added

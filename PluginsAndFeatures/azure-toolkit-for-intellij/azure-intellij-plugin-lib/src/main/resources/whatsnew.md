@@ -1,6 +1,18 @@
 <!-- Version: 3.71.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.73.0
+### Added
+- Azure Monitor to view history logs with rich filters.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.azure-monitor.gif" alt="gif of Azure Monitor"/>
+- Creation of Azure Container Apps Environment.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.container-apps-environment-creation.gif" alt="gif of Azure Container Apps Environment creation"/>
+- Pagination in Azure Explorer.
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.load-more.gif" alt="gif of pagination"/>
+### Changed
+- update default JVM runtime to Java 11 when create Azure Spring App.
+
+
 ## 3.72.0
 ### Added
 - Bicep Language Support (preview).
