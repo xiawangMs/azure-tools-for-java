@@ -126,7 +126,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     @AzureOperation(name = "user/function.run_app")
     protected Boolean executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // Prepare staging Folder
-        OperationContext.current().setMessager(new RunProcessHandlerMessenger(processHandler));
+        OperationContext.current().setMessager(getProcessHandlerMessenger());
         validateFunctionRuntime();
         stagingFolder = FunctionUtils.getTempStagingFolder();
         addProcessTerminatedListener(processHandler);
