@@ -72,19 +72,24 @@ public class AzureMonitorManager {
         if (Objects.isNull(azureMonitorWindow)) {
             return null;
         }
-        final ContentFactory contentFactory = ContentFactory.getInstance();
-        final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true, resourceId);
-        final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false, resourceId);
-        final Content tableContent = contentFactory.createContent(monitorTableView.getContentPanel(), "Tables", true);
-        tableContent.setCloseable(false);
-        final Content queryContent = contentFactory.createContent(monitorQueryView.getContentPanel(), "Queries", true);
-        queryContent.setCloseable(false);
-        azureMonitorWindow.getContentManager().addContent(tableContent);
-        azureMonitorWindow.getContentManager().addContent(queryContent);
+        if (Objects.isNull(azureMonitorWindow.getContentManager().findContent("Tables"))) {
+            final AzureMonitorView monitorTableView = new AzureMonitorView(project, workspace, true, resourceId);
+            this.addContent(azureMonitorWindow, "Tables", monitorTableView);
+            monitorTableViewMap.put(project, monitorTableView);
+        }
+        if (Objects.isNull(azureMonitorWindow.getContentManager().findContent("Queries"))) {
+            final AzureMonitorView monitorQueryView = new AzureMonitorView(project, workspace, false, resourceId);
+            this.addContent(azureMonitorWindow, "Queries", monitorQueryView);
+            monitorQueryViewMap.put(project, monitorQueryView);
+        }
         toolWindowMap.put(project, azureMonitorWindow);
-        monitorTableViewMap.put(project, monitorTableView);
-        monitorQueryViewMap.put(project, monitorQueryView);
         return azureMonitorWindow;
+    }
+
+    private void addContent(@Nonnull ToolWindow toolWindow, String contentName, AzureMonitorView view) {
+        final Content tableContent = ContentFactory.getInstance().createContent(view.getContentPanel(), contentName, true);
+        tableContent.setCloseable(false);
+        toolWindow.getContentManager().addContent(tableContent);
     }
 
     public static class AzureMonitorFactory implements ToolWindowFactory {
