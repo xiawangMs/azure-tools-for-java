@@ -26,8 +26,8 @@ import java.util.Optional;
 public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureForm<String> {
     private final DateFilterComponent dateFilterComponent;
     private String customKustoString;
-    public static final String CUSTOM_BEFORE = "custom.before";
-    public static final String CUSTOM_AFTER = "custom.after";
+    public static final String CUSTOM_BEFORE = "AzureMonitor.Custom.Before";
+    public static final String CUSTOM_AFTER = "AzureMonitor.Custom.After";
 
     public CustomTimeRangeDialog() {
         super();
