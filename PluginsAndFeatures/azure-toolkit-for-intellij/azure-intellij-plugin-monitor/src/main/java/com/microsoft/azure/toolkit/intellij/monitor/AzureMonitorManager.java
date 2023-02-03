@@ -54,11 +54,13 @@ public class AzureMonitorManager {
     @Nullable
     private ToolWindow getToolWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         if (toolWindowMap.containsKey(project)) {
-            Optional.ofNullable(monitorTableViewMap.get(project)).ifPresent(t -> {
-                t.setSelectedWorkspace(workspace);
-                t.setInitResourceId(resourceId);
-            });
-            Optional.ofNullable(monitorQueryViewMap.get(project)).ifPresent(t -> t.setSelectedWorkspace(workspace));
+            Optional.ofNullable(monitorTableViewMap.get(project)).ifPresent(t ->
+                    Optional.ofNullable(workspace).ifPresent(w -> {
+                        t.setSelectedWorkspace(workspace);
+                        t.setInitResourceId(resourceId);
+                    }));
+            Optional.ofNullable(monitorQueryViewMap.get(project)).ifPresent(t ->
+                    Optional.ofNullable(workspace).ifPresent(t::setSelectedWorkspace));
             return toolWindowMap.get(project);
         }
         return initToolWindow(project, workspace, resourceId);
