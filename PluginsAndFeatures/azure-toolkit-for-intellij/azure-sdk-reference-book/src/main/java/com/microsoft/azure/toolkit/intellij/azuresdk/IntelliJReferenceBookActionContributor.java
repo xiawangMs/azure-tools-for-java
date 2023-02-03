@@ -26,8 +26,8 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
         {
             put("Microsoft.ContainerService", "Container Service");
             put("Microsoft.ContainerService/managedClusters", "Container Service");
-            put("Microsoft.Resources", "Resource Management");
-            put("Microsoft.Resources/resourceGroups", "Resource Management");
+            put("Microsoft.Resources", "Core - Parent");
+            put("Microsoft.Resources/resourceGroups", "Core - Parent");
             put("Microsoft.Web", "App Service");
             put("Microsoft.Web/sites", "App Service");
             put("Microsoft.Compute", "Compute");

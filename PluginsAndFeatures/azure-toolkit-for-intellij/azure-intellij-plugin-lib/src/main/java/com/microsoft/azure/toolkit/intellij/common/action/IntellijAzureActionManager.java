@@ -76,7 +76,8 @@ public class IntellijAzureActionManager extends AzureActionManager {
         } else {
             return new Action<>(id)
                 .withLabel(Objects.requireNonNull(origin.getTemplateText()))
-                .withHandler((D d, AnActionEvent e) -> origin.actionPerformed(e));
+                .withHandler((D d, AnActionEvent e) -> origin.actionPerformed(e))
+                .withAuthRequired(false);
         }
     }
 

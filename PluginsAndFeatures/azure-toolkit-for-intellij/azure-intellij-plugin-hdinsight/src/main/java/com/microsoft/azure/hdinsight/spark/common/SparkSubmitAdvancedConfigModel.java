@@ -23,6 +23,10 @@ public class SparkSubmitAdvancedConfigModel extends SparkBatchRemoteDebugJobSshA
     @Nullable
     private String clusterName;
 
+    // This variable has no real meaning and is intended to resolve the problem of
+    //  the apply button not being enabled when a user changes a password
+    public long passwordTimeStamp = 0L;
+
     @Attribute("remote_debug_enabled")
     public boolean enableRemoteDebug = false;
 
@@ -85,6 +89,9 @@ public class SparkSubmitAdvancedConfigModel extends SparkBatchRemoteDebugJobSshA
 
     @Transient
     public void setSshPassword(@Nullable String password) {
+        if (!this.getSshPassword().equals(password)) {
+            this.passwordTimeStamp = System.currentTimeMillis();
+        }
         super.setSshPassword(password);
     }
 
