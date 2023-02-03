@@ -42,7 +42,7 @@ public class AzureMonitorView {
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        Optional.ofNullable(selectedWorkspace).ifPresent(e -> this.workspaceName.setText(e.getName()));
+        Optional.ofNullable(selectedWorkspace).ifPresent(e -> this.updateWorkspaceNameLabel(e.getName()));
         this.workspaceName.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
@@ -51,7 +51,7 @@ public class AzureMonitorView {
         AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> {
             final LogAnalyticsWorkspace workspace = (LogAnalyticsWorkspace) e.getSource();
             this.selectedWorkspace = workspace;
-            this.workspaceName.setText(workspace.getName());
+            this.updateWorkspaceNameLabel(workspace.getName());
         }));
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
     }
@@ -62,7 +62,7 @@ public class AzureMonitorView {
 
     public void setSelectedWorkspace(@Nullable LogAnalyticsWorkspace workspace) {
         this.selectedWorkspace = workspace;
-        Optional.ofNullable(workspace).ifPresent(e -> this.workspaceName.setText(e.getName()));
+        Optional.ofNullable(workspace).ifPresent(e -> this.updateWorkspaceNameLabel(e.getName()));
     }
 
     public void setInitResourceId(String resourceId) {
@@ -72,6 +72,11 @@ public class AzureMonitorView {
 
     public JPanel getContentPanel() {
         return contentPanel;
+    }
+
+    private void updateWorkspaceNameLabel(String name) {
+        this.workspaceName.setText(name);
+        this.workspaceName.setToolTipText(name);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
