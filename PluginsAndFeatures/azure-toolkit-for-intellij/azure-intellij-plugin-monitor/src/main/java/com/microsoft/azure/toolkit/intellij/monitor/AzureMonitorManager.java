@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -43,6 +44,7 @@ public class AzureMonitorManager {
     @AzureOperation(name="user/monitor.open_azure_monitor")
     public void openMonitorWindow(@Nonnull Project project, @Nullable LogAnalyticsWorkspace workspace, @Nullable String resourceId) {
         final ToolWindow azureMonitorWindow = getToolWindow(project, workspace, resourceId);
+        Optional.ofNullable(workspace).ifPresent(w -> AzureEventBus.emit("azure.monitor.change_workspace", w));
         Optional.ofNullable(azureMonitorWindow).ifPresent(it -> AzureTaskManager.getInstance().runLater(
                 () -> it.activate(() -> {
                     it.setAvailable(true);
