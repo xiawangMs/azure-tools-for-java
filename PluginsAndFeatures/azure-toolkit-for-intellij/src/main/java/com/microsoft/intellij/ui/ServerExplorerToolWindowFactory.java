@@ -68,15 +68,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -359,7 +352,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private static class NodeTreeCellRenderer extends NodeRenderer {
-        private Icon inlineActionIcon = null;
+        private final List<Icon> inlineActionIcons = new ArrayList<>();
 
         @Override
         public void customizeCellRenderer(@NotNull JTree jtree,
@@ -369,17 +362,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           boolean isLeaf,
                                           int row,
                                           boolean focused) {
-            inlineActionIcon = null;
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
                 final com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?> node =
                     (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
                 final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
-                inlineActionIcon = Optional.ofNullable(node.getInlineActionView())
-                                           .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath())).orElse(null);
-                if (hoveredRow != row && inlineActionIcon == AllIcons.Nodes.NotFavoriteOnHover) {
-                    // TODO: should not check the value of inlineActionIcon
-                    inlineActionIcon = null;
-                }
+                inlineActionIcons.clear();
+                inlineActionIcons.addAll(node.getInlineActionViews().stream()
+                        .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath()))
+                        // TODO @miller should not check the value of inlineActionIcon
+                        .filter(icon -> hoveredRow == row || icon == AllIcons.Nodes.Favorite).toList());
                 TreeUtils.renderMyTreeNode(jtree, node, selected, this);
                 return;
             } else if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode) {
@@ -427,13 +418,14 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 g.setColor(getBackground());
                 g.fillRect(0, 0, width, height);
             }
-            if (Objects.nonNull(inlineActionIcon)) {
-                width -= TreeUtils.INLINE_ACTION_ICON_OFFSET;
+            width -= TreeUtils.INLINE_ACTION_ICON_OFFSET;
+            for (final Icon icon : inlineActionIcons) {
                 if (width > 0 && height > 0) {
-                    paintIcon(g, inlineActionIcon, width);
+                    paintIcon(g, icon, width);
                     clip = g.getClip();
                     g.clipRect(0, 0, width, height);
                 }
+                width -= (TreeUtils.INLINE_ACTION_ICON_WIDTH + TreeUtils.INLINE_ACTION_ICON_MARGIN);
             }
 
             super.paintComponent(g);
