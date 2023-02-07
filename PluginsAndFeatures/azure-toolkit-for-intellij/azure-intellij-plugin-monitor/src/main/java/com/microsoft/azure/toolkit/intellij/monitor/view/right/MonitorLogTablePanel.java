@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.azure.monitor.query.models.LogsTable;
 import com.azure.monitor.query.models.LogsTableCell;
 import com.azure.monitor.query.models.LogsTableRow;
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -79,7 +78,7 @@ public class MonitorLogTablePanel {
         this.customizeTableUi();
         this.hideFilters();
         this.runButton.setIcon(AllIcons.Actions.Execute);
-        AzureEventBus.on("", new AzureEventBus.EventListener(e -> initResourceId = null));
+        AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> initResourceId = null));
     }
 
     public JPanel getContentPanel() {
@@ -100,10 +99,14 @@ public class MonitorLogTablePanel {
         queryParams.add("sort by TimeGenerated desc");
         final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
         queryParams.add(rowNumberLimitation);
-        return StringUtils.join(queryParams, " | ");
+        return StringUtils.join(queryParams.stream().filter(StringUtils::isNotBlank).toList(), " | ");
     }
 
-    public void loadTableModel(LogAnalyticsWorkspace selectedWorkspace, String queryString) {
+    public void loadTableModel(@Nullable LogAnalyticsWorkspace selectedWorkspace, String queryString) {
+        if (Objects.isNull(selectedWorkspace)) {
+            logTable.getEmptyText().setText(message("azure.monitor.info.selectWorkspaceTips"));
+            return;
+        }
         logTable.clearModel();
         logTable.setLoading(true);
         runButton.setEnabled(false);
@@ -131,7 +134,10 @@ public class MonitorLogTablePanel {
         });
     }
 
-    public void loadFilters(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
+    public void loadFilters(@Nullable LogAnalyticsWorkspace selectedWorkspace, String tableName) {
+        if (Objects.isNull(selectedWorkspace)) {
+            return;
+        }
         timeRangePanel.setVisible(true);
         resourcePanel.setVisible(true);
         levelPanel.setVisible(true);
@@ -163,7 +169,8 @@ public class MonitorLogTablePanel {
 
     @Nullable
     public String getSelectedCellValue() {
-        return (String) this.logTable.getValueAt(this.logTable.getSelectedRow(), this.logTable.getSelectedColumn());
+        final Object value = this.logTable.getValueAt(this.logTable.getSelectedRow(), this.logTable.getSelectedColumn());
+        return Optional.ofNullable(value).map(Object::toString).orElse(StringUtils.EMPTY);
     }
 
     @Nullable
@@ -181,7 +188,7 @@ public class MonitorLogTablePanel {
     private void updateCombobox(Map<String, List<String>> map) {
         resourcePanel.setVisible(false);
         levelPanel.setVisible(false);
-        Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(s -> map.containsKey(s)).findFirst()
+        Arrays.stream(RESOURCE_COMBOBOX_COLUMN_NAMES).filter(map::containsKey).findFirst()
                 .ifPresent(it -> {
                     final List<String> items = map.get(it);
                     Optional.ofNullable(initResourceId).ifPresent(resourceId -> {
@@ -192,7 +199,7 @@ public class MonitorLogTablePanel {
                     updateComboboxItems(resourcePanel, items, it);
                     resourceComboBox.setValue(Objects.isNull(initResourceId) ? KustoFilterComboBox.ALL : initResourceId);
                 });
-        Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(s -> map.containsKey(s)).findFirst()
+        Arrays.stream(LEVEL_COMBOBOX_COLUMN).filter(map::containsKey).findFirst()
                 .ifPresent(it -> {
                     updateComboboxItems(levelPanel, map.get(it), it);
                     levelComboBox.setValue(KustoFilterComboBox.ALL);
@@ -226,7 +233,7 @@ public class MonitorLogTablePanel {
                                                           List<String> specificColumnNames, List<String> columnNamesInTable) {
         final Map<String, List<String>> result = new HashMap<>();
         final String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
-                .filter(s -> columnNamesInTable.contains(s)).toList(), ",");
+                .filter(columnNamesInTable::contains).toList(), ",");
         if (StringUtils.isBlank(kustoColumnNames)) {
             return result;
         }

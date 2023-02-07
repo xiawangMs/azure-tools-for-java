@@ -123,7 +123,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
                 final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                 indicator.setIndeterminate(true);
                 try {
-                    final Account account = Azure.az(AzureAccount.class).login(auth, true);
+                    final Account account = Azure.az(AzureAccount.class).login(auth, Azure.az().config().isAuthPersistenceEnabled());
                     if (account.isLoggedIn()) {
                         SelectSubscriptionsAction.selectSubscriptions(project);
                         manager.runLater(callback);
