@@ -104,10 +104,8 @@ public class TreeUtils {
             @Override
             public void mouseMoved(MouseEvent e) {
                 final Tree.TreeNode<?> node = getTreeNodeAtMouse(tree, e);
-                final List<IView.Label> inlineActionViews = Optional.ofNullable(node)
-                        .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
-                final int index = getHoverInlineActionIndex(tree, e);
-                final boolean isMouseAtActionIcon = inlineActionViews.size() > 0 && index < inlineActionViews.size() && index >= 0;
+                final boolean isMouseAtActionIcon = isMouseAtInlineActionIcon(tree, e, Optional.ofNullable(node)
+                        .map(Tree.TreeNode::getInlineActionViews).map(List::size).orElse(0));
                 final Cursor cursor = isMouseAtActionIcon ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor();
                 tree.setCursor(cursor);
             }
@@ -150,7 +148,8 @@ public class TreeUtils {
                 final int inlineActionIndex = getHoverInlineActionIndex(tree, e);
                 final List<IView.Label> inlineActionViews = Optional.ofNullable(node)
                         .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
-                if (Objects.nonNull(node) && e.getClickCount() == 1 && inlineActionIndex < inlineActionViews.size() && inlineActionIndex >= 0) {
+                final boolean isMouseAtInlineActionIcon = isMouseAtInlineActionIcon(tree, e, inlineActionViews.size());
+                if (Objects.nonNull(node) && e.getClickCount() == 1 && isMouseAtInlineActionIcon) {
                     final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
@@ -172,6 +171,13 @@ public class TreeUtils {
             return (Tree.TreeNode<?>) node;
         }
         return null;
+    }
+
+    private static boolean isMouseAtInlineActionIcon(@Nonnull JTree tree, MouseEvent e, int maxIndex) {
+        final int hoverIndex = getHoverInlineActionIndex(tree, e);
+        final int offset = tree.getWidth() - e.getX() - INLINE_ACTION_ICON_OFFSET + INLINE_ACTION_ICON_WIDTH - hoverIndex * (INLINE_ACTION_ICON_WIDTH + INLINE_ACTION_ICON_MARGIN);
+        final boolean isInActionIcon = offset > 0 && offset < INLINE_ACTION_ICON_WIDTH;
+        return hoverIndex >= 0 && hoverIndex <= maxIndex && isInActionIcon;
     }
 
     private static int getHoverInlineActionIndex(@Nonnull JTree tree, MouseEvent e) {
