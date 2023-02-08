@@ -118,7 +118,7 @@ abstract class SparkSubmissionJobUploadStorageBasicCard(val title: String)
                     .groupBy { checkEvent -> checkEvent::class.java.typeName}
                     .subscribe(
                             { groupedOb -> groupedOb
-                                    .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
+                                    .throttleWithTimeout(2000, TimeUnit.MILLISECONDS)
                                     .doOnNext {
                                         log().info("Receive checking message ${it.message}")
 
