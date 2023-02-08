@@ -64,11 +64,15 @@ public class MonitorSingleTab {
             }
             this.monitorLogDetailsPanel.setViewText(viewerTitle, viewerText);
         });
-        this.monitorLogTablePanel.addRunActionListener(e -> Optional.ofNullable(this.parentView.getSelectedWorkspace()).ifPresentOrElse(t -> loadLogs(),
+        this.monitorLogTablePanel.addRunActionListener(e -> Optional.ofNullable(this.parentView.getSelectedWorkspace()).ifPresentOrElse(t -> loadLogsTriggeredByUser(),
                 () -> AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction())));
     }
 
     @AzureOperation(name = "user/monitor.execute_query")
+    private void loadLogsTriggeredByUser() {
+        loadLogs();
+    }
+    
     private void loadLogs() {
         final LogAnalyticsWorkspace selectedWorkspace = this.parentView.getSelectedWorkspace();
         final String queryString = this.isTableTab ? this.monitorLogTablePanel.getQueryStringFromFilters(tabName) : this.parentView.getQueryString(tabName);
