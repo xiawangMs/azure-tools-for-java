@@ -36,37 +36,41 @@ public class HDInsightServiceSubscription extends AbstractAzServiceSubscription<
 
     @Override
     public void reloadStatus() {
-        if (Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
             super.reloadStatus();
-        else
+        } else {
             this.setStatus("Linked");
+        }
     }
 
     @Override
     @Nonnull
     public String getStatus() {
-        if (Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
             return super.getStatus();
-        else
+        } else {
             return "Linked";
+        }
     }
 
     @Override
     @Nonnull
     protected Optional<HDInsightManager> remoteOptional(boolean... sync) {
-        if (Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
             return Optional.ofNullable(this.getRemote(sync));
-        else
+        } else {
             return null;
+        }
     }
 
     @Override
     @Nullable
     protected HDInsightManager refreshRemoteFromAzure(@Nonnull HDInsightManager remote) {
-        if (Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
             return super.refreshRemoteFromAzure(remote);
-        else
+        } else {
             return null;
+        }
     }
 
     @NotNull

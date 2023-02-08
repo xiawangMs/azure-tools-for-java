@@ -41,19 +41,13 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
         return rm.clusters();
     }
 
-    @Override
-    public void refresh() {
-            SparkClusterModule.additionalClusterSet.clear();
-            super.refresh();
-    }
-
     public List<SparkClusterNode> listAdditionalCluster() {
         List<SparkClusterNode> resultList = new ArrayList<SparkClusterNode>();
+
         // Add additional clusters
         List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
         for (IClusterDetail detail : additionalClusterDetails) {
-            if (detail instanceof SqlBigDataLivyLinkClusterDetail
-                    || !SparkClusterModule.additionalClusterSet.add(detail.getName()))
+            if (detail instanceof SqlBigDataLivyLinkClusterDetail)
                 continue;
             SDKAdditionalCluster sdkAdditionalCluster = new SDKAdditionalCluster();
             sdkAdditionalCluster.setName(detail.getName());
@@ -95,9 +89,11 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
     @Override
     @Nonnull
     public String getSubscriptionId() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
+            return this.getParent().getSubscriptionId();
+        } else {
             return "[LinkedCluster]";
-        return this.getParent().getSubscriptionId();
+        }
     }
 
     @Nonnull

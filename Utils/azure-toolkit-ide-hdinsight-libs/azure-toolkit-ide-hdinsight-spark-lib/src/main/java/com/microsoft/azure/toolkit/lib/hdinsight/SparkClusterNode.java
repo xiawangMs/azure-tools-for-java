@@ -50,37 +50,41 @@ public class SparkClusterNode extends AbstractAzResource<SparkClusterNode, HDIns
 
     @Override
     public void reloadStatus() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]"))
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
             this.setStatus("Linked");
-        else
+        } else {
             super.reloadStatus();
+        }
     }
 
     @Override
     @Nonnull
     public String getStatus() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]"))
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
             return "Linked";
-        else
+        } else {
             return super.getStatus();
+        }
     }
 
     @Override
     @Nonnull
     protected Optional<Cluster> remoteOptional(boolean... sync) {
-        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]"))
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
             return null;
-        else
+        } else {
             return super.remoteOptional(sync);
+        }
     }
 
     @Override
     @Nullable
     protected Cluster refreshRemoteFromAzure(@Nonnull Cluster remote) {
-        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]"))
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
             return null;
-        else
+        } else {
             return super.refreshRemoteFromAzure(remote);
+        }
     }
 
     @NotNull
@@ -98,9 +102,11 @@ public class SparkClusterNode extends AbstractAzResource<SparkClusterNode, HDIns
     @NotNull
     @Override
     public Subscription getSubscription() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]"))
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
             return new Subscription("[LinkedCluster]");
-        return super.getSubscription();
+        } else {
+            return super.getSubscription();
+        }
     }
 
     public IClusterDetail getClusterDetail() {

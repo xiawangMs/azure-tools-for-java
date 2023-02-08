@@ -66,9 +66,11 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
     @Nullable
     @Override
     public Clusters getClient() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
+            return Optional.ofNullable(this.parent.getRemote()).map(HDInsightManager::clusters).orElse(null);
+        } else {
             return null;
-        return Optional.ofNullable(this.parent.getRemote()).map(HDInsightManager::clusters).orElse(null);
+        }
     }
 
     public SparkClusterModule(@NotNull String name, @NotNull HDInsightServiceSubscription parent) {
@@ -83,12 +85,6 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
             return this.list().stream().filter(c -> StringUtils.equalsIgnoreCase(name, c.getName())).findAny().orElse(null);
         }
         return super.get(name, resourceGroup);
-    }
-
-    @Override
-    public void refresh() {
-        this.additionalClusterSet.clear();
-        super.refresh();
     }
 
     @NotNull
@@ -110,9 +106,11 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
     @Override
     @Nonnull
     public String getSubscriptionId() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn())
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
+            return super.getSubscriptionId();
+        } else {
             return "[LinkedCluster]";
-        return super.getSubscriptionId();
+        }
     }
 
     @Nonnull
