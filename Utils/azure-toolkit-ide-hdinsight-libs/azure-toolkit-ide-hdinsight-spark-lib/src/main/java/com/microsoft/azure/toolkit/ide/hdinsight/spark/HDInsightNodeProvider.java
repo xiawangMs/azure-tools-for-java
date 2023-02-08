@@ -63,7 +63,7 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
             Node<SparkClusterNode> jobsNode = new Node<>(sparkClusterNode)
                     .view(new SparkJobNodeView(sparkClusterNode))
                     .clickAction(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW);
-            if (sparkClusterNode.getClusterDetail().getSubscription().getId()=="[LinkedCluster]")
+            if (sparkClusterNode.getClusterDetail().getSubscription().getId().equals("[LinkedCluster]"))
                 return new Node<>(sparkClusterNode)
                         .view(new SparkClusterNodeView(sparkClusterNode))
                         .inlineAction(ResourceCommonActionsContributor.PIN)
