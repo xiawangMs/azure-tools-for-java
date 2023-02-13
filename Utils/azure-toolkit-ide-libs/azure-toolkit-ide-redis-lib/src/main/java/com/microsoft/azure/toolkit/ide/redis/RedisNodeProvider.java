@@ -52,7 +52,6 @@ public class RedisNodeProvider implements IExplorerNodeProvider {
             final RedisCache redis = (RedisCache) data;
             return new Node<>(redis)
                 .view(new AzureResourceLabelView<>(redis))
-                .addInlineAction(ResourceCommonActionsContributor.PIN)
                 .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(RedisActionsContributor.REDIS_ACTIONS);
         }

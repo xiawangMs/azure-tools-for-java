@@ -362,11 +362,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           boolean isLeaf,
                                           int row,
                                           boolean focused) {
+            inlineActionIcons.clear();
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
                 final com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?> node =
                     (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
                 final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
-                inlineActionIcons.clear();
                 inlineActionIcons.addAll(node.getInlineActionViews().stream()
                         .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath()))
                         // TODO @miller should not check the value of inlineActionIcon

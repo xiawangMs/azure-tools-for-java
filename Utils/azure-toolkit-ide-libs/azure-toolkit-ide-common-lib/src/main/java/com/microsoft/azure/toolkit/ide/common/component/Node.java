@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
@@ -19,10 +20,7 @@ import lombok.val;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -57,6 +55,7 @@ public class Node<D> {
     // by default, we will load all children, so return false for has more child
     @Getter(AccessLevel.NONE)
     private Predicate<? super D> hasMoreChildren = ignore -> false;
+    private final List<Action.Id<?>> DEFAULT_INLINE_ACTIONS = Arrays.asList(ResourceCommonActionsContributor.DEPLOY, ResourceCommonActionsContributor.PIN);
 
     public Node(@Nonnull D data) {
         this(data, null);
@@ -164,17 +163,13 @@ public class Node<D> {
         }
     }
 
-    public Node<D> addInlineAction(Action.Id<? super D> actionId) {
-        this.inlineActionList.add(AzureActionManager.getInstance().getAction(actionId));
-        return this;
-    }
-
     public Node<D> actions(String groupId) {
         return this.actions(AzureActionManager.getInstance().getGroup(groupId));
     }
 
     public Node<D> actions(IActionGroup group) {
         this.actions = group;
+        this.updateInlineActions();
         return this;
     }
 
@@ -185,6 +180,14 @@ public class Node<D> {
 
     public void dispose() {
         this.view.dispose();
+    }
+
+    private void updateInlineActions() {
+        Optional.ofNullable(this.actions).map(IActionGroup::getActions).ifPresent(actionGroup -> actionGroup.forEach(obj -> {
+            if (obj instanceof Action.Id && DEFAULT_INLINE_ACTIONS.contains(obj)) {
+                inlineActionList.add(AzureActionManager.getInstance().getAction((Action.Id)obj));
+            }
+        }));
     }
 
     @RequiredArgsConstructor
