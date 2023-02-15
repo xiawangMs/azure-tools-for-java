@@ -5,8 +5,10 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
+import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsNamespace;
 
 public class EventHubsActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -16,6 +18,7 @@ public class EventHubsActionsContributor implements IActionsContributor {
     public static final Action.Id<EventHubsInstance> ACTIVE_INSTANCE = Action.Id.of("user/eventhubs.active_instance.instance");
     public static final Action.Id<EventHubsInstance> DISABLE_INSTANCE = Action.Id.of("user/eventhubs.disable_instance.instance");
     public static final Action.Id<EventHubsInstance> SEND_DISABLE_INSTANCE = Action.Id.of("user/eventhubs.send_disable_instance.instance");
+    public static final Action.Id<EventHubsNamespace> COPY_CONNECTION_STRING = Action.Id.of("user/eventhubs.copy_connection_string.namespace");
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -32,6 +35,15 @@ public class EventHubsActionsContributor implements IActionsContributor {
         new Action<>(SEND_DISABLE_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance && !((EventHubsInstance) s).isSendDisabled())
                 .withLabel("Disable sending")
+                .withIdParam(AbstractAzResource::getName)
+                .register(am);
+        new Action<>(COPY_CONNECTION_STRING)
+                .visibleWhen(s -> s instanceof EventHubsNamespace)
+                .withLabel("Copy connection string")
+                .withHandler(eventHubsNamespace -> {
+                    am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(eventHubsNamespace.getConnectionString());
+                    AzureMessager.getMessager().info("Connection string copied");
+                })
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
     }
@@ -55,6 +67,8 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.CREATE_IN_PORTAL,
                 "---",
+                COPY_CONNECTION_STRING,
+                "---",
                 ResourceCommonActionsContributor.DELETE);
         am.registerGroup(NAMESPACE_ACTIONS, namespaceGroup);
 
@@ -62,9 +76,9 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
-                EventHubsActionsContributor.ACTIVE_INSTANCE,
-                EventHubsActionsContributor.DISABLE_INSTANCE,
-                EventHubsActionsContributor.SEND_DISABLE_INSTANCE,
+                ACTIVE_INSTANCE,
+                DISABLE_INSTANCE,
+                SEND_DISABLE_INSTANCE,
                 "---",
                 ResourceCommonActionsContributor.DELETE);
         am.registerGroup(INSTANCE_ACTIONS, instanceGroup);

@@ -147,6 +147,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         new Action<>(COPY_STRING)
             .withLabel("Copy")
             .withIdParam(u -> u)
+            .withHandler(ResourceCommonActionsContributor::copyString)
             .withAuthRequired(false)
             .register(am);
 
