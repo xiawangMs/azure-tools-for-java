@@ -123,23 +123,20 @@
             id="Cosmos Serverless Spark Jobs"
             canCloseContents="true"/>
 
-<!--    <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />-->
-<!--    <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />-->
-<!--    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType"/>-->
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
-    <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoter"/>
-<!--    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.LivySparkRunConfigurationProducer"/>-->
+
+
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkRunConfigurationProducer"/>
-<!--    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />-->
+
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
-<!--    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />-->
+
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkBatchRunner" />
@@ -149,8 +146,6 @@
   </extensions>
 
   <applicationListeners>
-<!--    <listener class="com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistrationListener" topic="com.intellij.ide.ApplicationInitializedListener"/>-->
-<!--    <listener class="com.microsoft.azure.hdinsight.jobs.JobViewApplicationListener" topic="com.intellij.ide.AppLifecycleListener"/>-->
     <listener class="com.microsoft.intellij.AzureActionsListener" topic="com.intellij.ide.AppLifecycleListener"/>
   </applicationListeners>
 
@@ -170,9 +165,6 @@
             icon="/icons/CodeSamples_16.png">
     </action>
 
-<!--    <action id="Actions.SubmitLivySparkApplicationAction"-->
-<!--            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Apache Spark on HDInsight"-->
-<!--            description="Submit Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>-->
     <action id="Actions.SubmitCosmosSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction"
             text="Apache Spark on Cosmos"
@@ -199,35 +191,7 @@
     </group>
     <action class="com.microsoft.intellij.actions.NewCustomerIssueFeedbackAction" id="AzureToolkit.GithubIssue" text="Report an Issue" />
     <action class="com.microsoft.intellij.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request a Feature" />
-<!--    <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"-->
-<!--            text="Disconnect" description="Disconnect the log view from remote Spark Job"-->
-<!--            icon="/icons/SparkJobDisconnect.png">-->
-<!--      <keyboard-shortcut first-keystroke="ctrl shift alt F2" keymap="$default"/>-->
-<!--    </action>-->
-<!--    <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"-->
-<!--            text="Run Apache Spark Local Console(Scala)" description="Run Apache Spark Local Console (Scala language)">-->
-<!--    </action>-->
-<!--    <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleActionDelegate"-->
-<!--            text="Run Apache Spark Livy Interactive Session Console(Scala)" description="Run Apache Spark Livy Interactive Session Console (Scala language)">-->
-<!--    </action>-->
-<!--    <action id="SparkConsole.Execute" class="com.microsoft.azure.hdinsight.spark.console.SparkConsoleExecuteAction" text="Execute Spark Console Statement">-->
-<!--      <keyboard-shortcut first-keystroke="control ENTER" keymap="$default"/>-->
-<!--      <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift ENTER"/>-->
-<!--    </action>-->
-<!--    <action id="Spark.SendSelectionToConsole" class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleActionDelegate"-->
-<!--            text="Send Selection To Apache Spark Console" description="Send selection to Apache Spark console">-->
-<!--      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>-->
-<!--      <keyboard-shortcut first-keystroke="control shift S" keymap="$default"/>-->
-<!--      <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl shift S"/>-->
-<!--      <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift S" remove="true"/>-->
-<!--      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="ctrl shift S"/>-->
-<!--      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta shift S" remove="true"/>-->
-<!--    </action>-->
 
-<!--    <action id="SparkJobRun" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobRunAction"-->
-<!--            text="SparkJobRun"/>-->
-<!--    <action id="SparkJobDebug" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobDebugAction"-->
-<!--            text="SparkJobDebug"/>-->
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/Common/Azure.svg" popup="true" class="com.microsoft.intellij.actions.AzurePopupGroup">
       <reference ref="AzureToolkit.ConnectToAzureResource"/>
       <separator/>
@@ -281,12 +245,6 @@
       <reference ref="Actions.GettingStart"/>
     </group>
 
-<!--    <group id="SparkConsoleGroup" text="Apache Spark Console" description="Apache Spark Console" popup="true">-->
-<!--      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>-->
-<!--      <add-to-group group-id="ToolsMenu" anchor="last"/>-->
-<!--      <reference ref="Spark.RunScalaLocalConsole"/>-->
-<!--      <reference ref="Spark.RunScalaLivyConsole"/>-->
-<!--    </group>-->
 
     <group id="Actions.SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
@@ -313,19 +271,11 @@
       </action>
     </group>
 
-<!--    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Apache Spark Application"/>-->
-
-<!--    <action id="Actions.SparkRunLivyConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups" text="Run Apache Spark Console"/>-->
-
-<!--    <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Apache Spark Local Console"/>-->
-
     <action id="Actions.RunArcadiaSparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLivyConsoleAction"
             text="Apache Spark on Azure Synapse"
             description="Start an interactive console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
-<!--    <action id="Actions.RunLivySparkConsoleAction"-->
-<!--            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Apache Spark on HDInsight"-->
-<!--            description="Start an interactive console for Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>-->
+
     <action id="Actions.RunCosmosSparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Apache Spark on Cosmos"
             description="Start an interactive console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
@@ -337,9 +287,7 @@
     <action id="Actions.RunArcadiaSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Azure Synapse"
             description="Start a Apache Spark local console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
-<!--    <action id="Actions.RunLivySparkLocalConsoleAction"-->
-<!--            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Apache Spark on HDInsight"-->
-<!--            description="Start a Apache Spark local console for Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>-->
+
     <action id="Actions.RunCosmosSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Cosmos"
             description="Start a Apache Spark local console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
