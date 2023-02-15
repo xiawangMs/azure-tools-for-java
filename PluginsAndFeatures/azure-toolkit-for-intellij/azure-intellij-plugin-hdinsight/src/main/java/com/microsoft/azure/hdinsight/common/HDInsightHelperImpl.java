@@ -28,7 +28,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.ObjectUtils;
 
-import javax.swing.Icon;
+import javax.swing.*;
 
 public class HDInsightHelperImpl implements HDInsightHelper {
 

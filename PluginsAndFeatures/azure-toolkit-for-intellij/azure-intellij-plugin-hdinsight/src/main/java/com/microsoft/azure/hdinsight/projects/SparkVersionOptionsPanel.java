@@ -8,7 +8,7 @@ package com.microsoft.azure.hdinsight.projects;
 import com.intellij.openapi.ui.ComboBox;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 

@@ -9,7 +9,6 @@ import com.intellij.ide.util.projectWizard.AbstractModuleBuilder;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.platform.ProjectTemplate;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

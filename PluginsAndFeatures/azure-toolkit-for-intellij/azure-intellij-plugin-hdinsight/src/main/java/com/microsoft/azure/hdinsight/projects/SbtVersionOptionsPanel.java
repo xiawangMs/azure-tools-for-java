@@ -7,9 +7,8 @@ package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.ComboBox;
-import org.jetbrains.plugins.scala.project.Versions;
-
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import org.jetbrains.plugins.scala.project.Versions;
 import scala.reflect.ClassTag;
 
 import javax.swing.*;
