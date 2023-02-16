@@ -135,12 +135,15 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final IView.Label view = this.action.getView(source);
 
             boolean visible;
-            if(source instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) source).getSubscription().getId().equals("[LinkedCluster]")) {
+            final boolean isAbstractAzResource = source instanceof AbstractAzResource;
+
+            if(isAbstractAzResource && ((AbstractAzResource<?, ?, ?>) source).getSubscription().getId().equals("[LinkedCluster]")) {
                 visible = true;
             } else {
-                final boolean isResourceInOtherSubs = source instanceof AbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired();
+                final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired();
                 visible = !isResourceInOtherSubs && view.isVisible() && Objects.nonNull(action.getHandler(source, e));
             }
+
             presentation.setVisible(visible);
             if (visible) {
                 final boolean enabled = view.isEnabled() && Objects.nonNull(action.getHandler(source, e));
