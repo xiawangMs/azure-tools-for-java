@@ -54,11 +54,17 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
             List<Cluster> resultList = new ArrayList<Cluster>();
 
             // Remove duplicate clusters that share the same cluster name
+            List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
             HashSet<String> clusterIdSet = new HashSet<>();
-            for (Cluster cluster : sourceList)
-                if (clusterIdSet.add(cluster.id()) && isSparkCluster(cluster.properties().clusterDefinition().kind()))
+            for (Cluster cluster : sourceList) {
+                boolean isLinkedCluster = false;
+                for (IClusterDetail additionalCluster : additionalClusterDetails) {
+                    if (additionalCluster.getName().equals(cluster.name()))
+                        isLinkedCluster = true;
+                }
+                if ((!isLinkedCluster) && (clusterIdSet.add(cluster.id()) && isSparkCluster(cluster.properties().clusterDefinition().kind())))
                     resultList.add(cluster);
-
+            }
             return resultList.stream();
         }).orElse(Stream.empty());
     }
