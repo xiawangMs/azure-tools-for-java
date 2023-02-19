@@ -95,7 +95,6 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
             instance.startListening();
         };
         final Disposable subscribe = Mono.fromRunnable(execute)
-                .doOnTerminate(processHandler::notifyComplete)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe();
         processHandler.addProcessListener(new ProcessAdapter() {
