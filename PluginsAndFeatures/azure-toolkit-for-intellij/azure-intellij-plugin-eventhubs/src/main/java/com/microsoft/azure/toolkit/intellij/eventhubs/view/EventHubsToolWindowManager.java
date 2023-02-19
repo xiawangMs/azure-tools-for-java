@@ -66,9 +66,11 @@ public class EventHubsToolWindowManager {
                     public void contentRemoved(ContentManagerEvent contentManagerEvent) {
                         final String displayName = contentManagerEvent.getContent().getDisplayName();
                         final String removeResourceId = resourceIdToNameMap.getKey(displayName);
-                        final EventHubsInstance instance = Azure.az(AzureEventHubsNamespace.class).getById(removeResourceId);
-                        Optional.ofNullable(instance).ifPresent(EventHubsInstance::stopListening);
-                        resourceIdToNameMap.removeValue(displayName);
+                        Optional.ofNullable(removeResourceId).ifPresent(r -> {
+                            final EventHubsInstance instance = Azure.az(AzureEventHubsNamespace.class).getById(r);
+                            Optional.ofNullable(instance).ifPresent(EventHubsInstance::stopListening);
+                            resourceIdToNameMap.removeValue(displayName);
+                        });
                     }
                 }));
         return toolWindow;
