@@ -8,11 +8,14 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.eventhubs.EventHubsActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.eventhubs.view.EventHubsMessageDialog;
 import com.microsoft.azure.toolkit.intellij.eventhubs.view.EventHubsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -81,6 +84,16 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.stopListening();
         am.registerHandler(EventHubsActionsContributor.STOP_LISTENING_INSTANCE, condition, handler);
+    }
+
+    private void registerCopyConnectionStringActionHandler(AzureActionManager am) {
+        final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> {
+            final String connectionString = c.getOrCreateListenConnectionString();
+            am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
+            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"));
+        };
+        am.registerHandler(EventHubsActionsContributor.COPY_CONNECTION_STRING, condition, handler);
     }
 
     private ConsoleView createConsoleView(Project project, EventHubsInstance instance) {

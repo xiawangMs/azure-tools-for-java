@@ -8,7 +8,6 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
-import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsNamespace;
 
 import java.util.ArrayList;
 
@@ -21,7 +20,7 @@ public class EventHubsActionsContributor implements IActionsContributor {
     public static final Action.Id<EventHubsInstance> ACTIVE_INSTANCE = Action.Id.of("user/eventhubs.active_instance.instance");
     public static final Action.Id<EventHubsInstance> DISABLE_INSTANCE = Action.Id.of("user/eventhubs.disable_instance.instance");
     public static final Action.Id<EventHubsInstance> SEND_DISABLE_INSTANCE = Action.Id.of("user/eventhubs.send_disable_instance.instance");
-    public static final Action.Id<EventHubsNamespace> COPY_CONNECTION_STRING = Action.Id.of("user/eventhubs.copy_connection_string.namespace");
+    public static final Action.Id<EventHubsInstance> COPY_CONNECTION_STRING = Action.Id.of("user/eventhubs.copy_connection_string.instance");
     public static final Action.Id<EventHubsInstance> SEND_MESSAGE_INSTANCE = Action.Id.of("user/eventhubs.send_message.instance");
     public static final Action.Id<EventHubsInstance> START_LISTENING_INSTANCE = Action.Id.of("user/eventhubs.start_listening.instance");
     public static final Action.Id<EventHubsInstance> STOP_LISTENING_INSTANCE = Action.Id.of("user/eventhubs.stop_listening.instance");
@@ -41,6 +40,11 @@ public class EventHubsActionsContributor implements IActionsContributor {
         new Action<>(SEND_DISABLE_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance)
                 .withLabel("SendDisabled")
+                .withIdParam(AbstractAzResource::getName)
+                .register(am);
+        new Action<>(COPY_CONNECTION_STRING)
+                .visibleWhen(s -> s instanceof EventHubsInstance)
+                .withLabel("Copy connection string")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(SEND_MESSAGE_INSTANCE)
@@ -96,6 +100,7 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
                 SET_STATUS_ACTIONS,
+                COPY_CONNECTION_STRING,
                 SEND_MESSAGE_INSTANCE,
                 START_LISTENING_INSTANCE,
                 STOP_LISTENING_INSTANCE,
