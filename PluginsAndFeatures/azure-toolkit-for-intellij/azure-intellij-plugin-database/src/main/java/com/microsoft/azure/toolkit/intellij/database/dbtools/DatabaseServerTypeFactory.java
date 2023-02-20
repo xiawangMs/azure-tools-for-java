@@ -6,34 +6,38 @@
 package com.microsoft.azure.toolkit.intellij.database.dbtools;
 
 import com.intellij.database.dataSource.url.DataInterchange;
-import com.intellij.database.dataSource.url.TypesRegistry;
-import com.intellij.database.dataSource.url.TypeDescriptor;
+import com.intellij.database.dataSource.url.ParamEditor;
+import com.intellij.database.dataSource.url.TypeDescriptorUi;
+import com.intellij.database.dataSource.url.TypesRegistryUi;
+import com.intellij.database.dataSource.url.ui.BaseTypeDescriptor;
 import com.intellij.util.Consumer;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class DatabaseServerTypeFactory implements TypesRegistry.TypeDescriptorFactory {
+public class DatabaseServerTypeFactory implements TypesRegistryUi.TypeDescriptorUiFactory {
 
     public static final String MYSQL = "az_mysql_server";
     public static final String SQLSERVER = "az_sqlserver_server";
     public static final String POSTGRE = "az_postgre_server";
 
-    public void createTypeDescriptor(@Nonnull Consumer<? super TypeDescriptor> consumer) {
-        final TypesRegistry.BaseTypeDescriptor mysql = new TypesRegistry.BaseTypeDescriptor(MYSQL, ".", "Server") {
+    @Override
+    public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptorUi> consumer) {
+        final BaseTypeDescriptor mysql = new BaseTypeDescriptor(MYSQL) {
             protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
                 return new DatabaseServerParamEditor(MySqlServer.class, formatFieldCaption("Server"), interchange);
             }
         };
-        final TypesRegistry.BaseTypeDescriptor sqlserver = new TypesRegistry.BaseTypeDescriptor(SQLSERVER, ".", "Server") {
+        final BaseTypeDescriptor sqlserver = new BaseTypeDescriptor(SQLSERVER) {
             protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
                 return new DatabaseServerParamEditor(MicrosoftSqlServer.class, formatFieldCaption("Server"), interchange);
             }
         };
-        final TypesRegistry.BaseTypeDescriptor postgre = new TypesRegistry.BaseTypeDescriptor(POSTGRE, ".", "Server") {
+        final BaseTypeDescriptor postgre = new BaseTypeDescriptor(POSTGRE) {
             protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
                 return new DatabaseServerParamEditor(PostgreSqlServer.class, formatFieldCaption("Server"), interchange);
             }

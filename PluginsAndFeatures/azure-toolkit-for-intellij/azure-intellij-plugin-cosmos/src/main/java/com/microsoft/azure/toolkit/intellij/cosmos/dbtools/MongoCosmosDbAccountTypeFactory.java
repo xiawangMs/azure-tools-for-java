@@ -6,25 +6,27 @@
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
 import com.intellij.database.dataSource.url.DataInterchange;
-import com.intellij.database.dataSource.url.TypeDescriptor;
-import com.intellij.database.dataSource.url.TypesRegistry;
+import com.intellij.database.dataSource.url.ParamEditor;
+import com.intellij.database.dataSource.url.TypeDescriptorUi;
+import com.intellij.database.dataSource.url.TypesRegistryUi;
+import com.intellij.database.dataSource.url.ui.BaseTypeDescriptor;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.util.Consumer;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseAccountKind;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class MongoCosmosDbAccountTypeFactory implements TypesRegistry.TypeDescriptorFactory {
+public class MongoCosmosDbAccountTypeFactory implements TypesRegistryUi.TypeDescriptorUiFactory {
     private static final String TYPE_NAME = "cosmos_account_mongo";
     private static final String CAPTION = "Account";
 
-    public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptor> consumer) {
-        consumer.consume(new TypesRegistry.BaseTypeDescriptor(TYPE_NAME, ".", CAPTION) {
+    @Override
+    public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptorUi> consumer) {
+        consumer.consume(new BaseTypeDescriptor(TYPE_NAME) {
             @Override
             protected @NotNull ParamEditor createFieldImpl(@NlsContexts.Label @NotNull String s, @Nullable String s1, @NotNull DataInterchange dataInterchange) {
                 return new AzureCosmosDbAccountParamEditor(DatabaseAccountKind.MONGO_DB, formatFieldCaption(CAPTION), dataInterchange);
             }
         });
     }
-
 }
