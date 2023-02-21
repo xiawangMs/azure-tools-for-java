@@ -22,6 +22,7 @@ import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.KustoFilterComboBox;
@@ -29,6 +30,8 @@ import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeC
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -42,6 +45,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
@@ -282,11 +286,15 @@ public class MonitorLogTablePanel {
                 csvPrinter.printRecord(row.getRow().stream().map(LogsTableCell::getValueAsString).toList());
             }
             csvPrinter.close();
-            AzureMessager.getMessager().info(message("azure.monitor.export.succeed.message", target.getAbsolutePath()),
-                    message("azure.monitor.export.succeed.title"));
+            AzureMessager.getMessager().success(message("azure.monitor.export.succeed.message", target.getAbsolutePath()),
+                   null, newShowInExplorerAction(target));
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
+    }
+
+    private static Action<File> newShowInExplorerAction(@Nonnull final File dest) {
+        return AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.REVEAL_FILE).bind(dest);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
