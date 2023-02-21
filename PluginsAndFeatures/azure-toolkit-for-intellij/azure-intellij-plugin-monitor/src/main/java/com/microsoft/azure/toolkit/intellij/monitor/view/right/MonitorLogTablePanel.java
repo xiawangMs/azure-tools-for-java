@@ -103,14 +103,14 @@ public class MonitorLogTablePanel {
     }
 
     public void loadTableModel(@Nullable LogAnalyticsWorkspace selectedWorkspace, String queryString) {
+        runButton.setEnabled(false);
+        exportAction.setEnabled(false);
         if (Objects.isNull(selectedWorkspace)) {
             logTable.getEmptyText().setText(message("azure.monitor.info.selectWorkspaceTips"));
             return;
         }
         logTable.clearModel();
         logTable.setLoading(true);
-        runButton.setEnabled(false);
-        exportAction.setEnabled(false);
         AzureTaskManager.getInstance().runInBackground("load Azure Monitor data", () -> {
             try {
                 final LogsTable result = selectedWorkspace.executeQuery(queryString);
