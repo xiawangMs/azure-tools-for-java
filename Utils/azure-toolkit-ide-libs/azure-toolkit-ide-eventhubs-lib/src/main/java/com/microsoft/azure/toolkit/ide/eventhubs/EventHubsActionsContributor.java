@@ -44,31 +44,31 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 .register(am);
         new Action<>(COPY_CONNECTION_STRING)
                 .visibleWhen(s -> s instanceof EventHubsInstance)
-                .withLabel("Copy connection string")
+                .withLabel("Copy Connection String")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(SEND_MESSAGE_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance && ((EventHubsInstance) s).isActive())
-                .withLabel("Send message")
+                .withLabel("Send Message")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(START_LISTENING_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance && !((EventHubsInstance) s).isDisabled()
                         && !((EventHubsInstance) s).isListening())
-                .withLabel("Start listening")
+                .withLabel("Start Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(STOP_LISTENING_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance && !((EventHubsInstance) s).isDisabled()
                         && ((EventHubsInstance) s).isListening())
-                .withLabel("Stop listening")
+                .withLabel("Stop Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
     }
 
     @Override
     public void registerGroups(AzureActionManager am) {
-        final IView.Label.Static view = new IView.Label.Static("Set status");
+        final IView.Label.Static view = new IView.Label.Static("Set Status");
         final ActionGroup setStatusActionGroup = new ActionGroup(new ArrayList<>(), view);
         setStatusActionGroup.addAction(ACTIVE_INSTANCE);
         setStatusActionGroup.addAction(DISABLE_INSTANCE);
