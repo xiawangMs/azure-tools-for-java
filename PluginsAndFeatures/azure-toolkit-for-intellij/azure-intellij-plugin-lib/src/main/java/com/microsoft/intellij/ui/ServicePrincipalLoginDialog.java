@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.lang.Language;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.SpellCheckingEditorCustomizationProvider;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -22,7 +23,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.spellchecker.ui.SpellCheckingEditorCustomization;
 import com.intellij.ui.EditorCustomization;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.EditorTextFieldProvider;
@@ -35,7 +35,6 @@ import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +46,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,7 +87,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             pem, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT) {
             @Nullable
             protected VirtualFile getInitialFile() {
-                return LocalFileSystem.getInstance().findFileByPath(FileUtil.getDirectoryWithinUserHome("/").toString());
+                return LocalFileSystem.getInstance().findFileByPath(Paths.get(System.getProperty("user.home"), "/").toString());
             }
         });
 
@@ -173,7 +173,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         final EditorTextFieldProvider service = ApplicationManager.getApplication().getService(EditorTextFieldProvider.class);
         final Set<EditorCustomization> editorFeatures = new HashSet<>();
         editorFeatures.add(SoftWrapsEditorCustomization.ENABLED);
-        editorFeatures.add(SpellCheckingEditorCustomization.getInstance(false));
+        editorFeatures.add(SpellCheckingEditorCustomizationProvider.getInstance().getCustomization(false));
         final EditorTextField editorTextField = service.getEditorField(Objects.requireNonNull(Language.findLanguageByID("JSON")), project, editorFeatures);
         editorTextField.setMinimumSize(new Dimension(200, 100));
         return editorTextField;

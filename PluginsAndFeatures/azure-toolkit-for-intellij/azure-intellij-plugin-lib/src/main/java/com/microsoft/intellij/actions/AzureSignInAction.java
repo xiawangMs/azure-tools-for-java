@@ -6,12 +6,13 @@
 package com.microsoft.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -25,15 +26,12 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
-import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.intellij.ui.DeviceLoginWindow;
 import com.microsoft.intellij.ui.ServicePrincipalLoginDialog;
 import com.microsoft.intellij.ui.SignInWindow;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,15 +50,17 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     private static final String SIGN_IN_ERROR = "Sign In Error";
 
     public AzureSignInAction() {
-        super(IdeAzureAccount.getInstance().isLoggedIn() ? SIGN_OUT : SIGN_IN);
+        super(Azure.az(AzureAccount.class).isLoggedIn() ? SIGN_OUT : SIGN_IN);
     }
 
     public AzureSignInAction(@Nullable String title) {
-        super(title, title, IntelliJAzureIcons.getIcon(SignInOutAction.getIcon()));
+        super(title, title, IntelliJAzureIcons.getIcon(Azure.az(AzureAccount.class).isLoggedIn()
+                ? com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_OUT
+                : com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_IN));
     }
 
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
-        final Project project = DataKeys.PROJECT.getData(e.getDataContext());
+        final Project project = CommonDataKeys.PROJECT.getData(e.getDataContext());
         authActionPerformed(project);
         return true;
     }
@@ -76,10 +76,12 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     @Override
     public void update(AnActionEvent e) {
         try {
-            final boolean isSignIn = IdeAzureAccount.getInstance().isLoggedIn();
+            final boolean isSignIn = Azure.az(AzureAccount.class).isLoggedIn();
             e.getPresentation().setText(isSignIn ? SIGN_OUT : SIGN_IN);
             e.getPresentation().setDescription(isSignIn ? SIGN_IN : SIGN_OUT);
-            e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(SignInOutAction.getIcon()));
+            e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(isSignIn
+                    ? com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_OUT
+                    : com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_IN));
         } catch (final Exception ex) {
             ex.printStackTrace();
             LOGGER.error("update", ex);
@@ -95,8 +97,8 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             final String warningMessage = String.format("Signed in as \"%s\" with %s", account.getUsername(), authType.getLabel());
             final String additionalMsg = authType == AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "";
             final String msg = String.format("%s\nDo you really want to sign out? %s", warningMessage, additionalMsg);
-            final boolean toLogout = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), msg,
-                "Azure Sign Out", IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
+            final boolean toLogout = Messages.showYesNoDialog(null, msg, "Azure Sign Out", "Yes", "No",
+                    IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE)) == 0;
             if (toLogout) {
                 az.logout();
             }
@@ -173,7 +175,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
     }
 
     public static void requireSignedIn(Project project, Runnable runnable) {
-        if (IdeAzureAccount.getInstance().isLoggedIn()) {
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
             AzureTaskManager.getInstance().runLater(runnable);
         } else {
             login(project, runnable);

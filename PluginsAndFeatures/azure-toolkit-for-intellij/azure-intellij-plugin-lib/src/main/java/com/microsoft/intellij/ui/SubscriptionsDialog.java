@@ -30,12 +30,11 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.JTableUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -217,7 +216,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
                 model.setRowCount(0);
                 model.fireTableDataChanged();
                 table.getEmptyText().setText("Refreshing...");
-                AppInsightsClient.createByType(AppInsightsClient.EventType.Subscription, "", "Refresh", null);
+                EventUtil.logEvent(EventType.Subscription, TelemetryConstants.REFRESH_METADATA, "Refresh", null);
                 final AzureString title = OperationBundle.description("internal/account.refresh_subscriptions");
                 final AzureTask<Void> task = new AzureTask<>(project, title, true, () -> {
                     try {
@@ -241,9 +240,8 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
     protected void doOKAction() {
         final long selected = this.candidates.stream().filter(SimpleSubscription::isSelected).count();
         if (this.candidates.size() > 0 && selected == 0) {
-            DefaultLoader.getUIHelper().showMessageDialog(
-                contentPane, "Please select at least one subscription",
-                "Subscription dialog info", Messages.getInformationIcon());
+            Messages.showMessageDialog(contentPane,"Please select at least one subscription",
+                    "Subscription dialog info", Messages.getInformationIcon());
             return;
         }
 

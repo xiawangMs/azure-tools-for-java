@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.intellij.ui.SubscriptionsDialog;
@@ -45,7 +44,7 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
     }
 
     public static void selectSubscriptions(Project project) {
-        if (!IdeAzureAccount.getInstance().isLoggedIn()) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return;
         }
         final AzureTaskManager manager = AzureTaskManager.getInstance();
