@@ -12,9 +12,9 @@ import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -69,8 +69,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         processHandler.startNotify();
-        final ConsoleMessager messager = new ConsoleMessager(processHandler);
         final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
+        final ConsoleMessager messager = new ConsoleMessager(consoleView);
         consoleView.attachToProcess(processHandler);
         final Runnable execute = () -> {
             try {
@@ -156,21 +156,28 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
 
     @RequiredArgsConstructor
     private static class ConsoleMessager extends IntellijAzureMessager {
-        private final RunProcessHandler handler;
+        private final ConsoleView consoleView;
 
         @Override
         public boolean show(IAzureMessage raw) {
             if (raw.getType() == IAzureMessage.Type.INFO) {
-                handler.setText(raw.getMessage().toString());
+                consoleView.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.NORMAL_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
+                consoleView.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.NORMAL_OUTPUT);
+            } else if (raw.getType() == IAzureMessage.Type.DEBUG) {
+                consoleView.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                return true;
             } else if (raw.getType() == IAzureMessage.Type.WARNING) {
-                handler.println(raw.getMessage().toString(), ProcessOutputType.STDOUT);
+                consoleView.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_WARNING_OUTPUT);
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
-                handler.println(raw.getContent(), ProcessOutputType.STDERR);
+                consoleView.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.ERROR_OUTPUT);
             }
             return super.show(raw);
+        }
+
+        private String addLine(String originText) {
+            return originText + "\n";
         }
     }
 }
