@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
@@ -54,6 +55,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
     private SpringCloudAppComboBox selectorApp;
+    private JLabel lblSubscription;
 
     public SpringCloudDeploymentConfigurationPanel(SpringCloudDeploymentConfiguration config, @Nonnull final Project project) {
         super();
@@ -71,6 +73,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.selectorCluster.setRequired(true);
         this.selectorApp.setRequired(true);
         this.selectorArtifact.setRequired(true);
+        this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
     }
 
     private void onArtifactChanged(final ItemEvent e) {

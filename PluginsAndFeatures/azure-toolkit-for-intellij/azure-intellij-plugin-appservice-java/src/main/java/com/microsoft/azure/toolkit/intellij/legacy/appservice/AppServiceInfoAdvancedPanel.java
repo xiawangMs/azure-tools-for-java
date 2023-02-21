@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.util.ui.JBUI;
@@ -203,6 +204,10 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
             final Runtime runtime = this.selectorRuntime.getValue();
             return StringUtils.isNotBlank(ext) && WebAppUtils.isSupportedArtifactType(runtime, ext);
         });
+
+        this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
+        this.lblResourceGroup.setIcon(AllIcons.General.ContextHelp);
+        this.lblAppServicePlan.setIcon(AllIcons.General.ContextHelp);
     }
 
     private void onGroupChanged(ItemEvent e) {

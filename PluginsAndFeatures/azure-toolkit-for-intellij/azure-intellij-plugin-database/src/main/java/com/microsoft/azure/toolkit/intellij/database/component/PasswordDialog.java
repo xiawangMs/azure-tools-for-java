@@ -9,6 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.util.IconUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.database.connection.Database;
@@ -68,6 +69,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         this.setValue(this.database.getPassword());
         this.init();
         this.initListener();
+        this.headerIconLabel.setIcon(IconUtil.scale(AllIcons.General.BalloonWarning, headerIconLabel, 2.0f));
     }
 
     private void initListener() {

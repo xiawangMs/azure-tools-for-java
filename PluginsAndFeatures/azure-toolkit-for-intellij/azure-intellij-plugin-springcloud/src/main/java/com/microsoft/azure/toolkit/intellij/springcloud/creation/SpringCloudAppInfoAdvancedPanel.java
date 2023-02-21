@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 
+import com.intellij.icons.AllIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
@@ -30,11 +31,13 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     private SpringCloudClusterComboBox selectorCluster;
     private AzureTextInput textName;
     private SpringCloudAppConfigPanel formConfig;
+    private JLabel lblSubscription;
 
     public SpringCloudAppInfoAdvancedPanel(@Nullable final SpringCloudCluster cluster) {
         super(cluster);
         $$$setupUI$$$();
         this.init();
+        this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
     }
 
     protected void onAppChanged(SpringCloudApp app) {
