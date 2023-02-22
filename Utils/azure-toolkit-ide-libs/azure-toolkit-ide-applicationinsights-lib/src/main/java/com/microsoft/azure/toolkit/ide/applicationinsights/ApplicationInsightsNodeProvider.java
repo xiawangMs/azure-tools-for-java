@@ -46,6 +46,7 @@ public class ApplicationInsightsNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof ApplicationInsight) {
             final ApplicationInsight insight = (ApplicationInsight) data;
             return new Node<>(insight).view(new AzureResourceLabelView<>(insight))
+                    .addInlineAction(ResourceCommonActionsContributor.PIN)
                     .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                     .actions(ApplicationInsightsActionsContributor.INSIGHT_ACTIONS);
         }
