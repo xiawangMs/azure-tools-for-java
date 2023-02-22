@@ -99,6 +99,15 @@ public class SparkClusterNode extends AbstractAzResource<SparkClusterNode, HDIns
                 .append(p.clusterState()).toString();
     }
 
+    @Override
+    public String getResourceGroupName(){
+        if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
+            return "[LinkedCluster]";
+        } else {
+            return super.getResourceGroupName();
+        }
+    }
+
     @NotNull
     @Override
     public Subscription getSubscription() {
