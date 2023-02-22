@@ -5,45 +5,21 @@
 
 package com.microsoft.azure.toolkit.intellij.database.dbtools;
 
-import com.intellij.database.dataSource.url.DataInterchange;
-import com.intellij.database.dataSource.url.ParamEditor;
-import com.intellij.database.dataSource.url.TypeDescriptorUi;
-import com.intellij.database.dataSource.url.TypesRegistryUi;
-import com.intellij.database.dataSource.url.ui.BaseTypeDescriptor;
+import com.intellij.database.dataSource.url.TypeDescriptor;
+import com.intellij.database.dataSource.url.TypesRegistry;
 import com.intellij.util.Consumer;
-import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
-import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
-import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class DatabaseServerTypeFactory implements TypesRegistryUi.TypeDescriptorUiFactory {
+public class DatabaseServerTypeFactory implements TypesRegistry.TypeDescriptorFactory {
 
     public static final String MYSQL = "az_mysql_server";
     public static final String SQLSERVER = "az_sqlserver_server";
     public static final String POSTGRE = "az_postgre_server";
 
     @Override
-    public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptorUi> consumer) {
-        final BaseTypeDescriptor mysql = new BaseTypeDescriptor(MYSQL) {
-            protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
-                return new DatabaseServerParamEditor(MySqlServer.class, formatFieldCaption("Server"), interchange);
-            }
-        };
-        final BaseTypeDescriptor sqlserver = new BaseTypeDescriptor(SQLSERVER) {
-            protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
-                return new DatabaseServerParamEditor(MicrosoftSqlServer.class, formatFieldCaption("Server"), interchange);
-            }
-        };
-        final BaseTypeDescriptor postgre = new BaseTypeDescriptor(POSTGRE) {
-            protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
-                return new DatabaseServerParamEditor(PostgreSqlServer.class, formatFieldCaption("Server"), interchange);
-            }
-        };
-        consumer.consume(mysql);
-        consumer.consume(sqlserver);
-        consumer.consume(postgre);
+    public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptor> consumer) {
+        consumer.consume(TypesRegistry.createTypeDescriptor(MYSQL, ".", "Server"));
+        consumer.consume(TypesRegistry.createTypeDescriptor(SQLSERVER, ".", "Server"));
+        consumer.consume(TypesRegistry.createTypeDescriptor(POSTGRE, ".", "Server"));
     }
 }
