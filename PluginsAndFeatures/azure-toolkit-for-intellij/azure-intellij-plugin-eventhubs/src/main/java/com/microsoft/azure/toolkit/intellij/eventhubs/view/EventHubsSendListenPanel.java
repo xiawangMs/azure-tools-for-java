@@ -54,10 +54,9 @@ public class EventHubsSendListenPanel extends JPanel {
                 }
             });
         });
-        this.startListeningProcess();
     }
 
-    private void startListeningProcess() {
+    public void startListeningProcess() {
         if (Objects.nonNull(this.listenProcessHandler)) {
             return;
         }
@@ -79,6 +78,12 @@ public class EventHubsSendListenPanel extends JPanel {
                 subscribe.dispose();
             }
         });
+    }
+
+    public void stopListeningProcess() {
+        this.instance.stopListening();
+        this.listenProcessHandler.notifyComplete();
+        this.listenProcessHandler = null;
     }
 
     private void init() {
@@ -111,7 +116,7 @@ public class EventHubsSendListenPanel extends JPanel {
                 view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.SYSTEM_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.USER_INPUT);
+                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.WARNING) {
                 view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_WARNING_OUTPUT);

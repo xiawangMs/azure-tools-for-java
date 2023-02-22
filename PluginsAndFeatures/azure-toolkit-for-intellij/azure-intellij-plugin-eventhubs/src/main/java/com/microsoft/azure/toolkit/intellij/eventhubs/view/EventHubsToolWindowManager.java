@@ -16,6 +16,8 @@ import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import java.util.Objects;
 import java.util.Optional;
 
 public class EventHubsToolWindowManager {
@@ -27,7 +29,7 @@ public class EventHubsToolWindowManager {
         return instance;
     }
 
-    public void showEventHubsPanel(Project project, EventHubsInstance instance) {
+    public void showEventHubsPanel(Project project, EventHubsInstance instance, boolean isListening) {
         final ToolWindow toolWindow = getToolWindow(project);
         final String contentName = getConsoleViewName(instance.getId(), instance.getName());
         Content content = toolWindow.getContentManager().findContent(contentName);
@@ -35,6 +37,26 @@ public class EventHubsToolWindowManager {
             final EventHubsSendListenPanel panel = new EventHubsSendListenPanel(project, instance);
             content = ContentFactory.getInstance().createContent(panel, contentName, false);
             toolWindow.getContentManager().addContent(content);
+        }
+        final JComponent contentComponent = content.getComponent();
+        if (contentComponent instanceof EventHubsSendListenPanel && isListening) {
+            ((EventHubsSendListenPanel) contentComponent).startListeningProcess();
+        }
+        toolWindow.getContentManager().setSelectedContent(content);
+        toolWindow.setAvailable(true);
+        toolWindow.activate(null);
+    }
+
+    public void stopListening(Project project, EventHubsInstance instance) {
+        final ToolWindow toolWindow = getToolWindow(project);
+        final String contentName = getConsoleViewName(instance.getId(), instance.getName());
+        final Content content = toolWindow.getContentManager().findContent(contentName);
+        if (Objects.isNull(content)) {
+            return;
+        }
+        final JComponent contentComponent = content.getComponent();
+        if (contentComponent instanceof EventHubsSendListenPanel) {
+            ((EventHubsSendListenPanel) contentComponent).stopListeningProcess();
         }
         toolWindow.getContentManager().setSelectedContent(content);
         toolWindow.setAvailable(true);

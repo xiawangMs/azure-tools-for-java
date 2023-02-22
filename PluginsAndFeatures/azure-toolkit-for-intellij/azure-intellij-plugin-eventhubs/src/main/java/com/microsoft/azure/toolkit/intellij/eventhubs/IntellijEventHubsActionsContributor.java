@@ -47,14 +47,14 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
     private void registerSendMessageActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> AzureTaskManager.getInstance()
-                        .runLater(() -> EventHubsToolWindowManager.getInstance().showEventHubsPanel(e.getProject(), c));
+                        .runLater(() -> EventHubsToolWindowManager.getInstance().showEventHubsPanel(e.getProject(), c, false));
         am.registerHandler(EventHubsActionsContributor.SEND_MESSAGE_INSTANCE, condition, handler);
     }
 
     private void registerStartListeningActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> AzureTaskManager.getInstance()
-                .runLater(() -> EventHubsToolWindowManager.getInstance().showEventHubsPanel(e.getProject(), c));
+                .runLater(() -> EventHubsToolWindowManager.getInstance().showEventHubsPanel(e.getProject(), c, true));
         am.registerHandler(EventHubsActionsContributor.START_LISTENING_INSTANCE, condition, handler);
     }
 
