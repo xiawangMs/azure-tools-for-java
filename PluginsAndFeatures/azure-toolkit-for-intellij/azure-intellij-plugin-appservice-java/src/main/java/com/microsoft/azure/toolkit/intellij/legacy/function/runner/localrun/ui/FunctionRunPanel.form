@@ -101,7 +101,6 @@
                 </constraints>
                 <properties>
                   <horizontalTextPosition value="2"/>
-                  <icon value="general/contextHelp.png"/>
                   <labelFor value="bcdd"/>
                   <text value="Port:"/>
                   <toolTipText value=" Local port for azure function core tools to listen on"/>

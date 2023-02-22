@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 
 import com.azure.resourcemanager.appplatform.models.RuntimeVersion;
+import com.intellij.icons.AllIcons;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
@@ -35,11 +36,13 @@ public class SpringCloudAppInfoBasicPanel extends AbstractSpringCloudAppInfoPane
     private JRadioButton useJava17;
     private JLabel lblRuntime;
     private TitledSeparator sectionConfiguration;
+    private JLabel lblSubscription;
 
     public SpringCloudAppInfoBasicPanel(@Nullable final SpringCloudCluster cluster) {
         super(cluster);
         $$$setupUI$$$();
         this.init();
+        this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
     }
 
     protected void onAppChanged(SpringCloudApp app) {

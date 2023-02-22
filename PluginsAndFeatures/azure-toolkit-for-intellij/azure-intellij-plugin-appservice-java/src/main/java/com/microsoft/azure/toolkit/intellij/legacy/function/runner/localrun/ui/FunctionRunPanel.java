@@ -71,6 +71,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         lblFunctionCli.setLabelFor(txtFunc);
         lblPort.setLabelFor(txtPort);
         lblAppSettings.setLabelFor(appSettingsTable);
+        lblPort.setIcon(AllIcons.General.ContextHelp);
         fillModules();
     }
 

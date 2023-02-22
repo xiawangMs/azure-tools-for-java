@@ -80,6 +80,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private ActionLink installDotnetRuntime;
     private JBIntSpinner queryRowNumber;
     private JCheckBox enableAuthPersistence;
+    private JLabel lblDocumentsLabelFields;
+    private JLabel lblPageSize;
+    private JLabel lblRows;
 
     private AzureConfiguration originalConfig;
 
@@ -122,6 +125,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             config.setDatabasePasswordSaveType(Password.SaveType.UNTIL_RESTART.name());
         }
         setData(config);
+        this.lblRows.setIcon(AllIcons.General.ContextHelp);
+        this.lblPageSize.setIcon(AllIcons.General.ContextHelp);
+        this.lblDocumentsLabelFields.setIcon(AllIcons.General.ContextHelp);
     }
 
     public void setData(AzureConfiguration config) {
