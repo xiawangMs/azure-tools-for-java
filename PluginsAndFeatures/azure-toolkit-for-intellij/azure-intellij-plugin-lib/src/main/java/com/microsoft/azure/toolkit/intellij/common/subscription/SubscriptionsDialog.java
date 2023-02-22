@@ -216,7 +216,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
                 model.setRowCount(0);
                 model.fireTableDataChanged();
                 table.getEmptyText().setText("Refreshing...");
-                EventUtil.logEvent(EventType.Subscription, TelemetryConstants.REFRESH_METADATA, "Refresh", null);
                 final AzureString title = OperationBundle.description("internal/account.refresh_subscriptions");
                 final AzureTask<Void> task = new AzureTask<>(project, title, true, () -> {
                     try {
