@@ -58,9 +58,6 @@ public class EventHubsToolWindowManager {
         if (contentComponent instanceof EventHubsSendListenPanel) {
             ((EventHubsSendListenPanel) contentComponent).stopListeningProcess();
         }
-        toolWindow.getContentManager().setSelectedContent(content);
-        toolWindow.setAvailable(true);
-        toolWindow.activate(null);
     }
 
     private String getConsoleViewName(String resourceId, String resourceName) {

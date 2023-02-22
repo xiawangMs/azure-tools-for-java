@@ -60,7 +60,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
 
     private void registerStopListeningActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.stopListening();
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> EventHubsToolWindowManager.getInstance().stopListening(e.getProject(), c);
         am.registerHandler(EventHubsActionsContributor.STOP_LISTENING_INSTANCE, condition, handler);
     }
 

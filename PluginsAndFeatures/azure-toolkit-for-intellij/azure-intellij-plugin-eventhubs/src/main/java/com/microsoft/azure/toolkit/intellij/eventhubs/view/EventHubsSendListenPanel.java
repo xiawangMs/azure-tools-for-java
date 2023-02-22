@@ -48,9 +48,9 @@ public class EventHubsSendListenPanel extends JPanel {
             AzureTaskManager.getInstance().runInBackground("sending message", () -> {
                 this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
                 if (this.instance.sendMessage(message)) {
-                    this.consoleView.print("Successfully send message to event hub\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+                    this.consoleView.print(String.format("Success > send message \"%s\" to event hub\n", message), ConsoleViewContentType.USER_INPUT);
                 } else {
-                    this.consoleView.print("Failed to send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
+                    this.consoleView.print("Fail > send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
                 }
             });
         });
@@ -116,7 +116,7 @@ public class EventHubsSendListenPanel extends JPanel {
                 view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.SYSTEM_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.USER_INPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.WARNING) {
                 view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_WARNING_OUTPUT);
