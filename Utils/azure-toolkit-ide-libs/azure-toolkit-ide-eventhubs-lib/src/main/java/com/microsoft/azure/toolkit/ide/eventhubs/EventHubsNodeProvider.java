@@ -46,7 +46,7 @@ public class EventHubsNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof EventHubsNamespace) {
             final EventHubsNamespace eventHubsNamespace = (EventHubsNamespace) data;
             return new Node<>(eventHubsNamespace).view(new AzureResourceLabelView<>(eventHubsNamespace))
-                    .inlineAction(ResourceCommonActionsContributor.PIN)
+                    .addInlineAction(ResourceCommonActionsContributor.PIN)
                     .doubleClickAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                     .actions(EventHubsActionsContributor.NAMESPACE_ACTIONS)
                     .addChildren(c -> Optional.ofNullable(c).map(EventHubsNamespace::getInstances).orElse(Collections.emptyList()),
