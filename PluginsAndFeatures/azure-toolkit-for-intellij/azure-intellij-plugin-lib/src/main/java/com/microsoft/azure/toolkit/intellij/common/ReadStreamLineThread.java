@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.util;
+package com.microsoft.azure.toolkit.intellij.common;
 
 import java.io.BufferedReader;
 import java.io.IOException;
