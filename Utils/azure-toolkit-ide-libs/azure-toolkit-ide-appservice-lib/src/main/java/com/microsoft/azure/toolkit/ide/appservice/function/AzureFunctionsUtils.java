@@ -72,6 +72,10 @@ public class AzureFunctionsUtils {
         }
     }
 
+    public static FunctionTemplate getFunctionTemplate(String trigger) throws AzureExecutionException {
+        return null;
+    }
+
     public static void applyKeyValueToLocalSettingFile(File localSettingFile, String key, String value) throws IOException {
         if (!localSettingFile.getParentFile().isDirectory()) {
             throw new IOException("Cannot save file to a non-existing directory: " + localSettingFile.getParent());
