@@ -66,7 +66,7 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
             if (sparkClusterNode.getClusterDetail().getSubscription().getId().equals("[LinkedCluster]"))
                 return new Node<>(sparkClusterNode)
                         .view(new SparkClusterNodeView(sparkClusterNode))
-                        .inlineAction(ResourceCommonActionsContributor.PIN)
+                        .addInlineAction(ResourceCommonActionsContributor.PIN)
                         .actions(HDInsightActionsContributor.SPARK_ADDITIONAL_CLUSTER_ACTIONS)
                         .addChild(jobsNode)
                         .addChildren(SparkClusterNode::getSubModules,(module, p) -> new Node<>(module)
@@ -75,7 +75,7 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
                                 .clickAction(HDInsightActionsContributor.OPEN_AZURE_STORAGE_EXPLORER_ON_MODULE));
             return new Node<>(sparkClusterNode)
                     .view(new SparkClusterNodeView(sparkClusterNode))
-                    .inlineAction(ResourceCommonActionsContributor.PIN)
+                    .addInlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(HDInsightActionsContributor.SPARK_CLUSTER_ACTIONS)
                     .addChild(jobsNode)
                     .addChildren(SparkClusterNode::getSubModules,(module, p) -> new Node<>(module)

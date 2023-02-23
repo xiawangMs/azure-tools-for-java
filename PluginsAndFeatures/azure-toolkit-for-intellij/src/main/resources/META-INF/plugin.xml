@@ -230,6 +230,10 @@
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <reference ref="AzureToolkit.SelectSubscriptions"/>
       <separator/>
+      <reference ref="Actions.DeployFunction"/>
+      <reference ref="Actions.DeploySpringCloud"/>
+      <reference ref="Actions.WebDeployAction"/>
+      <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
       <separator/>
       <reference ref="AzureToolkit.ValidateCertificate"/>
