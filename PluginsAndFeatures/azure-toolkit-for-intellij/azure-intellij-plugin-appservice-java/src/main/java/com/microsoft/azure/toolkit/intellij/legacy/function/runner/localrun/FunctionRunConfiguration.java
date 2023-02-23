@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,8 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     @Override
     public Module getModule() {
-        Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
+        Module module = ReadAction.compute(() ->
+                Optional.ofNullable(getConfigurationModule()).map(JavaRunConfigurationModule::getModule).orElse(null));
         if (module == null && StringUtils.isNotEmpty(this.functionRunModel.getModuleName())) {
             module = Arrays.stream(ModuleManager.getInstance(getProject()).getModules())
                     .filter(m -> StringUtils.equals(this.functionRunModel.getModuleName(), m.getName()))
