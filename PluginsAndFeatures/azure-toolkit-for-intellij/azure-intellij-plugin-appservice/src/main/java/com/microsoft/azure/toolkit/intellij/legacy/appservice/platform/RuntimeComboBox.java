@@ -11,23 +11,22 @@ import com.intellij.ui.popup.list.GroupedItemsListRenderer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RuntimeComboBox extends AzureComboBox<Runtime> {
 
-    private final LinkedHashMap<String, List<Runtime>> runtimeSeparatorMap;
     private List<Runtime> platformList;
 
     public RuntimeComboBox() {
-        this(Runtime.getWebappRuntimeMap());
+        this(Runtime.WEBAPP_RUNTIME);
     }
 
-    public RuntimeComboBox(LinkedHashMap<String, List<Runtime>> runtimeSeparatorMap) {
-        this.runtimeSeparatorMap = runtimeSeparatorMap;
+    public RuntimeComboBox(List<Runtime> platformList) {
+        super();
+        this.platformList = Collections.unmodifiableList(platformList.stream()
+                .sorted(Comparator.comparing(o -> WebAppService.getInstance().getRuntimeDisplayName(o))).toList());
         setGroupRender();
     }
 
@@ -44,11 +43,7 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     @Nonnull
     @Override
     protected List<? extends Runtime> loadItems() {
-        if (Objects.nonNull(platformList)) {
-            return platformList;
-        }
-        return runtimeSeparatorMap.entrySet().stream()
-                .flatMap(stringListEntry -> stringListEntry.getValue().stream()).collect(Collectors.toList());
+        return platformList;
     }
 
     @Nonnull
@@ -61,20 +56,13 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
         this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()) {
             @Override
             protected boolean hasSeparator(Runtime value, int index) {
-                return Objects.isNull(platformList) && index >= 0 && super.hasSeparator(value, index);
+                return index >= 0 && super.hasSeparator(value, index);
             }
         });
     }
 
     private String getSeparatorCaption(Runtime item) {
-        String key = StringUtils.EMPTY;
-        for (final Map.Entry<String, List<Runtime>> entry : runtimeSeparatorMap.entrySet()) {
-            key = entry.getKey();
-            if (entry.getValue().contains(item)) {
-                break;
-            }
-        }
-        return key;
+        return String.format("%s & %s", item.getOperatingSystem().toString(), item.getJavaVersion().toString());
     }
 
     class RuntimeItemDescriptor extends ListItemDescriptorAdapter<Runtime> {
@@ -90,9 +78,13 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
 
         @Override
         public boolean hasSeparatorAboveOf(Runtime value) {
-            return Optional.of(getSeparatorCaption(value))
-                    .map(runtimeSeparatorMap::get)
-                    .map(list -> Objects.equals(list.get(0), value)).orElse(false);
+            final int index = platformList.indexOf(value);
+            if (index <= 0) {
+                return index == 0;
+            }
+            final String currentCaption = getSeparatorCaption(value);
+            final String lastCaption = getSeparatorCaption(platformList.get(index - 1));
+            return !Objects.equals(currentCaption, lastCaption);
         }
     }
 }
