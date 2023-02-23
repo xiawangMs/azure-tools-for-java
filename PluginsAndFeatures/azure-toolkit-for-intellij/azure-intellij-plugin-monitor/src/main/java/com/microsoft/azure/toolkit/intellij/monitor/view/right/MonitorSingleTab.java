@@ -19,6 +19,8 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -64,11 +66,17 @@ public class MonitorSingleTab {
             }
             this.monitorLogDetailsPanel.setViewText(viewerTitle, viewerText);
         });
-        this.monitorLogTablePanel.addRunActionListener(e -> Optional.ofNullable(this.parentView.getSelectedWorkspace()).ifPresentOrElse(t -> loadLogs(),
-                () -> AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction())));
+        this.monitorLogTablePanel.addRunActionListener(new ActionListener() {
+            @Override
+            @AzureOperation(name = "user/monitor.execute_query")
+            public void actionPerformed(ActionEvent e) {
+                Optional.ofNullable(parentView.getSelectedWorkspace())
+                        .ifPresentOrElse(t -> loadLogs(),
+                        () -> AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction()));
+            }
+        });
     }
 
-    @AzureOperation(name = "user/monitor.execute_query")
     private void loadLogs() {
         final LogAnalyticsWorkspace selectedWorkspace = this.parentView.getSelectedWorkspace();
         final String queryString = this.isTableTab ? this.monitorLogTablePanel.getQueryStringFromFilters(tabName) : this.parentView.getQueryString(tabName);

@@ -9,6 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
@@ -45,12 +46,11 @@ public class MonitorTabbedPane {
             .ifPresent(it -> {
                 final DefaultMutableTreeNode node = (DefaultMutableTreeNode) it.getLastPathComponent();
                 if (Objects.nonNull(node) && node.isLeaf()) {
-                    selectTab(node.toString());
+                    selectTabTriggeredByUser(node.toString());
                 }
             }));
     }
 
-    @AzureOperation(name = "user/monitor.change_table_tab", params = {"tabName"})
     public void selectTab(String tabName) {
         if (Objects.nonNull(initResourceId)) {
             final int removeIndex = closeableTabbedPane.indexOfTab(tabName);
@@ -68,6 +68,12 @@ public class MonitorTabbedPane {
         final int toSelectIndex = this.closeableTabbedPane.indexOfTab(tabName);
         this.closeableTabbedPane.setSelectedIndex(toSelectIndex);
         this.initResourceId = null;
+    }
+
+    @AzureOperation(name = "user/monitor.change_table_tab", params = {"tabName"})
+    private void selectTabTriggeredByUser(String tabName) {
+        OperationContext.current().setTelemetryProperty("tabName", tabName);
+        selectTab(tabName);
     }
 
     private void reloadSelectedTab() {
