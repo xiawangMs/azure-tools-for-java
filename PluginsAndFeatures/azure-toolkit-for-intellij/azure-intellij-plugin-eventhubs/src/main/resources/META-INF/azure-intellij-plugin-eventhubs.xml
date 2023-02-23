@@ -1,0 +1,12 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.eventhubs.EventHubsNodeProvider"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.eventhubs.EventHubsActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.eventhubs.IntellijEventHubsActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+    <toolWindow anchor="bottom"
+                factoryClass="com.microsoft.azure.toolkit.intellij.eventhubs.view.EventHubsToolWindowFactory"
+                id="Azure Event Hubs" canCloseContents="true"/>
+    </extensions>
+</idea-plugin>

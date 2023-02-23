@@ -52,6 +52,8 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
             put("Microsoft.DocumentDB/databaseAccounts", "Cosmos DB");
             put("Microsoft.HDInsight", "HDInsight");
             put("Microsoft.HDInsight/clusters", "HDInsight");
+            put("Microsoft.EventHub", "Event Hubs");
+            put("Microsoft.EventHub/namespaces", "Event Hubs");
         }
     };
 

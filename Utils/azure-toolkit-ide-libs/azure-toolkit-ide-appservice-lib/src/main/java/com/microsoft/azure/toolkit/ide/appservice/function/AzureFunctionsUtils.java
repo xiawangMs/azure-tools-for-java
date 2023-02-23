@@ -73,12 +73,7 @@ public class AzureFunctionsUtils {
     }
 
     public static FunctionTemplate getFunctionTemplate(String trigger) throws AzureExecutionException {
-        if (functionTemplates == null) {
-            functionTemplates = FunctionUtils.loadAllFunctionTemplates();
-        }
-        return functionTemplates.stream()
-                .filter(template -> StringUtils.equalsIgnoreCase(trigger, template.getFunction()))
-                .findFirst().orElseThrow(() -> new AzureExecutionException("No such template"));
+        return null;
     }
 
     public static void applyKeyValueToLocalSettingFile(File localSettingFile, String key, String value) throws IOException {

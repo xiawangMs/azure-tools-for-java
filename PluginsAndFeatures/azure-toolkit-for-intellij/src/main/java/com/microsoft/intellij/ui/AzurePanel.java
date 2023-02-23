@@ -80,6 +80,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private ActionLink installDotnetRuntime;
     private JBIntSpinner queryRowNumber;
     private JCheckBox enableAuthPersistence;
+    private AzureTextInput consumerGroupName;
 
     private AzureConfiguration originalConfig;
 
@@ -147,6 +148,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         txtPageSize.setNumber(config.getPageSize());
         queryRowNumber.setValue(config.getMonitorQueryRowNumber());
         txtLabelFields.setValue(String.join(";", config.getDocumentsLabelFields()));
+        consumerGroupName.setValue(config.getEventHubsConsumerGroup());
     }
 
     public AzureConfiguration getData() {
@@ -177,6 +179,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
         if (StringUtils.isNoneBlank(dotnetRuntimePath.getValue())) {
             data.setDotnetRuntimePath(dotnetRuntimePath.getValue());
+        }
+        if (StringUtils.isNotBlank(consumerGroupName.getValue())) {
+            data.setEventHubsConsumerGroup(consumerGroupName.getValue());
         }
         return data;
     }
@@ -249,6 +254,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setDocumentsLabelFields(newConfig.getDocumentsLabelFields());
         this.originalConfig.setDotnetRuntimePath(newConfig.getDotnetRuntimePath());
         this.originalConfig.setMonitorQueryRowNumber(newConfig.getMonitorQueryRowNumber());
+        this.originalConfig.setEventHubsConsumerGroup(newConfig.getEventHubsConsumerGroup());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
 
         if (StringUtils.isNotBlank(newConfig.getCloud())) {
@@ -293,6 +299,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             !Objects.equals(newConfig.isAuthPersistenceEnabled(), originalConfig.isAuthPersistenceEnabled()) ||
             !Objects.equals(newConfig.getPageSize(), originalConfig.getPageSize()) ||
             !Objects.equals(newConfig.getMonitorQueryRowNumber(), originalConfig.getMonitorQueryRowNumber()) ||
+            !Objects.equals(newConfig.getEventHubsConsumerGroup(), originalConfig.getEventHubsConsumerGroup()) ||
             !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields());
     }
 

@@ -26,6 +26,7 @@ public class AzureConfigInitializer {
     public static final String COSMOS = "cosmos";
     public static final String BICEP = "bicep";
     public static final String MONITOR = "monitor";
+    public static final String EVENT_HUBS = "event_hubs";
     public static final String OTHER = "other";
 
     public static final String PAGE_SIZE = "page_size";
@@ -40,6 +41,7 @@ public class AzureConfigInitializer {
     public static final String DOTNET_RUNTIME_PATH = "dotnet_runtime_path";
     public static final String ENABLE_AUTH_PERSISTENCE = "enable_auth_persistence";
     public static final String MONITOR_TABLE_ROWS = "monitor_table_rows";
+    public static final String CONSUMER_GROUP_NAME = "consumer_group_name";
 
     public static void initialize(String defaultMachineId, String pluginName, String pluginVersion) {
         String machineId = AzureStoreManager.getInstance().getMachineStore().getProperty(TELEMETRY,
@@ -97,6 +99,11 @@ public class AzureConfigInitializer {
             config.setDotnetRuntimePath(dotnetRuntimePath);
         }
 
+        final String consumerGroupName = ideStore.getProperty(EVENT_HUBS, CONSUMER_GROUP_NAME, "$Default");
+        if (StringUtils.isNotBlank(consumerGroupName)) {
+            config.setEventHubsConsumerGroup(consumerGroupName);
+        }
+
         ideStore.getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, "");
 
         final String userAgent = String.format("%s, v%s, machineid:%s", pluginName, pluginVersion,
@@ -126,5 +133,6 @@ public class AzureConfigInitializer {
         ideStore.setProperty(COSMOS, DOCUMENTS_LABEL_FIELDS, String.join(";", config.getDocumentsLabelFields()));
         // don't save pluginVersion, it is saved in AzurePlugin class
         ideStore.setProperty(BICEP, DOTNET_RUNTIME_PATH, config.getDotnetRuntimePath());
+        ideStore.setProperty(EVENT_HUBS, CONSUMER_GROUP_NAME, config.getEventHubsConsumerGroup());
     }
 }
