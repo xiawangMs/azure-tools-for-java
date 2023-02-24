@@ -71,7 +71,6 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
 
     private void addComponentsByTemplates(final List<FunctionSettingTemplate> templates) {
         final Dimension labelSize = new Dimension(getLabelWidth(), -1);
-        final Dimension componentSize = new Dimension(getLabelWidth() * 3, -1);
         this.setLayout(new GridLayoutManager(templates.size(), 2));
         for (int i = 0; i < templates.size(); i++) {
             final FunctionSettingTemplate inputTemplate = templates.get(i);
@@ -95,7 +94,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
                 label.setLabelFor((Component) component);
                 final GridConstraints labelConstraints = new GridConstraints(i, 0, 1, 1, 0, 0, 0, 0, labelSize, labelSize, labelSize, 0);
                 this.add(label, labelConstraints);
-                final GridConstraints componentConstraints = new GridConstraints(i, 1, 1, 1, 0, 3, 3, 3, null, componentSize, null, 0);
+                final GridConstraints componentConstraints = new GridConstraints(i, 1, 1, 1, 0, 3, 3, 3, null, null, null, 0);
                 this.add((Component) component, componentConstraints);
             }
         }
@@ -132,25 +131,13 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
             this.connectionComboBox.setUsePreferredSizeAsMinimum(false);
             return this.connectionComboBox;
         }
-        final AzureFormInputComponent<String> result;
-        switch (inputTemplate.getValue()) {
-            case "boolean":
-                result = new FunctionBooleanInput(inputTemplate);
-                break;
-            case "enum":
-                result = new FunctionEnumInput(inputTemplate);
-                break;
-            case "string":
-            default:
-                result = new FunctionStringInput(inputTemplate);
-                break;
-        }
+        final AzureFormInputComponent<String> result = switch (inputTemplate.getValue()) {
+            case "boolean" -> new FunctionBooleanInput(inputTemplate);
+            case "enum" -> new FunctionEnumInput(inputTemplate);
+            default -> new FunctionStringInput(inputTemplate);
+        };
         inputs.put(inputTemplate.getName(), result);
         return result;
-    }
-
-    private void onSelectLocalSettings(final VirtualFile localSettingsFile) {
-        Optional.ofNullable(connectionComboBox).ifPresent(combo -> combo.setLocalSettings(localSettingsFile));
     }
 
     @Override
