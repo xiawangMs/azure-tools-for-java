@@ -99,9 +99,14 @@ public class DeployFunctionAppAction extends AnAction {
             settings = manager.createConfiguration(runConfigurationName, factory);
         }
         final RunConfiguration runConfiguration = settings.getConfiguration();
-        if (runConfiguration instanceof FunctionDeployConfiguration && Objects.nonNull(app) && app.getFormalStatus().isConnected()) {
-            final FunctionAppConfig config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(app);
-            ((FunctionDeployConfiguration) runConfiguration).saveConfig(config);
+        if (runConfiguration instanceof FunctionDeployConfiguration) {
+            if (Objects.nonNull(app) && app.getFormalStatus().isConnected()) {
+                final FunctionAppConfig config = FunctionAppService.getInstance().getFunctionAppConfigFromExistingFunction(app);
+                ((FunctionDeployConfiguration) runConfiguration).saveConfig(config);
+            }
+            if (Objects.nonNull(module)) {
+                ((FunctionDeployConfiguration) runConfiguration).saveTargetModule(module);
+            }
         }
         return settings;
     }
