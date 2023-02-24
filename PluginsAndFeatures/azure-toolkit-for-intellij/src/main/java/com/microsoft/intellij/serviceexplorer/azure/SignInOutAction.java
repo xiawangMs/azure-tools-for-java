@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.intellij.AzurePlugin;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
-import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.azure.toolkit.intellij.common.auth.AzureSignInAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
