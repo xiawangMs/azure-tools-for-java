@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.ui.util;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.diagnostic.ThreadDumper;
 import com.intellij.ide.ui.LafManager;
