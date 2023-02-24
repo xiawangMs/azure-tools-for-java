@@ -32,16 +32,19 @@ public class EventHubsActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         new Action<>(ACTIVE_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance)
+                .enableWhen(s -> !s.isActive())
                 .withLabel("Active")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(DISABLE_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance)
+                .enableWhen(s -> !s.isDisabled())
                 .withLabel("Disabled")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(SEND_DISABLE_INSTANCE)
                 .visibleWhen(s -> s instanceof EventHubsInstance)
+                .enableWhen(s -> !s.isSendDisabled())
                 .withLabel("SendDisabled")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
