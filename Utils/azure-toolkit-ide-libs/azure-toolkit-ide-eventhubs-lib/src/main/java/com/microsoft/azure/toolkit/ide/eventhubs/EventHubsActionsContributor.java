@@ -5,9 +5,12 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
 import java.util.ArrayList;
 
@@ -24,7 +27,7 @@ public class EventHubsActionsContributor implements IActionsContributor {
     public static final Action.Id<EventHubsInstance> SEND_MESSAGE_INSTANCE = Action.Id.of("user/eventhubs.open_send_message_panel.instance");
     public static final Action.Id<EventHubsInstance> START_LISTENING_INSTANCE = Action.Id.of("user/eventhubs.start_listening.instance");
     public static final Action.Id<EventHubsInstance> STOP_LISTENING_INSTANCE = Action.Id.of("user/eventhubs.stop_listening.instance");
-
+    public static final Action.Id<ResourceGroup> GROUP_CREATE_EVENT_HUBS = Action.Id.of("user/eventhubs.create_eventhubs.group");
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(ACTIVE_INSTANCE)
@@ -64,6 +67,12 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 .withLabel("Stop Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
+        new Action<>(GROUP_CREATE_EVENT_HUBS)
+                .withLabel("Event Hubs")
+                .withIdParam(AzResource::getName)
+                .visibleWhen(s -> s instanceof ResourceGroup)
+                .enableWhen(s -> s.getFormalStatus().isConnected())
+                .register(am);
     }
 
     @Override
@@ -90,8 +99,6 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
-                ResourceCommonActionsContributor.CREATE_IN_PORTAL,
-                "---",
                 ResourceCommonActionsContributor.DELETE);
         am.registerGroup(NAMESPACE_ACTIONS, namespaceGroup);
 
@@ -107,6 +114,9 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.DELETE);
         am.registerGroup(INSTANCE_ACTIONS, instanceGroup);
+
+        final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
+        group.addAction(GROUP_CREATE_EVENT_HUBS);
     }
 
     @Override
