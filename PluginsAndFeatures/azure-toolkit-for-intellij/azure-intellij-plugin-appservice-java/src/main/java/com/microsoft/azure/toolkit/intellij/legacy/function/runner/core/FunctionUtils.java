@@ -12,6 +12,7 @@ import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.LibraryOrderEntry;
@@ -29,7 +30,6 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.workspaceModel.ide.impl.legacyBridge.module.roots.ModuleOrderEntryBridge;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -45,7 +45,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.Binding;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
-import com.microsoft.intellij.secure.IntelliJSecureStore;
+import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -331,6 +331,14 @@ public class FunctionUtils {
         return Paths.get(project.getBasePath(), "target", "azure-functions", stagingFolderName).toString();
     }
 
+    public static String getDefaultHostJsonPath(final Module module) {
+        return Paths.get(ModuleUtil.getModuleDirPath(module), "host.json").toString();
+    }
+
+    public static String getDefaultLocalSettingsJsonPath(final Module module) {
+        return Paths.get(ModuleUtil.getModuleDirPath(module), "local.settings.json").toString();
+    }
+
     public static String getFuncPath() throws IOException, InterruptedException {
         final AzureConfiguration config = Azure.az().config();
         if (StringUtils.isBlank(config.getFunctionCoreToolsPath())) {
@@ -563,6 +571,10 @@ public class FunctionUtils {
             return false;
         }
         return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
+    }
+
+    public static String getDefaultFuncArguments() {
+        return String.format("host start --port %s", findFreePort());
     }
 
     public static int findFreePort() {
