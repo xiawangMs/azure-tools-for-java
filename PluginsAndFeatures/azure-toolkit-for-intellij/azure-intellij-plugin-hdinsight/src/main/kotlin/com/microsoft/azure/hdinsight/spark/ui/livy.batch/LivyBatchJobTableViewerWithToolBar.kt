@@ -26,7 +26,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.uiDesigner.core.GridConstraints
-import com.microsoft.intellij.AzureAnAction
+import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.Dimension

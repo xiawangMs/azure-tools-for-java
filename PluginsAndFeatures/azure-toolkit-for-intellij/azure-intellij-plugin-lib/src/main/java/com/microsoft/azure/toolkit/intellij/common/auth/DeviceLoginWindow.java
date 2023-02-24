@@ -3,14 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.ui;
+package com.microsoft.azure.toolkit.intellij.common.auth;
 
 import com.azure.identity.DeviceCodeInfo;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.azure.toolkit.intellij.common.component.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
