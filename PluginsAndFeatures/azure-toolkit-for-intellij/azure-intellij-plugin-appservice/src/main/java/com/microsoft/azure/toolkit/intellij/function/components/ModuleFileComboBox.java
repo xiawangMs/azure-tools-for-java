@@ -22,6 +22,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
@@ -83,7 +84,7 @@ public class ModuleFileComboBox extends AzureComboBox<VirtualFile> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof VirtualFile ? ((VirtualFile) item).getCanonicalPath() : super.getItemText(item);
+        return item instanceof VirtualFile ? FilenameUtils.separatorsToSystem(((VirtualFile) item).getCanonicalPath()) : super.getItemText(item);
     }
 
     @Nullable

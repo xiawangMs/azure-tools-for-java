@@ -93,7 +93,8 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         this.pnlAdditionalParameters.add(this.templatePanel, labelConstraints);
         this.titleTriggerParameters.setVisible(CollectionUtils.isNotEmpty(templatePanel.getInputs()));
         this.pnlAdditionalParameters.setVisible(CollectionUtils.isNotEmpty(templatePanel.getInputs()));
-        AzureTaskManager.getInstance().runLater(() -> FunctionClassCreationDialog.this.getContentPane().repaint(), AzureTask.Modality.ANY);
+        this.pack();
+        this.repaint();
     }
 
     private void setLabelWidth(final int width) {

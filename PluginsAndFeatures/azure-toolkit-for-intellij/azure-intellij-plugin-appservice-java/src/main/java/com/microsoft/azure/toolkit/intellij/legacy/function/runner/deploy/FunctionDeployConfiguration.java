@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy;
 
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
@@ -121,12 +122,12 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Override
     public Module getModule() {
-        Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
+        Module module = ReadAction.compute(() ->
+                Optional.ofNullable(getConfigurationModule()).map(JavaRunConfigurationModule::getModule).orElse(null));
         if (module == null && StringUtils.isNotEmpty(this.functionDeployModel.getModuleName())) {
             module = Arrays.stream(ModuleManager.getInstance(getProject()).getModules())
                     .filter(m -> StringUtils.equals(this.functionDeployModel.getModuleName(), m.getName()))
                     .findFirst().orElse(null);
-            this.myModule.setModule(module);
         }
         return module;
     }
