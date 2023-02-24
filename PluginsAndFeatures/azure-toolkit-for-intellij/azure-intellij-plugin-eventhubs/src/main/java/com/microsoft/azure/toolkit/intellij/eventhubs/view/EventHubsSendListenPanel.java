@@ -1,16 +1,17 @@
 package com.microsoft.azure.toolkit.intellij.eventhubs.view;
 
-import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBTextField;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
@@ -29,7 +30,7 @@ public class EventHubsSendListenPanel extends JPanel {
     @Getter
     private JPanel contentPanel;
     private JButton sendMessageBtn;
-    private AzureTextInput messageInput;
+    private JBTextField messageInput;
     private JPanel listenPanel;
     private JPanel sendPanel;
     private final EventHubsInstance instance;
@@ -38,22 +39,12 @@ public class EventHubsSendListenPanel extends JPanel {
 
     public EventHubsSendListenPanel(Project project, EventHubsInstance eventHubsInstance) {
         super();
-        this.consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+        this.consoleView = new ConsoleViewImpl(project, true);
         this.instance = eventHubsInstance;
         $$$setupUI$$$();
         this.init();
-        this.sendMessageBtn.addActionListener(e -> {
-            final String message = messageInput.getValue();
-            messageInput.setValue(StringUtils.EMPTY);
-            AzureTaskManager.getInstance().runInBackground("sending message", () -> {
-                this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
-                if (this.instance.sendMessage(message)) {
-                    this.consoleView.print(String.format("Success > send message \"%s\" to event hub\n", message), ConsoleViewContentType.USER_INPUT);
-                } else {
-                    this.consoleView.print("Fail > send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
-                }
-            });
-        });
+        this.sendMessageBtn.addActionListener(e -> sendMessage());
+        this.messageInput.addActionListener(e -> sendMessage());
     }
 
     public void startListeningProcess() {
@@ -96,6 +87,22 @@ public class EventHubsSendListenPanel extends JPanel {
         this.sendMessageBtn.setEnabled(this.instance.isActive());
     }
 
+    @AzureOperation(name = "user/eventhubs.send_message")
+    private void sendMessage() {
+        final String message = messageInput.getText();
+        messageInput.setText(StringUtils.EMPTY);
+        AzureTaskManager.getInstance().runInBackground("sending message", () -> {
+            this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+            if (this.instance.sendMessage(message)) {
+                this.consoleView.print("Successfully send message ", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_INFO_OUTPUT);
+                this.consoleView.print(" to event hub\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+            } else {
+                this.consoleView.print("Fail > send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
+            }
+        });
+    }
+
     private void $$$setupUI$$$() {
     }
 
@@ -113,21 +120,21 @@ public class EventHubsSendListenPanel extends JPanel {
         @Override
         public boolean show(IAzureMessage raw) {
             if (raw.getType() == IAzureMessage.Type.INFO) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.SYSTEM_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.SYSTEM_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.USER_INPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_INFO_OUTPUT);
+                return true;
+            } else if (raw.getType() == IAzureMessage.Type.DEBUG) {
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.WARNING) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_WARNING_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.ERROR_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.ERROR_OUTPUT);
             }
             return super.show(raw);
         }
 
-        private String addLine(String originText) {
-            return originText + "\n";
-        }
     }
 }

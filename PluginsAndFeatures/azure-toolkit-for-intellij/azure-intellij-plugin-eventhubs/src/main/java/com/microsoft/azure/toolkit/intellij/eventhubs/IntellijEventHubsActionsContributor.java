@@ -6,6 +6,9 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.eventhubs.EventHubsActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.intellij.eventhubs.view.EventHubsToolWindowManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -24,6 +27,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
         registerSendMessageActionHandler(am);
         registerStartListeningActionHandler(am);
         registerStopListeningActionHandler(am);
+        registerGroupCreateNamespaceActionHandler(am);
     }
 
     private void registerActiveActionHandler(AzureActionManager am) {
@@ -72,6 +76,15 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
             AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"));
         };
         am.registerHandler(EventHubsActionsContributor.COPY_CONNECTION_STRING, condition, handler);
+    }
+
+    private void registerGroupCreateNamespaceActionHandler(AzureActionManager am) {
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> {
+            final IAccount account = Azure.az(IAzureAccount.class).account();
+            final String url = String.format("%s/#create/Microsoft.EventHub/", account.getPortalUrl());
+            am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
+        };
+        am.registerHandler(EventHubsActionsContributor.GROUP_CREATE_EVENT_HUBS, (r, e) -> true, (r, e) -> handler.accept(r, (AnActionEvent) e));
     }
 
     @Override
