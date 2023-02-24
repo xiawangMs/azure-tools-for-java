@@ -92,9 +92,11 @@ public class EventHubsSendListenPanel extends JPanel {
         final String message = messageInput.getText();
         messageInput.setText(StringUtils.EMPTY);
         AzureTaskManager.getInstance().runInBackground("sending message", () -> {
-            this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+            this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
             if (this.instance.sendMessage(message)) {
-                this.consoleView.print(String.format("Success > send message \"%s\" to event hub\n", message), ConsoleViewContentType.USER_INPUT);
+                this.consoleView.print("Successfully send message ", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_INFO_OUTPUT);
+                this.consoleView.print(" to event hub\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
             } else {
                 this.consoleView.print("Fail > send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
             }
@@ -118,21 +120,21 @@ public class EventHubsSendListenPanel extends JPanel {
         @Override
         public boolean show(IAzureMessage raw) {
             if (raw.getType() == IAzureMessage.Type.INFO) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.SYSTEM_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.SYSTEM_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.USER_INPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_INFO_OUTPUT);
+                return true;
+            } else if (raw.getType() == IAzureMessage.Type.DEBUG) {
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.WARNING) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.LOG_WARNING_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
-                view.print(addLine(raw.getMessage().toString()), ConsoleViewContentType.ERROR_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.ERROR_OUTPUT);
             }
             return super.show(raw);
         }
 
-        private String addLine(String originText) {
-            return originText + "\n";
-        }
     }
 }
