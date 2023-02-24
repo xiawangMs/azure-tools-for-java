@@ -40,7 +40,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="Trigger Type: "/>
+          <text value="Binding Type: "/>
         </properties>
       </component>
       <grid id="b1e48" binding="pnlAdditionalParameters" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -77,7 +77,7 @@
         <properties>
           <focusable value="false"/>
           <font/>
-          <text value="Basic Configuration"/>
+          <text value="Basic Info"/>
           <titleFont style="1"/>
         </properties>
       </component>
@@ -88,7 +88,7 @@
         <properties>
           <focusable value="false"/>
           <font/>
-          <text value="Trigger Parameters"/>
+          <text value="Binding Parameters"/>
           <titleFont style="1"/>
         </properties>
       </component>
