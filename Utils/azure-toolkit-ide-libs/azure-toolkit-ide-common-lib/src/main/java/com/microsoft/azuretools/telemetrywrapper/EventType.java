@@ -11,6 +11,5 @@ public enum EventType {
     step,
     info,
     warn,
-    error,
-    Subscription
+    error
 }

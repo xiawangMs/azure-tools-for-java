@@ -21,9 +21,9 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.Function
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.intellij.AzureAnAction;
-import com.microsoft.intellij.actions.RunConfigurationUtils;
-import com.microsoft.intellij.util.AzureLoginHelper;
+import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.RunConfigurationUtils;
+import com.microsoft.azure.toolkit.intellij.common.auth.AzureLoginHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

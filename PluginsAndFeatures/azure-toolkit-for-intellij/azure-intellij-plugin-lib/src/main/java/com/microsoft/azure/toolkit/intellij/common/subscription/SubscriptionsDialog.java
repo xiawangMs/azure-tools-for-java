@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.ui;
+package com.microsoft.azure.toolkit.intellij.common.subscription;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -30,11 +30,10 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import com.microsoft.intellij.util.JTableUtils;
+import com.microsoft.azure.toolkit.intellij.common.component.AzureDialogWrapper;
+import com.microsoft.azure.toolkit.intellij.common.component.JTableUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -216,7 +215,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
                 model.setRowCount(0);
                 model.fireTableDataChanged();
                 table.getEmptyText().setText("Refreshing...");
-                EventUtil.logEvent(EventType.Subscription, TelemetryConstants.REFRESH_METADATA, "Refresh", null);
                 final AzureString title = OperationBundle.description("internal/account.refresh_subscriptions");
                 final AzureTask<Void> task = new AzureTask<>(project, title, true, () -> {
                     try {

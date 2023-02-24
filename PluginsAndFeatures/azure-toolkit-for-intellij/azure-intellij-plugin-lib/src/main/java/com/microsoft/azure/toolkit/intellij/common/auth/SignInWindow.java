@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.ui;
+package com.microsoft.azure.toolkit.intellij.common.auth;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.azure.toolkit.intellij.common.component.AzureDialogWrapper;
 
 import javax.accessibility.AccessibleContext;
 import javax.annotation.Nonnull;

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.util;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.profile.codeInspection.ui.table.ThreeStateCheckBoxRenderer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
