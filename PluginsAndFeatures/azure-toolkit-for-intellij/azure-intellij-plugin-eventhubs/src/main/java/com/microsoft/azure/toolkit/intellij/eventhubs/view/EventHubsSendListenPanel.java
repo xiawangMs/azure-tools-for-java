@@ -92,13 +92,13 @@ public class EventHubsSendListenPanel extends JPanel {
         final String message = messageInput.getText();
         messageInput.setText(StringUtils.EMPTY);
         AzureTaskManager.getInstance().runInBackground("sending message", () -> {
-            this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+            this.consoleView.print(String.format("Sending message to event hub (%s)...\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
             if (this.instance.sendMessage(message)) {
-                this.consoleView.print("Successfully send message ", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
-                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_INFO_OUTPUT);
-                this.consoleView.print(" to event hub\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                this.consoleView.print("Successfully send message ", ConsoleViewContentType.SYSTEM_OUTPUT);
+                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                this.consoleView.print(String.format(" to event hub (%s)\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
             } else {
-                this.consoleView.print("Fail > send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
+                this.consoleView.print(String.format("Failed to send message to event hub (%s)\n", instance.getName()), ConsoleViewContentType.ERROR_OUTPUT);
             }
         });
     }
