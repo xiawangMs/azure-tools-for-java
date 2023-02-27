@@ -60,6 +60,19 @@ public class EventHubsToolWindowManager {
         }
     }
 
+    public void updateEventHubsPanelView(Project project, EventHubsInstance instance) {
+        final ToolWindow toolWindow = getToolWindow(project);
+        final String contentName = getConsoleViewName(instance.getId(), instance.getName());
+        final Content content = toolWindow.getContentManager().findContent(contentName);
+        if (Objects.isNull(content)) {
+            return;
+        }
+        final JComponent contentComponent = content.getComponent();
+        if (contentComponent instanceof EventHubsSendListenPanel) {
+            ((EventHubsSendListenPanel) contentComponent).updateView();
+        }
+    }
+
     private String getConsoleViewName(String resourceId, String resourceName) {
         if (resourceIdToNameMap.containsKey(resourceId)) {
             return resourceIdToNameMap.get(resourceId);

@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
 import lombok.Getter;
@@ -23,8 +24,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
+import java.util.Optional;
 
 public class EventHubsSendListenPanel extends JPanel {
     @Getter
@@ -35,6 +38,7 @@ public class EventHubsSendListenPanel extends JPanel {
     private JPanel sendPanel;
     private final EventHubsInstance instance;
     private final ConsoleView consoleView;
+    @Nullable
     private RunProcessHandler listenProcessHandler;
 
     public EventHubsSendListenPanel(Project project, EventHubsInstance eventHubsInstance) {
@@ -73,8 +77,12 @@ public class EventHubsSendListenPanel extends JPanel {
 
     public void stopListeningProcess() {
         this.instance.stopListening();
-        this.listenProcessHandler.notifyComplete();
+        Optional.ofNullable(this.listenProcessHandler).ifPresent(RunProcessHandler::notifyComplete);
         this.listenProcessHandler = null;
+    }
+
+    public void updateView() {
+        AzureTaskManager.getInstance().runLater(() -> this.sendMessageBtn.setEnabled(this.instance.isActive()), AzureTask.Modality.ANY);
     }
 
     private void init() {
