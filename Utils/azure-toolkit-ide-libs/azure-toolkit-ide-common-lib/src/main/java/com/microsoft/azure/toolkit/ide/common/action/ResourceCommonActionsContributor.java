@@ -174,7 +174,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
             .visibleWhen(s -> s instanceof AzResourceBase)
-            .enableWhen(s -> s.getFormalStatus().isRunning())
+            .enableWhen(s -> s.getFormalStatus(true).isRunning())
             .withShortcut(shortcuts.deploy())
             .register(am);
 
