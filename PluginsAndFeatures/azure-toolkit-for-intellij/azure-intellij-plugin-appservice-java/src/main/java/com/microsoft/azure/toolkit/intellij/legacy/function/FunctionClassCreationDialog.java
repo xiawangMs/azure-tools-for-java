@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-package com.microsoft.azure.toolkit.intellij.function;
+package com.microsoft.azure.toolkit.intellij.legacy.function;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -15,8 +15,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import lombok.AllArgsConstructor;
@@ -80,7 +78,7 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         this.lblFunctionName.setLabelFor(txtFunctionName);
         this.lblTriggerType.setLabelFor(cbTriggerType);
     }
-
+    
     private void onTriggerChanged(@Nullable FunctionTemplate template) {
         this.pnlAdditionalParameters.removeAll();
         if (Objects.isNull(template)) {
