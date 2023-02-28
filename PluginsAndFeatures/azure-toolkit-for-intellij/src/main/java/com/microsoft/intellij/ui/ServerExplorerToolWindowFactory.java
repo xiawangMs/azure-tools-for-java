@@ -28,7 +28,6 @@ import com.intellij.ui.hover.TreeHoverListener;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -458,7 +457,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private boolean isOutdatedModule(Node node) {
-        return node instanceof StorageModule || node instanceof VMArmModule || node instanceof RedisCacheModule || node instanceof ContainerRegistryModule;
+        return !(node instanceof AzureModule || node instanceof ArcadiaSparkClusterRootModuleImpl || node instanceof CosmosSparkClusterRootModuleImpl);
     }
 
     private static class RefreshAllAction extends AnAction implements DumbAware {
