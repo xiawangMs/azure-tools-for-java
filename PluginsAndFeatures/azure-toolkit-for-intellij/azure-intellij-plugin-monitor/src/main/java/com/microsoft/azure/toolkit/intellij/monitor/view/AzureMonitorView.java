@@ -11,6 +11,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
@@ -79,7 +81,7 @@ public class AzureMonitorView {
         if (Objects.nonNull(selectedWorkspace)) {
             this.workspaceName.setText(selectedWorkspace.getName());
             this.workspaceName.setToolTipText(selectedWorkspace.getName());
-            this.workspaceName.setIcon(null);
+            this.workspaceName.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE_MONITOR));
         } else {
             this.workspaceName.setText("Log Analytics workspace");
             this.workspaceName.setToolTipText("Log Analytics workspace is required");
