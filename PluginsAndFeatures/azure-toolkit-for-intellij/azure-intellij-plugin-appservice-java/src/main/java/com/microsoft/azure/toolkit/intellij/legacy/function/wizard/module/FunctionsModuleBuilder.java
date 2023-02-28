@@ -157,7 +157,7 @@ public class FunctionsModuleBuilder extends JavaModuleBuilder {
 
                         for (final FunctionTemplate template : triggers) {
                             // class name like HttpTriggerFunction
-                            final String className = template.getBindingConfiguration().getType() + "Function";
+                            final String className = StringUtils.capitalize(template.getMetadata().getDefaultFunctionName());
                             final String fileContent = template.generateDefaultContent(packageName, className);
                             final File targetFile = Paths.get(srcFolder.getAbsolutePath(), String.format("%s/%s.java",
                                     packageName.replace('.', '/'), className)).toFile();
