@@ -32,28 +32,19 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
 
     private void registerActiveActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> {
-            c.active();
-            EventHubsToolWindowManager.getInstance().updateEventHubsPanelView(e.getProject(), c);
-        };
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.active();
         am.registerHandler(EventHubsActionsContributor.ACTIVE_INSTANCE, condition, handler);
     }
 
     private void registerDisabledActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> {
-            c.disable();
-            EventHubsToolWindowManager.getInstance().updateEventHubsPanelView(e.getProject(), c);
-        };
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.disable();
         am.registerHandler(EventHubsActionsContributor.DISABLE_INSTANCE, condition, handler);
     }
 
     private void registerSendDisabledActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> {
-            c.disableSending();
-            EventHubsToolWindowManager.getInstance().updateEventHubsPanelView(e.getProject(), c);
-        };
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.disableSending();
         am.registerHandler(EventHubsActionsContributor.SEND_DISABLE_INSTANCE, condition, handler);
     }
 

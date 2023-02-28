@@ -11,10 +11,10 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
 import lombok.Getter;
@@ -81,10 +81,6 @@ public class EventHubsSendListenPanel extends JPanel {
         this.listenProcessHandler = null;
     }
 
-    public void updateView() {
-        AzureTaskManager.getInstance().runLater(() -> this.sendMessageBtn.setEnabled(this.instance.isActive()), AzureTask.Modality.ANY);
-    }
-
     private void init() {
         final GridLayoutManager layout = new GridLayoutManager(1, 1);
         this.setLayout(layout);
@@ -93,6 +89,13 @@ public class EventHubsSendListenPanel extends JPanel {
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
         this.sendMessageBtn.setEnabled(this.instance.isActive());
+        AzureEventBus.on("resource.status_changed.resource", new AzureEventBus.EventListener((azureEvent) -> {
+            final String type = azureEvent.getType();
+            final Object source = azureEvent.getSource();
+            if (source instanceof EventHubsInstance && ((EventHubsInstance) source).getId().equals(this.instance.getId())) {
+                this.sendMessageBtn.setEnabled(((EventHubsInstance) source).isActive());
+            }
+        }));
     }
 
     @AzureOperation(name = "user/eventhubs.send_message")
