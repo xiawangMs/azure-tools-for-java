@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.MavenIcons;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
+@EqualsAndHashCode
 public class MavenProjectModule implements ProjectModule {
     private final Project project;
     @Nonnull
