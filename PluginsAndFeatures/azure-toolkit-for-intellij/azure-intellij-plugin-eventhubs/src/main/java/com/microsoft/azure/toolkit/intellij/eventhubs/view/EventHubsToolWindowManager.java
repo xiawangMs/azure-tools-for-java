@@ -10,6 +10,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.*;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.eventhubs.AzureEventHubsNamespace;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
 import org.apache.commons.collections4.BidiMap;
@@ -85,6 +87,16 @@ public class EventHubsToolWindowManager {
                     Optional.ofNullable(instance).ifPresent(EventHubsInstance::stopListening);
                     resourceIdToNameMap.removeValue(displayName);
                 });
+            }
+
+            @Override
+            public void contentRemoveQuery(@NotNull ContentManagerEvent event) {
+                final String displayName = event.getContent().getDisplayName();
+                final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
+                        "This will stop listening to \"{0}\", are you sure to do this?", displayName));
+                if (!canClose) {
+                    event.consume();
+                }
             }
         }));
         return toolWindow;
