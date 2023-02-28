@@ -48,7 +48,9 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -294,8 +296,9 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                                       final @NotNull Operation operation) throws Exception {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         OperationContext.current().setMessager(messenger);
-        final Path hostJsonPath = Paths.get(functionRunConfiguration.getHostJsonPath());
-        final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
+        final Path hostJsonPath = Optional.ofNullable(functionRunConfiguration.getHostJsonPath())
+                .filter(StringUtils::isNotEmpty).map(Paths::get)
+                .orElseGet(() -> Paths.get(FunctionUtils.getDefaultHostJsonPath(functionRunConfiguration.getModule())));
         final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule()));
         final Path folder = stagingFolder.toPath();
         try {
@@ -303,8 +306,13 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                     FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, functionRunConfiguration.getModule(), methods);
             operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
             final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
+            // Do not copy local settings if user have already set it in configuration
+            final boolean useLocalSettings = MapUtils.isEmpty(appSettings);
+            final Path localSettingsJson = Optional.ofNullable(functionRunConfiguration.getLocalSettingsJsonPath())
+                    .filter(StringUtils::isNotEmpty).map(Paths::get)
+                    .orElseGet(() -> Paths.get(FunctionUtils.getDefaultLocalSettingsJsonPath(functionRunConfiguration.getModule())));
             applyResourceConnection(appSettings);
-            FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings);
+            FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings, useLocalSettings);
 
             final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
             if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
