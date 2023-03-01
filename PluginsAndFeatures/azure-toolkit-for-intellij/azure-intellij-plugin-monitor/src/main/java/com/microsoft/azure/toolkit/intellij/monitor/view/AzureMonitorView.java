@@ -5,11 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.monitor.view;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
@@ -23,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.util.Objects;
 import java.util.Optional;
 
 public class AzureMonitorView {
@@ -42,16 +46,15 @@ public class AzureMonitorView {
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
         this.selectedWorkspace = logAnalyticsWorkspace;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        Optional.ofNullable(selectedWorkspace).ifPresent(e -> this.updateWorkspaceNameLabel(e.getName()));
+        this.updateWorkspaceNameLabel();
         this.workspaceName.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         this.monitorTreePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setTableTab(isTableTab);
         this.tabbedPanePanel.setParentView(this);
         this.tabbedPanePanel.setInitResourceId(resourceId);
         AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> {
-            final LogAnalyticsWorkspace workspace = (LogAnalyticsWorkspace) e.getSource();
-            this.selectedWorkspace = workspace;
-            this.updateWorkspaceNameLabel(workspace.getName());
+            this.selectedWorkspace = (LogAnalyticsWorkspace) e.getSource();
+            this.updateWorkspaceNameLabel();
         }));
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
     }
@@ -62,7 +65,7 @@ public class AzureMonitorView {
 
     public void setSelectedWorkspace(@Nullable LogAnalyticsWorkspace workspace) {
         this.selectedWorkspace = workspace;
-        Optional.ofNullable(workspace).ifPresent(e -> this.updateWorkspaceNameLabel(e.getName()));
+        this.updateWorkspaceNameLabel();
     }
 
     public void setInitResourceId(String resourceId) {
@@ -74,9 +77,16 @@ public class AzureMonitorView {
         return contentPanel;
     }
 
-    private void updateWorkspaceNameLabel(String name) {
-        this.workspaceName.setText(name);
-        this.workspaceName.setToolTipText(name);
+    private void updateWorkspaceNameLabel() {
+        if (Objects.nonNull(selectedWorkspace)) {
+            this.workspaceName.setText(selectedWorkspace.getName());
+            this.workspaceName.setToolTipText(selectedWorkspace.getName());
+            this.workspaceName.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE_MONITOR));
+        } else {
+            this.workspaceName.setText("Log Analytics workspace");
+            this.workspaceName.setToolTipText("Log Analytics workspace is required");
+            this.workspaceName.setIcon(AllIcons.General.Error);
+        }
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
