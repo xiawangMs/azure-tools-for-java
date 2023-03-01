@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jdom.Attribute;
@@ -70,11 +71,13 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
     }
 
     @Getter
+    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     public static class Definition implements ResourceDefinition<ConnectionTarget>, FunctionSupported<ConnectionTarget> {
         public static final Definition INSTANCE = new Definition();
 
         @Override
+        @EqualsAndHashCode.Include
         public String getName() {
             return "Common Connection (Connection String)";
         }
@@ -95,7 +98,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
             element.setAttribute(new Attribute("id", resource.getId()));
             element.addContent(new Element("dataId").addContent(resource.getDataId()));
             element.addContent(new Element("name").addContent(target.getName()));
-            IntelliJSecureStore.getInstance().savePassword(Definition.class.getName(), resource.getId(), null, target.getConnectionString());
+            IntelliJSecureStore.getInstance().savePassword(Definition.class.getName(), resource.getDataId(), null, target.getConnectionString());
             return true;
         }
 
