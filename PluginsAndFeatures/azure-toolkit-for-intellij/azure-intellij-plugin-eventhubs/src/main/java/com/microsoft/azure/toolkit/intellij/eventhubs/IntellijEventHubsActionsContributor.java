@@ -32,7 +32,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
 
     private void registerActiveActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.active();
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.activate();
         am.registerHandler(EventHubsActionsContributor.ACTIVE_INSTANCE, condition, handler);
     }
 
