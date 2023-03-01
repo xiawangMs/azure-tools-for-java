@@ -24,6 +24,5 @@ public class EventHubsToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        toolWindow.setIcon(AllIcons.Toolwindows.InfoEvents);
     }
 }
