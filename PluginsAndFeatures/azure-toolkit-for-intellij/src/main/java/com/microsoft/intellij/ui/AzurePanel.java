@@ -242,7 +242,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
         final AzureConfiguration newConfig = getData();
         if (!StringUtils.equalsIgnoreCase(this.originalConfig.getDotnetRuntimePath(), newConfig.getDotnetRuntimePath())) {
-            AzureEventBus.emit("dotnet_runtime.installed");
+            AzureEventBus.emit("dotnet_runtime.updated");
         }
         // set partial config to global config
         this.originalConfig.setCloud(newConfig.getCloud());
