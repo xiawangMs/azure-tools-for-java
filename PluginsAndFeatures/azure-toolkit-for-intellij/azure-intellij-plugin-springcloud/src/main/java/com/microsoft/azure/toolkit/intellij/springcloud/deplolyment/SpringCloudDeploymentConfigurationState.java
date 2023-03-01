@@ -109,7 +109,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 message("springcloud.deploy_app.no_artifact.tips").toString(),
                 action);
         }
-        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
+        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig, true);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
         final SpringCloudCluster cluster = app.getParent();
