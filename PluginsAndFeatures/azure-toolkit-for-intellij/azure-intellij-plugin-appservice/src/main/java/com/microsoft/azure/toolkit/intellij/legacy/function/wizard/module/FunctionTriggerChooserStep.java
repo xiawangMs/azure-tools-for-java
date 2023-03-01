@@ -14,8 +14,10 @@ import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.AzureFunctionsConstants;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -23,9 +25,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FunctionTriggerChooserStep extends ModuleWizardStep {
-    public static final List<FunctionTemplate> FUNCTION_TEMPLATES = FunctionUtils.loadAllFunctionTemplates();
+    // only shown v3 bundle template as a workaround
+    // todo: @hanli add bundle version options in trigger step
+    public static final List<FunctionTemplate> FUNCTION_TEMPLATES = FunctionUtils.loadAllFunctionTemplates().stream()
+            .filter(t -> t.isBundleSupported(FunctionExtensionVersion.VERSION_3)).collect(Collectors.toList());
     private final WizardContext wizardContext;
     private CheckBoxList<String> triggerList;
     private static final List<String> INITIAL_SELECTED_TRIGGERS = List.of("HttpTrigger");

@@ -30,7 +30,7 @@ public class WorkspaceSelectionDialog extends DialogWrapper {
 
     public WorkspaceSelectionDialog(@Nullable final Project project, @Nullable LogAnalyticsWorkspace value) {
         super(project, false);
-        setTitle("Select Log Analytics Workspace");
+        setTitle("Select Log Analytics workspace");
         init();
         subComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {

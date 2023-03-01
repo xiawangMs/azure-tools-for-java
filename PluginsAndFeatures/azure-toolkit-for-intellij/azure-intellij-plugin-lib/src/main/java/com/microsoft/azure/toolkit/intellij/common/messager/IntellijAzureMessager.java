@@ -37,7 +37,6 @@ public class IntellijAzureMessager implements IAzureMessager {
     private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
         Map.entry(IAzureMessage.Type.INFO, NotificationType.INFORMATION),
         Map.entry(IAzureMessage.Type.SUCCESS, NotificationType.INFORMATION),
-        Map.entry(IAzureMessage.Type.DEBUG, NotificationType.INFORMATION),
         Map.entry(IAzureMessage.Type.WARNING, NotificationType.WARNING),
         Map.entry(IAzureMessage.Type.ERROR, NotificationType.ERROR)
     );
@@ -63,6 +62,9 @@ public class IntellijAzureMessager implements IAzureMessager {
                     e.printStackTrace();
                 }
                 return result[0];
+            }
+            case DEBUG -> {
+                return true;
             }
             default -> {
             }
