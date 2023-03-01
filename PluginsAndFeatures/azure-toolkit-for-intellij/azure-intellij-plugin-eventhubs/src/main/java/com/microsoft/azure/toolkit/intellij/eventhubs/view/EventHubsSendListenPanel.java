@@ -40,6 +40,7 @@ public class EventHubsSendListenPanel extends JPanel {
     private final ConsoleView consoleView;
     @Nullable
     private RunProcessHandler listenProcessHandler;
+    private AzureEventBus.EventListener listener;
 
     public EventHubsSendListenPanel(Project project, EventHubsInstance eventHubsInstance) {
         super();
@@ -47,8 +48,6 @@ public class EventHubsSendListenPanel extends JPanel {
         this.instance = eventHubsInstance;
         $$$setupUI$$$();
         this.init();
-        this.sendMessageBtn.addActionListener(e -> sendMessage());
-        this.messageInput.addActionListener(e -> sendMessage());
     }
 
     public void startListeningProcess() {
@@ -81,6 +80,10 @@ public class EventHubsSendListenPanel extends JPanel {
         this.listenProcessHandler = null;
     }
 
+    public void dispose() {
+        AzureEventBus.off("resource.status_changed.resource", listener);
+    }
+
     private void init() {
         final GridLayoutManager layout = new GridLayoutManager(1, 1);
         this.setLayout(layout);
@@ -89,13 +92,20 @@ public class EventHubsSendListenPanel extends JPanel {
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
         this.sendMessageBtn.setEnabled(this.instance.isActive());
-        AzureEventBus.on("resource.status_changed.resource", new AzureEventBus.EventListener((azureEvent) -> {
+        this.initListeners();
+    }
+
+    private void initListeners() {
+        this.listener = new AzureEventBus.EventListener((azureEvent) -> {
             final String type = azureEvent.getType();
             final Object source = azureEvent.getSource();
             if (source instanceof EventHubsInstance && ((EventHubsInstance) source).getId().equals(this.instance.getId())) {
                 this.sendMessageBtn.setEnabled(((EventHubsInstance) source).isActive());
             }
-        }));
+        });
+        this.sendMessageBtn.addActionListener(e -> sendMessage());
+        this.messageInput.addActionListener(e -> sendMessage());
+        AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
     @AzureOperation(name = "user/eventhubs.send_message")

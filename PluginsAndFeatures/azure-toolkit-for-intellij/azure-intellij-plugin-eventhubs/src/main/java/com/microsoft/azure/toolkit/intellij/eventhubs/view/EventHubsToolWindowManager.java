@@ -96,6 +96,11 @@ public class EventHubsToolWindowManager {
                         "This will stop listening to \"{0}\", are you sure to do this?", displayName));
                 if (!canClose) {
                     event.consume();
+                } else {
+                    final JComponent contentComponent = event.getContent().getComponent();
+                    if (contentComponent instanceof EventHubsSendListenPanel) {
+                        ((EventHubsSendListenPanel) contentComponent).dispose();
+                    }
                 }
             }
         }));
