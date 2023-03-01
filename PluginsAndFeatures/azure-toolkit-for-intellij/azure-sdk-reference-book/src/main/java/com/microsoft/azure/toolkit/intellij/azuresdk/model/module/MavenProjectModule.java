@@ -23,10 +23,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MavenProjectModule implements ProjectModule {
     private final Project project;
     @Nonnull
+    @EqualsAndHashCode.Include
     private final MavenProject mavenProject;
 
     public MavenProjectModule(@Nonnull final Project project, @Nonnull final MavenProject mavenProject) {

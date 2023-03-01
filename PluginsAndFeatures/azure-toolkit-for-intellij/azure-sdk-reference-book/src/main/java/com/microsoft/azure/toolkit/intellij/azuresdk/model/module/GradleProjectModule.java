@@ -27,9 +27,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class GradleProjectModule implements ProjectModule {
     private final Project project;
+    @EqualsAndHashCode.Include
     private final ExternalProject externalProject;
 
     public GradleProjectModule(@Nonnull final Project project, @Nonnull final ExternalProject externalProject) {
