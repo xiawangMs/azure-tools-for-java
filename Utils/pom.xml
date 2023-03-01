@@ -41,7 +41,7 @@
         <azure.toolkit-lib.version>0.30.0</azure.toolkit-lib.version>
         <azure.toolkit-ide-lib.version>0.30.0</azure.toolkit-ide-lib.version>
         <hdinsight.toolkit-ide-lib.version>0.1.0</hdinsight.toolkit-ide-lib.version>
-        <jetty.version>9.4.48.v20220622</jetty.version>
+        <jetty.version>9.4.47.v20220610</jetty.version>
         <woodstox.version>6.4.0</woodstox.version>
     </properties>
     <modules>
