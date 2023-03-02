@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.74.0](#3740)
   - [3.73.0](#3730)
   - [3.72.0](#3720)
   - [3.71.0](#3710)
@@ -93,7 +94,24 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
-## 3.73.0
+## 3.74.0
+### Added
+- Support IntelliJ 2023.1 EAP.
+- Add Azure Event Hub support in Azure Toolkits
+  - Resource Management in Azure explorer
+  - Simple event hub client to send/revice events
+
+### Changed
+- Azure Function: New function class creation workflow with resource connection
+- Azure Function: Support customized function host parameters and path for `host.json` in function run/deployment
+- App Service: New UX for runtime selection
+- Azure Spring Apps: Integrate with control plane logs, more diagnostic info will be shown during deployment
+
+### Fixed
+- Fix: Toolkit will always select maven as build tool in function module creation wizard
+- Fix: Copy connection string did not work for Cosmos DB
+- Fix: Only `local.settings.json` in root module could be found when import app settings
+
 ## 3.73.0
 ### Added
 - [Azure Monitor] Azure Monitor to view history logs with rich filters.    

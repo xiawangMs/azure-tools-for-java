@@ -27,28 +27,29 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3 id="3-73-0">3.73.0</h3>
+      <h3 id="3-74-0">3.74.0</h3>
       <h4 id="added">Added</h4>
       <ul>
-        <li>[Azure Monitor] Azure Monitor to view history logs with rich filters.<br><img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.azure-monitor.gif" alt="gif of Azure Monitor"/></li>
-        <li>[Azure Container Apps] Creation of Azure Container Apps Environment.    </li>
-        <li>[Azure Explorer] Pagination support in Azure Explorer.<br>
-        <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.loadmore.png" alt="load more in azure explorer"/></li>
+          <li>Support IntelliJ 2023.1 EAP.</li>
+          <li>Add Azure Event Hub support in Azure Toolkits<ul>
+                  <li>Resource Management in Azure explorer</li>
+                  <li>Simple event hub client to send/revice events</li>
+              </ul>
+          </li>
       </ul>
       <h4 id="changed">Changed</h4>
       <ul>
-        <li>Update default Java runtime to Java 11 when creating Azure Spring App.</li>
-        <li>Add setting item to allow users to choose whether to enable authentication cache.<br><img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.enableauthcache.png" alt="setting item to enable auth cache"/></li>
+          <li>Azure Function: New function class creation workflow with resource connection</li>
+          <li>Azure Function: Support customized function host parameters and path for <code>host.json</code> in function
+              run/deployment</li>
+          <li>App Service: New UX for runtime selection</li>
+          <li>Azure Spring Apps: Integrate with control plane logs, more diagnostic info will be shown during deployment</li>
       </ul>
       <h4 id="fixed">Fixed</h4>
       <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7272">#7272</a>: <code>corelibs.log</code> duplicates all the logs from the IDE.</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7248">#7248</a>: Uncaught Exception java.lang.NullPointerException: Cannot invoke &quot;Object.hashCode()&quot; because &quot;key&quot; is null.</li>
-        <li>No error message about failing to create a slot when the app pricing tier is Basic.</li>
-        <li>Transport method for container app in properties window is different with in portal.</li>
-        <li>Unable to download functional core tools from &quot;Settings/Azure&quot; on macOS when Proxy with certificate is configured.</li>
-        <li>Error pops up when deleting App setting in property view of Azure Functions/Web app.</li>
-        <li>Can&#39;t connect multiple Azure resources to modules using resource connection feature.</li>
+          <li>Fix: Toolkit will always select maven as build tool in function module creation wizard</li>
+          <li>Fix: Copy connection string did not work for Cosmos DB</li>
+          <li>Fix: Only <code>local.settings.json</code> in root module could be found when import app settings</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
