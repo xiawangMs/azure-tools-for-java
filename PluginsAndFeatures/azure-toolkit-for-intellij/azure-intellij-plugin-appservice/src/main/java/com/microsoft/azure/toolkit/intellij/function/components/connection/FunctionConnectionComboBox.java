@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.AllArgsConstructor;
@@ -172,7 +173,9 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
         private String icon;
 
         public ConnectionConfiguration(final Connection<?, ?> connection) {
-            this.name = connection.getEnvPrefix();
+            // for common connection, use connection name, for app service connection, use env prefix
+            this.name = connection.getResource().getDefinition() instanceof CommonConnectionResource.Definition ?
+                    connection.getResource().getName() : connection.getEnvPrefix();
             this.icon = connection.getResource().getDefinition().getIcon();
         }
     }
