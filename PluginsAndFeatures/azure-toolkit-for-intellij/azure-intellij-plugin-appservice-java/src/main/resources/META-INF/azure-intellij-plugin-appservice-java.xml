@@ -43,7 +43,7 @@
                 text="Deploy to Azure Functions" description="Deploy Java Function to Azure"
                 icon="/icons/FunctionApp/Deploy.svg">
         </action>
-        <action id="page.new" class="com.microsoft.azure.toolkit.intellij.function.CreateFunctionAction"
+        <action id="page.new" class="com.microsoft.azure.toolkit.intellij.legacy.function.action.CreateFunctionAction"
                 text="Azure Function Class"
                 description="Create New Azure Function Class">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>

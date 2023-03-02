@@ -32,6 +32,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -96,7 +97,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         if (module == null) {
             throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
         }
-        final Path hostJsonPath = Paths.get(functionDeployConfiguration.getHostJsonPath());
+        final Path hostJsonPath = Optional.ofNullable(functionDeployConfiguration.getHostJsonPath())
+                .filter(StringUtils::isNotEmpty).map(Paths::get)
+                .orElseGet(() -> Paths.get(FunctionUtils.getDefaultHostJsonPath(functionDeployConfiguration.getModule())));
         final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(module));
         final Path folder = stagingFolder.toPath();
         try {

@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -240,6 +241,9 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         }
         final AzureConfiguration newConfig = getData();
+        if (!StringUtils.equalsIgnoreCase(this.originalConfig.getDotnetRuntimePath(), newConfig.getDotnetRuntimePath())) {
+            AzureEventBus.emit("dotnet_runtime.updated");
+        }
         // set partial config to global config
         this.originalConfig.setCloud(newConfig.getCloud());
         this.originalConfig.setTelemetryEnabled(newConfig.getTelemetryEnabled());

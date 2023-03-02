@@ -32,7 +32,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
 
     private void registerActiveActionHandler(AzureActionManager am) {
         final BiPredicate<EventHubsInstance, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.active();
+        final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> c.activate();
         am.registerHandler(EventHubsActionsContributor.ACTIVE_INSTANCE, condition, handler);
     }
 
@@ -81,7 +81,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
     private void registerGroupCreateNamespaceActionHandler(AzureActionManager am) {
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> {
             final IAccount account = Azure.az(IAzureAccount.class).account();
-            final String url = String.format("%s/#create/Microsoft.EventHub/", account.getPortalUrl());
+            final String url = String.format("%s/#create/Microsoft.EventHub", account.getPortalUrl());
             am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
         };
         am.registerHandler(EventHubsActionsContributor.GROUP_CREATE_EVENT_HUBS, (r, e) -> true, (r, e) -> handler.accept(r, (AnActionEvent) e));

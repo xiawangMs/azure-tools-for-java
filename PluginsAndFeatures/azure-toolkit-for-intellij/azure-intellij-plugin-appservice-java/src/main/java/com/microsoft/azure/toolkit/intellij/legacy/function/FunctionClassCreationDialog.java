@@ -2,10 +2,10 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-package com.microsoft.azure.toolkit.intellij.function;
+package com.microsoft.azure.toolkit.intellij.legacy.function;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -15,19 +15,23 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,14 +60,12 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
     private TitledSeparator titleBasicConfigurataion;
 
     private FunctionTemplatePanel templatePanel;
-    private final Project project;
     private final Module module;
     private final int labelWidth;
 
     public FunctionClassCreationDialog(final Module module) {
         super(module.getProject());
         this.module = module;
-        this.project = module.getProject();
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.labelWidth = getLabelWidth();
         this.init();
@@ -110,12 +112,38 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.cbTriggerType = new AzureComboBox<>(FunctionUtils::loadAllFunctionTemplates) {
+        this.cbTriggerType = new AzureComboBox<>() {
             @Override
             protected String getItemText(Object item) {
                 return item instanceof FunctionTemplate ? ((FunctionTemplate) item).getMetadata().getName() : super.getItemText(item);
             }
+
+            @Nonnull
+            @Override
+            protected List<? extends FunctionTemplate> loadItems() {
+                final FunctionExtensionVersion bundleVersion = getBundleVersion();
+                return FunctionUtils.loadAllFunctionTemplates().stream()
+                        .filter(t -> bundleVersion == null || t.isBundleSupported(bundleVersion))
+                        .collect(Collectors.toList());
+            }
         };
+    }
+
+    @Nullable
+    protected FunctionExtensionVersion getBundleVersion() {
+        // todo: add configuration for host.json location
+        final String defaultHostJsonPath = com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils.getDefaultHostJsonPath(module);
+        try (final FileInputStream fis = new FileInputStream(defaultHostJsonPath)) {
+            final String content = IOUtils.toString(fis, Charset.defaultCharset());
+            final JsonNode jsonNode = JsonUtils.fromJson(content, JsonNode.class);
+            return Optional.ofNullable(jsonNode.at("/extensionBundle/version"))
+                    .filter(node -> !node.isMissingNode())
+                    .map(node -> FunctionUtils.parseFunctionExtensionVersionFromHostJson(node.asText()))
+                    .orElse(null);
+        } catch (final RuntimeException | IOException e) {
+            // swallow exception when read bundle version
+            return null;
+        }
     }
 
     @Override
