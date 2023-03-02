@@ -11,6 +11,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -23,8 +24,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
+import java.util.Optional;
 
 public class EventHubsSendListenPanel extends JPanel {
     @Getter
@@ -35,7 +38,9 @@ public class EventHubsSendListenPanel extends JPanel {
     private JPanel sendPanel;
     private final EventHubsInstance instance;
     private final ConsoleView consoleView;
+    @Nullable
     private RunProcessHandler listenProcessHandler;
+    private AzureEventBus.EventListener listener;
 
     public EventHubsSendListenPanel(Project project, EventHubsInstance eventHubsInstance) {
         super();
@@ -43,8 +48,6 @@ public class EventHubsSendListenPanel extends JPanel {
         this.instance = eventHubsInstance;
         $$$setupUI$$$();
         this.init();
-        this.sendMessageBtn.addActionListener(e -> sendMessage());
-        this.messageInput.addActionListener(e -> sendMessage());
     }
 
     public void startListeningProcess() {
@@ -73,8 +76,12 @@ public class EventHubsSendListenPanel extends JPanel {
 
     public void stopListeningProcess() {
         this.instance.stopListening();
-        this.listenProcessHandler.notifyComplete();
+        Optional.ofNullable(this.listenProcessHandler).ifPresent(RunProcessHandler::notifyComplete);
         this.listenProcessHandler = null;
+    }
+
+    public void dispose() {
+        AzureEventBus.off("resource.status_changed.resource", listener);
     }
 
     private void init() {
@@ -85,6 +92,20 @@ public class EventHubsSendListenPanel extends JPanel {
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
         this.sendMessageBtn.setEnabled(this.instance.isActive());
+        this.initListeners();
+    }
+
+    private void initListeners() {
+        this.listener = new AzureEventBus.EventListener((azureEvent) -> {
+            final String type = azureEvent.getType();
+            final Object source = azureEvent.getSource();
+            if (source instanceof EventHubsInstance && ((EventHubsInstance) source).getId().equals(this.instance.getId())) {
+                this.sendMessageBtn.setEnabled(((EventHubsInstance) source).isActive());
+            }
+        });
+        this.sendMessageBtn.addActionListener(e -> sendMessage());
+        this.messageInput.addActionListener(e -> sendMessage());
+        AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
     @AzureOperation(name = "user/eventhubs.send_message")
@@ -92,13 +113,13 @@ public class EventHubsSendListenPanel extends JPanel {
         final String message = messageInput.getText();
         messageInput.setText(StringUtils.EMPTY);
         AzureTaskManager.getInstance().runInBackground("sending message", () -> {
-            this.consoleView.print("Sending message to event hub ...\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+            this.consoleView.print(String.format("Sending message to event hub (%s)...\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
             if (this.instance.sendMessage(message)) {
-                this.consoleView.print("Successfully send message ", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
-                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_INFO_OUTPUT);
-                this.consoleView.print(" to event hub\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                this.consoleView.print("Successfully send message ", ConsoleViewContentType.SYSTEM_OUTPUT);
+                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                this.consoleView.print(String.format(" to event hub (%s)\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
             } else {
-                this.consoleView.print("Fail > send message to event hub\n", ConsoleViewContentType.ERROR_OUTPUT);
+                this.consoleView.print(String.format("Failed to send message to event hub (%s)\n", instance.getName()), ConsoleViewContentType.ERROR_OUTPUT);
             }
         });
     }

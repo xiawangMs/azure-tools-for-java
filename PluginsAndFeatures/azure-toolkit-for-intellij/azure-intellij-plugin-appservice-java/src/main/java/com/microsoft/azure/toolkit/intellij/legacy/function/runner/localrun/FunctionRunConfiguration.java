@@ -28,7 +28,6 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.Getter;
@@ -221,20 +220,8 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
                 // ignore;
             }
         }
-        if (StringUtils.isEmpty(this.getHostJsonPath())) {
-            this.setHostJsonPath(FunctionUtils.getDefaultHostJsonPath(module));
-        }
-        if (StringUtils.isEmpty(this.getLocalSettingsJsonPath())) {
-            this.setLocalSettingsJsonPath(FunctionUtils.getDefaultLocalSettingsJsonPath(module));
-        }
         if (StringUtils.isEmpty(this.getFunctionHostArguments())) {
             this.setFunctionHostArguments(FunctionUtils.getDefaultFuncArguments());
-        }
-        try {
-            final Map<String, String> localSettings = FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(getLocalSettingsJsonPath()));
-            FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), localSettings);
-        } catch (final Throwable throwable) {
-            // swallow exception when load app settings
         }
         try {
             prepareBeforeRunTasks();

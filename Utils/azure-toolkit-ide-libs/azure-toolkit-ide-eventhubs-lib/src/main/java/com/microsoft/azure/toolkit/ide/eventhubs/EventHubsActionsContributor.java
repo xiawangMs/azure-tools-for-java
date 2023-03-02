@@ -54,13 +54,14 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(SEND_MESSAGE_INSTANCE)
-                .visibleWhen(s -> s instanceof EventHubsInstance && ((EventHubsInstance) s).isActive())
+                .visibleWhen(s -> s instanceof EventHubsInstance)
+                .enableWhen(EventHubsInstance::isActive)
                 .withLabel("Send Message")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(START_LISTENING_INSTANCE)
-                .visibleWhen(s -> s instanceof EventHubsInstance && !((EventHubsInstance) s).isDisabled()
-                        && !((EventHubsInstance) s).isListening())
+                .visibleWhen(s -> s instanceof EventHubsInstance)
+                .enableWhen(s -> !s.isDisabled() && !s.isListening())
                 .withLabel("Start Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
@@ -74,7 +75,7 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 .withLabel("Event Hubs")
                 .withIdParam(AzResource::getName)
                 .visibleWhen(s -> s instanceof ResourceGroup)
-                .enableWhen(s -> s.getFormalStatus().isConnected())
+                .enableWhen(s -> s.getFormalStatus(true).isConnected())
                 .register(am);
     }
 

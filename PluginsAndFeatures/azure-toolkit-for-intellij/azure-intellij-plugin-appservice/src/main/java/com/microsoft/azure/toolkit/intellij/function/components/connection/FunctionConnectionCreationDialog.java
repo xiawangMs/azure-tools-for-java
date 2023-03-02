@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,6 +90,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         pnlResource.setVisible(rdoSelectResource.isSelected());
         pnlConnectionString.setVisible(rdoConnectionString.isSelected());
         pnlMode.setVisible(Objects.nonNull(definition));
+        Optional.ofNullable(resourcePanel).ifPresent(p -> p.setRequired(rdoSelectResource.isSelected()));
     }
 
     @Override

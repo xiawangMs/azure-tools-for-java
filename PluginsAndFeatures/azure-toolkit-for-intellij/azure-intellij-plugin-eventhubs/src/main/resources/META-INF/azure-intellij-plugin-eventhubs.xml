@@ -6,7 +6,8 @@
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
     <toolWindow anchor="bottom"
-                factoryClass="com.microsoft.azure.toolkit.intellij.eventhubs.view.EventHubsToolWindowFactory"
+                icon="/icons/Common/event_hubs.svg"
+                factoryClass="com.microsoft.azure.toolkit.intellij.eventhubs.view.EventHubsToolWindowManager$EventHubsToolWindowFactory"
                 id="Azure Event Hubs" canCloseContents="true"/>
     </extensions>
 </idea-plugin>
