@@ -68,13 +68,16 @@ public class BicepStartupActivity implements StartupActivity, PluginStateListene
         EditorNotifications.getInstance(project).updateAllNotifications();
         final File bicep = FileUtils.getFile(CommonConst.PLUGIN_PATH, "bicep", BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
         final String dotnet = Azure.az().config().getDotnetRuntimePath();
-        final ProcessBuilder process = SystemUtils.IS_OS_WINDOWS ?
+        final boolean isDotnetReady = StringUtils.isNotEmpty(dotnet) && DotnetRuntimeHandler.isDotnetRuntimeInstalled(dotnet);
+        if (isDotnetReady) {
+            final ProcessBuilder process = SystemUtils.IS_OS_WINDOWS ?
                 new ProcessBuilder("powershell.exe", "./dotnet", bicep.getAbsolutePath(), STDIO) :
                 new ProcessBuilder("./dotnet", bicep.getAbsolutePath(), STDIO);
-        Optional.of(dotnet)
+            Optional.of(dotnet)
                 .filter(StringUtils::isNotEmpty).map(File::new)
                 .filter(File::exists).ifPresent(process::directory);
-        IntellijLanguageClient.addServerDefinition(new ProcessBuilderServerDefinition(BICEP, process), project);
+            IntellijLanguageClient.addServerDefinition(new ProcessBuilderServerDefinition(BICEP, process), project);
+        }
     }
 
     @AzureOperation("boundary/bicep.register_textmate_bundles")
