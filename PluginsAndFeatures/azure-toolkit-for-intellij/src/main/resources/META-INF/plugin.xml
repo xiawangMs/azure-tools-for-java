@@ -2,17 +2,19 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.74.0</version>
+  <version>3.75.0-SNAPSHOT</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
       <html>
-        <p>The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and submit Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
+        <p>The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java applications to Azure. The plugin supports Azure App Service, Azure Functions, Azure Spring Apps, Azure Kubernetes, Azure Container Apps, Virtual Machines, Azure Database for MySQL, Azure Cosmos DB, SQL Server, Azure Storage, and Application Insights. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and submit Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
         <ul>
-          <li>Azure Web App Workflow: Run your web applications on Azure Web App and view logs.</li>
-          <li>Azure Functions Workflow: Scaffold, run, debug your Functions App locally and deploy it on Azure.</li>
-          <li>Azure Spring Apps Workflow: Run your Spring microservices applications on Azure Spring Apps and view logs.</li>
-          <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/developer/java/toolkit-for-intellij/create-hello-world-web-app">Azure Web App Workflow: Run your web applications on Azure Web App and view logs.</li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-create-maven-intellij?toc=%2Fazure%2Fdeveloper%2Fjava%2Ftoolkit-for-intellij%2Ftoc.json&bc=%2Fazure%2Fdeveloper%2Fjava%2Ftoolkit-for-intellij%2Fbreadcrumb%2Ftoc.json">Azure Functions Workflow: Scaffold, run, debug your Functions App locally and deploy it on Azure.</li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/spring-apps/quickstart?tabs=IntelliJ">Azure Spring Apps Workflow: Run your Spring microservices applications on Azure Spring Apps and view logs.</li>
+          <li>Azure Container Apps Workflow: Dockerize and run applications on Azure Container Apps and view logs.</li>
+          <li>Azure Kubernetes Support: Create and manage your Kubernetes Services directly in Azure Explorer.</li>
+          <li>Getting Started Guide: Follow the steps in the getting started guide and deploy an application within several minutes.</li>
           <li>Azure Explorer: View and manage your cloud resources on Azure with embedded Azure Explorer.</li>
           <li>Azure Resource Management template: Create and update your Azure resource deployments with ARM template support.</li>
           <li>Azure Synapse: List workspaces and Apache Spark Pools, compose an Apache Spark project, author and submit Apache Spark jobs to Azure Synapse Spark pools.</li>
