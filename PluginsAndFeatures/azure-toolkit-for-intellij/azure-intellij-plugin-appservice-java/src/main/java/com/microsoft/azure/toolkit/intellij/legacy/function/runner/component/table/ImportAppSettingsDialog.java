@@ -6,17 +6,26 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import rx.Observable;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -35,7 +44,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     private JPanel contentPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox<Object> cbAppSettingsSource;
+    private ComboBox<Object> cbAppSettingsSource;
     private AppSettingsTable tblAppSettings;
     private JLabel lblAppSettingsSource;
     private JPanel pnlAppSettings;
@@ -66,23 +75,23 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
                 if (object instanceof FunctionApp) {
                     setIcon(IntelliJAzureIcons.getIcon(AzureIcons.FunctionApp.MODULE));
                     setText(((FunctionApp) object).getName());
-                } else if (LOCAL_SETTINGS_JSON.equals(object)) {
-                    setText(object.toString());
+                } else if (object instanceof VirtualFile) {
+                    setText(((VirtualFile) object).getPath());
                     setIcon(AllIcons.FileTypes.Json);
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
             }
         });
+        this.cbAppSettingsSource.setUsePreferredSizeAsMinimum(false);
 
-        cbAppSettingsSource.addPopupMenuListener(new PopupMenuListenerAdapter() {
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                final Object selectedItem = cbAppSettingsSource.getSelectedItem();
-                if (selectedItem instanceof FunctionApp) {
-                    presenter.onLoadFunctionAppSettings((FunctionApp) selectedItem);
-                } else if (LOCAL_SETTINGS_JSON.equals(selectedItem)) {
-                    presenter.onLoadLocalSettings(localSettingsPath);
+        cbAppSettingsSource.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                final Object item = e.getItem();
+                if (item instanceof FunctionApp) {
+                    presenter.onLoadFunctionAppSettings((FunctionApp) item);
+                } else if (item instanceof VirtualFile) {
+                    presenter.onLoadLocalSettings(((VirtualFile) item).toNioPath());
                 }
             }
         });
@@ -99,11 +108,18 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
         contentPanel.registerKeyboardAction(e -> onCancel(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        cbAppSettingsSource.addItem(LOCAL_SETTINGS_JSON);
-        presenter.onLoadLocalSettings(localSettingsPath);
-
-        presenter.onLoadFunctionApps();
+        this.loadAppSettingSources();
         pack();
+    }
+
+    // todo: migrate to AzureComboBox framework
+    private void loadAppSettingSources() {
+        // workaround to get the project from the content panel
+        final Project project = ProjectUtil.guessCurrentProject(contentPanel);
+        Observable.fromCallable(() -> ReadAction.compute(()-> FilenameIndex.getVirtualFilesByName("local.settings.json", GlobalSearchScope.projectScope(project))))
+                .subscribeOn(presenter.getSchedulerProvider().io())
+                .subscribe(files -> AzureTaskManager.getInstance().runLater(() -> files.forEach(ImportAppSettingsDialog.this.cbAppSettingsSource::addItem), AzureTask.Modality.ANY));
+        presenter.onLoadFunctionApps();
     }
 
     @Override

@@ -1,4 +1,9 @@
-<!-- Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file. -->
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <path fill="#59A869" fill-rule="evenodd" d="M12.9969818,6.69999695 L13,6.69999695 L13,13 L6.50616488,12.9999971 C6.50411014,12.999999 6.50205518,13 6.5,13 C2.91014913,13 0,10.0898509 0,6.5 C0,2.91014913 2.91014913,0 6.5,0 C10.0898509,0 13,2.91014913 13,6.5 C13,6.56690657 12.9989891,6.63357703 12.9969818,6.69999695 Z" transform="translate(1 1)"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15 1L15 2L15 3L15 5L14 5L13 5L13 3L3 3L3 5L2 5L1 5L1 3L1 2L1 0.999999L15 1ZM15 15L15 12L14 12L13 12L13 13L3 13L3 12L2 12L1 12L0.999999 13L1 14L0.999999 15L13 15L14 15L15 15Z" fill="#9AA7B0" fill-opacity="0.8"/>
+<rect opacity="0.7" x="4" y="4" width="2" height="2" fill="#62B543"/>
+<rect opacity="0.7" x="4" y="7" width="2" height="2" fill="#62B543"/>
+<rect opacity="0.7" x="7" y="5.5" width="2" height="2" fill="#62B543"/>
+<rect opacity="0.7" x="10" y="7" width="2" height="2" fill="#62B543"/>
+<rect opacity="0.7" x="7" y="8.5" width="2" height="2" fill="#62B543"/>
+<rect opacity="0.7" x="4" y="10" width="2" height="2" fill="#62B543"/>
 </svg>
