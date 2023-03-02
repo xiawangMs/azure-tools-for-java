@@ -18,6 +18,10 @@
 - Fix: Toolkit will always select maven as build tool in function module creation wizard
 - Fix: Copy connection string did not work for Cosmos DB
 - Fix: Only `local.settings.json` in root module could be found when import app settings
+- Fix: Linked cluster cannot display under the HDInsight node.
+- Fix: Open the sign into Azure dialog after click on "Link a cluster/refresh" in the context menu.
+- Fix: Failed to open Azure Storage Explorer.
+- Fix: In config, only display linked cluster in cluster list, but in Azure explorer both linked cluster and signincluster exist.
 
 ## 3.73.0
 ### Added
