@@ -6,7 +6,7 @@
 - Support IntelliJ 2023.1 EAP.
 - Add Azure Event Hub support in Azure Toolkits
   - Resource Management in Azure explorer
-  - Simple event hub client to send/revice events
+  - Simple event hub client to send/receive events
 
 ### Changed
 - Azure Function: New function class creation workflow with resource connection
