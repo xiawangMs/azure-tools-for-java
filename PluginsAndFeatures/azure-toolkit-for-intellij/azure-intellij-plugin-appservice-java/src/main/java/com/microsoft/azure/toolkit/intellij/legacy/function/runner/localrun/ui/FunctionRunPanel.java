@@ -182,6 +182,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         txtFunc = new FunctionCoreToolsCombobox(project, true);
         final String localSettingPath = Paths.get(Objects.requireNonNull(project.getBasePath()), "local.settings.json").toString();
         appSettingsTable = new FunctionAppSettingsTable(localSettingPath);
+        appSettingsTable.setProject(project);
         pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
         appSettingsTable.loadLocalSetting();
 
