@@ -122,7 +122,9 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Stream.of(txtConnectionName, txtConnectionString, resourcePanel).filter(Objects::nonNull).collect(Collectors.toList());
+        return Stream.of(txtConnectionName, rdoConnectionString.isSelected() ? txtConnectionString : resourcePanel)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
