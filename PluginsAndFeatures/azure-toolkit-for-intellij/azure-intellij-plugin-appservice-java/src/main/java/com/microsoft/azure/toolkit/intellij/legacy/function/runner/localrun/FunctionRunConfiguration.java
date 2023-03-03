@@ -29,7 +29,6 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConf
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,11 +81,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
             this.myModule.setModule(module);
         }
         return module;
-    }
-
-    @Override
-    public void setConnection(@Nonnull Connection<?, ?> connection) {
-        addConnection(connection);
     }
 
     @Override
@@ -226,13 +220,16 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         try {
             prepareBeforeRunTasks();
         } catch (final Throwable throwable) {
-            AzureMessager.getMessager().warning("Failed to add Azure resource connections, please add it manually in run configuration if necessary");
+            // ignore;
         }
     }
 
     // workaround to correct before run tasks in quick launch as BeforeRunTaskAdder may not work or have wrong config in task in this case
     private void prepareBeforeRunTasks() {
         final List<Connection<?, ?>> connections = this.getProject().getService(ConnectionManager.class).getConnections();
+        if (CollectionUtils.isEmpty(connections)) {
+            return;
+        }
         final List<BeforeRunTask<?>> tasks = this.getBeforeRunTasks();
         final List<ConnectionRunnerForRunConfiguration.MyBeforeRunTask> rcTasks = tasks.stream().filter(t -> t instanceof ConnectionRunnerForRunConfiguration.MyBeforeRunTask)
                 .map(t -> (ConnectionRunnerForRunConfiguration.MyBeforeRunTask)t)
