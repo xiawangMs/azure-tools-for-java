@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
@@ -36,7 +36,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -99,13 +98,12 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     }
 
     private void applyResourceConnection(@Nonnull WebAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
-        final Connection<?, ?> connection = webAppConfiguration.getConnection();
-        if (Objects.nonNull(connection)) {
+        Optional.ofNullable(webAppConfiguration.getConnections()).ifPresent(c -> c.stream().filter(Objects::nonNull).forEach(connection -> {
             Optional.ofNullable(connection.getEnvironmentVariables(this.project)).ifPresent(appSettingsForResourceConnection::putAll);
-        }
-        if (Objects.nonNull(connection) && connection.getResource().getDefinition() instanceof IJavaAgentSupported) {
-            uploadJavaAgent(deployTarget, ((IJavaAgentSupported) connection.getResource().getDefinition()).getJavaAgent());
-        }
+            if (connection.getResource().getDefinition() instanceof IJavaAgentSupported) {
+                uploadJavaAgent(deployTarget, ((IJavaAgentSupported) connection.getResource().getDefinition()).getJavaAgent());
+            }
+        }));
     }
 
     private void uploadJavaAgent(@Nonnull WebAppBase<?, ?, ?> deployTarget, @Nullable File javaAgent) {
