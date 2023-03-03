@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CommonConnectionResource implements Resource<ConnectionTarget> {
 
     @Getter
@@ -50,6 +52,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
     }
 
     @Override
+    @EqualsAndHashCode.Include
     public String getDataId() {
         return getData().getId();
     }
@@ -128,6 +131,11 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
         @Override
         public String getResourceType() {
             return "common";
+        }
+
+        @Override
+        public Map<String, String> getPropertiesForFunction(@Nonnull ConnectionTarget resource, @Nonnull Connection connection) {
+            return Collections.singletonMap(resource.getName(), getResourceConnectionString(resource));
         }
 
         @Nullable

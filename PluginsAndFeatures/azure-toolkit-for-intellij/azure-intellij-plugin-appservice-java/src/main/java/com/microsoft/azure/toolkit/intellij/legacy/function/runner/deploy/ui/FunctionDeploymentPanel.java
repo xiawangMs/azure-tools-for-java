@@ -196,6 +196,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private void createUIComponents() {
         final String localSettingPath = Paths.get(project.getBasePath(), "local.settings.json").toString();
         appSettingsTable = new FunctionAppSettingsTable(localSettingPath);
+        appSettingsTable.setProject(project);
         pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
 
         functionAppComboBox = new FunctionAppComboBox(project);
