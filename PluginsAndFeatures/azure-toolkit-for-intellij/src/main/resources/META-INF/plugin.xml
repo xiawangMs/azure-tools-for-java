@@ -33,7 +33,7 @@
           <li>Support IntelliJ 2023.1 EAP.</li>
           <li>Add Azure Event Hub support in Azure Toolkits<ul>
                   <li>Resource Management in Azure explorer</li>
-                  <li>Simple event hub client to send/revice events</li>
+                  <li>Simple event hub client to send/receive events</li>
               </ul>
           </li>
       </ul>

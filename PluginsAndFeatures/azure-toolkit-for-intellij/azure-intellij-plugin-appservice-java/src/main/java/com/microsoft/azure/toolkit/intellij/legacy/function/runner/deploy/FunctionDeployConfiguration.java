@@ -32,7 +32,6 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -56,16 +55,11 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     private FunctionDeployModel functionDeployModel;
     private Module module;
     @Getter
-    private List<Connection<?, ?>> connections = new ArrayList<>();
+    private final List<Connection<?, ?>> connections = new ArrayList<>();
 
     public FunctionDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         functionDeployModel = new FunctionDeployModel();
-    }
-
-    @Override
-    public void setConnection(@Nonnull Connection<?, ?> connection) {
-        addConnection(connection);
     }
 
     @Override

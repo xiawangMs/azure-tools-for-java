@@ -17,9 +17,11 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.IdeUtils;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.AllArgsConstructor;
@@ -71,7 +73,7 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
     @Nullable
     private VirtualFile getLocalSettingsFromModule(final Module module) {
         return ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName("local.settings.json", GlobalSearchScope.projectScope(project))).stream()
-                .filter(file -> Objects.equals(ModuleUtil.findModuleForFile(file, project), module))
+                .filter(file -> IdeUtils.isSameModule(ModuleUtil.findModuleForFile(file, project), module))
                 .filter(file -> Objects.nonNull(file.getCanonicalPath()))
                 .min(Comparator.comparing(VirtualFile::getCanonicalPath))
                 .orElse(null);
@@ -172,7 +174,9 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
         private String icon;
 
         public ConnectionConfiguration(final Connection<?, ?> connection) {
-            this.name = connection.getEnvPrefix();
+            // for common connection, use connection name, for app service connection, use env prefix
+            this.name = connection.getResource().getDefinition() instanceof CommonConnectionResource.Definition ?
+                    connection.getResource().getName() : connection.getEnvPrefix();
             this.icon = connection.getResource().getDefinition().getIcon();
         }
     }
