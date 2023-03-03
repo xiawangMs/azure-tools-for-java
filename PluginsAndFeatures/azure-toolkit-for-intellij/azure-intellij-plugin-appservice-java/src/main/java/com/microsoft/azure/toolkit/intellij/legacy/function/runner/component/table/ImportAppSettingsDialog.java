@@ -16,6 +16,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.IdeUtils;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -23,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import rx.Observable;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -32,6 +34,7 @@ import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -52,10 +55,12 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
 
     private boolean eraseExistingSettings;
     private Map<String, String> appSettings = null;
+    private final Project project;
     private final AppSettingsDialogPresenter<ImportAppSettingsDialog> presenter = new AppSettingsDialogPresenter<>();
 
-    public ImportAppSettingsDialog(Path localSettingsPath) {
+    public ImportAppSettingsDialog(@Nullable final Project project) {
         super();
+        this.project = project;
         setContentPane(contentPanel);
         setModal(true);
         setTitle(message("function.appSettings.import.title"));
@@ -114,8 +119,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
 
     // todo: migrate to AzureComboBox framework
     private void loadAppSettingSources() {
-        // workaround to get the project from the content panel
-        final Project project = ProjectUtil.guessCurrentProject(contentPanel);
+        final Project project = Optional.ofNullable(this.project).orElseGet(() -> IdeUtils.getProject());
         Observable.fromCallable(() -> ReadAction.compute(()-> FilenameIndex.getVirtualFilesByName("local.settings.json", GlobalSearchScope.projectScope(project))))
                 .subscribeOn(presenter.getSchedulerProvider().io())
                 .subscribe(files -> AzureTaskManager.getInstance().runLater(() -> files.forEach(ImportAppSettingsDialog.this.cbAppSettingsSource::addItem), AzureTask.Modality.ANY));
