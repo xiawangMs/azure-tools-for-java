@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.database.postgre;
+package com.microsoft.azure.toolkit.ide.database.postgre.single;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -11,8 +11,8 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
-import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
+import com.microsoft.azure.toolkit.lib.postgre.single.AzurePostgreSql;
+import com.microsoft.azure.toolkit.lib.postgre.single.PostgreSqlServer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class PostgreSqlNodeProvider implements IExplorerNodeProvider {
-    private static final String NAME = "Azure Database for PostgreSQL (Flexible)";
+    private static final String NAME = "Azure Database for PostgreSQL";
     private static final String ICON = AzureIcons.Postgre.MODULE.getIconPath();
 
     @Nullable
@@ -51,7 +51,6 @@ public class PostgreSqlNodeProvider implements IExplorerNodeProvider {
             final PostgreSqlServer server = (PostgreSqlServer) data;
             return new Node<>(server)
                 .view(new AzureResourceLabelView<>(server))
-                .addInlineAction(ResourceCommonActionsContributor.PIN)
                 .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(PostgreSqlActionsContributor.SERVER_ACTIONS);
         }
