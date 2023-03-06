@@ -59,11 +59,11 @@ public class SparkClusterNode extends AbstractAzResource<SparkClusterNode, HDIns
 
     @Override
     @Nonnull
-    public String getStatus() {
+    public String getStatus(boolean immediately) {
         if (!Azure.az(AzureAccount.class).isLoggedIn() || this.getSubscriptionId().equals("[LinkedCluster]")) {
             return "Linked";
         } else {
-            return super.getStatus();
+            return super.getStatus(immediately);
         }
     }
 
