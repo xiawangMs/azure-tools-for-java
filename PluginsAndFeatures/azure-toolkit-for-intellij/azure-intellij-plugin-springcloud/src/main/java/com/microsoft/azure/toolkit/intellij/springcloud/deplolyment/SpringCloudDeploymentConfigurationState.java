@@ -28,10 +28,10 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.utils.PollUtils;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.Utils;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +56,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     private static final String UPDATE_APP_WARNING = "It may take some moments for the configuration to be applied at server side!";
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "Deployment succeeded but the app is still starting, " +
         "you can check the app status from Azure Portal.";
+    private static final String NOTIFICATION_TITLE = "Deploy Spring app";
 
     private final SpringCloudDeploymentConfiguration config;
     private final Project project;
@@ -123,7 +124,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 opFile.get().getName(), artifactVersion + 44, "Java " + artifactVersion, "Java " + appVersion, appConfig.getAppName());
             throw new AzureToolkitRuntimeException(message.toString(), reopen.withLabel("Reopen Deploy Dialog"));
         }
-        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig, true);
+        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
         final SpringCloudCluster cluster = app.getParent();
@@ -142,7 +143,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         messager.info(String.format("Getting public url of app(%s)...", app.name()));
         String publicUrl = app.getApplicationUrl();
         if (StringUtils.isEmpty(publicUrl)) {
-            publicUrl = Utils.pollUntil(() -> {
+            publicUrl = PollUtils.pollUntil(() -> {
                 app.refresh();
                 return app.getApplicationUrl();
             }, StringUtils::isNotBlank, GET_URL_TIMEOUT);
