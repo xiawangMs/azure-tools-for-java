@@ -20,6 +20,9 @@ import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
 import icons.MavenIcons;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -35,18 +38,15 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 
+@Getter
+@ToString(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor
 public class AzureArtifact {
-    private final String name;
     private final AzureArtifactType type;
+    @ToString.Include
+    private final String name;
     private final Object referencedObject;
     private final Project project;
-
-    private AzureArtifact(final AzureArtifactType type, final String name, Object obj, Project project) {
-        this.type = type;
-        this.name = name;
-        this.referencedObject = obj;
-        this.project = project;
-    }
 
     @Nullable
     public static AzureArtifact createFromFile(@Nullable String path, Project project) {
@@ -116,23 +116,6 @@ public class AzureArtifact {
             case Artifact -> ((Artifact) referencedObject).getArtifactType().getIcon();
             case File -> AllIcons.FileTypes.Archive;
         };
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public AzureArtifactType getType() {
-        return type;
-    }
-
-    public Object getReferencedObject() {
-        return referencedObject;
-    }
-
-    @Override
-    public String toString() {
-        return Objects.toString(name);
     }
 
     public String getTargetPath() {

@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import org.jetbrains.annotations.NotNull;
+import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private SpringCloudCluster cluster;
     private final List<SpringCloudApp> draftItems = new LinkedList<>();
+    @Setter
+    @Nullable
+    private Integer javaVersion;
 
     @Override
     protected String getItemText(final Object item) {
@@ -40,9 +43,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         }
         final SpringCloudApp app = (SpringCloudApp) item;
         if (!app.exists()) {
-            return "(New) " + app.name();
+            return "(New) " + app.getName();
         }
-        return app.name();
+        return app.getName();
     }
 
     public void setCluster(SpringCloudCluster cluster) {
@@ -74,7 +77,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
             .peek(v -> Objects.isNull(cluster) || Objects.equals(cluster, v.getParent()));
     }
 
-    @NotNull
+    @Nonnull
     @Override
     @AzureOperation(name = "internal/springcloud.list_apps.cluster", params = {"this.cluster.name()"})
     protected List<? extends SpringCloudApp> loadItems() {
@@ -108,6 +111,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
 
     private void showAppCreationPopup() {
         final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(this.cluster);
+        Optional.ofNullable(this.javaVersion).ifPresent(a -> dialog.setDefaultRuntimeVersion(javaVersion));
         dialog.setOkActionListener((config) -> {
             final SpringCloudAppDraft app = cluster.apps().create(config.getAppName(), cluster.getResourceGroupName());
             app.setConfig(config);

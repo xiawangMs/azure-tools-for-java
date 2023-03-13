@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
@@ -35,6 +36,7 @@ public class CreateSpringCloudAppAction {
         Azure.az(AzureAccount.class).account();
         AzureTaskManager.getInstance().runLater(() -> {
             final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(cluster, project);
+            dialog.setDefaultRuntimeVersion(ProjectUtils.getJavaVersion(Optional.ofNullable(project).orElseGet(ProjectUtils::getProject)));
             dialog.setOkActionListener((config) -> {
                 dialog.close();
                 createApp(config);

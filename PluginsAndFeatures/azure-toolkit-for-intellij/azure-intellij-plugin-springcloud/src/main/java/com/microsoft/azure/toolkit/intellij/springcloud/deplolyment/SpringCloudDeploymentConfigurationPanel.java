@@ -44,6 +44,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class SpringCloudDeploymentConfigurationPanel extends JPanel implements AzureFormPanel<SpringCloudAppConfig> {
+    @Nonnull
     private final Project project;
     @Setter
     private SpringCloudDeploymentConfiguration configuration;
@@ -83,6 +84,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             }
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 BuildArtifactBeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
+                this.selectorApp.setJavaVersion(artifact.getJavaVersion());
             }
         }
     }
