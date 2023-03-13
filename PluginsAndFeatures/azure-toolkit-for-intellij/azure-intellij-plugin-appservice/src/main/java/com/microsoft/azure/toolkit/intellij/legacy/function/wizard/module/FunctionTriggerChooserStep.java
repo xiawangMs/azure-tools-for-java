@@ -31,7 +31,7 @@ public class FunctionTriggerChooserStep extends ModuleWizardStep {
     // only shown v3 bundle template as a workaround
     // todo: @hanli add bundle version options in trigger step
     public static final List<FunctionTemplate> FUNCTION_TEMPLATES = FunctionUtils.loadAllFunctionTemplates().stream()
-            .filter(t -> t.isBundleSupported(FunctionExtensionVersion.VERSION_3)).collect(Collectors.toList());
+            .filter(t -> t.isBundleSupported(FunctionExtensionVersion.VERSION_4)).collect(Collectors.toList());
     private final WizardContext wizardContext;
     private CheckBoxList<String> triggerList;
     private static final List<String> INITIAL_SELECTED_TRIGGERS = List.of("HttpTrigger");

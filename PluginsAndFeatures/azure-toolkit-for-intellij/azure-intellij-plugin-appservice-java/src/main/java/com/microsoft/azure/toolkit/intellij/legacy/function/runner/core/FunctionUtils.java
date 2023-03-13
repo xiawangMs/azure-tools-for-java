@@ -94,7 +94,7 @@ public class FunctionUtils {
     private static final String FUNCTION_JSON = "function.json";
     private static final String HTTP_OUTPUT_DEFAULT_NAME = "$return";
     private static final String DEFAULT_HOST_JSON = "{\"version\":\"2.0\",\"extensionBundle\":" +
-            "{\"id\":\"Microsoft.Azure.Functions.ExtensionBundle\",\"version\":\"[3.*, 4.0.0)\"}}\n";
+            "{\"id\":\"Microsoft.Azure.Functions.ExtensionBundle\",\"version\":\"[4.*, 5.0.0)\"}}\n";
     private static final String DEFAULT_LOCAL_SETTINGS_JSON = "{ \"IsEncrypted\": false, \"Values\": " +
             "{ \"FUNCTIONS_WORKER_RUNTIME\": \"java\" } }";
     private static final String AZURE_FUNCTIONS = "azure-functions";
