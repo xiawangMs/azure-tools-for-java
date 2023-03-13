@@ -28,10 +28,10 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.utils.PollUtils;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.Utils;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
 import lombok.RequiredArgsConstructor;
@@ -124,10 +124,13 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 opFile.get().getName(), artifactVersion + 44, "Java " + artifactVersion, "Java " + appVersion, appConfig.getAppName());
             throw new AzureToolkitRuntimeException(message.toString(), reopen.withLabel("Reopen Deploy Dialog"));
         }
-        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
+        final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig, true);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
         final SpringCloudCluster cluster = app.getParent();
+        if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+            messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
+        }
         if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
             messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT);
         }
@@ -143,7 +146,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         messager.info(String.format("Getting public url of app(%s)...", app.name()));
         String publicUrl = app.getApplicationUrl();
         if (StringUtils.isEmpty(publicUrl)) {
-            publicUrl = PollUtils.pollUntil(() -> {
+            publicUrl = Utils.pollUntil(() -> {
                 app.refresh();
                 return app.getApplicationUrl();
             }, StringUtils::isNotBlank, GET_URL_TIMEOUT);
