@@ -20,7 +20,7 @@ import java.awt.*;
 import java.util.Objects;
 import java.util.Optional;
 
-public class IdeUtils {
+public class ProjectUtils {
 
     @SuppressWarnings("UnstableApiUsage")
     public static Window getWindow(@Nullable Project project) {
