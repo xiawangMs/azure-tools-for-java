@@ -127,9 +127,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     }
 
     private void addOrSelectExistingVirtualFile(VirtualFile virtualFile) {
-        final AzureArtifact selectArtifact = AzureArtifact.createFromFile(virtualFile);
+        final AzureArtifact selectArtifact = AzureArtifact.createFromFile(virtualFile, this.project);
         final List<AzureArtifact> artifacts = this.getItems();
-        final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
+        final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
         final AzureArtifact existingArtifact =
             artifacts.stream().filter(artifact -> manager.equalsAzureArtifact(artifact, selectArtifact)).findFirst().orElse(null);
         if (existingArtifact == null) {

@@ -32,6 +32,7 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
@@ -307,9 +308,9 @@ public class FunctionUtils {
         final Project project = module.getProject();
         final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(project);
         return artifactManager.getAllSupportedAzureArtifacts().stream()
-                .filter(artifact -> Objects.equals(artifactManager.getModuleFromAzureArtifact(artifact), module))
+                .filter(artifact -> Objects.equals(artifact.getModule(), module))
                 .findFirst()
-                .map(azureArtifact -> artifactManager.getFileForDeployment(azureArtifact))
+                .map(AzureArtifact::getFileForDeployment)
                 .map(File::new)
                 .orElse(null);
     }

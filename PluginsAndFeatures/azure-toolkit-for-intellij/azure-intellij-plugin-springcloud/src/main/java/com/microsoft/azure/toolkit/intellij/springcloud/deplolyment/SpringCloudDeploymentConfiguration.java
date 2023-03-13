@@ -87,7 +87,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             .ifPresent(element::addContent);
         Optional.ofNullable(this.appConfig)
             .map(config -> (WrappedAzureArtifact) config.getDeployment().getArtifact())
-            .map((a) -> manager.getArtifactIdentifier(a.getArtifact()))
+            .map((a) -> a.getArtifact().getIdentifier())
             .map(id -> new Element("Artifact").setAttribute("identifier", id))
             .ifPresent(element::addContent);
     }

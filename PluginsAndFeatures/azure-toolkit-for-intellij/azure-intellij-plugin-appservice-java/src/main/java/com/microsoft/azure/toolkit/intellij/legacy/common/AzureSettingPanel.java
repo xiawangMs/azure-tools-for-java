@@ -210,8 +210,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         if (!azureArtifacts.isEmpty()) {
             for (AzureArtifact azureArtifact : azureArtifacts) {
                 getCbAzureArtifact().addItem(azureArtifact);
-                if (StringUtils.equals(AzureArtifactManager.getInstance(project).getArtifactIdentifier(azureArtifact)
-                        , artifactIdentifier)) {
+                if (StringUtils.equals(azureArtifact.getIdentifier(), artifactIdentifier)) {
                     getCbAzureArtifact().setSelectedItem(azureArtifact);
                 }
             }

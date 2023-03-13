@@ -256,7 +256,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
             final String error = String.format("selected artifact[%s] not found", webAppConfiguration.getArtifactIdentifier());
             throw new AzureToolkitRuntimeException(error);
         }
-        return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
+        return azureArtifact.getFileForDeployment();
     }
 
     @NotNull
