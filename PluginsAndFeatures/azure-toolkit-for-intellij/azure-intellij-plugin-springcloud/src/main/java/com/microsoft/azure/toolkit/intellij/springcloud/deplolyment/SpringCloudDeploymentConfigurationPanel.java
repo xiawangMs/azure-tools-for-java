@@ -84,7 +84,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             }
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 BuildArtifactBeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
-                this.selectorApp.setJavaVersion(artifact.getJavaVersion());
+                this.selectorApp.setJavaVersion(artifact.getBytecodeTargetLevel());
             }
         }
     }

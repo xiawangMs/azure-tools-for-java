@@ -15,11 +15,12 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
+import com.microsoft.azure.toolkit.intellij.common.utils.JdkUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
-import icons.MavenIcons;
+import icons.OpenapiIcons;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -112,21 +113,9 @@ public class AzureArtifact {
     public Icon getIcon() {
         return switch (type) {
             case Gradle -> GradleIcons.Gradle;
-            case Maven -> MavenIcons.MavenProject;
+            case Maven -> OpenapiIcons.RepositoryLibraryLogo;
             case Artifact -> ((Artifact) referencedObject).getArtifactType().getIcon();
             case File -> AllIcons.FileTypes.Archive;
-        };
-    }
-
-    public String getTargetPath() {
-        return switch (type) {
-            case Gradle ->
-                // it is not required to get a final output jar in getTargetPath
-                Paths.get(((ExternalProjectPojo) referencedObject).getPath(),
-                    String.format("build/lib/%s.jar", getName())).toString();
-            case Maven -> MavenUtils.getTargetFile((MavenProject) referencedObject);
-            case Artifact -> ((Artifact) referencedObject).getOutputFilePath();
-            case File -> ((VirtualFile) referencedObject).getPath();
         };
     }
 
@@ -151,27 +140,20 @@ public class AzureArtifact {
         };
     }
 
-    public Integer getJavaVersion() {
-        final Module module = switch (type) {
-            case Gradle -> {
-                final Path path = Paths.get(((ExternalProjectPojo) referencedObject).getPath());
-                yield Optional.ofNullable(VfsUtil.findFile(path, true))
-                    .map(f -> ModuleUtil.findModuleForFile(f, this.project)).orElse(null);
-            }
-            case Maven -> MavenProjectsManager.getInstance(this.project).findModule((MavenProject) referencedObject);
-            case Artifact -> Optional.ofNullable(((Artifact) referencedObject).getOutputPath())
-                .map(Path::of).map(FileUtils::getNearestExistingParent)
-                .map(p -> VfsUtil.findFile(p, true))
-                .map(f -> ProjectFileIndex.getInstance(project).getModuleForFile(f)).orElse(null);
-            case File -> null;
-        };
+    public Integer getBytecodeTargetLevel() {
+        final Module module = this.getModule();
+        Integer level = null;
         if (Objects.nonNull(module)) {
-            return ProjectUtils.getJavaVersion(module);
+            level = JdkUtils.getTargetBytecodeLanguageLevel(module);
+            if (Objects.isNull(level)) {
+                level = JdkUtils.getJdkLanguageLevel(module);
+            }
         } else if (type == AzureArtifactType.File) {
-            // TODO: get version from file.
-            return 17;
-        } else {
-            return ProjectUtils.getJavaVersion(this.project);
+            level = JdkUtils.getBytecodeLanguageLevel(((VirtualFile) this.getReferencedObject()).toNioPath().toFile());
         }
+        if (Objects.nonNull(level)) {
+            return level;
+        }
+        return JdkUtils.getJdkLanguageLevel(this.project);
     }
 }
