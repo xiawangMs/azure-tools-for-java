@@ -67,9 +67,7 @@ public class AzureArtifact {
     }
 
     public static AzureArtifact createFromMavenProject(MavenProject mavenProject, Project project) {
-        return new AzureArtifact(AzureArtifactType.Maven,
-            mavenProject.toString(),
-            mavenProject, project);
+        return new AzureArtifact(AzureArtifactType.Maven, mavenProject.getMavenId().getArtifactId(), mavenProject, project);
     }
 
     public static AzureArtifact createFromGradleProject(ExternalProjectPojo projectPojo, Project project) {
