@@ -6,13 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
+import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
@@ -21,11 +24,15 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
@@ -55,6 +62,8 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
     private SpringCloudAppComboBox selectorApp;
+    private AzureCommentLabel validationMsg;
+    private final Debouncer validateRuntime = new TailingDebouncer(this::validateRuntime, 500);
 
     public SpringCloudDeploymentConfigurationPanel(SpringCloudDeploymentConfiguration config, @Nonnull final Project project) {
         super();
@@ -67,11 +76,13 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.selectorArtifact.setFileFilter(virtualFile -> StringUtils.equalsIgnoreCase("jar", FileNameUtils.getExtension(virtualFile.getPath())));
         this.selectorArtifact.addItemListener(this::onArtifactChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
-        this.selectorCluster.addItemListener(this::onClusterChanger);
+        this.selectorCluster.addItemListener(this::onClusterChanged);
+        this.selectorApp.addItemListener(this::onAppChanged);
         this.selectorSubscription.setRequired(true);
         this.selectorCluster.setRequired(true);
         this.selectorApp.setRequired(true);
         this.selectorArtifact.setRequired(true);
+        this.validationMsg.setIcon(AllIcons.General.Warning);
     }
 
     private void onArtifactChanged(final ItemEvent e) {
@@ -85,6 +96,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 BuildArtifactBeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
                 this.selectorApp.setJavaVersion(artifact.getBytecodeTargetLevel());
+                this.validateRuntime.debounce();
             }
         }
     }
@@ -96,11 +108,61 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         }
     }
 
-    private void onClusterChanger(final ItemEvent e) {
+    private void onClusterChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final SpringCloudCluster cluster = this.selectorCluster.getValue();
             this.selectorApp.setCluster(cluster);
         }
+    }
+
+    private void onAppChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            this.validateRuntime.debounce();
+        }
+    }
+
+    private void validateRuntime() {
+        final AzureArtifact artifact = this.selectorArtifact.getValue();
+        final SpringCloudApp app = this.selectorApp.getValue();
+        final AzureTaskManager manager = AzureTaskManager.getInstance();
+        if (app == null || artifact == null) {
+            manager.runLater(() -> this.validationMsg.setVisible(false));
+            return;
+        }
+        manager.runOnPooledThread(() -> {
+            if (app.getCachedActiveDeployment() == null) {
+                manager.runLater(() -> {
+                    this.validationMsg.setIcon(AnimatedIcon.Default.INSTANCE);
+                    this.validationMsg.setText("Validating Java runtime version compatibility...");
+                    this.validationMsg.setVisible(true);
+                }, AzureTask.Modality.ANY);
+            }
+            final Integer appVersion = Optional.of(app).map(SpringCloudApp::getActiveDeployment)
+                .map(SpringCloudDeployment::getRuntimeVersion)
+                .map(v -> v.split("_")[1]).map(Integer::parseInt).orElse(null);
+            final Integer artifactVersion = Optional.of(artifact).map(AzureArtifact::getBytecodeTargetLevel).orElse(null);
+            if (Objects.isNull(appVersion) || Objects.isNull(artifactVersion)) {
+                manager.runLater(() -> {
+                    final String message = Objects.isNull(appVersion) ? "Failed to get app's runtime version." : "Failed to get artifact's bytecode version.";
+                    this.validationMsg.setText(message);
+                    this.validationMsg.setVisible(true);
+                }, AzureTask.Modality.ANY);
+            } else if (appVersion < artifactVersion) {
+                manager.runLater(() -> {
+                    final String message = String.format("The selected app seems running on Java %s, which is lower than the selected artifact's bytecode version %s. " +
+                        "Please consider selecting a different app or artifact.", appVersion, artifactVersion);
+                    this.validationMsg.setText(message);
+                    this.validationMsg.setVisible(true);
+                }, AzureTask.Modality.ANY);
+            } else {
+                manager.runLater(() -> {
+                    final String message = "Java runtime version compatibility validation passes.";
+                    this.validationMsg.setIcon(AllIcons.General.InspectionsOK);
+                    this.validationMsg.setText(message);
+                    this.validationMsg.setVisible(true);
+                }, AzureTask.Modality.ANY);
+            }
+        });
     }
 
     @Override
@@ -132,9 +194,9 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         Optional.ofNullable(appConfig.getSubscriptionId())
             .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
         Optional.ofNullable(clusterName)
-            .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
+            .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::getName))));
         Optional.ofNullable(appConfig.getAppName())
-            .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
+            .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::getName))));
     }
 
     @Nullable
