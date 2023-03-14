@@ -69,6 +69,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         super();
         this.project = project;
         this.configuration = config;
+        $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
 
