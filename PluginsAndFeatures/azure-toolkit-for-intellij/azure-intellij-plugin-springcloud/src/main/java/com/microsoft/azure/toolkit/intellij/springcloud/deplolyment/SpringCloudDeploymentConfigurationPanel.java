@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
-import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
@@ -62,7 +61,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
     private SpringCloudAppComboBox selectorApp;
-    private AzureCommentLabel validationMsg;
+    private com.intellij.ui.components.JBLabel validationMsg;
     private final Debouncer validateRuntime = new TailingDebouncer(this::validateRuntime, 500);
 
     public SpringCloudDeploymentConfigurationPanel(SpringCloudDeploymentConfiguration config, @Nonnull final Project project) {
@@ -84,6 +83,8 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.selectorApp.setRequired(true);
         this.selectorArtifact.setRequired(true);
         this.validationMsg.setIcon(AllIcons.General.Warning);
+        this.validationMsg.setAllowAutoWrapping(true);
+        this.validationMsg.setCopyable(true);// this makes label auto wrapping
     }
 
     private void onArtifactChanged(final ItemEvent e) {
@@ -133,8 +134,9 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         manager.runOnPooledThread(() -> {
             if (app.getCachedActiveDeployment() == null) {
                 manager.runLater(() -> {
-                    this.validationMsg.setIcon(AnimatedIcon.Default.INSTANCE);
-                    this.validationMsg.setText("Validating Java runtime version compatibility...");
+                    final String message = "Validating Java runtime version compatibility...";
+                    this.validationMsg.setIconWithAlignment(AnimatedIcon.Default.INSTANCE, SwingConstants.LEFT, SwingConstants.CENTER);
+                    this.validationMsg.setText(message);
                     this.validationMsg.setVisible(true);
                 }, AzureTask.Modality.ANY);
             }
@@ -144,21 +146,27 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             final Integer artifactVersion = Optional.of(artifact).map(AzureArtifact::getBytecodeTargetLevel).orElse(null);
             if (Objects.isNull(appVersion) || Objects.isNull(artifactVersion)) {
                 manager.runLater(() -> {
-                    final String message = Objects.isNull(appVersion) ? "Failed to get app's runtime version." : "Failed to get artifact's bytecode version.";
+                    final String message = Objects.isNull(appVersion) ?
+                        String.format("Failed to get app(%s)'s runtime version.", app.getName()) :
+                        String.format("Failed to get artifact(%s)'s bytecode version.", app.getName());
+                    this.validationMsg.setIconWithAlignment(AllIcons.General.Warning, SwingConstants.LEFT, SwingConstants.CENTER);
                     this.validationMsg.setText(message);
                     this.validationMsg.setVisible(true);
                 }, AzureTask.Modality.ANY);
             } else if (appVersion < artifactVersion) {
                 manager.runLater(() -> {
-                    final String message = String.format("The selected app seems running on Java %s, which is lower than the selected artifact's bytecode version %s. " +
-                        "Please consider selecting a different app or artifact.", appVersion, artifactVersion);
+                    final String message = String.format("The bytecode version of selected artifact (%s) is \"%d (Java %s)\", " +
+                            "which is not compatible with the Java runtime version \"Java %s\" of selected app (%s). " +
+                            "Please consider selecting a different app or artifact.",
+                        artifact.getName(), artifactVersion + 44, artifactVersion, appVersion, app.getName());
+                    this.validationMsg.setIconWithAlignment(AllIcons.General.Error, SwingConstants.LEFT, SwingConstants.TOP);
                     this.validationMsg.setText(message);
                     this.validationMsg.setVisible(true);
                 }, AzureTask.Modality.ANY);
             } else {
                 manager.runLater(() -> {
                     final String message = "Java runtime version compatibility validation passes.";
-                    this.validationMsg.setIcon(AllIcons.General.InspectionsOK);
+                    this.validationMsg.setIconWithAlignment(AllIcons.General.InspectionsOK, SwingConstants.LEFT, SwingConstants.CENTER);
                     this.validationMsg.setText(message);
                     this.validationMsg.setVisible(true);
                 }, AzureTask.Modality.ANY);
