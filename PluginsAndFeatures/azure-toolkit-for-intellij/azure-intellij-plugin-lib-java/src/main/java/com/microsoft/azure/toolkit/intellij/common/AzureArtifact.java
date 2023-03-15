@@ -140,6 +140,16 @@ public class AzureArtifact {
         });
     }
 
+    @Nullable
+    public String getArtifactId() {
+        final Object object = this.getReferencedObject();
+        return switch (this.getType()) {
+            case Maven -> ((MavenProject) object).getMavenId().getArtifactId();
+            case Gradle -> getIdentifier();
+            default -> this.getName();
+        };
+    }
+
     public Integer getBytecodeTargetLevel() {
         final Module module = this.getModule();
         Integer level = null;
