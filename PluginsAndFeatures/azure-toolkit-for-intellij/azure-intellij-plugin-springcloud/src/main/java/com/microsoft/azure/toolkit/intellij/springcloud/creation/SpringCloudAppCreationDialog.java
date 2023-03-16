@@ -62,7 +62,6 @@ public class SpringCloudAppCreationDialog extends ConfigDialog<SpringCloudAppCon
         if (jdkVersion != null) {
             final RuntimeVersion runtime = jdkVersion <= 11 ? RuntimeVersion.JAVA_11 : RuntimeVersion.JAVA_17;
             final SpringCloudAppConfig config = this.getData();
-            config.setRuntimeVersion(runtime.toString());
             config.getDeployment().setRuntimeVersion(runtime.toString());
             this.setData(config);
         }

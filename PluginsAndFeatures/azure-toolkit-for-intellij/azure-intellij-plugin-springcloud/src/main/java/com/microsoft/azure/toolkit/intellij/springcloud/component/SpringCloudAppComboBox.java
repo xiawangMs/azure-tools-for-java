@@ -133,7 +133,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         @Override
         protected void customizeCellRenderer(@Nonnull JList<? extends SpringCloudApp> list, SpringCloudApp app, int index, boolean selected, boolean hasFocus) {
             if (app != null) {
-                append(app.getName().trim());
+                append(app.exists() ? app.getName() : String.format("(New) %s", app.getName()));
                 if (app.getFormalStatus().isReading()) {
                     append(" Loading runtime...", SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES);
                 } else {

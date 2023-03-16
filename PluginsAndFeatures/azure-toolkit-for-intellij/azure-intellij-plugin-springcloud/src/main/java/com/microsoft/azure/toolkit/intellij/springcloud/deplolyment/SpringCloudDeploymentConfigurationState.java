@@ -111,9 +111,9 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 message("springcloud.deploy_app.no_artifact.tips").toString(),
                 reopen.withLabel("Add BeforeRunTask"));
         }
-        final Integer appVersion = Optional.of(appConfig.getRuntimeVersion())
+        final Integer appVersion = Optional.of(appConfig.getDeployment().getRuntimeVersion())
             .map(v -> v.split("_")[1]).map(Integer::parseInt)
-            .orElseThrow(() -> new AzureToolkitRuntimeException("Invalid runtime version: " + appConfig.getRuntimeVersion()));
+            .orElseThrow(() -> new AzureToolkitRuntimeException("Invalid runtime version: " + appConfig.getDeployment().getRuntimeVersion()));
         final Integer artifactVersion = JdkUtils.getBytecodeLanguageLevel(opFile.get());
         if (Objects.nonNull(artifactVersion) && artifactVersion > appVersion) {
             final AzureString message = AzureString.format(
@@ -157,7 +157,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     protected Map<String, String> getTelemetryProperties() {
         final Map<String, String> props = new HashMap<>();
         final SpringCloudAppConfig cfg = config.getAppConfig();
-        props.put("runtime", String.valueOf(cfg.getRuntimeVersion()));
+        props.put("runtime", String.valueOf(cfg.getDeployment().getRuntimeVersion()));
         props.put("subscriptionId", String.valueOf(cfg.getSubscriptionId()));
         props.put("public", String.valueOf(cfg.isPublic()));
         props.put("jvmOptions", String.valueOf(StringUtils.isNotEmpty(cfg.getDeployment().getJvmOptions())));
