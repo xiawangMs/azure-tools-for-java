@@ -6,11 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -123,7 +125,7 @@ public class AzureArtifact {
         if (this.getReferencedObject() == null) {
             return null;
         }
-        return switch (type) {
+        return ApplicationManager.getApplication().runReadAction((Computable<Module>) () -> switch (type) {
             case Gradle -> {
                 final Path path = Paths.get(((ExternalProjectPojo) referencedObject).getPath());
                 yield Optional.ofNullable(VfsUtil.findFile(path, true))
@@ -135,7 +137,7 @@ public class AzureArtifact {
                 .map(p -> VfsUtil.findFile(p, true))
                 .map(f -> ProjectFileIndex.getInstance(project).getModuleForFile(f)).orElse(null);
             case File -> null;
-        };
+        });
     }
 
     public Integer getBytecodeTargetLevel() {
