@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.ide.servicebus;
 
 import com.azure.resourcemanager.servicebus.models.EntityStatus;
@@ -7,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -22,11 +28,14 @@ public class ServiceBusActionsContributor implements IActionsContributor {
     public static final String TOPIC_ACTIONS = "actions.servicebus.topic";
     public static final String MODULE_ACTIONS = "actions.servicebus.module";
     public static final String SET_STATUS_ACTIONS = "actions.servicebus.set_status.group";
-    public static final Action.Id<ServiceBusInstance> ACTIVE_INSTANCE = Action.Id.of("user/servicebus.active_instance.instance");
-    public static final Action.Id<ServiceBusInstance> DISABLE_INSTANCE = Action.Id.of("user/servicebus.disable_instance.instance");
-    public static final Action.Id<ServiceBusInstance> SEND_DISABLE_INSTANCE = Action.Id.of("user/servicebus.send_disable_instance.instance");
-    public static final Action.Id<ServiceBusInstance> RECEIVE_DISABLE_INSTANCE = Action.Id.of("user/servicebus.receive_disable_instance.instance");
-    public static final Action.Id<ServiceBusInstance> COPY_CONNECTION_STRING = Action.Id.of("user/servicebus.copy_connection_string.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> ACTIVE_INSTANCE = Action.Id.of("user/servicebus.active_instance.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> DISABLE_INSTANCE = Action.Id.of("user/servicebus.disable_instance.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> SEND_DISABLE_INSTANCE = Action.Id.of("user/servicebus.send_disable_instance.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> RECEIVE_DISABLE_INSTANCE = Action.Id.of("user/servicebus.receive_disable_instance.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> COPY_CONNECTION_STRING = Action.Id.of("user/servicebus.copy_connection_string.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> SEND_MESSAGE_INSTANCE = Action.Id.of("user/servicebus.open_send_message_panel.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> START_RECEIVING_INSTANCE = Action.Id.of("user/servicebus.start_receiving.instance");
+    public static final Action.Id<ServiceBusInstance<?, ?, ?>> STOP_RECEIVING_INSTANCE = Action.Id.of("user/servicebus.stop_receiving.instance");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_SERVICE_BUS = Action.Id.of("user/servicebus.create_servicebus.group");
 
     @Override
@@ -59,6 +68,26 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 .visibleWhen(s -> s instanceof ServiceBusInstance)
                 .withLabel("Copy Connection String")
                 .withIdParam(AzResource::getName)
+                .register(am);
+        new Action<>(SEND_MESSAGE_INSTANCE)
+                .visibleWhen(s -> s instanceof ServiceBusInstance)
+                .enableWhen(s -> s.getEntityStatus() != EntityStatus.DISABLED && s.getEntityStatus() != EntityStatus.SEND_DISABLED)
+                .withLabel("Send Message")
+                .withIdParam(AbstractAzResource::getName)
+                .register(am);
+        new Action<>(START_RECEIVING_INSTANCE)
+                .visibleWhen(s -> s instanceof ServiceBusInstance)
+                .enableWhen(s -> s.getEntityStatus() != EntityStatus.DISABLED && s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED && !s.isListening())
+                .withLabel("Start Listening")
+                .withIdParam(AbstractAzResource::getName)
+                .register(am);
+        new Action<>(STOP_RECEIVING_INSTANCE)
+                .visibleWhen(s -> s instanceof ServiceBusInstance &&
+                        ((ServiceBusInstance<?, ?, ?>) s).getEntityStatus() != EntityStatus.RECEIVE_DISABLED &&
+                        ((ServiceBusInstance<?, ?, ?>) s).getEntityStatus() != EntityStatus.DISABLED &&
+                        ((ServiceBusInstance<?, ?, ?>) s).isListening())
+                .withLabel("Stop Listening")
+                .withIdParam(AbstractAzResource::getName)
                 .register(am);
     }
 
@@ -101,6 +130,9 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 "---",
                 SET_STATUS_ACTIONS,
                 COPY_CONNECTION_STRING,
+                SEND_MESSAGE_INSTANCE,
+                START_RECEIVING_INSTANCE,
+                STOP_RECEIVING_INSTANCE,
                 "---",
                 ResourceCommonActionsContributor.DELETE);
         am.registerGroup(QUEUE_ACTIONS, queueGroup);
@@ -111,6 +143,9 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 "---",
                 SET_STATUS_ACTIONS,
                 COPY_CONNECTION_STRING,
+                SEND_MESSAGE_INSTANCE,
+                START_RECEIVING_INSTANCE,
+                STOP_RECEIVING_INSTANCE,
                 "---",
                 ResourceCommonActionsContributor.DELETE);
         am.registerGroup(TOPIC_ACTIONS, topicGroup);

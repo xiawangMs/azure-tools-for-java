@@ -4,4 +4,10 @@
         <actions implementation="com.microsoft.azure.toolkit.ide.servicebus.ServiceBusActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.servicebus.IntelliJServiceBusActionsContributor"/>
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+    <toolWindow anchor="bottom"
+                icon="/icons/Common/event_hubs.svg"
+                factoryClass="com.microsoft.azure.toolkit.intellij.servicebus.view.ServiceBusToolWindowManager$ServiceBusToolWindowFactory"
+                id="Azure Service Bus" canCloseContents="true"/>
+    </extensions>
 </idea-plugin>
