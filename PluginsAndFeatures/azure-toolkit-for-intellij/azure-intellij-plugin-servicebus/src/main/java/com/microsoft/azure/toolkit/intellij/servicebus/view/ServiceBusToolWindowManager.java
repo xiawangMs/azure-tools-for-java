@@ -13,6 +13,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
+import com.microsoft.azure.toolkit.intellij.common.component.SenderReceiverPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -43,13 +44,13 @@ public class ServiceBusToolWindowManager {
         final String contentName = getConsoleViewName(instance.getId(), instance.getName());
         Content content = toolWindow.getContentManager().findContent(contentName);
         if (content == null) {
-            final ServiceBusSendListenPanel panel = new ServiceBusSendListenPanel(project, instance);
+            final SenderReceiverPanel panel = new SenderReceiverPanel(project, instance);
             content = ContentFactory.getInstance().createContent(panel, contentName, false);
             toolWindow.getContentManager().addContent(content);
         }
         final JComponent contentComponent = content.getComponent();
-        if (contentComponent instanceof ServiceBusSendListenPanel && isListening) {
-            ((ServiceBusSendListenPanel) contentComponent).startListeningProcess();
+        if (contentComponent instanceof SenderReceiverPanel && isListening) {
+            ((SenderReceiverPanel) contentComponent).startListeningProcess();
         }
         toolWindow.getContentManager().setSelectedContent(content);
         toolWindow.setAvailable(true);
@@ -64,8 +65,8 @@ public class ServiceBusToolWindowManager {
             return;
         }
         final JComponent contentComponent = content.getComponent();
-        if (contentComponent instanceof ServiceBusSendListenPanel) {
-            ((ServiceBusSendListenPanel) contentComponent).stopListeningProcess();
+        if (contentComponent instanceof SenderReceiverPanel) {
+            ((SenderReceiverPanel) contentComponent).stopListeningProcess();
         }
     }
 
@@ -105,8 +106,8 @@ public class ServiceBusToolWindowManager {
                         Optional.ofNullable(instance).ifPresent(ServiceBusInstance::stopReceivingMessage);
                         resourceIdToNameMap.removeValue(displayName);
                         final JComponent contentComponent = event.getContent().getComponent();
-                        if (contentComponent instanceof ServiceBusSendListenPanel) {
-                            ((ServiceBusSendListenPanel) contentComponent).dispose();
+                        if (contentComponent instanceof SenderReceiverPanel) {
+                            ((SenderReceiverPanel) contentComponent).dispose();
                         }
                     });
                 }

@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.*;
+import com.microsoft.azure.toolkit.intellij.common.component.SenderReceiverPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -37,13 +38,13 @@ public class EventHubsToolWindowManager {
         final String contentName = getConsoleViewName(instance.getId(), instance.getName());
         Content content = Optional.ofNullable(toolWindow).map(w -> w.getContentManager().findContent(contentName)).orElse(null);
         if (content == null) {
-            final EventHubsSendListenPanel panel = new EventHubsSendListenPanel(project, instance);
+            final SenderReceiverPanel panel = new SenderReceiverPanel(project, instance);
             content = ContentFactory.getInstance().createContent(panel, contentName, false);
             toolWindow.getContentManager().addContent(content);
         }
         final JComponent contentComponent = content.getComponent();
-        if (contentComponent instanceof EventHubsSendListenPanel && isListening) {
-            ((EventHubsSendListenPanel) contentComponent).startListeningProcess();
+        if (contentComponent instanceof SenderReceiverPanel && isListening) {
+            ((SenderReceiverPanel) contentComponent).startListeningProcess();
         }
         toolWindow.getContentManager().setSelectedContent(content);
         toolWindow.setAvailable(true);
@@ -58,8 +59,8 @@ public class EventHubsToolWindowManager {
             return;
         }
         final JComponent contentComponent = content.getComponent();
-        if (contentComponent instanceof EventHubsSendListenPanel) {
-            ((EventHubsSendListenPanel) contentComponent).stopListeningProcess();
+        if (contentComponent instanceof SenderReceiverPanel) {
+            ((SenderReceiverPanel) contentComponent).stopListeningProcess();
         }
     }
 
@@ -99,8 +100,8 @@ public class EventHubsToolWindowManager {
                         Optional.ofNullable(instance).ifPresent(EventHubsInstance::stopReceivingMessage);
                         resourceIdToNameMap.removeValue(displayName);
                         final JComponent contentComponent = event.getContent().getComponent();
-                        if (contentComponent instanceof EventHubsSendListenPanel) {
-                            ((EventHubsSendListenPanel) contentComponent).dispose();
+                        if (contentComponent instanceof SenderReceiverPanel) {
+                            ((SenderReceiverPanel) contentComponent).dispose();
                         }
                     });
                 }

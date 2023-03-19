@@ -1,6 +1,5 @@
-package com.microsoft.azure.toolkit.intellij.servicebus.view;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
-import com.azure.resourcemanager.servicebus.models.EntityStatus;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -14,9 +13,9 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.servicebus.model.ServiceBusInstance;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.resource.message.ISenderReceiver;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.Disposable;
@@ -29,20 +28,20 @@ import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ServiceBusSendListenPanel extends JPanel {
+public class SenderReceiverPanel extends JPanel {
     @Getter
     private JPanel contentPanel;
     private JButton sendMessageBtn;
     private JBTextField messageInput;
     private JPanel listenPanel;
     private JPanel sendPanel;
-    private final ServiceBusInstance<?,?,?> instance;
+    private final ISenderReceiver instance;
     private final ConsoleView consoleView;
     @Nullable
     private RunProcessHandler listenProcessHandler;
     private AzureEventBus.EventListener listener;
 
-    public ServiceBusSendListenPanel(Project project, ServiceBusInstance<?,?,?> ServiceBusInstance) {
+    public SenderReceiverPanel(Project project, ISenderReceiver ServiceBusInstance) {
         super();
         this.consoleView = new ConsoleViewImpl(project, true);
         this.instance = ServiceBusInstance;
@@ -91,7 +90,7 @@ public class ServiceBusSendListenPanel extends JPanel {
         this.listenPanel.add(this.consoleView.getComponent(),
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
-        this.sendMessageBtn.setEnabled(this.instance.getEntityStatus() == EntityStatus.ACTIVE);
+        this.sendMessageBtn.setEnabled(instance.isSendEnabled());
         this.initListeners();
     }
 
@@ -99,8 +98,8 @@ public class ServiceBusSendListenPanel extends JPanel {
         this.listener = new AzureEventBus.EventListener((azureEvent) -> {
             final String type = azureEvent.getType();
             final Object source = azureEvent.getSource();
-            if (source instanceof ServiceBusInstance && ((ServiceBusInstance<?,?,?>) source).getId().equals(this.instance.getId())) {
-                this.sendMessageBtn.setEnabled(this.instance.getEntityStatus() == EntityStatus.ACTIVE);
+            if (source instanceof ISenderReceiver && ((ISenderReceiver) source).getId().equals(this.instance.getId())) {
+                this.sendMessageBtn.setEnabled(instance.isSendEnabled());
             }
         });
         this.sendMessageBtn.addActionListener(e -> sendMessage());
@@ -108,11 +107,13 @@ public class ServiceBusSendListenPanel extends JPanel {
         AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
-    @AzureOperation(name = "user/service.send_message")
     private void sendMessage() {
         final String message = messageInput.getText();
         messageInput.setText(StringUtils.EMPTY);
-        this.instance.sendMessage(message);
+        AzureTaskManager.getInstance().runInBackground("send message",() -> {
+            OperationContext.current().setMessager(new ConsoleMessager(consoleView));
+            instance.sendMessage(message);
+        });
     }
 
     private void $$$setupUI$$$() {
