@@ -77,7 +77,9 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 .register(am);
         new Action<>(START_RECEIVING_INSTANCE)
                 .visibleWhen(s -> s instanceof ServiceBusInstance)
-                .enableWhen(s -> s.getFormalStatus(true).isRunning() && s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED)
+                .enableWhen(s -> s.getFormalStatus(true).isRunning() &&
+                        s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED &&
+                        !s.isListening())
                 .withLabel("Start Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
