@@ -6,7 +6,7 @@
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
     <toolWindow anchor="bottom"
-                icon="/icons/Common/event_hubs.svg"
+                icon="/icons/Common/service_bus.svg"
                 factoryClass="com.microsoft.azure.toolkit.intellij.servicebus.view.ServiceBusToolWindowManager$ServiceBusToolWindowFactory"
                 id="Azure Service Bus" canCloseContents="true"/>
     </extensions>
