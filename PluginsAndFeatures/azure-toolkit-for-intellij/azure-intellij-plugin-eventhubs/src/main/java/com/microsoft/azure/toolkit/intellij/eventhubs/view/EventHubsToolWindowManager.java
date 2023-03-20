@@ -109,11 +109,19 @@ public class EventHubsToolWindowManager {
                 @Override
                 public void contentRemoveQuery(@NotNull ContentManagerEvent event) {
                     final String displayName = event.getContent().getDisplayName();
-                    final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
-                            "This will stop listening to Event Hubs \"{0}\", are you sure to do this?", displayName));
-                    if (!canClose) {
-                        event.consume();
-                    }
+                    final String removeResourceId = resourceIdToNameMap.getKey(displayName);
+                    Optional.ofNullable(removeResourceId).ifPresent(r -> {
+                        final EventHubsInstance instance = Azure.az(AzureEventHubsNamespace.class).getById(r);
+                        Optional.ofNullable(instance).ifPresent(e -> {
+                            if (e.isListening()) {
+                                final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
+                                        "This will stop listening to Event Hubs \"{0}\", are you sure to do this?", displayName));
+                                if (!canClose) {
+                                    event.consume();
+                                }
+                            }
+                        });
+                    });
                 }
             });
         }

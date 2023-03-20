@@ -115,11 +115,19 @@ public class ServiceBusToolWindowManager {
                 @Override
                 public void contentRemoveQuery(@NotNull ContentManagerEvent event) {
                     final String displayName = event.getContent().getDisplayName();
-                    final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
-                            "This will stop listening to Service Bus \"{0}\", are you sure to do this?", displayName));
-                    if (!canClose) {
-                        event.consume();
-                    }
+                    final String removeResourceId = resourceIdToNameMap.getKey(displayName);
+                    Optional.ofNullable(removeResourceId).ifPresent(r -> {
+                        final ServiceBusInstance<?,?,?> instance = Azure.az(AzureServiceBusNamespace.class).getById(r);
+                        Optional.ofNullable(instance).ifPresent(s -> {
+                            if (s.isListening()) {
+                                final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
+                                        "This will stop listening to Service Bus \"{0}\", are you sure to do this?", displayName));
+                                if (!canClose) {
+                                    event.consume();
+                                }
+                            }
+                        });
+                    });
                 }
             });
         }
