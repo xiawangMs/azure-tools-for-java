@@ -91,6 +91,12 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 .withLabel("Stop Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
+        new Action<>(GROUP_CREATE_SERVICE_BUS)
+                .withLabel("Service Bus")
+                .withIdParam(AzResource::getName)
+                .visibleWhen(s -> s instanceof ResourceGroup)
+                .enableWhen(s -> s.getFormalStatus(true).isConnected())
+                .register(am);
     }
 
     @Override

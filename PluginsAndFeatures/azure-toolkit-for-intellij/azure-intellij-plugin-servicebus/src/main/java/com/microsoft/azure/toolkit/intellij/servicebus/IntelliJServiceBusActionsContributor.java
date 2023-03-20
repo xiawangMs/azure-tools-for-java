@@ -12,6 +12,9 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.servicebus.ServiceBusActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.intellij.servicebus.view.ServiceBusToolWindowManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.account.IAccount;
+import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -31,6 +34,7 @@ public class IntelliJServiceBusActionsContributor implements IActionsContributor
         registerSendMessageActionHandler(am);
         registerStartReceivingActionHandler(am);
         registerStopReceivingActionHandler(am);
+        registerGroupCreateActionHandler(am);
     }
 
     private void registerActiveActionHandler(AzureActionManager am) {
@@ -85,6 +89,15 @@ public class IntelliJServiceBusActionsContributor implements IActionsContributor
         final BiPredicate<ServiceBusInstance<?,?,?>, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<ServiceBusInstance<?,?,?>, AnActionEvent> handler = (c, e) -> ServiceBusToolWindowManager.getInstance().stopListening(e.getProject(), c);
         am.registerHandler(ServiceBusActionsContributor.STOP_RECEIVING_INSTANCE, condition, handler);
+    }
+
+    private void registerGroupCreateActionHandler(AzureActionManager am) {
+        final BiConsumer<Object, AnActionEvent> handler = (c, e) -> {
+            final IAccount account = Azure.az(IAzureAccount.class).account();
+            final String url = String.format("%s/#create/Microsoft.ServiceBus", account.getPortalUrl());
+            am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
+        };
+        am.registerHandler(ServiceBusActionsContributor.GROUP_CREATE_SERVICE_BUS, (r, e) -> true, (r, e) -> handler.accept(r, (AnActionEvent) e));
     }
 
     @Override
