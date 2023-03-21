@@ -43,6 +43,7 @@ public class SpringCloudStreamingLogManager {
             try {
                 consoleView.startLog(() -> {
                     try {
+                        // refer to https://github.com/Azure/azure-cli-extensions/blob/main/src/spring/azext_spring/app.py#app_tail_log_internal
                         return getLogStream(app, instanceName, 300, 500, 1024 * 1024, true);
                     } catch (final IOException | HttpException e) {
                         return null;
