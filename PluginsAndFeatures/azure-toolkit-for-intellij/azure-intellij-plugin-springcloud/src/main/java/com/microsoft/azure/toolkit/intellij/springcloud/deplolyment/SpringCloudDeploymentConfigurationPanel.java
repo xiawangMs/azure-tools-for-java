@@ -94,6 +94,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         if (Objects.nonNull(editor) && Objects.nonNull(artifact)) {
             if (e.getStateChange() == ItemEvent.DESELECTED) {
                 BuildArtifactBeforeRunTaskUtils.removeBeforeRunTask(editor, artifact, this.configuration);
+                this.validateRuntime.debounce();
             }
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 BuildArtifactBeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
@@ -118,7 +119,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     private void onAppChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             this.validateRuntime.debounce();
         }
     }
