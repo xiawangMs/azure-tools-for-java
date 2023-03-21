@@ -81,16 +81,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 final SpringCloudDeployment springCloudDeployment = this.execute(messager);
                 messager.info(DEPLOYMENT_SUCCEED);
                 processHandler.notifyComplete();
-                AzureTaskManager.getInstance().runInBackground(NOTIFICATION_TITLE, () -> {
-                    final SpringCloudApp app = springCloudDeployment.getParent();
-                    if (!springCloudDeployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-                        messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE, getOpenStreamingLogAction(springCloudDeployment));
-                    } else {
-                        messager.success(AzureString.format("App({0}) started successfully", app.getName()), NOTIFICATION_TITLE,
-                                AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_PUBLIC_URL).bind(app),
-                                AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_TEST_URL).bind(app));
-                    }
-                });
+                waitUntilAppReady(springCloudDeployment);
             } catch (final Exception e) {
                 messager.error(e, "Azure", retry, getOpenStreamingLogAction(getDeploymentFromConfig()));
             }
@@ -193,6 +184,20 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             return null;
         }
         return AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.STREAM_LOG).bind(appInstance);
+    }
+
+    private void waitUntilAppReady(SpringCloudDeployment springCloudDeployment) {
+        AzureTaskManager.getInstance().runInBackground(NOTIFICATION_TITLE, () -> {
+            final SpringCloudApp app = springCloudDeployment.getParent();
+            final IAzureMessager messager = AzureMessager.getMessager();
+            if (!springCloudDeployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
+                messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE, getOpenStreamingLogAction(springCloudDeployment));
+            } else {
+                messager.success(AzureString.format("App({0}) started successfully", app.getName()), NOTIFICATION_TITLE,
+                        AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_PUBLIC_URL).bind(app),
+                        AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_TEST_URL).bind(app));
+            }
+        });
     }
 
     protected Map<String, String> getTelemetryProperties() {
