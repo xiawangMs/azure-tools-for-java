@@ -136,7 +136,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
     @Override
     @AzureOperation(name = "boundary/function.complete_deployment.app", params = {"this.deployModel.getFunctionAppConfig().getName()"})
     protected void onSuccess(FunctionAppBase<?, ?, ?> result, @NotNull RunProcessHandler processHandler) {
-        processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();
         functionDeployConfiguration.setAppSettings(result.getAppSettings());
         FunctionUtils.cleanUpStagingFolder(stagingFolder);

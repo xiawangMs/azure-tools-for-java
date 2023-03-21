@@ -79,8 +79,9 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final Runnable execute = () -> {
             try {
                 final SpringCloudDeployment springCloudDeployment = this.execute(messager);
-                messager.success("");
-                AzureTaskManager.getInstance().runInBackground("get deployment status", () -> {
+                messager.info(DEPLOYMENT_SUCCEED);
+                processHandler.notifyComplete();
+                AzureTaskManager.getInstance().runInBackground(NOTIFICATION_TITLE, () -> {
                     final SpringCloudApp app = springCloudDeployment.getParent();
                     if (!springCloudDeployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
                         messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE, getOpenStreamingLogAction(springCloudDeployment));
