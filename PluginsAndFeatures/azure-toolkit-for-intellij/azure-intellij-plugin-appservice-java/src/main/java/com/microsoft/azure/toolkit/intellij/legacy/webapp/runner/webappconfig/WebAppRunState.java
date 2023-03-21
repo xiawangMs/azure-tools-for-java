@@ -76,11 +76,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
     private final Map<String, String> appSettingsForResourceConnection = new HashMap<>();
-    private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "The app is still starting, " +
-            "you could start streaming log to check if something wrong in server side.";
-    private static final String NOTIFICATION_TITLE = "Querying app status";
-    private static final int DEFAULT_DEPLOYMENT_STATUS_REFRESH_INTERVAL = 10;
-    private static final int DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES = 6;
     private static final String DEPLOYMENT_SUCCEED = "Deployment succeed but the app is still starting at server side.";
 
     /**
@@ -106,23 +101,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         applyResourceConnection(deployTarget, processHandler);
         updateApplicationSettings(deployTarget, processHandler);
         AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, artifact, webAppSettingModel.isDeployToRoot(), processHandler);
-        AzureTaskManager.getInstance().runInBackground("get deployment status", () -> {
-            if (deployTarget.getFormalStatus().isStopped()) {
-                messager.info("Skip waiting deployment status for stopped web app.");
-                return;
-            }
-            if (Optional.ofNullable(deployTarget.getRuntime()).map(Runtime::isWindows).orElse(false)) {
-                messager.info("`waitDeploymentComplete` is not supported in Windows runtime, skip waiting for deployment status.");
-                return;
-            }
-            if (!deployTarget.waitUntilDeploymentReady(DEFAULT_DEPLOYMENT_STATUS_REFRESH_INTERVAL, DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES)) {
-                messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE,
-                        AzureActionManager.getInstance().getAction(AppServiceActionsContributor.START_STREAM_LOG).bind(deployTarget));
-            } else {
-                messager.success(AzureString.format("App({0}) started successfully.", deployTarget.getName()), NOTIFICATION_TITLE,
-                        AzureActionManager.getInstance().getAction(AppServiceActionsContributor.OPEN_IN_BROWSER).bind(deployTarget));
-            }
-        });
         return deployTarget;
     }
 
