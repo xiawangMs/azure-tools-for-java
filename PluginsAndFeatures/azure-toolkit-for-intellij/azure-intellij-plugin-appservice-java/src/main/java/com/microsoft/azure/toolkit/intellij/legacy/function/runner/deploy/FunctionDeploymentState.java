@@ -84,7 +84,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         FunctionAppService.getInstance().deployFunctionApp(target, stagingFolder);
         try {
             if (target instanceof FunctionApp) {
-                AppServiceUtils.listHTTPTriggerUrls((FunctionApp) target);
+                ((FunctionApp) target).listHTTPTriggerUrls();
             }
         } catch (final Exception e) {
             messenger.warning("Deployment succeeded, but failed to list http trigger urls.", null,
