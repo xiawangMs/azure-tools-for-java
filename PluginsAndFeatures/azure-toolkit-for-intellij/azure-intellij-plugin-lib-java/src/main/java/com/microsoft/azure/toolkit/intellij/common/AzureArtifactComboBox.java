@@ -94,7 +94,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     protected String getItemText(Object item) {
         if (item instanceof AzureArtifact) {
             final Integer level = ((AzureArtifact) item).getBytecodeTargetLevel();
-            final String version = level > 7 ? " Java " + level : " Java 1." + level;
+            final String version = level > 7 ? "Java " + level : "Java 1." + level;
             return String.format("%s: %s (%s)", ((AzureArtifact) item).getType(), ((AzureArtifact) item).getName(), version);
         } else {
             return StringUtils.EMPTY;
