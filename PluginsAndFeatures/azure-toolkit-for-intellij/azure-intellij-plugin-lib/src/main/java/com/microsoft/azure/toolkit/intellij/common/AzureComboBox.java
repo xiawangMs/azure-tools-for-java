@@ -18,6 +18,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.ui.UIUtil;
+import com.intellij.util.ui.accessibility.AccessibleContextDelegate;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -40,6 +41,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
@@ -356,21 +358,22 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
 
     @Override
     public synchronized AccessibleContext getAccessibleContext() {
-        if (accessibleContext == null) {
-            accessibleContext = new AccessibleAzureComboBox();
-        }
-        return accessibleContext;
-    }
+        final AccessibleContext context = super.getAccessibleContext();
+        return new AccessibleContextDelegate(context) {
+            @Override
+            public String getAccessibleDescription() {
+                final String requiredDescription = AzureComboBox.this.isRequired() ? "Required" : StringUtils.EMPTY;
+                final String visibleDescription = AzureComboBox.this.isPopupVisible() ? "Expanded" : "Collapsed";
+                return Stream.of(super.getAccessibleDescription(), requiredDescription, visibleDescription)
+                        .filter(StringUtils::isNoneBlank)
+                        .collect(Collectors.joining(StringUtils.SPACE));
+            }
 
-    class AccessibleAzureComboBox extends AccessibleJComboBox {
-        @Override
-        public String getAccessibleDescription() {
-            final String requiredDescription = isRequired() ? "Required" : StringUtils.EMPTY;
-            final String visibleDescription = AzureComboBox.this.isPopupVisible() ? "Expanded" : "Collapsed";
-            return Stream.of(super.getAccessibleDescription(), requiredDescription, visibleDescription)
-                    .filter(StringUtils::isNoneBlank)
-                    .collect(Collectors.joining(StringUtils.SPACE));
-        }
+            @Override
+            protected Container getDelegateParent() {
+                return AzureComboBox.this.getParent();
+            }
+        };
     }
 
     class AzureComboBoxEditor extends BasicComboBoxEditor {
@@ -482,7 +485,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
                     final String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
                     list.stream().filter(item -> filter.test(item, text) && !getItems().contains(item)).forEach(AzureComboBox.this::addItem);
                     getItems().stream().filter(item -> !filter.test(item, text)).forEach(AzureComboBox.this::removeItem);
-                } catch (BadLocationException e) {
+                } catch (final BadLocationException e) {
                     // swallow exception and show all items
                 }
             });

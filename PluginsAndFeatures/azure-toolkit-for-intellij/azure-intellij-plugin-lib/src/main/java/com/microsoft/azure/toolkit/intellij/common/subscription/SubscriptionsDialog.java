@@ -11,12 +11,14 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.BooleanTableCellRenderer;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.intellij.util.ui.accessibility.AccessibleContextDelegate;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureDialogWrapper;
@@ -43,8 +45,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleValue;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -60,10 +62,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
@@ -150,7 +150,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         for (final SimpleSubscription sd : subs) {
             model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd});
         }
-        refreshAccessibleDescription(0, model.getRowCount());
         if (model.getRowCount() <= 0) {
             table.getEmptyText().setText("No subscriptions");
         }
@@ -182,7 +181,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
                 final SimpleSubscription sub = (SimpleSubscription) model.getValueAt(rowIndex, SUBSCRIPTION_COLUMN);
                 sub.setSelected(selected);
             }
-            refreshAccessibleDescription(e.getFirstRow(), e.getLastRow() + 1);
         }
         if (e.getType() == TableModelEvent.UPDATE || e.getType() == TableModelEvent.INSERT) {
             this.updateSelectionInfo.debounce();
@@ -205,6 +203,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         column.setHeaderValue("Selected"); // Don't show title text
         column.setMinWidth(23);
         column.setMaxWidth(23);
+        column.setCellRenderer(new SubscriptionSelectionRenderer(table));
         JTableUtils.enableBatchSelection(table, CHECKBOX_COLUMN);
         table.getTableHeader().setReorderingAllowed(false);
         model.addTableModelListener(this);
@@ -242,18 +241,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
             .addExtraAction(refreshAction);
 
         panelTable = tableToolbarDecorator.createPanel();
-    }
-
-    protected void refreshAccessibleDescription(final int startRow, final int endRow) {
-        final DefaultTableModel model = (DefaultTableModel) table.getModel();
-        IntStream.range(startRow, endRow).forEach(row -> Optional.ofNullable(table.getAccessibleContext())
-                .map(AccessibleContext::getAccessibleTable)
-                .map(table -> table.getAccessibleAt(row, 0))
-                .map(Accessible::getAccessibleContext)
-                .ifPresent(context -> {
-                    final boolean selected = (boolean) model.getValueAt(row, CHECKBOX_COLUMN);
-                    context.setAccessibleName(selected ? "Subscription selected" : "Subscription not selected");
-                }));
     }
 
     @Override
@@ -324,5 +311,31 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
+    }
+
+    @AllArgsConstructor
+    static class SubscriptionSelectionRenderer extends BooleanTableCellRenderer {
+        private JBTable table;
+
+        @Override
+        public AccessibleContext getAccessibleContext() {
+            final AccessibleContext context = super.getAccessibleContext();
+            return new AccessibleContextDelegate(context) {
+                @Override
+                protected Container getDelegateParent() {
+                    return table;
+                }
+
+                @Override
+                public AccessibleValue getAccessibleValue() {
+                    return null;
+                }
+
+                @Override
+                public String getAccessibleName() {
+                    return SubscriptionSelectionRenderer.this.isSelected() ? "Subscription selected" : "Subscription not selected";
+                }
+            };
+        }
     }
 }
