@@ -16,13 +16,13 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.utils.AppServiceUtils;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionAppService;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -82,14 +82,16 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         prepareStagingFolder(stagingFolder, operation);
         // deploy function to Azure
         FunctionAppService.getInstance().deployFunctionApp(target, stagingFolder);
-        try {
-            if (target instanceof FunctionApp) {
-                ((FunctionApp) target).listHTTPTriggerUrls();
+        AzureTaskManager.getInstance().runInBackground("list HTTPTrigger url", () -> {
+            try {
+                if (target instanceof FunctionApp) {
+                    ((FunctionApp) target).listHTTPTriggerUrls();
+                }
+            } catch (final Exception e) {
+                messenger.warning("Failed to list http trigger urls.", null,
+                        AzureActionManager.getInstance().getAction(AppServiceActionsContributor.START_STREAM_LOG).bind(target));
             }
-        } catch (final Exception e) {
-            messenger.warning("Deployment succeeded, but failed to list http trigger urls.", null,
-                    AzureActionManager.getInstance().getAction(AppServiceActionsContributor.START_STREAM_LOG).bind(target));
-        }
+        });
         operation.trackProperties(OperationContext.action().getTelemetryProperties());
         return target;
     }
