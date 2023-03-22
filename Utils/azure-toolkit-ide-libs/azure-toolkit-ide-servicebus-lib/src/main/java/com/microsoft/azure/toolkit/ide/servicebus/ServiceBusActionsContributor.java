@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.servicebus.model.ServiceBusInstance;
+import com.microsoft.azure.toolkit.lib.servicebus.queue.ServiceBusQueue;
 
 import java.util.ArrayList;
 
@@ -59,7 +60,7 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 .withIdParam(AzResource::getName)
                 .register(am);
         new Action<>(RECEIVE_DISABLE_INSTANCE)
-                .visibleWhen(s -> s instanceof ServiceBusInstance)
+                .visibleWhen(s -> s instanceof ServiceBusQueue)
                 .enableWhen(s -> EntityStatus.RECEIVE_DISABLED != s.getEntityStatus())
                 .withLabel("ReceivedDisabled")
                 .withIdParam(AzResource::getName)
