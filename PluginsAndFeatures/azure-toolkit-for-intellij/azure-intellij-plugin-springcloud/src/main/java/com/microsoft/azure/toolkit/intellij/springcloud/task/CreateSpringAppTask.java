@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.springcloud.task;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Task;
-import com.microsoft.azure.toolkit.ide.guidance.view.components.PhasePanel;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
@@ -50,7 +49,6 @@ public class CreateSpringAppTask implements Task {
                 .subscriptionId(cluster.getSubscriptionId())
                 .clusterName(cluster.getName())
                 .resourceGroup(cluster.getResourceGroupName())
-                .runtimeVersion("Java 17")
                 .isPublic(true)
                 .deployment(deploymentConfig).build();
         final SpringCloudDeployment deployment = new DeploySpringCloudAppTask(config).execute();
