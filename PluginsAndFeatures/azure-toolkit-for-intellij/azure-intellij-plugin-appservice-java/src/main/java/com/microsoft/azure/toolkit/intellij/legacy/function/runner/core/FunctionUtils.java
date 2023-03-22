@@ -32,9 +32,10 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
-import com.microsoft.azure.toolkit.intellij.common.IdeUtils;
+import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
 import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
@@ -307,9 +308,9 @@ public class FunctionUtils {
         final Project project = module.getProject();
         final AzureArtifactManager artifactManager = AzureArtifactManager.getInstance(project);
         return artifactManager.getAllSupportedAzureArtifacts().stream()
-                .filter(artifact -> Objects.equals(artifactManager.getModuleFromAzureArtifact(artifact), module))
+                .filter(artifact -> Objects.equals(artifact.getModule(), module))
                 .findFirst()
-                .map(azureArtifact -> artifactManager.getFileForDeployment(azureArtifact))
+                .map(AzureArtifact::getFileForDeployment)
                 .map(File::new)
                 .orElse(null);
     }
@@ -344,7 +345,7 @@ public class FunctionUtils {
         String result;
         try {
             result = ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName(file, GlobalSearchScope.projectScope(module.getProject())))
-                    .stream().filter(m -> IdeUtils.isSameModule(module, ModuleUtil.findModuleForFile(m, module.getProject())))
+                    .stream().filter(m -> ProjectUtils.isSameModule(module, ModuleUtil.findModuleForFile(m, module.getProject())))
                     .sorted(Comparator.comparing(VirtualFile::getCanonicalPath))
                     .findFirst()
                     .map(VirtualFile::getCanonicalPath).orElse(null);
