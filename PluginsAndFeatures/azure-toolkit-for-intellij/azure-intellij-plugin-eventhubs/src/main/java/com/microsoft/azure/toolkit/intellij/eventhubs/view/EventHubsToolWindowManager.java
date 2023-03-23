@@ -96,7 +96,7 @@ public class EventHubsToolWindowManager {
                     final String removeResourceId = resourceIdToNameMap.getKey(displayName);
                     Optional.ofNullable(removeResourceId).ifPresent(r -> {
                         final EventHubsInstance instance = Azure.az(AzureEventHubsNamespace.class).getById(r);
-                        Optional.ofNullable(instance).ifPresent(EventHubsInstance::stopListening);
+                        Optional.ofNullable(instance).ifPresent(EventHubsInstance::stopReceivingMessage);
                         resourceIdToNameMap.removeValue(displayName);
                         final JComponent contentComponent = event.getContent().getComponent();
                         if (contentComponent instanceof EventHubsSendListenPanel) {
