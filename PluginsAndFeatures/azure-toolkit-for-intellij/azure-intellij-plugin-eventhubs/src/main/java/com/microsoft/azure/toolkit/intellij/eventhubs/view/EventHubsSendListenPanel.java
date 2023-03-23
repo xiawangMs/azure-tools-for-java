@@ -61,7 +61,7 @@ public class EventHubsSendListenPanel extends JPanel {
         consoleView.attachToProcess(listenProcessHandler);
         final Runnable execute = () -> {
             OperationContext.current().setMessager(messager);
-            instance.startListening();
+            instance.startReceivingMessage();
         };
         final Disposable subscribe = Mono.fromRunnable(execute)
                 .subscribeOn(Schedulers.boundedElastic())
@@ -75,7 +75,7 @@ public class EventHubsSendListenPanel extends JPanel {
     }
 
     public void stopListeningProcess() {
-        this.instance.stopListening();
+        this.instance.stopReceivingMessage();
         Optional.ofNullable(this.listenProcessHandler).ifPresent(RunProcessHandler::notifyComplete);
         this.listenProcessHandler = null;
     }
@@ -91,7 +91,7 @@ public class EventHubsSendListenPanel extends JPanel {
         this.listenPanel.add(this.consoleView.getComponent(),
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
-        this.sendMessageBtn.setEnabled(this.instance.isActive());
+        this.sendMessageBtn.setEnabled(this.instance.isSendEnabled());
         this.initListeners();
     }
 
@@ -100,7 +100,7 @@ public class EventHubsSendListenPanel extends JPanel {
             final String type = azureEvent.getType();
             final Object source = azureEvent.getSource();
             if (source instanceof EventHubsInstance && ((EventHubsInstance) source).getId().equals(this.instance.getId())) {
-                this.sendMessageBtn.setEnabled(((EventHubsInstance) source).isActive());
+                this.sendMessageBtn.setEnabled(((EventHubsInstance) source).isSendEnabled());
             }
         });
         this.sendMessageBtn.addActionListener(e -> sendMessage());
@@ -112,15 +112,9 @@ public class EventHubsSendListenPanel extends JPanel {
     private void sendMessage() {
         final String message = messageInput.getText();
         messageInput.setText(StringUtils.EMPTY);
-        AzureTaskManager.getInstance().runInBackground("sending message", () -> {
-            this.consoleView.print(String.format("Sending message to event hub (%s)...\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
-            if (this.instance.sendMessage(message)) {
-                this.consoleView.print("Successfully send message ", ConsoleViewContentType.SYSTEM_OUTPUT);
-                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
-                this.consoleView.print(String.format(" to event hub (%s)\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
-            } else {
-                this.consoleView.print(String.format("Failed to send message to event hub (%s)\n", instance.getName()), ConsoleViewContentType.ERROR_OUTPUT);
-            }
+        AzureTaskManager.getInstance().runInBackground("send message",() -> {
+            OperationContext.current().setMessager(new ConsoleMessager(consoleView));
+            instance.sendMessage(message);
         });
     }
 
