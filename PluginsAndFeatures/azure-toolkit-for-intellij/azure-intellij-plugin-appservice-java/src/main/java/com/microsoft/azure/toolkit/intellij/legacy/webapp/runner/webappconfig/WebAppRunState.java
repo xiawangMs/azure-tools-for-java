@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
+import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
@@ -18,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
@@ -26,11 +28,14 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppModule;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -71,6 +76,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
     private final Map<String, String> appSettingsForResourceConnection = new HashMap<>();
+    private static final String DEPLOYMENT_SUCCEED = "Deployment succeed but the app is still starting at server side.";
 
     /**
      * Place to execute the Web App deployment task.
@@ -85,6 +91,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     @Override
     @AzureOperation(name = "user/webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"})
     public WebAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+        final IAzureMessager messager = AzureMessager.getMessager();
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         artifact = new File(getTargetPath());
         if (!artifact.exists()) {
@@ -198,7 +205,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         final String fileName = FileNameUtils.getBaseName(artifact.getName());
         final String fileType = FileNameUtils.getExtension(artifact.getName());
         final String url = getUrl(result, fileName, fileType);
-        processHandler.setText(message("appService.deploy.hint.succeed"));
+        processHandler.setText(DEPLOYMENT_SUCCEED);
         processHandler.setText("URL: " + url);
         if (webAppSettingModel.isOpenBrowserAfterDeployment()) {
             openWebAppInBrowser(url, processHandler);
