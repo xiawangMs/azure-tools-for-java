@@ -98,6 +98,7 @@
         {
           "title": "Deploy",
           "description": "Deploy to Azure Spring App ${context.springApp?.name}",
+          "timeout": 20,
           "task": {
             "name": "task.springcloud.deploy"
           }
