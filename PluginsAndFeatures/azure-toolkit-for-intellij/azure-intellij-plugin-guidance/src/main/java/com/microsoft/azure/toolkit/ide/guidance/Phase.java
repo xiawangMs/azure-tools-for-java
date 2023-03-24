@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.ide.guidance;
 import com.intellij.openapi.Disposable;
 import com.microsoft.azure.toolkit.ide.guidance.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import com.microsoft.azure.toolkit.ide.guidance.view.components.PhasePanel;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
@@ -53,8 +53,7 @@ public class Phase implements Disposable {
 
     @ToString.Exclude
     private Step currentStep;
-    @ToString.Exclude
-    private PhasePanel panel;
+
     @Nullable
     private IAzureMessager output;
     private List<Consumer<Status>> listenerList = new CopyOnWriteArrayList<>();
@@ -193,6 +192,6 @@ public class Phase implements Disposable {
     }
 
     public void expandPhasePanel() {
-        this.panel.toggleDetails(true);
+        AzureEventBus.emit("guidance.phase.expand", this);
     }
 }
