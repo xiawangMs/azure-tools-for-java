@@ -106,7 +106,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         config.setServicePlan(planConfig);
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-            final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
+            final String path = this.selectorApplication.getValue().getFileForDeployment();
             config.setApplication(Paths.get(path));
         }
         return config;

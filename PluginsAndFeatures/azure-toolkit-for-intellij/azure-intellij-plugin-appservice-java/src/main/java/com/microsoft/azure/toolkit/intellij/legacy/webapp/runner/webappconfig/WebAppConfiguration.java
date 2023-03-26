@@ -101,7 +101,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     public Module getModule() {
         final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(this.getProject())
                 .getAzureArtifactById(this.getAzureArtifactType(), this.getArtifactIdentifier());
-        return AzureArtifactManager.getInstance(this.getProject()).getModuleFromAzureArtifact(azureArtifact);
+        return azureArtifact.getModule();
     }
 
     @Nullable
@@ -362,9 +362,9 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void saveArtifact(AzureArtifact azureArtifact) {
         final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
-        webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
+        webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifact.getIdentifier());
         webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
-        webAppSettingModel.setPackaging(azureArtifact == null ? null : azureArtifactManager.getPackaging(azureArtifact));
+        webAppSettingModel.setPackaging(azureArtifact == null ? null : azureArtifact.getPackaging());
     }
 
     public void saveRuntime(final Runtime runtime) {

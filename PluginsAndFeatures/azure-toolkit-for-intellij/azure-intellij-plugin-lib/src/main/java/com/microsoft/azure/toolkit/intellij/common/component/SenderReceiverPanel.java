@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.eventhubs.view;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.process.ProcessAdapter;
@@ -13,10 +13,9 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
+import com.microsoft.azure.toolkit.lib.resource.message.ISenderReceiver;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.Disposable;
@@ -29,23 +28,23 @@ import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
 
-public class EventHubsSendListenPanel extends JPanel {
+public class SenderReceiverPanel extends JPanel {
     @Getter
     private JPanel contentPanel;
     private JButton sendMessageBtn;
     private JBTextField messageInput;
     private JPanel listenPanel;
     private JPanel sendPanel;
-    private final EventHubsInstance instance;
+    private final ISenderReceiver instance;
     private final ConsoleView consoleView;
     @Nullable
     private RunProcessHandler listenProcessHandler;
     private AzureEventBus.EventListener listener;
 
-    public EventHubsSendListenPanel(Project project, EventHubsInstance eventHubsInstance) {
+    public SenderReceiverPanel(Project project, ISenderReceiver ServiceBusInstance) {
         super();
         this.consoleView = new ConsoleViewImpl(project, true);
-        this.instance = eventHubsInstance;
+        this.instance = ServiceBusInstance;
         $$$setupUI$$$();
         this.init();
     }
@@ -61,7 +60,7 @@ public class EventHubsSendListenPanel extends JPanel {
         consoleView.attachToProcess(listenProcessHandler);
         final Runnable execute = () -> {
             OperationContext.current().setMessager(messager);
-            instance.startListening();
+            instance.startReceivingMessage();
         };
         final Disposable subscribe = Mono.fromRunnable(execute)
                 .subscribeOn(Schedulers.boundedElastic())
@@ -75,7 +74,7 @@ public class EventHubsSendListenPanel extends JPanel {
     }
 
     public void stopListeningProcess() {
-        this.instance.stopListening();
+        this.instance.stopReceivingMessage();
         Optional.ofNullable(this.listenProcessHandler).ifPresent(RunProcessHandler::notifyComplete);
         this.listenProcessHandler = null;
     }
@@ -91,7 +90,7 @@ public class EventHubsSendListenPanel extends JPanel {
         this.listenPanel.add(this.consoleView.getComponent(),
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
-        this.sendMessageBtn.setEnabled(this.instance.isActive());
+        this.sendMessageBtn.setEnabled(instance.isSendEnabled());
         this.initListeners();
     }
 
@@ -99,8 +98,8 @@ public class EventHubsSendListenPanel extends JPanel {
         this.listener = new AzureEventBus.EventListener((azureEvent) -> {
             final String type = azureEvent.getType();
             final Object source = azureEvent.getSource();
-            if (source instanceof EventHubsInstance && ((EventHubsInstance) source).getId().equals(this.instance.getId())) {
-                this.sendMessageBtn.setEnabled(((EventHubsInstance) source).isActive());
+            if (source instanceof ISenderReceiver && ((ISenderReceiver) source).getId().equals(this.instance.getId())) {
+                this.sendMessageBtn.setEnabled(instance.isSendEnabled());
             }
         });
         this.sendMessageBtn.addActionListener(e -> sendMessage());
@@ -108,19 +107,12 @@ public class EventHubsSendListenPanel extends JPanel {
         AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
-    @AzureOperation(name = "user/eventhubs.send_message")
     private void sendMessage() {
         final String message = messageInput.getText();
         messageInput.setText(StringUtils.EMPTY);
-        AzureTaskManager.getInstance().runInBackground("sending message", () -> {
-            this.consoleView.print(String.format("Sending message to event hub (%s)...\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
-            if (this.instance.sendMessage(message)) {
-                this.consoleView.print("Successfully send message ", ConsoleViewContentType.SYSTEM_OUTPUT);
-                this.consoleView.print(String.format("\"%s\"", message), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
-                this.consoleView.print(String.format(" to event hub (%s)\n", instance.getName()), ConsoleViewContentType.SYSTEM_OUTPUT);
-            } else {
-                this.consoleView.print(String.format("Failed to send message to event hub (%s)\n", instance.getName()), ConsoleViewContentType.ERROR_OUTPUT);
-            }
+        AzureTaskManager.getInstance().runInBackground("send message",() -> {
+            OperationContext.current().setMessager(new ConsoleMessager(consoleView));
+            instance.sendMessage(message);
         });
     }
 

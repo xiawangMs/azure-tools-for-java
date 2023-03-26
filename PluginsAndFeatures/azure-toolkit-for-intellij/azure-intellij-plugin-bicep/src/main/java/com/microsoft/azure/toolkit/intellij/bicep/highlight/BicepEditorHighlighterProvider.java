@@ -29,13 +29,13 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
     @Override
     @AzureOperation("platform/bicep.get_editor_highlighter")
     public EditorHighlighter getEditorHighlighter(@Nullable Project project, @Nonnull FileType fileType, @Nullable VirtualFile virtualFile, @Nonnull EditorColorsScheme colors) {
-        final TextMateLanguageDescriptor descriptor = TextMateService.getInstance().getLanguageDescriptorByExtension("bicep");
-        if (Objects.isNull(descriptor)) { // register textmate if not registered
-            if (BicepStartupActivity.registerBicepTextMateBundle()) {
-                TextMateService.getInstance().reloadEnabledBundles();
-            }
-        }
         try {
+            final TextMateLanguageDescriptor descriptor = TextMateService.getInstance().getLanguageDescriptorByExtension("bicep");
+            if (Objects.isNull(descriptor)) { // register textmate if not registered
+                if (BicepStartupActivity.registerBicepTextMateBundle()) {
+                    TextMateService.getInstance().reloadEnabledBundles();
+                }
+            }
             return super.getEditorHighlighter(project, fileType, virtualFile, colors);
         } catch (final ProcessCanceledException e) {
             LOG.warn(e);
