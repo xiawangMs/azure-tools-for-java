@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.cache.LRUStack;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
@@ -260,6 +261,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         this.loading = loading;
         SwingUtilities.invokeLater(() -> {
             this.myEditor.rerender();
+            Optional.ofNullable(this.myEditor.getEditorComponent()).ifPresent(c -> c.setEnabled(AzureComboBox.this.isEnabled()));
             this.repaint();
         });
     }

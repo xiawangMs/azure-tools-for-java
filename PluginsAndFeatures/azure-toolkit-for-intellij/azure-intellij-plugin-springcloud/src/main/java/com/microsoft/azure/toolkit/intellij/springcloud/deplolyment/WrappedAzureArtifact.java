@@ -27,6 +27,6 @@ public class WrappedAzureArtifact implements IArtifact {
     @Override
     public File getFile() {
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-        return new File(manager.getFileForDeployment(this.artifact));
+        return new File(this.artifact.getFileForDeployment());
     }
 }

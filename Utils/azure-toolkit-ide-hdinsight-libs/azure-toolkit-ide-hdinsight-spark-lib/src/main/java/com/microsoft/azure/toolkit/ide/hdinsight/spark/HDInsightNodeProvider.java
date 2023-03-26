@@ -63,24 +63,26 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
             Node<SparkClusterNode> jobsNode = new Node<>(sparkClusterNode)
                     .view(new SparkJobNodeView(sparkClusterNode))
                     .clickAction(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW);
-            if (sparkClusterNode.getClusterDetail().getSubscription().getId().equals("[LinkedCluster]"))
+            if (sparkClusterNode.getClusterDetail().getSubscription().getId().equals("[LinkedCluster]")) {
                 return new Node<>(sparkClusterNode)
                         .view(new SparkClusterNodeView(sparkClusterNode))
                         .addInlineAction(ResourceCommonActionsContributor.PIN)
                         .actions(HDInsightActionsContributor.SPARK_ADDITIONAL_CLUSTER_ACTIONS)
                         .addChild(jobsNode)
-                        .addChildren(SparkClusterNode::getSubModules,(module, p) -> new Node<>(module)
+                        .addChildren(SparkClusterNode::getSubModules, (module, p) -> new Node<>(module)
                                 .view(new StorageAccountModuleNodeView(module))
                                 .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager))
                                 .clickAction(HDInsightActionsContributor.OPEN_AZURE_STORAGE_EXPLORER_ON_MODULE));
-            return new Node<>(sparkClusterNode)
-                    .view(new SparkClusterNodeView(sparkClusterNode))
-                    .addInlineAction(ResourceCommonActionsContributor.PIN)
-                    .actions(HDInsightActionsContributor.SPARK_CLUSTER_ACTIONS)
-                    .addChild(jobsNode)
-                    .addChildren(SparkClusterNode::getSubModules,(module, p) -> new Node<>(module)
-                            .view(new StorageAccountModuleNodeView(module))
-                            .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)));
+            } else {
+                return new Node<>(sparkClusterNode)
+                        .view(new SparkClusterNodeView(sparkClusterNode))
+                        .addInlineAction(ResourceCommonActionsContributor.PIN)
+                        .actions(HDInsightActionsContributor.SPARK_CLUSTER_ACTIONS)
+                        .addChild(jobsNode)
+                        .addChildren(SparkClusterNode::getSubModules, (module, p) -> new Node<>(module)
+                                .view(new StorageAccountModuleNodeView(module))
+                                .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager)));
+            }
         } else if (data instanceof StorageAccountNode) {
             final StorageAccountNode storageAccountNode = (StorageAccountNode) data;
             return new Node<>(storageAccountNode)

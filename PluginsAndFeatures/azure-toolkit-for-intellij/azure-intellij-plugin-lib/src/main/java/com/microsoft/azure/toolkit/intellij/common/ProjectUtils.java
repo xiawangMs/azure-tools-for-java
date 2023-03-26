@@ -20,7 +20,7 @@ import java.awt.*;
 import java.util.Objects;
 import java.util.Optional;
 
-public class IdeUtils {
+public class ProjectUtils {
 
     @SuppressWarnings("UnstableApiUsage")
     public static Window getWindow(@Nullable Project project) {
@@ -67,7 +67,7 @@ public class IdeUtils {
 
     private static String getFormalModuleId(@Nullable Module module) {
         return Optional.ofNullable(module).map(Module::getName)
-                .map(name -> StringUtils.removeEnd(name, ".main"))
-                .map(name -> StringUtils.removeEnd(name, ".test")).orElse(null);
+            .map(name -> StringUtils.removeEnd(name, ".main"))
+            .map(name -> StringUtils.removeEnd(name, ".test")).orElse(null);
     }
 }

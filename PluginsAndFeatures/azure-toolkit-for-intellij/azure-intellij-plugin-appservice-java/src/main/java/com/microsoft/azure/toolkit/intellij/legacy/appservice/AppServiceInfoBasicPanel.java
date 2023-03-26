@@ -89,7 +89,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-            final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
+            final String path = this.selectorApplication.getValue().getFileForDeployment();
             result.setApplication(Paths.get(path));
         }
         this.config = result;
