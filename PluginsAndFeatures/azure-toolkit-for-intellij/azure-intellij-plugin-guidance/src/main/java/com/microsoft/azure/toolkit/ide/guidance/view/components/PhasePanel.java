@@ -107,7 +107,13 @@ public class PhasePanel extends JPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-        Optional.ofNullable(listener).ifPresent(l -> AzureEventBus.off("guidance.phase.expand", listener));
+        Optional.ofNullable(listener).ifPresent(l -> {
+            try {
+                AzureEventBus.off("guidance.phase.expand", listener);
+            } catch (IllegalArgumentException iae) {
+                // swallow exception when unregistering a listener that is not registered
+            }
+        });
     }
 
     private void onExpandPhaseEvent(@Nonnull final AzureEvent azureEvent) {
