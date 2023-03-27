@@ -212,7 +212,7 @@ public class AzureWebAppMvpModel {
         final String path = isDeployToRoot || Objects.equals(Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer(), WebContainer.JAVA_SE) ?
                 null : String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
         final WebAppArtifact build = WebAppArtifact.builder().deployType(deployType).path(path).file(file).build();
-        final DeployWebAppTask deployWebAppTask = new DeployWebAppTask(deployTarget, Collections.singletonList(build), true);
+        final DeployWebAppTask deployWebAppTask = new DeployWebAppTask(deployTarget, Collections.singletonList(build), true, false, false);
         deployWebAppTask.doExecute();
         AzureTaskManager.getInstance().runInBackground("get deployment status", () -> {
             if (!deployWebAppTask.waitUntilDeploymentReady(DEFAULT_DEPLOYMENT_STATUS_REFRESH_INTERVAL, DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES)) {
