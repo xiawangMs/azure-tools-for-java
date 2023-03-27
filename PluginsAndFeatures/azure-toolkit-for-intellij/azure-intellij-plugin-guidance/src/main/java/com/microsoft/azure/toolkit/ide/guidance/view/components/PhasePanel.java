@@ -20,6 +20,8 @@ import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -34,6 +36,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class PhasePanel extends JPanel {
     // JBUI.CurrentTheme.Tree.Hover.background(true)
@@ -54,11 +58,11 @@ public class PhasePanel extends JPanel {
     private JLabel outputStatusIcon;
     private JTextPane outputPanel;
     private boolean isOutputBlank = true;
+    private AzureEventBus.EventListener listener;
 
     public PhasePanel(@Nonnull Phase phase) {
         super();
         this.phase = phase;
-        this.phase.setPanel(this);
         $$$setupUI$$$();
         init();
     }
@@ -96,6 +100,20 @@ public class PhasePanel extends JPanel {
         }
         this.updateStatus(this.phase.getStatus());
         this.phase.getContext().addContextListener(ignore -> this.renderDescription());
+        this.listener = new AzureEventBus.EventListener(this::onExpandPhaseEvent);
+        AzureEventBus.on("guidance.phase.expand", listener);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        Optional.ofNullable(listener).ifPresent(l -> AzureEventBus.off("guidance.phase.expand", listener));
+    }
+
+    private void onExpandPhaseEvent(@Nonnull final AzureEvent azureEvent) {
+        if (Objects.equals(azureEvent.getSource(), this.phase)) {
+            toggleDetails(true);
+        }
     }
 
     @AzureOperation(name = "user/guidance.execute_phase.phase", params = {"this.phase.getTitle()"})
@@ -150,7 +168,7 @@ public class PhasePanel extends JPanel {
                 PhasePanel.this.isOutputBlank = StringUtils.isBlank(content);
                 PhasePanel.this.outputPanel.setText(content);
                 PhasePanel.this.updateView(PhasePanel.this.phase.getStatus(), PhasePanel.this.detailsPanel.isVisible());
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
                 // swallow exception when update output panel
             }
             return true;
