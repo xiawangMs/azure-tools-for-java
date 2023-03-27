@@ -136,7 +136,7 @@ public class SenderReceiverPanel extends JPanel {
                 view.print(raw.getMessage().toString(), ConsoleViewContentType.SYSTEM_OUTPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.SUCCESS) {
-                view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_INFO_OUTPUT);
+                view.print(raw.getMessage().toString(), ConsoleViewContentType.USER_INPUT);
                 return true;
             } else if (raw.getType() == IAzureMessage.Type.DEBUG) {
                 view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_DEBUG_OUTPUT);
