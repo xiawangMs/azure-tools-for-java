@@ -15,6 +15,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
@@ -31,7 +32,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -142,6 +147,9 @@ public class Tree extends SimpleTree implements DataProvider {
         @Override
         @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()")
         public synchronized void refreshChildren(boolean... incremental) {
+            if (getData() instanceof AbstractAzResource<?, ?, ?>) {
+                TreeUtils.expandResource(tree, (AbstractAzResource<?, ?, ?>) getData());
+            }
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
                 if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
