@@ -35,7 +35,9 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourcesServiceSubscription;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +66,7 @@ import java.util.stream.StreamSupport;
 
 public class TreeUtils {
     public static final Key<Pair<Object, Long>> HIGHLIGHTED_RESOURCE_KEY = Key.create("TreeHighlightedResource");
-    public static final Key<List<AbstractAzResource<?, ?, ?>>> RESOURCES_TO_SHOW_KEY = Key.create("ResourcesToShow");
+    public static final Key<List<AbstractAzResource<?, ?, ?>>> RESOURCES_TO_FOCUS_KEY = Key.create("ResourcesToFocus");
     public static final int INLINE_ACTION_ICON_OFFSET = 28;
     public static final int INLINE_ACTION_ICON_WIDTH = 16;
     public static final int INLINE_ACTION_ICON_MARGIN = 8;
@@ -273,29 +275,27 @@ public class TreeUtils {
         return node;
     }
 
-    public static void expandResource(@Nonnull final JTree tree, @Nonnull final AbstractAzResource<?, ?, ?> resource) {
-        final List<AbstractAzResource<?, ?, ?>> resourcesToShow = getResourcesToShow(tree);
+    public static void focusResource(@Nonnull final JTree tree, @Nonnull final AbstractAzResource<?, ?, ?> resource) {
+        final List<AbstractAzResource<?, ?, ?>> resourcesToFocus = getResourcesToFocus(tree);
         final DefaultMutableTreeNode node = findResourceTreeNode(tree, resource);
         if (Objects.isNull(node)) {
-            tree.getModel().removeTreeModelListener(TreeShowResourceListener.INSTANCE);
-            tree.getModel().addTreeModelListener(TreeShowResourceListener.INSTANCE);
             final DefaultMutableTreeNode parentNode = getExistingResourceParentNode(tree, resource);
             Optional.ofNullable(parentNode).ifPresent(n -> {
-                resourcesToShow.add(resource);
+                resourcesToFocus.add(resource);
                 expandTreeNode(tree, n);
             });
         } else {
-            expandTreeNode(tree, node);
+            highlightResource(tree, resource);
         }
     }
 
-    private static List<AbstractAzResource<?, ?, ?>> getResourcesToShow(@Nonnull final JTree tree) {
-        final Object clientProperty = tree.getClientProperty(RESOURCES_TO_SHOW_KEY);
+    private static List<AbstractAzResource<?, ?, ?>> getResourcesToFocus(@Nonnull final JTree tree) {
+        final Object clientProperty = tree.getClientProperty(RESOURCES_TO_FOCUS_KEY);
         if (clientProperty instanceof List) {
             return (List<AbstractAzResource<?, ?, ?>>) clientProperty;
         } else {
             final List<AbstractAzResource<?, ?, ?>> result = new ArrayList<>();
-            tree.putClientProperty(RESOURCES_TO_SHOW_KEY, result);
+            tree.putClientProperty(RESOURCES_TO_FOCUS_KEY, result);
             return result;
         }
     }
@@ -304,7 +304,8 @@ public class TreeUtils {
         if (parent instanceof AzureResources) {
             return true;
         }
-        if (Objects.equals(parent, resource.getResourceGroup())) {
+        if (parent instanceof ResourceGroup && StringUtils.equals(((ResourceGroup) parent).getName(), resource.getResourceGroupName()) &&
+                StringUtils.equals(((ResourceGroup) parent).getSubscriptionId(), resource.getSubscriptionId())) {
             return true;
         }
         return (parent instanceof AbstractAzResource<?, ?, ?> && StringUtils.containsIgnoreCase(resource.getId(), ((AbstractAzResource<?, ?, ?>) parent).getId())) ||
@@ -323,8 +324,9 @@ public class TreeUtils {
         return TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), condition);
     }
 
-    static class TreeShowResourceListener extends TreeModelAdapter {
-        static final TreeShowResourceListener INSTANCE = new TreeShowResourceListener();
+    @AllArgsConstructor
+    public static class FocusResourceListener extends TreeModelAdapter {
+        private final JTree tree;
 
         @Override
         protected void process(@NotNull TreeModelEvent event, @NotNull EventType type) {
@@ -332,26 +334,26 @@ public class TreeUtils {
             final Object sourceNode = ArrayUtils.isEmpty(path) ? null : path[path.length - 1];
             if (type == EventType.StructureChanged && sourceNode instanceof Tree.TreeNode<?> && isInAppCentricView((DefaultMutableTreeNode) sourceNode)) {
                 final Tree.TreeNode<?> source = (Tree.TreeNode<?>) sourceNode;
-                final List<AbstractAzResource<?, ?, ?>> resourcesToShow = getResourcesToShow(source.tree);
-                final AbstractAzResource<?, ?, ?> targetResource = resourcesToShow.stream()
-                        .filter(resource -> isParentResource(source.getData(), resource)).findFirst().orElse(null);
-                if (Objects.isNull(targetResource)) {
-                    return;
-                }
-                final Tree.TreeNode<?> treeNode = Objects.equals(source.getData(), targetResource) ? source :
-                        StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)
-                                .filter(node -> node instanceof Tree.TreeNode<?>)
-                                .map(node -> (Tree.TreeNode<?>) node)
-                                .filter(node -> ((Tree.TreeNode<?>) node).getData() != null && isParentResource(((Tree.TreeNode<?>) node).getData(), targetResource))
-                                .findFirst().orElse(null);
-                if (Objects.equals(treeNode.getData(), targetResource)) {
-                    // remove resource from list if it was founded or its parent was not found
-                    resourcesToShow.remove(targetResource);
-                    expandTreeNode(source.tree, treeNode);
-                } else if (Objects.isNull(treeNode)) {
-                    resourcesToShow.remove(targetResource);
-                } else {
-                    expandTreeNode(source.tree, treeNode);
+                final List<AbstractAzResource<?, ?, ?>> resourcesToShow = getResourcesToFocus(tree);
+                final List<AbstractAzResource<?, ?, ?>> targetResources = resourcesToShow.stream()
+                        .filter(resource -> isParentResource(source.getData(), resource)).toList();
+                for (final AbstractAzResource<?, ?, ?> targetResource : targetResources) {
+                    final Tree.TreeNode<?> treeNode = Objects.equals(source.getData(), targetResource) ? source :
+                            StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)
+                                    .filter(node -> node instanceof Tree.TreeNode<?>)
+                                    .map(node -> (Tree.TreeNode<?>) node)
+                                    .filter(node -> ((Tree.TreeNode<?>) node).getData() != null && isParentResource(((Tree.TreeNode<?>) node).getData(), targetResource))
+                                    .findFirst().orElse(null);
+                    if (Objects.isNull(treeNode)) {
+                        // remove resource from list if its parent was not found
+                        resourcesToShow.remove(targetResource);
+                    } else if (Objects.equals(treeNode.getData(), targetResource)) {
+                        // remove resource from list if it was founded
+                        resourcesToShow.remove(targetResource);
+                        focusResource(tree, targetResource);
+                    } else {
+                        expandTreeNode(tree, treeNode);
+                    }
                 }
             }
         }
