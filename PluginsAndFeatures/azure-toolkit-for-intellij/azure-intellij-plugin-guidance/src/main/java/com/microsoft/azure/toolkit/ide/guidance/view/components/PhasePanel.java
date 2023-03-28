@@ -25,9 +25,12 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -38,6 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class PhasePanel extends JPanel {
     // JBUI.CurrentTheme.Tree.Hover.background(true)
@@ -211,8 +215,8 @@ public class PhasePanel extends JPanel {
     }
 
     private void renderDescription() {
-        titleLabel.setText(phase.getRenderedTitle());
-        descPanel.setText(phase.getRenderedDescription());
+        setTextAsync(phase::getRenderedTitle, titleLabel::setText);
+        setTextAsync(phase::getRenderedDescription, descPanel::setText);
     }
 
     @Nonnull
@@ -275,6 +279,14 @@ public class PhasePanel extends JPanel {
         func.consume(c);
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton || component instanceof JTextField || component instanceof JComboBox).forEach(func::consume);
+    }
+
+    static void setTextAsync(final Supplier<String> supplier, @Nonnull final Consumer<String> consumer) {
+        Mono.fromCallable(() -> supplier.get())
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(text -> AzureTaskManager.getInstance().runLater(() -> consumer.consume(text)), (e) -> {
+                    // swallow exception when update text
+                });
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

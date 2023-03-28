@@ -17,6 +17,8 @@ import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.ide.guidance.view.components.PhasePanel.setTextAsync;
+
 public class StepPanel extends JPanel {
     private JPanel contentPanel;
     private JLabel statusIcon;
@@ -55,8 +57,8 @@ public class StepPanel extends JPanel {
     }
 
     private void renderDescription() {
-        titleLabel.setText(step.getRenderedTitle());
-        descPanel.setText(step.getRenderedDescription());
+        setTextAsync(step::getRenderedTitle, titleLabel::setText);
+        setTextAsync(step::getRenderedDescription, descPanel::setText);
     }
 
     private void initOutputPanel() {
