@@ -132,7 +132,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
-        final SpringCloudCluster cluster = app.getParent();
+        app.refresh();
         printPublicUrl(app);
         return deployment;
     }
