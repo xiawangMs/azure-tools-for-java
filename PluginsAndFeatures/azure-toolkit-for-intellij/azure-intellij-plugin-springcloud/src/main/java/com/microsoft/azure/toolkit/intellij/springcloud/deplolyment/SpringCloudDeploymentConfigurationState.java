@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
-import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
@@ -26,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
@@ -171,19 +169,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     }
     @Nullable
     private Action<SpringCloudAppInstance> getOpenStreamingLogAction(@Nullable SpringCloudDeployment deployment) {
-        final List<SpringCloudAppInstance> instances = Optional.ofNullable(deployment)
-                .map(SpringCloudDeployment::getInstances)
-                .orElse(Collections.emptyList());
-        final SpringCloudAppInstance appInstance = instances.stream().max((o1, o2) -> {
-            final DeploymentInstance remote1 = o1.getRemote();
-            final DeploymentInstance remote2 = o2.getRemote();
-            if (Objects.isNull(remote1)) {
-                return -1;
-            } else if (Objects.isNull(remote2)) {
-                return 1;
-            }
-            return StringUtils.compare(remote1.startTime(), remote2.startTime());
-        }).orElse(null);
+        final SpringCloudAppInstance appInstance = Optional.ofNullable(deployment).map(SpringCloudDeployment::getLatestInstance).orElse(null);
         if (Objects.isNull(appInstance)) {
             return null;
         }
