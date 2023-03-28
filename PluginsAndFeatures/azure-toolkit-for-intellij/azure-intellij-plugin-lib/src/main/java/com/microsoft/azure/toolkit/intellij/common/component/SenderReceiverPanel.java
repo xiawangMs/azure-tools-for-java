@@ -6,7 +6,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.components.JBTextArea;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
@@ -32,7 +32,7 @@ public class SenderReceiverPanel extends JPanel {
     @Getter
     private JPanel contentPanel;
     private JButton sendMessageBtn;
-    private JBTextField messageInput;
+    private JBTextArea messageInput;
     private JPanel listenPanel;
     private JPanel sendPanel;
     private final ISenderReceiver instance;
@@ -91,6 +91,9 @@ public class SenderReceiverPanel extends JPanel {
                 new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL,
                         3, 3, null, null, null, 0));
         this.sendMessageBtn.setEnabled(instance.isSendEnabled());
+        this.messageInput.setLineWrap(true);
+        this.messageInput.setWrapStyleWord(true);
+        this.messageInput.setRows(1);
         this.initListeners();
     }
 
@@ -103,7 +106,6 @@ public class SenderReceiverPanel extends JPanel {
             }
         });
         this.sendMessageBtn.addActionListener(e -> sendMessage());
-        this.messageInput.addActionListener(e -> sendMessage());
         AzureEventBus.on("resource.status_changed.resource", listener);
     }
 
