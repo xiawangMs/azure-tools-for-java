@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -114,7 +113,7 @@ public class PhasePanel extends JPanel {
         Optional.ofNullable(listener).ifPresent(l -> {
             try {
                 AzureEventBus.off("guidance.phase.expand", listener);
-            } catch (IllegalArgumentException iae) {
+            } catch (final IllegalArgumentException iae) {
                 // swallow exception when unregistering a listener that is not registered
             }
         });
@@ -215,8 +214,8 @@ public class PhasePanel extends JPanel {
     }
 
     private void renderDescription() {
-        setTextAsync(phase::getRenderedTitle, titleLabel::setText);
-        setTextAsync(phase::getRenderedDescription, descPanel::setText);
+        titleLabel.setText(phase.getRenderedTitle());
+        descPanel.setText(phase.getRenderedDescription());
     }
 
     @Nonnull
@@ -282,9 +281,9 @@ public class PhasePanel extends JPanel {
     }
 
     static void setTextAsync(final Supplier<String> supplier, @Nonnull final Consumer<String> consumer) {
-        Mono.fromCallable(() -> supplier.get())
+        Mono.fromCallable(supplier::get)
                 .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(text -> AzureTaskManager.getInstance().runLater(() -> consumer.consume(text)), (e) -> {
+                .subscribe(text ->SwingUtilities.invokeLater(() -> consumer.consume(text)), (e) -> {
                     // swallow exception when update text
                 });
     }
