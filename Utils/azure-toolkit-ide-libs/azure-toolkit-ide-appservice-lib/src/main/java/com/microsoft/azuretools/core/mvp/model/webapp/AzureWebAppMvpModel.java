@@ -61,7 +61,6 @@ public class AzureWebAppMvpModel {
     private static final int DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES = 6;
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "The app is still starting, " +
             "you could start streaming log to check if something wrong in server side.";
-    private static final String NOTIFICATION_TITLE = "Querying app status";
 
     private AzureWebAppMvpModel() {
     }
@@ -216,10 +215,10 @@ public class AzureWebAppMvpModel {
         deployWebAppTask.doExecute();
         AzureTaskManager.getInstance().runInBackground("get deployment status", () -> {
             if (!deployWebAppTask.waitUntilDeploymentReady(DEFAULT_DEPLOYMENT_STATUS_REFRESH_INTERVAL, DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES)) {
-                AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE,
+                AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, null,
                         AzureActionManager.getInstance().getAction(AppServiceActionsContributor.START_STREAM_LOG).bind(deployTarget));
             } else {
-                AzureMessager.getMessager().success(AzureString.format("App({0}) started successfully.", deployTarget.getName()), NOTIFICATION_TITLE,
+                AzureMessager.getMessager().success(AzureString.format("App({0}) started successfully.", deployTarget.getName()), null,
                         AzureActionManager.getInstance().getAction(AppServiceActionsContributor.OPEN_IN_BROWSER).bind(deployTarget));
             }
         });

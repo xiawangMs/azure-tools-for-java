@@ -181,9 +181,9 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             final SpringCloudApp app = springCloudDeployment.getParent();
             final IAzureMessager messager = AzureMessager.getMessager();
             if (!springCloudDeployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-                messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE, getOpenStreamingLogAction(springCloudDeployment));
+                messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, null, getOpenStreamingLogAction(springCloudDeployment));
             } else {
-                messager.success(AzureString.format("App({0}) started successfully", app.getName()), NOTIFICATION_TITLE,
+                messager.success(AzureString.format("App({0}) started successfully", app.getName()), null,
                         AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_PUBLIC_URL).bind(app),
                         AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_TEST_URL).bind(app));
             }
