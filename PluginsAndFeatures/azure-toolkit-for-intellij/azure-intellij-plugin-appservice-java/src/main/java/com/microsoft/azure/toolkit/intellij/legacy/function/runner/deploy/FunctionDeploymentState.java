@@ -40,7 +40,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBase<?, ?, ?>> {
 
@@ -83,6 +82,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         // deploy function to Azure
         FunctionAppService.getInstance().deployFunctionApp(target, stagingFolder);
         AzureTaskManager.getInstance().runInBackground("list HTTPTrigger url", () -> {
+            OperationContext.current().setMessager(AzureMessager.getDefaultMessager());
             try {
                 if (target instanceof FunctionApp) {
                     ((FunctionApp) target).listHTTPTriggerUrls();

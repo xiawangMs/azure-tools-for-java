@@ -6,13 +6,14 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.components.fields.ExpandableTextField;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.message.ISenderReceiver;
@@ -32,7 +33,7 @@ public class SenderReceiverPanel extends JPanel {
     @Getter
     private JPanel contentPanel;
     private JButton sendMessageBtn;
-    private JBTextField messageInput;
+    private ExpandableTextField messageInput;
     private JPanel listenPanel;
     private JPanel sendPanel;
     private final ISenderReceiver instance;
@@ -56,13 +57,8 @@ public class SenderReceiverPanel extends JPanel {
         this.listenProcessHandler = new RunProcessHandler();
         listenProcessHandler.addDefaultListener();
         listenProcessHandler.startNotify();
-        final ConsoleMessager messager = new ConsoleMessager(consoleView);
         consoleView.attachToProcess(listenProcessHandler);
-        final Runnable execute = () -> {
-            OperationContext.current().setMessager(messager);
-            instance.startReceivingMessage();
-        };
-        final Disposable subscribe = Mono.fromRunnable(execute)
+        final Disposable subscribe = Mono.fromRunnable(this::execute)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe();
         listenProcessHandler.addProcessListener(new ProcessAdapter() {
@@ -114,6 +110,13 @@ public class SenderReceiverPanel extends JPanel {
             OperationContext.current().setMessager(new ConsoleMessager(consoleView));
             instance.sendMessage(message);
         });
+    }
+
+    @AzureOperation(name = "user/eventhubs.start_listening.instance")
+    private void execute() {
+        final ConsoleMessager messager = new ConsoleMessager(consoleView);
+        OperationContext.current().setMessager(messager);
+        instance.startReceivingMessage();
     }
 
     private void $$$setupUI$$$() {

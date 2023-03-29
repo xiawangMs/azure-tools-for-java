@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
-import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
@@ -25,7 +24,6 @@ import com.microsoft.azure.toolkit.intellij.common.utils.JdkUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
@@ -135,7 +133,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.getParent();
-        final SpringCloudCluster cluster = app.getParent();
+        app.refresh();
         printPublicUrl(app);
         return deployment;
     }
@@ -171,22 +169,12 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 .map(SpringCloudApp::getActiveDeployment).orElse(null);
     }
     @Nullable
-    private Action<SpringCloudAppInstance> getOpenStreamingLogAction(@Nullable SpringCloudDeployment deployment) {
-        final List<SpringCloudAppInstance> instances = Optional.ofNullable(deployment)
-                .map(SpringCloudDeployment::getInstances)
-                .orElse(Collections.emptyList());
-        final SpringCloudAppInstance appInstance = instances.stream().max((o1, o2) -> {
-            final DeploymentInstance remote1 = o1.getRemote();
-            final DeploymentInstance remote2 = o2.getRemote();
-            if (Objects.isNull(remote1)) {
-                return -1;
-            } else if (Objects.isNull(remote2)) {
-                return 1;
-            }
-            return StringUtils.compare(remote1.startTime(), remote2.startTime());
-        }).orElse(null);
+    private Action<?> getOpenStreamingLogAction(@Nullable SpringCloudDeployment deployment) {
+        final SpringCloudAppInstance appInstance = Optional.ofNullable(deployment).map(SpringCloudDeployment::getLatestInstance).orElse(null);
         if (Objects.isNull(appInstance)) {
-            return null;
+            return Optional.ofNullable(deployment)
+                    .map(d -> AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.STREAM_LOG_APP).bind(d.getParent()))
+                    .orElse(null);
         }
         return AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.STREAM_LOG).bind(appInstance);
     }
@@ -196,9 +184,9 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             final SpringCloudApp app = springCloudDeployment.getParent();
             final IAzureMessager messager = AzureMessager.getMessager();
             if (!springCloudDeployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-                messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE, getOpenStreamingLogAction(springCloudDeployment));
+                messager.warning(GET_DEPLOYMENT_STATUS_TIMEOUT, null, getOpenStreamingLogAction(springCloudDeployment));
             } else {
-                messager.success(AzureString.format("App({0}) started successfully", app.getName()), NOTIFICATION_TITLE,
+                messager.success(AzureString.format("App({0}) started successfully", app.getName()), null,
                         AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_PUBLIC_URL).bind(app),
                         AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.OPEN_TEST_URL).bind(app));
             }

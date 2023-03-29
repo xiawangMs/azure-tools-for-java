@@ -72,23 +72,19 @@ public class ServiceBusActionsContributor implements IActionsContributor {
                 .register(am);
         new Action<>(SEND_MESSAGE_INSTANCE)
                 .visibleWhen(s -> s instanceof ServiceBusInstance)
-                .enableWhen(s -> s.getFormalStatus(true).isRunning() && s.getEntityStatus() != EntityStatus.SEND_DISABLED)
+                .enableWhen(ServiceBusInstance::isSendEnabled)
                 .withLabel("Send Message")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(START_RECEIVING_INSTANCE)
-                .visibleWhen(s -> s instanceof ServiceBusInstance)
-                .enableWhen(s -> s.getFormalStatus(true).isRunning() &&
-                        s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED &&
-                        !s.isListening())
+                .visibleWhen(s -> s instanceof ServiceBusInstance && !((ServiceBusInstance<?, ?, ?>) s).isListening())
+                .enableWhen(s -> s.getEntityStatus() != EntityStatus.DISABLED && s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED)
                 .withLabel("Start Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(STOP_RECEIVING_INSTANCE)
-                .visibleWhen(s -> s instanceof ServiceBusInstance &&
-                        ((ServiceBusInstance<?, ?, ?>) s).getFormalStatus(true).isRunning() &&
-                        ((ServiceBusInstance<?, ?, ?>) s).getEntityStatus() != EntityStatus.RECEIVE_DISABLED &&
-                        ((ServiceBusInstance<?, ?, ?>) s).isListening())
+                .visibleWhen(s -> s instanceof ServiceBusInstance && ((ServiceBusInstance<?, ?, ?>) s).isListening())
+                .enableWhen(s -> s.getEntityStatus() != EntityStatus.DISABLED && s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED)
                 .withLabel("Stop Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);

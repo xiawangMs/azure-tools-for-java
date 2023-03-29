@@ -34,7 +34,7 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
 
     public void startStreamingLog(Flux<String> logStreaming) {
         if (!isActive()) {
-            printlnToConsole(message("appService.logStreaming.hint.connect"), SYSTEM_OUTPUT);
+            printlnToConsole(message("app.logStreaming.hint.connect"), SYSTEM_OUTPUT);
             subscription = logStreaming.subscribeOn(Schedulers.boundedElastic())
                     .doAfterTerminate(() -> printlnToConsole(message("appService.logStreaming.hint.disconnected"), SYSTEM_OUTPUT))
                     .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
