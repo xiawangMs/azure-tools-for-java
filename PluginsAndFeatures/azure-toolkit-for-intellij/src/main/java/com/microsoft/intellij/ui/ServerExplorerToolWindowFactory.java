@@ -20,7 +20,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
-import com.intellij.ui.ComponentUtil;
+import com.intellij.ui.ClientProperty;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -47,10 +48,6 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,8 +64,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -107,16 +111,21 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         treeModelMap.put(project, treeModel);
 
         // initialize tree
-        ComponentUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
+        ClientProperty.put(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
         tree.setRootVisible(false);
         AzureEventBus.on("azure.explorer.highlight_resource", new AzureEventBus.EventListener(e -> TreeUtils.highlightResource(tree, e.getSource())));
+        AzureEventBus.on("resource.creation_started.resource", new AzureEventBus.EventListener(e -> {
+            if (e.getSource() instanceof AbstractAzResource<?, ?, ?>) {
+                TreeUtils.focusResource(tree, (AbstractAzResource<?, ?, ?>) e.getSource());
+            }
+        }));
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules()
             .stream()
             .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree))
-            .collect(Collectors.toList());
+            .toList();
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> {
             modules.forEach(m -> m.clearChildren());
@@ -153,7 +162,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // setup toolbar icons
         addToolbarItems(toolWindow, project, azureModule);
-
+        tree.getModel().addTreeModelListener(new TreeUtils.FocusResourceListener(tree));
     }
 
     private void treeMousePressed(MouseEvent e, JTree tree) {

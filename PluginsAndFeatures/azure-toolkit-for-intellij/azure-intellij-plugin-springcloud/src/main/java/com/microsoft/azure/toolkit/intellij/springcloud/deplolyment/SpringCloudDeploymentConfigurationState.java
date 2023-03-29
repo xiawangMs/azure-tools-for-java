@@ -81,13 +81,14 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             try {
                 final SpringCloudDeployment springCloudDeployment = this.execute(messager);
                 messager.info(DEPLOYMENT_SUCCEED);
+                processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_RESULT, true);
                 processHandler.notifyComplete();
                 waitUntilAppReady(springCloudDeployment);
-                processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_RESULT, true);
             } catch (final Exception e) {
                 messager.error(e, "Azure", retry, getOpenStreamingLogAction(getDeploymentFromConfig()));
                 processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_RESULT, false);
                 processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_EXCEPTION, e);
+                processHandler.notifyProcessTerminated(-1);
             }
         };
         final Disposable subscribe = Mono.fromRunnable(execute)
