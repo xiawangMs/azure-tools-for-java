@@ -168,10 +168,12 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 .map(SpringCloudApp::getActiveDeployment).orElse(null);
     }
     @Nullable
-    private Action<SpringCloudAppInstance> getOpenStreamingLogAction(@Nullable SpringCloudDeployment deployment) {
+    private Action<?> getOpenStreamingLogAction(@Nullable SpringCloudDeployment deployment) {
         final SpringCloudAppInstance appInstance = Optional.ofNullable(deployment).map(SpringCloudDeployment::getLatestInstance).orElse(null);
         if (Objects.isNull(appInstance)) {
-            return null;
+            return Optional.ofNullable(deployment)
+                    .map(d -> AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.STREAM_LOG_APP).bind(d.getParent()))
+                    .orElse(null);
         }
         return AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.STREAM_LOG).bind(appInstance);
     }
