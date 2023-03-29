@@ -29,6 +29,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask.APPINSIGHTS_INSTRUMENTATION_KEY;
+
 public class FunctionAppService {
 
     private static final FunctionAppService instance = new FunctionAppService();
@@ -38,6 +40,11 @@ public class FunctionAppService {
     }
 
     public FunctionAppConfig getFunctionAppConfigFromExistingFunction(@Nonnull final FunctionApp functionApp) {
+        final String applicationInsightsKey = Optional.ofNullable(functionApp.getAppSettings()).map(m -> m.get(APPINSIGHTS_INSTRUMENTATION_KEY)).orElse(null);
+        final MonitorConfig monitorConfig = MonitorConfig.builder()
+                .diagnosticConfig(functionApp.getDiagnosticConfig())
+                .applicationInsightsConfig(ApplicationInsightsConfig.builder().instrumentationKey(applicationInsightsKey).build())
+                .build();
         return FunctionAppConfig.builder()
                 .resourceId(functionApp.getId())
                 .name(functionApp.getName())
@@ -46,6 +53,7 @@ public class FunctionAppService {
                 .resourceGroup(ResourceGroupConfig.fromResource(functionApp.getResourceGroup()))
                 .subscription(functionApp.getSubscription())
                 .appSettings(functionApp.getAppSettings())
+                .monitorConfig(monitorConfig)
                 .servicePlan(AppServicePlanConfig.fromResource(functionApp.getAppServicePlan())).build();
     }
 

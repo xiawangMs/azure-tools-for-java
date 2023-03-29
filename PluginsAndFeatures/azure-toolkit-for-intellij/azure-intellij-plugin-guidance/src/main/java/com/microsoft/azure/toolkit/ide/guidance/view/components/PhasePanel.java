@@ -28,6 +28,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class PhasePanel extends JPanel {
     // JBUI.CurrentTheme.Tree.Hover.background(true)
@@ -107,7 +110,13 @@ public class PhasePanel extends JPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-        Optional.ofNullable(listener).ifPresent(l -> AzureEventBus.off("guidance.phase.expand", listener));
+        Optional.ofNullable(listener).ifPresent(l -> {
+            try {
+                AzureEventBus.off("guidance.phase.expand", listener);
+            } catch (final IllegalArgumentException iae) {
+                // swallow exception when unregistering a listener that is not registered
+            }
+        });
     }
 
     private void onExpandPhaseEvent(@Nonnull final AzureEvent azureEvent) {
@@ -269,6 +278,14 @@ public class PhasePanel extends JPanel {
         func.consume(c);
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> doForOffsprings((JComponent) child, func));
         Arrays.stream(c.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton || component instanceof JTextField || component instanceof JComboBox).forEach(func::consume);
+    }
+
+    static void setTextAsync(final Supplier<String> supplier, @Nonnull final Consumer<String> consumer) {
+        Mono.fromCallable(supplier::get)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(text ->SwingUtilities.invokeLater(() -> consumer.consume(text)), (e) -> {
+                    // swallow exception when update text
+                });
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

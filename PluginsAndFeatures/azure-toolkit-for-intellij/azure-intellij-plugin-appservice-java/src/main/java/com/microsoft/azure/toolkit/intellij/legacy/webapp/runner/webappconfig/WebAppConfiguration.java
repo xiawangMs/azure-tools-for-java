@@ -98,10 +98,11 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         this.webAppSettingModel.setAppSettingsKey(appSettingsKey);
     }
 
+    @Nullable
     public Module getModule() {
         final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(this.getProject())
                 .getAzureArtifactById(this.getAzureArtifactType(), this.getArtifactIdentifier());
-        return azureArtifact.getModule();
+        return Optional.ofNullable(azureArtifact).map(AzureArtifact::getModule).orElse(null);
     }
 
     @Nullable

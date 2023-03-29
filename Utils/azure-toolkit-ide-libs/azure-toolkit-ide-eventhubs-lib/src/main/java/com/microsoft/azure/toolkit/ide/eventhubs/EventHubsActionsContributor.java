@@ -61,16 +61,14 @@ public class EventHubsActionsContributor implements IActionsContributor {
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(START_LISTENING_INSTANCE)
-                .visibleWhen(s -> s instanceof EventHubsInstance)
-                .enableWhen(s -> s.getEntityStatus() != EntityStatus.RECEIVE_DISABLED && s.getEntityStatus() != EntityStatus.DISABLED)
+                .visibleWhen(s -> s instanceof EventHubsInstance && !((EventHubsInstance) s).isListening())
+                .enableWhen(s -> s.getEntityStatus() != EntityStatus.DISABLED)
                 .withLabel("Start Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
         new Action<>(STOP_LISTENING_INSTANCE)
-                .visibleWhen(s -> s instanceof EventHubsInstance &&
-                        ((EventHubsInstance) s).getFormalStatus(true).isRunning() &&
-                        ((EventHubsInstance) s).getEntityStatus() != EntityStatus.RECEIVE_DISABLED &&
-                        ((EventHubsInstance) s).isListening())
+                .visibleWhen(s -> s instanceof EventHubsInstance && ((EventHubsInstance) s).isListening())
+                .enableWhen(s -> s.getEntityStatus() != EntityStatus.DISABLED)
                 .withLabel("Stop Listening")
                 .withIdParam(AbstractAzResource::getName)
                 .register(am);
