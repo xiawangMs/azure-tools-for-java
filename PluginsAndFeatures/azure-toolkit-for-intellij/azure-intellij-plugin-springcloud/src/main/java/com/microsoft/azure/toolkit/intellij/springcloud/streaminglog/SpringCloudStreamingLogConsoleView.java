@@ -24,6 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
+
 public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
 
     private ConsoleViewStatus status;
@@ -64,7 +66,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             }
             setStatus(ConsoleViewStatus.ACTIVE);
         }
-        this.print("Streaming Log Start.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+        this.print(message("appService.logStreaming.hint.connect") + System.lineSeparator(), ConsoleViewContentType.SYSTEM_OUTPUT);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
             try (final Scanner scanner = new Scanner(new InputStreamReader(logInputStream))) {
@@ -78,7 +80,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             } catch (final Exception e) {
                 this.print(String.format("Streaming Log is interrupted due to error : %s.\n", e.getMessage()), ConsoleViewContentType.SYSTEM_OUTPUT);
             } finally {
-                print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+                print(message("appService.logStreaming.hint.disconnected") + System.lineSeparator(),  ConsoleViewContentType.SYSTEM_OUTPUT);
                 setStatus(ConsoleViewStatus.STOPPED);
             }
         });
