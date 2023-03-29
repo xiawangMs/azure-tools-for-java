@@ -17,14 +17,13 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.intellij.common.utils.JdkUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -111,25 +110,26 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         final Optional<File> opFile = Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).map(IArtifact::getFile);
         final Action.Id<Void> REOPEN = Action.Id.of("user/springcloud.reopen_deploy_dialog");
-        final Action<Void> reopen = new Action<>(REOPEN)
-            .withHandler((v) -> DeploySpringCloudAppAction.deploy(this.config, this.project));
+        final Action<Void> reopen = new Action<>(REOPEN).withHandler((v) -> DeploySpringCloudAppAction.deploy(this.config, this.project));
         if (opFile.isEmpty() || opFile.filter(File::exists).isEmpty()) {
             throw new AzureToolkitRuntimeException(
-                message("springcloud.deploy_app.no_artifact").toString(),
-                message("springcloud.deploy_app.no_artifact.tips").toString(),
-                reopen.withLabel("Add BeforeRunTask"));
+                    message("springcloud.deploy_app.no_artifact").toString(),
+                    message("springcloud.deploy_app.no_artifact.tips").toString(),
+                    reopen.withLabel("Add BeforeRunTask"));
         }
-        final Integer appVersion = Optional.of(appConfig.getDeployment().getRuntimeVersion())
-            .map(v -> v.split("_")[1]).map(Integer::parseInt)
-            .orElseThrow(() -> new AzureToolkitRuntimeException("Invalid runtime version: " + appConfig.getDeployment().getRuntimeVersion()));
-        final Integer artifactVersion = JdkUtils.getBytecodeLanguageLevel(opFile.get());
-        if (Objects.nonNull(artifactVersion) && artifactVersion > appVersion) {
-            final AzureString message = AzureString.format(
-                "The bytecode version of artifact (%s) is \"%s (%s)\", " +
-                    "which is incompatible with the runtime \"%s\" of the target app (%s). " +
-                    "This will cause the App to fail to start normally after deploying. Please consider rebuilding the artifact or selecting another app.",
-                opFile.get().getName(), artifactVersion + 44, "Java " + artifactVersion, "Java " + appVersion, appConfig.getAppName());
-            throw new AzureToolkitRuntimeException(message.toString(), reopen.withLabel("Reopen Deploy Dialog"));
+        if (!config.getApp().getParent().isEnterpriseTier()) {
+            final Integer appVersion = Optional.of(appConfig.getDeployment().getRuntimeVersion())
+                    .map(v -> v.split("_")[1]).map(Integer::parseInt)
+                    .orElseThrow(() -> new AzureToolkitRuntimeException("Invalid runtime version: " + appConfig.getDeployment().getRuntimeVersion()));
+            final Integer artifactVersion = JdkUtils.getBytecodeLanguageLevel(opFile.get());
+            if (Objects.nonNull(artifactVersion) && artifactVersion > appVersion) {
+                final AzureString message = AzureString.format(
+                        "The bytecode version of artifact (%s) is \"%s (%s)\", " +
+                                "which is incompatible with the runtime \"%s\" of the target app (%s). " +
+                                "This will cause the App to fail to start normally after deploying. Please consider rebuilding the artifact or selecting another app.",
+                        opFile.get().getName(), artifactVersion + 44, "Java " + artifactVersion, "Java " + appVersion, appConfig.getAppName());
+                throw new AzureToolkitRuntimeException(message.toString(), reopen.withLabel("Reopen Deploy Dialog"));
+            }
         }
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
