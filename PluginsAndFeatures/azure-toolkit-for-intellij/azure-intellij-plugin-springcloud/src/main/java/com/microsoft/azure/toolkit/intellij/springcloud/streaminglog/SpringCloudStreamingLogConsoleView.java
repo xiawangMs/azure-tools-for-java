@@ -66,7 +66,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             }
             setStatus(ConsoleViewStatus.ACTIVE);
         }
-        this.print(message("appService.logStreaming.hint.connect") + System.lineSeparator(), ConsoleViewContentType.SYSTEM_OUTPUT);
+        this.print(message("app.logStreaming.hint.connect") + System.lineSeparator(), ConsoleViewContentType.SYSTEM_OUTPUT);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
             try (final Scanner scanner = new Scanner(new InputStreamReader(logInputStream))) {

@@ -28,7 +28,7 @@
         </constraints>
         <properties>
           <icon value="general/contextHelp.png"/>
-          <text value="App may be restarting n the server side, please retry later."/>
+          <text value="App may be restarting on the server side, please retry later."/>
         </properties>
       </component>
     </children>
