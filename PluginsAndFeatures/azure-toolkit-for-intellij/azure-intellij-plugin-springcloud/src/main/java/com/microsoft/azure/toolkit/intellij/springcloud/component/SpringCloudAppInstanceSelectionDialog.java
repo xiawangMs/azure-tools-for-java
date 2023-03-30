@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.ListCellRendererWithRightAlignedComponent;
@@ -37,6 +38,7 @@ public class SpringCloudAppInstanceSelectionDialog extends DialogWrapper {
         super(project, false);
         setTitle("Select Instance");
         init();
+        this.tipsLabel.setIcon(AllIcons.General.ContextHelp);
         cbInstances.setRenderer(new ListCellRendererWithRightAlignedComponent<>() {
             @Override
             protected void customize(final SpringCloudAppInstance deploymentInstance) {
