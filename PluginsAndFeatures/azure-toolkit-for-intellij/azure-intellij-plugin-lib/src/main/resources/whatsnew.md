@@ -1,6 +1,22 @@
 <!-- Version: 3.74.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.75.0
+### Added
+- New course about `Azure Spring Apps` in `Getting Started with Azure` course list.
+- Resource Management of `Azure Database for PostgreSQL flexible servers`.
+- Add `Azure Service Bus` support in Azure Toolkits.
+  - Resource Management in Azure explorer.
+  - Simple Service Bus client to send/receive messages.
+
+### Changed
+- Warn user if bytecode version of deploying artifact is not compatible of the runtime of target Azure Spring app.
+- JDK version of current project is used as the default runtime of creating Spring App.
+
+### Fixed
+- 'Send Message' action is missing if there is a long text to send
+- [#7374](https://github.com/microsoft/azure-tools-for-java/issues/7374): Uncaught Exception com.microsoft.azure.toolkit.lib.common.operation.OperationException: initialize editor highlighter for Bicep files
+
 ## 3.74.0
 ### Added
 - Support IntelliJ 2023.1 EAP.
