@@ -147,9 +147,6 @@ public class Tree extends SimpleTree implements DataProvider {
         @Override
         @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()")
         public synchronized void refreshChildren(boolean... incremental) {
-            if (getData() instanceof AbstractAzResource<?, ?, ?>) {
-                TreeUtils.focusResource(tree, (AbstractAzResource<?, ?, ?>) getData());
-            }
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
                 if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
