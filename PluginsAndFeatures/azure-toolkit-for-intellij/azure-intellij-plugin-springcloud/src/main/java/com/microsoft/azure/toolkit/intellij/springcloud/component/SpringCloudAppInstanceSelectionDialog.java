@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -35,6 +36,7 @@ public class SpringCloudAppInstanceSelectionDialog extends DialogWrapper {
     public SpringCloudAppInstanceSelectionDialog(@Nullable final Project project, SpringCloudApp app) {
         super(project, false);
         setTitle("Select Instance");
+        init();
         cbInstances.setRenderer(new ListCellRendererWithRightAlignedComponent<>() {
             @Override
             protected void customize(final SpringCloudAppInstance deploymentInstance) {
@@ -57,7 +59,6 @@ public class SpringCloudAppInstanceSelectionDialog extends DialogWrapper {
             tipsLabel.setVisible(false);
             return instances;
         });
-        init();
     }
 
     public SpringCloudAppInstance getInstance() {
@@ -82,4 +83,15 @@ public class SpringCloudAppInstanceSelectionDialog extends DialogWrapper {
         return pnlRoot;
     }
 
+    private void createUIComponents() {
+        this.cbInstances = new AzureComboBox<>() {
+            @Override
+            protected String getItemText(Object item) {
+                if (item == null) {
+                    return StringUtils.EMPTY;
+                }
+                return ((SpringCloudAppInstance) item).getName();
+            }
+        };
+    }
 }
