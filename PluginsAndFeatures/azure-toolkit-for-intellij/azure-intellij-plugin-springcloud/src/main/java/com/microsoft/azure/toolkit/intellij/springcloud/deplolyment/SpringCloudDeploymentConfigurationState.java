@@ -122,7 +122,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             .get(appConfig.getClusterName(), appConfig.getResourceGroup());
         if (!Optional.ofNullable(cluster).map(SpringCloudCluster::isEnterpriseTier).orElse(true)) {
             final Integer appVersion = Optional.of(appConfig.getDeployment().getRuntimeVersion())
-                    .map(v -> v.split("_")[1]).map(Integer::parseInt)
+                    .map(v -> v.split("\\s|_")[1]).map(Integer::parseInt)
                     .orElseThrow(() -> new AzureToolkitRuntimeException("Invalid runtime version: " + appConfig.getDeployment().getRuntimeVersion()));
             final Integer artifactVersion = JdkUtils.getBytecodeLanguageLevel(opFile.get());
             if (Objects.nonNull(artifactVersion) && artifactVersion > appVersion) {
