@@ -76,9 +76,7 @@ public class AzureArtifactManager {
             .map(p -> AzureArtifact.createFromGradleProject(p, project))
             .toList());
         final List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        azureArtifacts.addAll(mavenProjects.stream()
-            .filter(m -> !StringUtils.equalsIgnoreCase(m.getPackaging(), "pom"))
-            .map(p -> AzureArtifact.createFromMavenProject(p, project)).toList());
+        azureArtifacts.addAll(mavenProjects.stream().map(p -> AzureArtifact.createFromMavenProject(p, project)).toList());
 
         final List<Artifact> artifactList = MavenRunTaskUtil.collectProjectArtifact(project);
         azureArtifacts.addAll(artifactList.stream().map(p -> AzureArtifact.createFromArtifact(p, project)).toList());
