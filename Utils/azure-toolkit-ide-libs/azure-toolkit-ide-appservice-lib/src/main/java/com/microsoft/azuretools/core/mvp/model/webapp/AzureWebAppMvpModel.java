@@ -31,6 +31,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -61,7 +62,6 @@ public class AzureWebAppMvpModel {
     private static final int DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES = 6;
     private static final String GET_DEPLOYMENT_STATUS_TIMEOUT = "The app is still starting, " +
             "you could start streaming log to check if something wrong in server side.";
-    private static final String NOTIFICATION_TITLE = "Querying app status";
 
     private AzureWebAppMvpModel() {
     }
@@ -212,14 +212,15 @@ public class AzureWebAppMvpModel {
         final String path = isDeployToRoot || Objects.equals(Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer(), WebContainer.JAVA_SE) ?
                 null : String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
         final WebAppArtifact build = WebAppArtifact.builder().deployType(deployType).path(path).file(file).build();
-        final DeployWebAppTask deployWebAppTask = new DeployWebAppTask(deployTarget, Collections.singletonList(build), true);
+        final DeployWebAppTask deployWebAppTask = new DeployWebAppTask(deployTarget, Collections.singletonList(build), true, false, false);
         deployWebAppTask.doExecute();
         AzureTaskManager.getInstance().runInBackground("get deployment status", () -> {
+            OperationContext.current().setMessager(AzureMessager.getDefaultMessager());
             if (!deployWebAppTask.waitUntilDeploymentReady(DEFAULT_DEPLOYMENT_STATUS_REFRESH_INTERVAL, DEFAULT_DEPLOYMENT_STATUS_MAX_REFRESH_TIMES)) {
-                AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE,
+                AzureMessager.getMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, null,
                         AzureActionManager.getInstance().getAction(AppServiceActionsContributor.START_STREAM_LOG).bind(deployTarget));
             } else {
-                AzureMessager.getMessager().success(AzureString.format("App({0}) started successfully.", deployTarget.getName()), NOTIFICATION_TITLE,
+                AzureMessager.getMessager().success(AzureString.format("App({0}) started successfully.", deployTarget.getName()), null,
                         AzureActionManager.getInstance().getAction(AppServiceActionsContributor.OPEN_IN_BROWSER).bind(deployTarget));
             }
         });

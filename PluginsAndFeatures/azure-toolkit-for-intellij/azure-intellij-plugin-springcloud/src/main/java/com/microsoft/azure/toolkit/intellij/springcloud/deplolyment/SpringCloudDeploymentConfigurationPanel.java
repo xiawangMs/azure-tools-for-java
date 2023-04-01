@@ -128,8 +128,8 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         final AzureArtifact artifact = this.selectorArtifact.getValue();
         final SpringCloudApp app = this.selectorApp.getValue();
         final AzureTaskManager manager = AzureTaskManager.getInstance();
-        if (app == null || artifact == null) {
-            manager.runLater(() -> this.validationMsg.setVisible(false));
+        if (app == null || artifact == null || app.getParent().isEnterpriseTier()) {
+            manager.runLater(() -> this.validationMsg.setVisible(false), AzureTask.Modality.ANY);
             return;
         }
         manager.runOnPooledThread(() -> {

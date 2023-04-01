@@ -62,7 +62,7 @@
     },
     {
       "title": "Prepare",
-      "description": "Create resources and related resource connection for deployment",
+      "description": "Create spring app for deployment",
       "steps": [
         {
           "title": "Create Spring App",

@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
-import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
@@ -19,7 +18,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
@@ -28,14 +26,11 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppModule;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -91,7 +86,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     @Override
     @AzureOperation(name = "user/webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"})
     public WebAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
-        final IAzureMessager messager = AzureMessager.getMessager();
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         artifact = new File(getTargetPath());
         if (!artifact.exists()) {
@@ -176,8 +170,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     }
 
     private Set<String> getAppSettingsToRemove(final WebAppBase<?, ?, ?> target, final Map<String, String> applicationSettings) {
-        return target.getAppSettings().keySet().stream()
-                .filter(key -> !applicationSettings.containsKey(key))
+        return Optional.ofNullable(target.getAppSettings()).map(Map::keySet).orElse(Collections.emptySet())
+                .stream().filter(key -> !applicationSettings.containsKey(key))
                 .collect(Collectors.toSet());
     }
 
@@ -287,7 +281,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
             webAppConfiguration.setWebAppId(app.getId());
         }
         webAppConfiguration.setApplicationSettings(app.getAppSettings());
-        webAppConfiguration.setWebAppName(app.name());
+        webAppConfiguration.setWebAppName(app.getName());
         webAppConfiguration.setWebAppName("");
         webAppConfiguration.setResourceGroup("");
         webAppConfiguration.setAppServicePlanName("");

@@ -11,29 +11,19 @@ import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUt
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.JavaSdk;
-import com.intellij.openapi.projectRoots.JavaSdkType;
-import com.intellij.openapi.projectRoots.JavaSdkVersion;
-import com.intellij.openapi.projectRoots.ProjectJdkTable;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkType;
+import com.intellij.openapi.projectRoots.*;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.util.lang.JavaVersion;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.Objects;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -120,42 +110,12 @@ public class JdkUtils {
         return null;
     }
 
-    /**
-     * copy from Utils#getArtifactCompileVersion
-     */
     @Nullable
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static Integer getBytecodeLanguageLevel(@Nonnull File artifact) {
-        try (final JarFile jarFile = new JarFile(artifact)) {
-            final Manifest manifest = jarFile.getManifest();
-            final String startClass = manifest.getMainAttributes().getValue("Start-Class");
-            final String mainClass = manifest.getMainAttributes().getValue("Main-Class");
-            final String target = StringUtils.isNotBlank(startClass) ? getJarEntryName("BOOT-INF/classes/" + startClass) :
-                StringUtils.isNotBlank(mainClass) ? getJarEntryName(mainClass) : null;
-            final JarEntry jarEntry = StringUtils.isNotBlank(target) ? jarFile.getJarEntry(target) : jarFile.stream()
-                .filter(entry -> StringUtils.endsWith(entry.getName(), ".class"))
-                .findFirst().orElse(null);
-            if (Objects.isNull(jarEntry)) {
-                log.warn("Failed to parse artifact compile version, no class file founded in target artifact");
-                return null;
-            }
-            // Read compile version from class file
-            // Refers https://en.wikipedia.org/wiki/Java_class_file#General_layout
-            final InputStream stream = jarFile.getInputStream(jarEntry);
-            final byte[] version = new byte[2];
-            stream.skip(6);
-            stream.read(version);
-            stream.close();
-            return new BigInteger(version).intValueExact() - 44;
-        } catch (final IOException e) {
-            log.warn(String.format("Failed to parse artifact compile version: %s", e.getMessage()));
+        try {
+            return Utils.getArtifactCompileVersion(artifact);
+        } catch (final Exception e) {
             return null;
         }
-    }
-
-    @Nonnull
-    private static String getJarEntryName(@Nonnull final String className) {
-        final String fullName = StringUtils.replace(className, ".", "/");
-        return fullName + ".class";
     }
 }
