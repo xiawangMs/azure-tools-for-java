@@ -5,7 +5,7 @@
 
 package com.microsoft.intellij.ui.libraries;
 
-import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.azure.toolkit.intellij.AzurePlugin;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
