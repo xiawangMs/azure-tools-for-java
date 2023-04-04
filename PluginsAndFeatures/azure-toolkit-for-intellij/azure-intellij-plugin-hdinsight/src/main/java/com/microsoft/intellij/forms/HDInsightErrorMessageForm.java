@@ -8,8 +8,8 @@ package com.microsoft.intellij.forms;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.intellij.feedback.GithubIssue;
-import com.microsoft.intellij.feedback.ReportableError;
+import com.microsoft.intellij.feedback.HDInsightGithubIssue;
+import com.microsoft.intellij.feedback.HDInsightReportableError;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +18,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ErrorMessageForm extends AzureDialogWrapper {
+//Copied from ErrorMessageForm
+public class HDInsightErrorMessageForm extends AzureDialogWrapper {
     public static final String advancedInfoText = "Show advanced info";
     private JPanel contentPane;
     private JButton buttonOK;
@@ -29,7 +30,7 @@ public class ErrorMessageForm extends AzureDialogWrapper {
     private JButton buttonFireIssue;
     private String errorMessageDetail = "";
 
-    public ErrorMessageForm(String title) {
+    public HDInsightErrorMessageForm(String title) {
         super((Project) null, true);
 
         setModal(true);
@@ -51,7 +52,7 @@ public class ErrorMessageForm extends AzureDialogWrapper {
         showAdvancedInfoCheckBox.setText(advancedInfoText);
 
         buttonFireIssue.addActionListener(event -> {
-            new GithubIssue<>(new ReportableError(title, errorMessageDetail)).withLabel("bug").report();
+            new HDInsightGithubIssue<>(new HDInsightReportableError(title, errorMessageDetail)).withLabel("bug").report();
         });
 
         init();

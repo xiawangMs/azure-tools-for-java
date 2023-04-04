@@ -22,10 +22,10 @@
 
 package com.microsoft.intellij.feedback
 
-class ReportableError(shortMessage: String, private val detailMessage: String)
-            : Reportable(shortMessage){
+class HDInsightReportableError(shortMessage: String, private val detailMessage: String)
+            : HDInsightReportable(shortMessage){
     override val detailInfo
         get() = mapOf(
-                "Error message" to GithubMarkdownFormat.toCode(detailMessage)
+                "Error message" to HDInsightGithubMarkdownFormat.toCode(detailMessage)
         )
 }

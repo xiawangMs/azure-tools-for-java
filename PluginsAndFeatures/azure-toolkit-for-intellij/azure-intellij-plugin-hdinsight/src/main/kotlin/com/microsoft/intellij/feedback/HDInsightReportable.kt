@@ -27,7 +27,7 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.DumbAware
 
-open class Reportable(private val shortMessage: String) : DumbAware {
+open class HDInsightReportable(private val shortMessage: String) : DumbAware {
     val plugin = PluginManagerCore.getPlugin(
         PluginId.getId("com.microsoft.tooling.msservices.intellij.azure")
     )!!
@@ -62,7 +62,7 @@ open class Reportable(private val shortMessage: String) : DumbAware {
                 .reduce { l, r -> "$l\n$r"}
     }
 
-    open fun with(key: String, value: String): Reportable {
+    open fun with(key: String, value: String): HDInsightReportable {
         additionalInfo[key] = value
 
         return this
