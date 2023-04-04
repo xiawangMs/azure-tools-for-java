@@ -26,7 +26,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.KustoFilterComboBox;
-import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeComboBox;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.TimeRangeFilterComboBox;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTable;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.table.LogTableModel;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -60,7 +60,7 @@ public class MonitorLogTablePanel {
     private JPanel contentPanel;
     private JPanel filterPanel;
     private LogTable logTable;
-    private TimeRangeComboBox timeRangeComboBox;
+    private TimeRangeFilterComboBox timeRangeFilterComboBox;
     private KustoFilterComboBox resourceComboBox;
     private KustoFilterComboBox levelComboBox;
     private JButton runButton;
@@ -90,7 +90,7 @@ public class MonitorLogTablePanel {
     }
 
     public String getQueryStringFromFilters(String tableName) {
-        final List<String> queryParams = new ArrayList<>(Arrays.asList(tableName, timeRangeComboBox.getKustoString()));
+        final List<String> queryParams = new ArrayList<>(Arrays.asList(tableName, timeRangeFilterComboBox.getKustoString()));
         if (Objects.nonNull(initResourceId)) {
             queryParams.add(String.format("where _ResourceId == \"%s\"", initResourceId));
         } else if (resourceLabel.isEnabled() && StringUtils.isNotBlank(resourceComboBox.getKustoString())) {
@@ -303,7 +303,7 @@ public class MonitorLogTablePanel {
 
     private void createUIComponents() {
         this.logTable = new LogTable();
-        this.timeRangeComboBox = new TimeRangeComboBox();
+        this.timeRangeFilterComboBox = new TimeRangeFilterComboBox();
         this.exportAction = new AnActionLink("Export", new AnAction() {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {

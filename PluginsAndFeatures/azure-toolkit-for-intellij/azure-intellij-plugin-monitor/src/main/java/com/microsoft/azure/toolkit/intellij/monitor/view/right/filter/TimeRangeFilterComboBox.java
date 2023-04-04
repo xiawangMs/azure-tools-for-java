@@ -9,6 +9,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
+import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.timerange.CustomTimeRangeDialog;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,10 +20,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
-public class TimeRangeComboBox extends AzureComboBox<TimeRangeComboBox.TimeRange> {
+public class TimeRangeFilterComboBox extends AzureComboBox<TimeRangeFilterComboBox.TimeRange> {
     private String customKustoString;
     private boolean isClicked = false;
-    public TimeRangeComboBox() {
+    public TimeRangeFilterComboBox() {
         super();
         final Component component = this.getEditor().getEditorComponent();
         if (component instanceof JTextField) {
