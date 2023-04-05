@@ -30,7 +30,7 @@ public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureF
 
     public CustomTimeRangeDialog() {
         super();
-        this.customTimeRangePanel = new CustomTimeRangePanel(DateFormatUtil.getDateTimeFormat().getDelegate());
+        this.customTimeRangePanel = new CustomTimeRangePanel();
         restoreDate();
         init();
     }

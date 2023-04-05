@@ -20,20 +20,18 @@ public class CustomTimeRangePanel {
     private JCheckBox myUseDateBeforeFilter;
     private TimePicker myDateAfter;
     private TimePicker myDateBefore;
+    private final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public CustomTimeRangePanel() {
-        this(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-    }
-
-    public CustomTimeRangePanel(@NotNull DateFormat dateFormat) {
         $$$setupUI$$$();
-        myDateAfter.setDateFormat(dateFormat);
-        myDateBefore.setDateFormat(dateFormat);
+        myDateAfter.setDateFormat(DATE_FORMAT);
+        myDateBefore.setDateFormat(DATE_FORMAT);
         final ActionListener listener = this::updateAllEnabled;
         myUseDateAfterFilter.addActionListener(listener);
         myUseDateBeforeFilter.addActionListener(listener);
         updateAllEnabled(null);
     }
+
     @NotNull
     public JPanel getPanel() {
         return rootPanel;
