@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.timerange
 
 import com.intellij.openapi.vcs.VcsBundle;
 import com.intellij.openapi.vcs.versionBrowser.StandardVersionFilterComponent;
-import com.intellij.util.text.DateFormatUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class CustomTimeRangePanel {
@@ -22,7 +22,7 @@ public class CustomTimeRangePanel {
     private TimePicker myDateBefore;
 
     public CustomTimeRangePanel() {
-        this(DateFormatUtil.getTimeFormat().getDelegate());
+        this(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }
 
     public CustomTimeRangePanel(@NotNull DateFormat dateFormat) {
