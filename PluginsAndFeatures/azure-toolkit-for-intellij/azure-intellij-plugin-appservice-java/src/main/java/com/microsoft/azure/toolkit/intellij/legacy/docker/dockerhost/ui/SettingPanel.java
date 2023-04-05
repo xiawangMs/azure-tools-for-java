@@ -5,10 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.docker.dockerhost.ui;
 
-import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
-import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import icons.MavenIcons;
-
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -17,27 +14,21 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
+import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.dockerhost.DockerHostRunConfiguration;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-
+import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
+import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
+import javax.annotation.Nonnull;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> {
     private static final String IMAGE_NAME_PREFIX = "localimage";
@@ -48,15 +39,13 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
     private TextFieldWithBrowseButton dockerCertPathTextField;
     private JTextField textImageName;
     private JTextField textTagName;
-    private JPanel pnlArtifact;
     private JLabel lblArtifact;
     private JComboBox<Artifact> cbArtifact;
     private JPanel rootPanel;
     private JPanel pnlDockerCertPath;
     private TextFieldWithBrowseButton dockerFilePathTextField;
-    private JPanel pnlMavenProject;
     private JLabel lblMavenProject;
-    private JComboBox cbMavenProject;
+    private JComboBox<MavenProject> cbMavenProject;
 
     /**
      * Constructor.
@@ -70,29 +59,27 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
         dockerFilePathTextField.addActionListener(e -> {
             String path = dockerFilePathTextField.getText();
             final VirtualFile file = FileChooser.chooseFile(
-                    new FileChooserDescriptor(
-                            true /*chooseFiles*/,
-                            false /*chooseFolders*/,
-                            false /*chooseJars*/,
-                            false /*chooseJarsAsFiles*/,
-                            false /*chooseJarContents*/,
-                            false /*chooseMultiple*/
-                    ),
-                    project,
-                    StringUtils.isEmpty(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
+                new FileChooserDescriptor(
+                    true /*chooseFiles*/,
+                    false /*chooseFolders*/,
+                    false /*chooseJars*/,
+                    false /*chooseJarsAsFiles*/,
+                    false /*chooseJarContents*/,
+                    false /*chooseMultiple*/
+                ),
+                project,
+                StringUtils.isEmpty(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
             );
             if (file != null) {
                 dockerFilePathTextField.setText(file.getPath());
             }
         });
 
-        cbArtifact.addActionListener(e -> {
-            artifactActionPerformed((Artifact) cbArtifact.getSelectedItem());
-        });
+        cbArtifact.addActionListener(e -> artifactActionPerformed((Artifact) cbArtifact.getSelectedItem()));
 
-        cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
+        cbArtifact.setRenderer(new SimpleListCellRenderer<>() {
             @Override
-            public void customize(JList jlist, Artifact artifact, int i, boolean b, boolean b1) {
+            public void customize(@Nonnull JList jlist, Artifact artifact, int i, boolean b, boolean b1) {
                 if (artifact != null) {
                     setIcon(artifact.getArtifactType().getIcon());
                     setText(artifact.getName());
@@ -104,14 +91,14 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
             MavenProject selectedMavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (selectedMavenProject != null) {
                 dockerFilePathTextField.setText(
-                        DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
+                    DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
                 );
             }
         });
 
-        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
+        cbMavenProject.setRenderer(new SimpleListCellRenderer<>() {
             @Override
-            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
+            public void customize(@Nonnull JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
                     setIcon(MavenIcons.MavenProject);
                     setText(mavenProject.toString());
@@ -121,37 +108,37 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
     }
 
     @Override
-    @NotNull
+    @Nonnull
     public String getPanelName() {
         return "Docker Run";
     }
 
     @Override
-    @NotNull
+    @Nonnull
     public JPanel getMainPanel() {
         return rootPanel;
     }
 
     @Override
-    @NotNull
+    @Nonnull
     protected JComboBox<Artifact> getCbArtifact() {
         return cbArtifact;
     }
 
     @Override
-    @NotNull
+    @Nonnull
     protected JLabel getLblArtifact() {
         return lblArtifact;
     }
 
     @Override
-    @NotNull
+    @Nonnull
     protected JComboBox<MavenProject> getCbMavenProject() {
         return cbMavenProject;
     }
 
+    @Nonnull
     @Override
-    @NotNull
     protected JLabel getLblMavenProject() {
         return lblMavenProject;
     }
@@ -162,7 +149,7 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
      * @param conf configuration instance
      */
     @Override
-    public void resetFromConfig(DockerHostRunConfiguration conf) {
+    public void resetFromConfig(@Nonnull DockerHostRunConfiguration conf) {
         if (!isMavenProject()) {
             dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(getProjectBasePath()));
         }
@@ -189,11 +176,8 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
             textTagName.setText(DEFAULT_TAG_NAME);
         }
         if (StringUtils.isEmpty(textDockerHost.getText())) {
-            try {
-                textDockerHost.setText(DefaultDockerClient.fromEnv().uri().toString());
-            } catch (DockerCertificateException e) {
-                e.printStackTrace();
-            }
+            final DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+            textDockerHost.setText(config.getDockerHost().toString());
         }
     }
 
@@ -220,7 +204,8 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
     }
 
     @Override
-    public void disposeEditor() {}
+    public void disposeEditor() {
+    }
 
     private void updateComponentEnabledState() {
         pnlDockerCertPath.setVisible(comboTlsEnabled.isSelected());
@@ -229,10 +214,10 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
     private void onDockerCertPathBrowseButtonClick(ActionEvent event) {
         String path = dockerCertPathTextField.getText();
         final VirtualFile[] files = FileChooser.chooseFiles(
-                new FileChooserDescriptor(false, true, true, false, false, false),
-                dockerCertPathTextField,
-                null,
-                StringUtils.isEmpty(path) ? null : LocalFileSystem.getInstance().findFileByPath(path));
+            new FileChooserDescriptor(false, true, true, false, false, false),
+            dockerCertPathTextField,
+            null,
+            StringUtils.isEmpty(path) ? null : LocalFileSystem.getInstance().findFileByPath(path));
         if (files.length > 0) {
             final StringBuilder builder = new StringBuilder();
             for (VirtualFile file : files) {

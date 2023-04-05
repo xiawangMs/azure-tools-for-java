@@ -8,8 +8,9 @@ package com.microsoft.azure.toolkit.intellij.legacy.docker.action;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -17,6 +18,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
@@ -25,22 +27,20 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings({"ComponentNotRegistered"})
 public class AddDockerSupportAction extends AzureAnAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String NOTIFICATION_TITLE = "Add Docker Support";
@@ -48,9 +48,14 @@ public class AddDockerSupportAction extends AzureAnAction {
     String pomXmlBasePath;
 
     @Override
+    public @Nonnull ActionUpdateThread getActionUpdateThread() {
+        return super.getActionUpdateThread();
+    }
+
+    @Override
     @AzureOperation(name = "user/docker.add_docker_support")
-    public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
-        module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
+    public boolean onActionPerformed(@Nonnull AnActionEvent anActionEvent, @Nullable Operation operation) {
+        module = PlatformDataKeys.MODULE.getData(anActionEvent.getDataContext());
         if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return true;
@@ -60,14 +65,14 @@ public class AddDockerSupportAction extends AzureAnAction {
         String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(module.getProject()).getProjects();
         Optional<MavenProject> res = mavenProjects.stream().filter(mvnprj ->
-                Comparing.equal(Paths.get(mvnprj.getDirectory()).normalize(), Paths.get(pomXmlBasePath).normalize())
+            Comparing.equal(Paths.get(mvnprj.getDirectory()).normalize(), Paths.get(pomXmlBasePath).normalize())
         ).findFirst();
         if (res.isPresent()) {
             MavenProject mvnPrj = res.get();
             String artifactName = mvnPrj.getFinalName() + "." + mvnPrj.getPackaging();
             artifactRelativePath = Paths.get(pomXmlBasePath).toUri()
-                    .relativize(Paths.get(mvnPrj.getBuildDirectory(), artifactName).toUri())
-                    .getPath();
+                .relativize(Paths.get(mvnPrj.getBuildDirectory(), artifactName).toUri())
+                .getPath();
             // pre-define dockerfile content according to artifact type
             if (MavenConstants.TYPE_WAR.equals(mvnPrj.getPackaging())) {
                 // maven war: tomcat
@@ -81,7 +86,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         try {
             // create docker file
             DockerUtil.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
-                    String.format(dockerFileContent, artifactRelativePath));
+                String.format(dockerFileContent, artifactRelativePath));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
                 VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(path.toString());
                 if (virtualDockerFile != null) {
@@ -94,19 +99,10 @@ public class AddDockerSupportAction extends AzureAnAction {
             notifyError(e.getMessage());
             return true;
         }
-        // detect docker daemon
-        String defaultDockerHost = null;
-        try {
-            defaultDockerHost = DefaultDockerClient.fromEnv().uri().toString();
-        } catch (DockerCertificateException e) {
-            EventUtil.logError(operation, ErrorType.userError, e, null, null);
-            e.printStackTrace();
-            // leave defaultDockerHost null
-        }
+
         // print instructions
         String notificationContent = "";
         notificationContent += String.format(Constant.MESSAGE_DOCKERFILE_CREATED, path.normalize()) + "\n";
-        notificationContent += String.format(Constant.MESSAGE_DOCKER_HOST_INFO, defaultDockerHost) + "\n";
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";
         notifyInfo(notificationContent);
@@ -124,31 +120,31 @@ public class AddDockerSupportAction extends AzureAnAction {
     @Override
     @ExceptionNotification
     public void update(AnActionEvent event) {
-        module = DataKeys.MODULE.getData(event.getDataContext());
+        module = PlatformDataKeys.MODULE.getData(event.getDataContext());
         boolean dockerFileExists = false;
         if (module != null) {
             String basePath = getModulePath(module);
             dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
-                    Constant.DOCKERFILE_NAME).toFile().exists();
+                Constant.DOCKERFILE_NAME).toFile().exists();
         }
         event.getPresentation().setEnabledAndVisible(!dockerFileExists);
     }
 
     private void notifyInfo(String msg) {
         Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
-                msg, NotificationType.INFORMATION);
+            msg, NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
     }
 
     private void notifyError(String msg) {
         Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
-                msg, NotificationType.ERROR);
+            msg, NotificationType.ERROR);
         Notifications.Bus.notify(notification);
     }
 
     public static String getModulePath(Module module) {
         return Optional.of(ModuleRootManager.getInstance(module).getContentRoots())
-                .filter(ArrayUtils::isNotEmpty)
-                .map(array -> array[0].getPath()).orElse(null);
+            .filter(ArrayUtils::isNotEmpty)
+            .map(array -> array[0].getPath()).orElse(null);
     }
 }

@@ -5,12 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.docker;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DockerClientBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
@@ -19,6 +21,9 @@ import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.action.AzureActionListenerWrapper;
+import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
@@ -30,17 +35,12 @@ import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
-import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.azure.toolkit.intellij.common.action.AzureActionListenerWrapper;
-import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -52,6 +52,7 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
@@ -70,7 +71,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private static final String TABLE_EMPTY_MESSAGE = "No available items.";
     private static final String ADMIN_NOT_ENABLED = "Admin user is not enabled.";
     private static final String PULL_IMAGE = "Pull Image";
-    private static final String DISPLAY_ID = "Azure Plugin";
     private static final String IMAGE_PULL_SUCCESS = "%s is successfully pulled.";
     private static final String REPO_TAG_NOT_AVAILABLE = "Cannot get Current repository and tag";
 
@@ -114,7 +114,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     /**
      * Constructor of ACR property view.
      */
-    public ContainerRegistryPropertyView(@NotNull Project project, @NotNull final VirtualFile virtualFile) {
+    public ContainerRegistryPropertyView(@Nonnull Project project, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
         this.containerPropertyPresenter = new ContainerRegistryPropertyViewPresenter<>();
         this.containerPropertyPresenter.onAttachView(this);
@@ -149,7 +149,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         });
 
         HideableDecorator propertyDecorator = new HideableDecorator(pnlPropertyHolder,
-                PROPERTY, false /*adjustWindow*/);
+            PROPERTY, false /*adjustWindow*/);
         propertyDecorator.setContentComponent(pnlProperty);
         propertyDecorator.setOn(true);
 
@@ -194,7 +194,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 return;
             }
             String selectedRepo = (String) tblRepo.getModel().getValueAt(selectedRow, 0);
-            if (StringUtils.isEmpty(selectedRepo) || Comparing.equal(selectedRepo, currentRepo)) {
+            if (StringUtils.isEmpty(selectedRepo) || Objects.equals(selectedRepo, currentRepo)) {
                 return;
             }
             currentRepo = selectedRepo;
@@ -205,7 +205,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         btnRepoRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public @Nonnull ActionUpdateThread getActionUpdateThread() {
+                return super.getActionUpdateThread();
+            }
+
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
                 disableWidgets(true, true);
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.onRefreshRepositories(subscriptionId, registryId, true /*isNextPage*/);
@@ -214,7 +219,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         btnRepoPrevious = new AnActionButton(PREVIOUS_PAGE, AllIcons.Actions.MoveUp) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public @Nonnull ActionUpdateThread getActionUpdateThread() {
+                return super.getActionUpdateThread();
+            }
+
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
                 disableWidgets(true, true);
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.onListRepositories(subscriptionId, registryId, false /*isNextPage*/);
@@ -223,7 +233,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         btnRepoNext = new AnActionButton(NEXT_PAGE, AllIcons.Actions.MoveDown) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public @Nonnull ActionUpdateThread getActionUpdateThread() {
+                return super.getActionUpdateThread();
+            }
+
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
                 disableWidgets(true, true);
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*isNextPage*/);
@@ -231,11 +246,9 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         };
 
         ToolbarDecorator repoDecorator = ToolbarDecorator.createDecorator(tblRepo)
-                .addExtraActions(btnRepoRefresh)
-                .addExtraAction(btnRepoPrevious)
-                .addExtraAction(btnRepoNext)
-                .setToolbarPosition(ActionToolbarPosition.BOTTOM)
-                .setToolbarBorder(JBUI.Borders.empty());
+            .addExtraActions(btnRepoRefresh, btnRepoPrevious, btnRepoNext)
+            .setToolbarPosition(ActionToolbarPosition.BOTTOM)
+            .setToolbarBorder(JBUI.Borders.empty());
 
         pnlRepoTable = repoDecorator.createPanel();
 
@@ -267,7 +280,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         });
         btnTagRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public @Nonnull ActionUpdateThread getActionUpdateThread() {
+                return super.getActionUpdateThread();
+            }
+
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
                 if (StringUtils.isEmpty(currentRepo)) {
                     return;
                 }
@@ -278,7 +296,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         btnTagPrevious = new AnActionButton(PREVIOUS_PAGE, AllIcons.Actions.MoveUp) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public @Nonnull ActionUpdateThread getActionUpdateThread() {
+                return super.getActionUpdateThread();
+            }
+
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
                 if (StringUtils.isEmpty(currentRepo)) {
                     return;
                 }
@@ -289,7 +312,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         btnTagNext = new AnActionButton(NEXT_PAGE, AllIcons.Actions.MoveDown) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public @Nonnull ActionUpdateThread getActionUpdateThread() {
+                return super.getActionUpdateThread();
+            }
+
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
                 if (StringUtils.isEmpty(currentRepo)) {
                     return;
                 }
@@ -299,22 +327,20 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         };
 
         ToolbarDecorator tagDecorator = ToolbarDecorator.createDecorator(tblTag)
-                .addExtraActions(btnTagRefresh)
-                .addExtraAction(btnTagPrevious)
-                .addExtraAction(btnTagNext)
-                .setToolbarPosition(ActionToolbarPosition.BOTTOM)
-                .setToolbarBorder(JBUI.Borders.empty());
+            .addExtraActions(btnTagRefresh, btnTagPrevious, btnTagNext)
+            .setToolbarPosition(ActionToolbarPosition.BOTTOM)
+            .setToolbarBorder(JBUI.Borders.empty());
 
         pnlTagTable = tagDecorator.createPanel();
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public JComponent getComponent() {
         return pnlMain;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return ID;
@@ -406,7 +432,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         txtUserName.setBackground(null);
     }
 
-    private void fillTable(List<String> list, @NotNull JBTable table) {
+    private void fillTable(List<String> list, @Nonnull JBTable table) {
         if (list != null && !list.isEmpty()) {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.getDataVector().clear();
@@ -462,20 +488,20 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     private void pullImage() {
         final AzureString title = OperationBundle.description("boundary/docker.pull_image.image", currentRepo);
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, title, false, () -> {
             try {
                 if (StringUtils.isEmpty(currentRepo) || StringUtils.isEmpty(currentTag)) {
                     throw new Exception(REPO_TAG_NOT_AVAILABLE);
                 }
                 final ContainerRegistry registry = ContainerRegistryMvpModel.getInstance()
-                                                                   .getContainerRegistry(subscriptionId, registryId);
+                    .getContainerRegistry(subscriptionId, registryId);
                 final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
-                                                                                     .createImageSettingWithRegistry(registry);
+                    .createImageSettingWithRegistry(registry);
                 final String image = String.format("%s:%s", currentRepo, currentTag);
                 final String fullImageTagName = String.format("%s/%s", registry.getLoginServerUrl(), image);
-                DockerClient docker = DefaultDockerClient.fromEnv().build();
-                DockerUtil.pullImage(docker, registry.getLoginServerUrl(), setting.getUsername(),
-                                     setting.getPassword(), fullImageTagName);
+                DockerClient docker = DockerClientBuilder.getInstance().build();
+                DockerUtil.pullImage(docker, Objects.requireNonNull(registry.getLoginServerUrl()), setting.getUsername(),
+                    setting.getPassword(), fullImageTagName);
                 String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
                 UIUtils.showNotification(statusBar, message, MessageType.INFO);
                 sendTelemetry(true, subscriptionId, null);
@@ -491,7 +517,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         model.fireTableDataChanged();
     }
 
-    private void sendTelemetry(boolean success, @NotNull String subscriptionId, @Nullable String errorMsg) {
+    private void sendTelemetry(boolean success, @Nonnull String subscriptionId, @Nullable String errorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("SubscriptionId", subscriptionId);
         map.put("Success", String.valueOf(success));

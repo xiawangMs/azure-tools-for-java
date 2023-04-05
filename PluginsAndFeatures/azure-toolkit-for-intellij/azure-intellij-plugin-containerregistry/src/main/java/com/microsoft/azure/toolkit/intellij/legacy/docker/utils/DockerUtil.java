@@ -5,48 +5,45 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.docker.utils;
 
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.BuildImageResultCallback;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.command.PushImageCmd;
+import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.model.AuthConfig;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerCertificates;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.ProgressHandler;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
-import com.spotify.docker.client.messages.RegistryAuth;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
 
 public class DockerUtil {
-    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
-
     /**
      * create a docker file in specified folder.
      */
     public static void createDockerFile(String basePath, String folderName, String filename, String content)
-            throws IOException {
+        throws IOException {
         if (StringUtils.isEmpty(basePath)) {
             throw new FileNotFoundException("Project basePath is null.");
         }
-        //noinspection ResultOfMethodCallIgnored
+        // noinspection ResultOfMethodCallIgnored
         Paths.get(basePath, folderName).toFile().mkdirs();
         Path dockerFilePath = Paths.get(basePath, folderName, filename);
         if (!dockerFilePath.toFile().exists()) {
@@ -55,110 +52,70 @@ public class DockerUtil {
         }
     }
 
-    /**
-     * create container with specified ImageName:TagName.
-     */
-    public static String createContainer(DockerClient docker, String imageNameWithTag, String containerServerPort)
-            throws DockerException, InterruptedException {
-        final Map<String, List<PortBinding>> portBindings = new HashMap<>();
-        List<PortBinding> randomPort = new ArrayList<>();
-        PortBinding randomBinding = PortBinding.randomPort("0.0.0.0");
-        randomPort.add(randomBinding);
-        portBindings.put(containerServerPort, randomPort);
-
-        final HostConfig hostConfig = HostConfig.builder().portBindings(portBindings).build();
-
-        final ContainerConfig config = ContainerConfig.builder()
-                .hostConfig(hostConfig)
-                .image(imageNameWithTag)
-                .exposedPorts(containerServerPort)
-                .build();
-        final ContainerCreation container = docker.createContainer(config);
-        return container.id();
+    public static String createContainer(@Nonnull DockerClient docker, @Nonnull String imageNameWithTag, String port) throws DockerException {
+        final CreateContainerCmd cmd = docker.createContainerCmd(imageNameWithTag)
+            .withExposedPorts(ExposedPort.parse(port));
+        final CreateContainerResponse container = cmd.exec();
+        return container.getId();
     }
 
-    /**
-     * runContainer.
-     */
-    public static Container runContainer(DockerClient docker, String containerId) throws DockerException,
-            InterruptedException {
-        docker.startContainer(containerId);
-        List<Container> containers = docker.listContainers();
-        Optional<Container> container = containers.stream().filter(item -> item.id().equals(containerId))
-                .findFirst();
-        if (container.isPresent()) {
-            return container.get();
-        } else {
-            throw new DockerException("Error in starting container.");
-        }
+    public static Container runContainer(@Nonnull DockerClient docker, @Nonnull String containerId) throws DockerException {
+        final StartContainerCmd cmd = docker.startContainerCmd(containerId);
+        cmd.exec();
+        final List<Container> containers = docker.listContainersCmd().exec();
+        return containers.stream().filter(item -> item.getId().equals(containerId)).findFirst()
+            .orElseThrow(() -> new DockerException("Error in starting container.", 404));
     }
 
-    /**
-     * build image.
-     */
     @AzureOperation(name = "boundary/docker.build_image.image|dir|host", params = {"imageNameWithTag", "dockerDirectory", "docker.getHost()"})
-    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
-                                    String dockerFile, ProgressHandler progressHandler)
-            throws DockerException, InterruptedException, IOException {
-        String imageId = docker.build(dockerDirectory, imageNameWithTag, dockerFile, progressHandler);
+    public static String buildImage(@Nonnull DockerClient docker, String imageNameWithTag, @Nonnull File dockerFile, File baseDir)
+        throws DockerException {
+        BuildImageResultCallback callback = new BuildImageResultCallback() {
+        };
+        final String imageId = docker.buildImageCmd()
+            .withDockerfile(dockerFile)
+            .withBaseDirectory(baseDir)
+            .withTags(Set.of(imageNameWithTag))
+            .exec(callback).awaitImageId();
         return imageId == null ? null : imageNameWithTag;
     }
 
-    /**
-     * Push image to a private registry.
-     */
     @AzureOperation(name = "boundary/docker.push_image.image|registry", params = {"targetImageName", "registryUrl"})
-    public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
-                                 String registryPassword, String targetImageName,
-                                 ProgressHandler handler)
-            throws DockerException, InterruptedException {
-        final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
-                .build();
+    public static void pushImage(@Nonnull DockerClient dockerClient, @Nonnull String registryUrl, String username, String password, @Nonnull String targetImageName)
+        throws DockerException, InterruptedException {
         if (targetImageName.startsWith(registryUrl)) {
-            dockerClient.push(targetImageName, handler, registryAuth);
+            final AuthConfig authConfig = new AuthConfig().withUsername(username).withPassword(password).withRegistryAddress(registryUrl);
+            final PushImageCmd cmd = dockerClient.pushImageCmd(targetImageName).withAuthConfig(authConfig);
+            cmd.exec(new ResultCallback.Adapter<>()).awaitCompletion();
         } else {
-            throw new DockerException("serverUrl and imageName mismatch.");
+            throw new DockerException("serverUrl and imageName mismatch.", 400);
         }
     }
 
-    /**
-     * Pull image from a private registry.
-     */
-    public static void pullImage(DockerClient dockerClient, String registryUrl, String registryUsername,
-                                 String registryPassword, String targetImageName)
-            throws DockerException, InterruptedException {
-        final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
-                .build();
+    @AzureOperation(name = "boundary/docker.pull_image.image|registry", params = {"targetImageName", "registryUrl"})
+    public static void pullImage(@Nonnull DockerClient dockerClient, @Nonnull String registryUrl, String username, String password, @Nonnull String targetImageName)
+        throws DockerException, InterruptedException {
         if (targetImageName.startsWith(registryUrl)) {
-            dockerClient.pull(targetImageName, registryAuth);
+            final AuthConfig authConfig = new AuthConfig().withUsername(username).withPassword(password).withRegistryAddress(registryUrl);
+            final PullImageCmd cmd = dockerClient.pullImageCmd(registryUrl).withTag(targetImageName).withAuthConfig(authConfig);
+            cmd.exec(new ResultCallback.Adapter<>()).awaitCompletion();
         } else {
-            throw new DockerException("serverUrl and imageName mismatch.");
+            throw new DockerException("serverUrl and imageName mismatch.", 400);
         }
     }
 
-    /**
-     * Stop a container by id.
-     */
-    public static void stopContainer(DockerClient dockerClient, String runningContainerId) throws DockerException,
-            InterruptedException {
-        if (runningContainerId != null) {
-            dockerClient.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
-            dockerClient.removeContainer(runningContainerId);
-        }
+    public static void stopContainer(@Nonnull DockerClient dockerClient, @Nonnull String runningContainerId) throws DockerException {
+        dockerClient.stopContainerCmd(runningContainerId).exec();
+        dockerClient.removeContainerCmd(runningContainerId).exec();
     }
 
-    /**
-     * Get DockerClient instance.
-     */
-    public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) throws
-            DockerCertificateException {
+    public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) {
+        final DefaultDockerClientConfig.Builder builder = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(dockerHost);
         if (tlsEnabled) {
-            return DefaultDockerClient.builder().uri(URI.create(dockerHost))
-                    .dockerCertificates(new DockerCertificates(Paths.get(certPath)))
-                    .build();
-        } else {
-            return DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+            builder.withDockerCertPath(certPath).build();
         }
+        return DockerClientBuilder.getInstance(builder.build()).build();
+
     }
 
     /**
@@ -170,7 +127,7 @@ public class DockerUtil {
         try {
             if (!StringUtils.isEmpty(basePath)) {
                 Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
-                if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
+                if (targetDockerfile.toFile().exists()) {
                     return targetDockerfile.toString();
                 }
             }
@@ -179,14 +136,12 @@ public class DockerUtil {
         return "";
     }
 
-    @AzureOperation(name = "boundary/docker.ping_host.host", params = {"docker.getHost()"})
-    public static void ping(DockerClient docker) throws AzureExecutionException {
+    @AzureOperation(name = "boundary/docker.ping_host")
+    public static void ping(DockerClient docker) {
         try {
-            docker.ping();
-        } catch (DockerException | InterruptedException e) {
-            final String msg = String.format(DOCKER_PING_ERROR, docker.getHost());
-            AzureMessager.getMessager().error(msg, "Failed to connect docker host");
-            throw new AzureExecutionException(String.format("Failed to connect docker host: %s", docker.getHost()));
+            docker.pingCmd().exec();
+        } catch (DockerException e) {
+            throw new AzureToolkitRuntimeException("Failed to connect docker server, \nIs Docker installed and running?");
         }
     }
 }
