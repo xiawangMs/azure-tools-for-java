@@ -19,8 +19,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
-import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.Constant;
-import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.Constant;
+import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -82,10 +82,10 @@ public class AddDockerSupportAction extends AzureAnAction {
                 dockerFileContent = Constant.DOCKERFILE_CONTENT_SPRING;
             }
         }
-        final Path path = Paths.get(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+        final Path path = Paths.get(pomXmlBasePath, Constant.DOCKERFILE_NAME);
         try {
             // create docker file
-            DockerUtil.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
+            DockerUtil.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_NAME,
                 String.format(dockerFileContent, artifactRelativePath));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
                 VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(path.toString());
@@ -124,8 +124,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         boolean dockerFileExists = false;
         if (module != null) {
             String basePath = getModulePath(module);
-            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
-                Constant.DOCKERFILE_NAME).toFile().exists();
+            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_NAME).toFile().exists();
         }
         event.getPresentation().setEnabledAndVisible(!dockerFileExists);
     }

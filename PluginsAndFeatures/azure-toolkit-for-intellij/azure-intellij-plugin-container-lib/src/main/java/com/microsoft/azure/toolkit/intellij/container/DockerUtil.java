@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.docker.utils;
+package com.microsoft.azure.toolkit.intellij.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -12,22 +12,20 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.PushImageCmd;
-import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.intellij.openapi.util.io.FileUtil;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -35,20 +33,10 @@ import java.util.Set;
 
 
 public class DockerUtil {
-    /**
-     * create a docker file in specified folder.
-     */
-    public static void createDockerFile(String basePath, String folderName, String filename, String content)
-        throws IOException {
-        if (StringUtils.isEmpty(basePath)) {
-            throw new FileNotFoundException("Project basePath is null.");
-        }
-        // noinspection ResultOfMethodCallIgnored
-        Paths.get(basePath, folderName).toFile().mkdirs();
-        Path dockerFilePath = Paths.get(basePath, folderName, filename);
-        if (!dockerFilePath.toFile().exists()) {
-            byte[] bytes = content.getBytes();
-            Files.write(dockerFilePath, bytes);
+    public static void createDockerFile(String baseDir, String filename, String content) throws IOException {
+        File dockerFile = Paths.get(baseDir, filename).toFile();
+        if (!dockerFile.exists()) {
+            FileUtil.writeToFile(dockerFile, content);
         }
     }
 
@@ -60,14 +48,13 @@ public class DockerUtil {
     }
 
     public static Container runContainer(@Nonnull DockerClient docker, @Nonnull String containerId) throws DockerException {
-        final StartContainerCmd cmd = docker.startContainerCmd(containerId);
-        cmd.exec();
+        docker.startContainerCmd(containerId).exec();
         final List<Container> containers = docker.listContainersCmd().exec();
         return containers.stream().filter(item -> item.getId().equals(containerId)).findFirst()
             .orElseThrow(() -> new DockerException("Error in starting container.", 404));
     }
 
-    @AzureOperation(name = "boundary/docker.build_image.image|dir|host", params = {"imageNameWithTag", "dockerDirectory", "docker.getHost()"})
+    @AzureOperation(name = "boundary/docker.build_image.image|dir", params = {"imageNameWithTag", "baseDir"})
     public static String buildImage(@Nonnull DockerClient docker, String imageNameWithTag, @Nonnull File dockerFile, File baseDir)
         throws DockerException {
         BuildImageResultCallback callback = new BuildImageResultCallback() {
@@ -104,9 +91,9 @@ public class DockerUtil {
         }
     }
 
-    public static void stopContainer(@Nonnull DockerClient dockerClient, @Nonnull String runningContainerId) throws DockerException {
-        dockerClient.stopContainerCmd(runningContainerId).exec();
-        dockerClient.removeContainerCmd(runningContainerId).exec();
+    public static void stopContainer(@Nonnull DockerClient dockerClient, @Nonnull String containerId) throws DockerException {
+        dockerClient.stopContainerCmd(containerId).exec();
+        dockerClient.removeContainerCmd(containerId).exec();
     }
 
     public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) {

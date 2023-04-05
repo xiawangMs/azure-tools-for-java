@@ -24,7 +24,7 @@ import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureActionListenerWrapper;
 import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
-import com.microsoft.azure.toolkit.intellij.legacy.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
