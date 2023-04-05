@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.text.ParseException;
 import java.util.*;
 
 public class TimePicker extends DatePicker {
@@ -76,48 +75,12 @@ public class TimePicker extends DatePicker {
         this.field.addPropertyChangeListener(this.componentListener);
         this.popupPanel.getOkButton().addActionListener(event -> {
             showPopup(false);
-            Date fieldValue;
-            try {
-                final JFormattedTextField.AbstractFormatter formatter = field.getFormatter();
-                fieldValue = (Date)formatter.stringToValue(field.getText());
-            } catch (final ParseException e) {
-                fieldValue = (Date)field.getValue();
-            }
             final Date timeDate = popupPanel.getTimeDate();
-            if (fieldValue != null || timeDate != null) {
-                if (isKeepTime() && fieldValue != null && timeDate != null) {
-                    final Calendar fieldCal = Calendar.getInstance(getZone(), getLocale());
-                    fieldCal.setTime(fieldValue);
-                    final Calendar valueCal = Calendar.getInstance(getZone(), getLocale());
-                    valueCal.setTime(timeDate);
-                    fieldCal.set(Calendar.ERA, valueCal.get(Calendar.ERA));
-                    fieldCal.set(Calendar.YEAR, valueCal.get(Calendar.YEAR));
-                    fieldCal.set(Calendar.MONTH, valueCal.get(Calendar.MONTH));
-                    fieldCal.set(Calendar.DATE, valueCal.get(Calendar.DATE));
-                    fieldCal.set(Calendar.HOUR_OF_DAY, valueCal.get(Calendar.HOUR_OF_DAY));
-                    fieldCal.set(Calendar.MINUTE, valueCal.get(Calendar.MINUTE));
-                    fieldCal.set(Calendar.SECOND, valueCal.get(Calendar.SECOND));
-                    field.setValue(fieldCal.getTime());
-                } else {
-                    field.setValue(timeDate);
-                }
-            }
+            Optional.ofNullable(popupPanel.getTimeDate()).ifPresent(t -> this.field.setValue(t));
         });
         this.addPropertyChangeListener(evt -> {
-            if ("focusLostBehavior".equals(evt.getPropertyName())) {
-                field.setFocusLostBehavior(getFocusLostBehavior());
-            } else if ("dateFormat".equals(evt.getPropertyName())) {
+            if ("dateFormat".equals(evt.getPropertyName())) {
                 field.setFormatterFactory(createFormatterFactory());
-            } else {
-                final Boolean value;
-                if ("focusable".equals(evt.getPropertyName())) {
-                    value = (Boolean) evt.getNewValue();
-                    field.setFocusable(value);
-                } else if ("enabled".equals(evt.getPropertyName())) {
-                    value = (Boolean)evt.getNewValue();
-                    field.setEnabled(value);
-                    button.setEnabled(value);
-                }
             }
         });
     }
