@@ -58,20 +58,20 @@ public class CustomTimeRangePanel {
     }
 
     public long getBefore() {
-        return myUseDateBeforeFilter.isSelected() ? myDateBefore.getDate().getTime() : -1;
+        return myUseDateBeforeFilter.isSelected() ? myDateBefore.getTimeDate().getTime() : -1;
     }
 
     public long getAfter() {
-        return myUseDateAfterFilter.isSelected() ? myDateAfter.getDate().getTime() : -1;
+        return myUseDateAfterFilter.isSelected() ? myDateAfter.getTimeDate().getTime() : -1;
     }
 
     @Nls
     @Nullable
     public String validateInput() {
-        if (myUseDateAfterFilter.isSelected() && myDateAfter.getDate() == null) {
+        if (myUseDateAfterFilter.isSelected() && myDateAfter.getTimeDate() == null) {
             return VcsBundle.message("error.date.after.must.be.a.valid.date");
         }
-        if (myUseDateBeforeFilter.isSelected() && myDateBefore.getDate() == null) {
+        if (myUseDateBeforeFilter.isSelected() && myDateBefore.getTimeDate() == null) {
             return VcsBundle.message("error.date.before.must.be.a.valid.date");
         }
         return null;

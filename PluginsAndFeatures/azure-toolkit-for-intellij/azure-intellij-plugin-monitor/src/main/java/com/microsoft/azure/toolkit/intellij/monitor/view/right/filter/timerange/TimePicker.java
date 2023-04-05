@@ -40,7 +40,11 @@ public class TimePicker extends DatePicker {
     }
 
     public void updateDate(Date date) throws PropertyVetoException {
-        this.popupPanel.updateDate(date);
+        this.field.setValue(date);
+    }
+
+    public Date getTimeDate() {
+        return Optional.ofNullable(popupPanel).map(TimePickerPopupPanel::getTimeDate).orElse(getDate());
     }
 
     private void showPopup(boolean visible) {
