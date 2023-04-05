@@ -22,7 +22,7 @@ public class CustomTimeRangePanel {
     private TimePicker myDateBefore;
 
     public CustomTimeRangePanel() {
-        this(DateFormatUtil.getDateTimeFormat().getDelegate());
+        this(DateFormatUtil.getTimeFormat().getDelegate());
     }
 
     public CustomTimeRangePanel(@NotNull DateFormat dateFormat) {
@@ -42,7 +42,7 @@ public class CustomTimeRangePanel {
     public void setBefore(long beforeTs) {
         myUseDateBeforeFilter.setSelected(true);
         try {
-            myDateBefore.setDate(new Date(beforeTs));
+            myDateBefore.updateDate(new Date(beforeTs));
             myDateBefore.setEnabled(true);
         }
         catch (final PropertyVetoException ignored) {
@@ -52,7 +52,7 @@ public class CustomTimeRangePanel {
     public void setAfter(long afterTs) {
         myUseDateAfterFilter.setSelected(true);
         try {
-            myDateAfter.setDate(new Date(afterTs));
+            myDateAfter.updateDate(new Date(afterTs));
             myDateAfter.setEnabled(true);
         }
         catch (final PropertyVetoException ignored) {

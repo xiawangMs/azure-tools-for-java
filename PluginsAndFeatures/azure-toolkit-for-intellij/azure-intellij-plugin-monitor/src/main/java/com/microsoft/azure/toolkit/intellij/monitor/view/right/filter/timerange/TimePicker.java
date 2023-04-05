@@ -16,10 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
 public class TimePicker extends DatePicker {
     private JPopupMenu popup;
@@ -45,15 +42,19 @@ public class TimePicker extends DatePicker {
         showPopup(false);
     }
 
+    public void updateDate(Date date) throws PropertyVetoException {
+        this.popupPanel.updateDate(date);
+    }
+
     private void showPopup(boolean visible) {
         if (visible) {
             if (this.isKeepTime()) {
                 try {
                     final JFormattedTextField.AbstractFormatter formatter = this.field.getFormatter();
                     final Date value = (Date)formatter.stringToValue(this.field.getText());
-                    this.popupPanel.removePropertyChangeListener(this.componentListener);
-                    this.popupPanel.setDate(value);
-                    this.popupPanel.addPropertyChangeListener(this.componentListener);
+                    this.popupPanel.getCalendarPane().removePropertyChangeListener(this.componentListener);
+                    this.popupPanel.updateDate(value);
+                    this.popupPanel.getCalendarPane().addPropertyChangeListener(this.componentListener);
                 } catch (final Exception ignored) {
                 }
             }
@@ -77,9 +78,30 @@ public class TimePicker extends DatePicker {
         this.componentListener = new ComponentListener();
         this.button.addActionListener(this.componentListener);
         this.field.addPropertyChangeListener(this.componentListener);
+        this.popupPanel.getCalendarPane().addPropertyChangeListener(this.componentListener);
+        this.popupPanel.getCalendarPane().addCommitListener(this.componentListener);
+        this.popupPanel.getCalendarPane().addActionListener(this.componentListener);
         this.popupPanel.addPropertyChangeListener(this.componentListener);
-//        this.popupPanel.addCommitListener(this.componentListener);
-//        this.popupPanel.addActionListener(this.componentListener);
+        this.addPropertyChangeListener(evt -> {
+            if ("date".equals(evt.getPropertyName())) {
+                final Date newValue = (Date)evt.getNewValue();
+                peerDateChanged(newValue);
+            } else if ("focusLostBehavior".equals(evt.getPropertyName())) {
+                field.setFocusLostBehavior(getFocusLostBehavior());
+            } else if ("dateFormat".equals(evt.getPropertyName())) {
+                field.setFormatterFactory(createFormatterFactory());
+            } else {
+                final Boolean value;
+                if ("focusable".equals(evt.getPropertyName())) {
+                    value = (Boolean) evt.getNewValue();
+                    field.setFocusable(value);
+                } else if ("enabled".equals(evt.getPropertyName())) {
+                    value = (Boolean)evt.getNewValue();
+                    field.setEnabled(value);
+                    button.setEnabled(value);
+                }
+            }
+        });
     }
 
     private void initPicker() {
@@ -92,7 +114,7 @@ public class TimePicker extends DatePicker {
         this.button.setFocusable(false);
         this.button.setMargin(JBUI.emptyInsets());
         this.button.setToolTipText(this.getToolTipText());
-        this.setSimpleLook(false);
+        this.setSimpleLook();
         this.setLayout(new BorderLayout());
         this.add(this.field, "Center");
         this.add(this.button, "East");
@@ -105,8 +127,8 @@ public class TimePicker extends DatePicker {
         this.popupPanel.setFocusCycleRoot(true);
         this.popupPanel.setBorder(BorderFactory.createEmptyBorder(1, 3, 0, 3));
         this.popupPanel.getCalendarPane().setStripTime(false);
-        this.popupPanel.setLocale(this.getLocale());
-        this.popupPanel.setZone(this.getZone());
+        this.popupPanel.getCalendarPane().setLocale(this.getLocale());
+        this.popupPanel.getCalendarPane().setZone(this.getZone());
         this.popupPanel.setFocusable(this.isDropdownFocusable());
         this.popupPanel.getCalendarPane().setColorOverrideMap(this.getColorOverrideMap());
         this.popup = new JPopupMenu();
@@ -119,22 +141,19 @@ public class TimePicker extends DatePicker {
         return new DefaultFormatterFactory(new DateFormatter(this.getDateFormat()));
     }
 
-    private void setSimpleLook(boolean isSimpleLook) {
-        if (isSimpleLook) {
-            this.field.setBorder(BorderFactory.createEmptyBorder());
-            this.button.setText("...");
-            this.button.setIcon(null);
-        } else {
-            this.field.setBorder((new JTextField()).getBorder());
-            this.button.setText("");
-            this.button.setIcon(new ImageIcon(Resource.class.getResource("picker-16.png")));
-        }
+    private void setSimpleLook() {
+        this.field.setBorder((new JTextField()).getBorder());
+        this.button.setText("");
+        this.button.setIcon(new ImageIcon(Resource.class.getResource("picker-16.png")));
     }
 
     private void peerDateChanged(Date newValue) {
-        this.popupPanel.removePropertyChangeListener(this.componentListener);
-        this.popupPanel.setDate(newValue);
-        this.popupPanel.addPropertyChangeListener(this.componentListener);
+        try {
+            this.popupPanel.getCalendarPane().removePropertyChangeListener(this.componentListener);
+            this.popupPanel.updateDate(newValue);
+            this.popupPanel.getCalendarPane().addPropertyChangeListener(this.componentListener);
+        } catch (final Exception ignored) {
+        }
         this.field.removePropertyChangeListener(this.componentListener);
         this.field.setValue(newValue);
         this.field.addPropertyChangeListener(this.componentListener);
@@ -145,7 +164,7 @@ public class TimePicker extends DatePicker {
         }
 
         public void actionPerformed(ActionEvent e) {
-            showPopup(e.getSource() != popupPanel);
+            showPopup(e.getSource() != popupPanel.getCalendarPane());
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -158,7 +177,6 @@ public class TimePicker extends DatePicker {
                 } catch (final ParseException e) {
                     fieldValue = (Date)field.getValue();
                 }
-
                 if (fieldValue != null || evt.getNewValue() != null) {
                     if (isKeepTime() && fieldValue != null && evt.getNewValue() != null) {
                         final Calendar fieldCal = Calendar.getInstance(getZone(), getLocale());
@@ -169,6 +187,9 @@ public class TimePicker extends DatePicker {
                         fieldCal.set(Calendar.YEAR, valueCal.get(Calendar.YEAR));
                         fieldCal.set(Calendar.MONTH, valueCal.get(Calendar.MONTH));
                         fieldCal.set(Calendar.DATE, valueCal.get(Calendar.DATE));
+                        fieldCal.set(Calendar.HOUR_OF_DAY, valueCal.get(Calendar.HOUR_OF_DAY));
+                        fieldCal.set(Calendar.MINUTE, valueCal.get(Calendar.MINUTE));
+                        fieldCal.set(Calendar.SECOND, valueCal.get(Calendar.SECOND));
                         field.setValue(fieldCal.getTime());
                     } else {
                         field.setValue(evt.getNewValue());
@@ -178,7 +199,7 @@ public class TimePicker extends DatePicker {
             if (evt.getSource() == field && "value".equals(evt.getPropertyName())) {
                 fieldValue = (Date)field.getValue();
                 try {
-                    setDate(fieldValue);
+                    popupPanel.updateDate(fieldValue);
                 } catch (final PropertyVetoException e) {
                     field.setValue(getDate());
                 }
@@ -187,8 +208,8 @@ public class TimePicker extends DatePicker {
 
         public void commit(CommitEvent action) {
             showPopup(false);
-            if (field.getValue() != null || popupPanel.getDate() != null) {
-                field.setValue(popupPanel.getDate());
+            if (field.getValue() != null || popupPanel.getCalendarPane().getDate() != null) {
+                field.setValue(popupPanel.getCalendarPane().getDate());
             }
         }
 

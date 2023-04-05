@@ -7,9 +7,10 @@ import com.michaelbaranov.microba.calendar.CalendarPane;
 import lombok.Getter;
 
 import javax.swing.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 public class TimePickerPopupPanel extends JPanel {
     private JPanel rootPanel;
@@ -18,12 +19,6 @@ public class TimePickerPopupPanel extends JPanel {
     private JBIntSpinner secondInput;
     @Getter
     private CalendarPane calendarPane;
-    @Getter
-    private Date date;
-    @Getter
-    private TimeZone zone;
-    @Getter
-    private Locale locale;
 
     public TimePickerPopupPanel() {
         super();
@@ -31,30 +26,38 @@ public class TimePickerPopupPanel extends JPanel {
         final GridLayoutManager layout = new GridLayoutManager(1, 1);
         this.setLayout(layout);
         this.add(this.rootPanel, new GridConstraints(0, 0, 1, 1, 0, GridConstraints.ALIGN_FILL, 3, 3, null, null, null, 0));
+        this.initListeners();
     }
 
-    public void setDate(Date date) {
-        final Date old = this.date;
-        this.date = date;
-        if (old != null || date != null) {
-            this.firePropertyChange("date", old, date);
-        }
-    }
-
-    public void setLocale(Locale locale) {
-        final Locale old = this.getLocale();
-        this.locale = locale;
-        this.firePropertyChange("locale", old, this.getLocale());
-    }
-
-    public void setZone(TimeZone zone) {
-        final TimeZone old = this.getZone();
-        this.zone = zone;
-        this.firePropertyChange("zone", old, this.getZone());
+    public void updateDate(Date date) throws PropertyVetoException {
+        final Calendar calendarInstance = Calendar.getInstance();
+        calendarInstance.setTime(date);
+        this.hourInput.setValue(calendarInstance.get(Calendar.HOUR_OF_DAY));
+        this.minuteInput.setValue(calendarInstance.get(Calendar.MINUTE));
+        this.secondInput.setValue(calendarInstance.get(Calendar.SECOND));
+        this.getCalendarPane().setDate(date);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     void $$$setupUI$$$() {
+    }
+
+    private void initListeners() {
+        final PropertyChangeListener propertyChangeListener = e -> {
+            if ("date".equals(e.getPropertyName())) {
+                final Calendar calendar = Calendar.getInstance();
+                final Object oldDate = e.getOldValue();
+                final Object newDate = e.getNewValue();
+                if (newDate != null) {
+                    calendar.setTime((Date) newDate);
+                    calendar.set(Calendar.HOUR_OF_DAY, hourInput.getNumber());
+                    calendar.set(Calendar.MINUTE, minuteInput.getNumber());
+                    calendar.set(Calendar.SECOND, secondInput.getNumber());
+                    this.firePropertyChange("date", oldDate, calendar.getTime());
+                }
+            }
+        };
+        this.calendarPane.addPropertyChangeListener(propertyChangeListener);
     }
 
     private void createUIComponents() {
