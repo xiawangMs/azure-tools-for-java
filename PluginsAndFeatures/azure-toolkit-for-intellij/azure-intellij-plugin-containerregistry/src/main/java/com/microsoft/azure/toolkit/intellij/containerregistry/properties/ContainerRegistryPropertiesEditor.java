@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.docker;
+package com.microsoft.azure.toolkit.intellij.containerregistry.properties;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -54,11 +54,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
+public class ContainerRegistryPropertiesEditor extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
-    public static final String ID = ContainerRegistryPropertyView.class.getName();
+    public static final String ID = ContainerRegistryPropertiesEditor.class.getName();
     private static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.ContainerRegistryExplorer";
-    private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
+    private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertiesEditor> containerPropertyPresenter;
     private final StatusBar statusBar;
 
     private static final String REFRESH = "Refresh";
@@ -114,7 +114,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     /**
      * Constructor of ACR property view.
      */
-    public ContainerRegistryPropertyView(@Nonnull Project project, @Nonnull final VirtualFile virtualFile) {
+    public ContainerRegistryPropertiesEditor(@Nonnull Project project, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
         this.containerPropertyPresenter = new ContainerRegistryPropertyViewPresenter<>();
         this.containerPropertyPresenter.onAttachView(this);
