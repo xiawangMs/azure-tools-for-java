@@ -46,6 +46,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final Action.Id<ContainerApp> RESTART_LATEST_REVISION = Action.Id.of("user/containerapps.restart_latest_revision.app");
     public static final Action.Id<ContainerApp> UPDATE_IMAGE = Action.Id.of("user/containerapps.update_image.app");
     public static final Action.Id<ContainerApp> OPEN_LOG_STREAMS = Action.Id.of("user/containerapps.open_log_streams.app");
+    public static final Action.Id<ContainerApp> OPEN_LOGS_IN_MONITOR = Action.Id.of("user/containerapps.open_azure_monitor.app");
     public static final Action.Id<Revision> ACTIVATE = Action.Id.of("user/containerapps.activate.revision");
     public static final Action.Id<Revision> DEACTIVATE = Action.Id.of("user/containerapps.deactivate.revision");
     public static final Action.Id<Revision> RESTART = Action.Id.of("user/containerapps.restart.revision");
@@ -134,6 +135,14 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .enableWhen(s -> s.getFormalStatus(true).isConnected())
             .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getPortalUrl() + "/logstream"))
             .register(am);
+
+        new Action<>(OPEN_LOGS_IN_MONITOR)
+                .withLabel("Open Logs with Azure Monitor")
+                .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
+                .withIdParam(AzResource::getName)
+                .visibleWhen(s -> s instanceof ContainerApp)
+                .enableWhen(s -> s.getFormalStatus(true).isConnected())
+                .register(am);
 
         new Action<>(ACTIVATE)
             .withLabel("Activate")
@@ -226,7 +235,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ContainerAppsActionsContributor.DEACTIVATE_LATEST_REVISION,
             ContainerAppsActionsContributor.RESTART_LATEST_REVISION,
             "---",
-            ContainerAppsActionsContributor.OPEN_LOG_STREAMS
+            ContainerAppsActionsContributor.OPEN_LOG_STREAMS,
+            ContainerAppsActionsContributor.OPEN_LOGS_IN_MONITOR
         );
         am.registerGroup(CONTAINER_APP_ACTIONS, containerAppActionGroup);
 

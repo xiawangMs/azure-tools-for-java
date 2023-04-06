@@ -15,28 +15,37 @@ import com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageToAz
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppsEnvironmentAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.updateimage.UpdateContainerImageAction;
+import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
+import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
+import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
+import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class IntelliJContainerAppsActionsContributor implements IActionsContributor {
@@ -58,6 +67,11 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 (AzureContainerApps r, AnActionEvent e) -> CreateContainerAppsEnvironmentAction.create(e.getProject(), getContainerAppsEnvironmentDefaultConfig(null)));
         am.registerHandler(ContainerAppsActionsContributor.GROUP_CREATE_CONTAINER_APPS_ENVIRONMENT,
                 (ResourceGroup r, AnActionEvent e) -> CreateContainerAppsEnvironmentAction.create(e.getProject(), getContainerAppsEnvironmentDefaultConfig(r)));
+        am.registerHandler(ContainerAppsActionsContributor.OPEN_LOGS_IN_MONITOR, (ContainerApp app, AnActionEvent e) -> {
+            final LogAnalyticsWorkspace workspace = getWorkspace(app);
+            Optional.ofNullable(e.getProject()).ifPresent(project -> AzureTaskManager.getInstance().runLater(() ->
+                    AzureMonitorManager.getInstance().openMonitorWindow(e.getProject(), workspace, app.getId())));
+        });
     }
 
     @Override
@@ -105,6 +119,20 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
                 .peek(r -> r.getSubscriptionId().equals(sub.getId()));
         result.setResourceGroup(ObjectUtils.firstNonNull(resourceGroup, historyRg));
+        return result;
+    }
+
+    private LogAnalyticsWorkspace getWorkspace(ContainerApp app) {
+        final String workspaceConsumerId = Optional.ofNullable(app.getManagedEnvironment())
+                .map(AbstractAzResource::getRemote)
+                .map(remoteApp -> remoteApp.appLogsConfiguration().logAnalyticsConfiguration().customerId())
+                .orElse(StringUtils.EMPTY);
+        final LogAnalyticsWorkspace result = Azure.az(AzureLogAnalyticsWorkspace.class).logAnalyticsWorkspaces(app.getSubscriptionId()).list().stream()
+                .filter(logAnalyticsWorkspace -> Objects.equals(logAnalyticsWorkspace.getCustomerId(), workspaceConsumerId))
+                .findFirst().orElse(null);
+        if (Objects.isNull(result)) {
+            AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFoundInACA", app.getName()));
+        }
         return result;
     }
 
