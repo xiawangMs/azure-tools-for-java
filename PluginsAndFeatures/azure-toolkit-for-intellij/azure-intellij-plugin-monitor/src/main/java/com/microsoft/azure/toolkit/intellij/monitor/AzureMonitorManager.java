@@ -33,6 +33,7 @@ import java.util.*;
 public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
     public static final String AZURE_MONITOR_TRIGGERED = "AzureMonitor.Triggered";
+    public static final String AZURE_MONITOR_SELECTED_WORKSPACE = "AzureMonitor.SelectedLogAnalyticsWorkspace";
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
         return instance;
@@ -93,7 +94,13 @@ public class AzureMonitorManager {
                 isTriggered = PropertiesComponent.getInstance().getBoolean(AzureMonitorManager.AZURE_MONITOR_TRIGGERED);
             }
             toolWindow.setIcon(isTriggered ? IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE_MONITOR) : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE_MONITOR_NEW));
-            instance.initToolWindow(project, null, null);
+            try {
+                final String workspaceResourceId = PropertiesComponent.getInstance().getValue(AzureMonitorManager.AZURE_MONITOR_SELECTED_WORKSPACE, "");
+                final LogAnalyticsWorkspace workspace = Azure.az(AzureLogAnalyticsWorkspace.class).getById(workspaceResourceId);
+                instance.initToolWindow(project, workspace, null);
+            } catch (final Exception e) {
+                instance.initToolWindow(project, null, null);
+            }
         }
 
         @Override

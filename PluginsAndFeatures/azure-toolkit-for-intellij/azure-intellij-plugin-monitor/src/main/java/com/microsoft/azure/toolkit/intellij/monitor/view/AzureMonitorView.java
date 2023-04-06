@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -15,6 +16,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.MonitorTabbedPane;
@@ -54,6 +56,7 @@ public class AzureMonitorView extends JPanel {
         AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> {
             this.selectedWorkspace = (LogAnalyticsWorkspace) e.getSource();
             this.updateWorkspaceNameLabel();
+            Optional.ofNullable(this.selectedWorkspace).ifPresent(w -> PropertiesComponent.getInstance().setValue(AzureMonitorManager.AZURE_MONITOR_SELECTED_WORKSPACE, w.getId()));
         }));
         AzureTaskManager.getInstance().runInBackground(AzureString.fromString("Loading logs"), () -> this.monitorTreePanel.refresh());
     }
