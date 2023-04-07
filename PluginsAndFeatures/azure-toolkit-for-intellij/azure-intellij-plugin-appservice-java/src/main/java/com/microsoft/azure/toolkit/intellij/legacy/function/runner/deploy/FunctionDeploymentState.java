@@ -111,7 +111,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
     private void prepareStagingFolder(File stagingFolder, final @NotNull Operation operation) {
         final Module module = functionDeployConfiguration.getModule();
         if (module == null) {
-            throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
+            throw new AzureToolkitRuntimeException("Module was not valid in function deploy configuration.");
         }
         final Path hostJsonPath = Optional.ofNullable(functionDeployConfiguration.getHostJsonPath())
                 .filter(StringUtils::isNotEmpty).map(Paths::get)

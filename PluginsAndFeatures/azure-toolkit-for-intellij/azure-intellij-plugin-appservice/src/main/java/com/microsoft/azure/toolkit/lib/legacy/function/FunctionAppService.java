@@ -73,8 +73,8 @@ public class FunctionAppService {
         result.appName(config.getName());
         result.region(config.getRegion());
         result.pricingTier(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getPricingTier).orElseGet(config::getPricingTier));
-        result.servicePlanName(config.getServicePlan().getName());
-        result.servicePlanResourceGroup(StringUtils.firstNonBlank(config.getServicePlan().getResourceGroupName(), config.getResourceGroup().getName()));
+        result.servicePlanName(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getName).orElseGet(config::getName));
+        result.servicePlanResourceGroup(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getResourceGroupName).orElseGet(config::getResourceGroupName));
         result.runtime(convertToRuntimeConfig(config.getRuntime()));
         result.appSettings(config.getAppSettings());
         result.appSettingsToRemove(getAppSettingsToRemove(config));
