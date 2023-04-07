@@ -71,6 +71,7 @@ public class MonitorLogTablePanel {
     private JPanel resourcePanel;
     private JLabel logLevelLabel;
     private JLabel resourceLabel;
+    private JButton saveFiltersButton;
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
     private final static String RESULT_CSV_FILE = "result.csv";
@@ -82,6 +83,7 @@ public class MonitorLogTablePanel {
         this.customizeTableUi();
         this.hideFilters();
         this.runButton.setIcon(AllIcons.Actions.Execute);
+        this.saveFiltersButton.setIcon(AllIcons.Actions.MenuSaveall);
         AzureEventBus.on("azure.monitor.change_workspace", new AzureEventBus.EventListener(e -> initResourceId = null));
     }
 
@@ -109,6 +111,7 @@ public class MonitorLogTablePanel {
     public void loadTableModel(@Nullable LogAnalyticsWorkspace selectedWorkspace, String queryString) {
         runButton.setEnabled(false);
         exportAction.setEnabled(false);
+        saveFiltersButton.setEnabled(false);
         if (Objects.isNull(selectedWorkspace)) {
             logTable.getEmptyText().setText(message("azure.monitor.info.selectWorkspaceTips"));
             return;
@@ -133,6 +136,7 @@ public class MonitorLogTablePanel {
                 AzureTaskManager.getInstance().runLater(() -> {
                     logTable.setLoading(false);
                     runButton.setEnabled(true);
+                    saveFiltersButton.setEnabled(true);
                 }, AzureTask.Modality.ANY);
             }
         });
@@ -145,6 +149,7 @@ public class MonitorLogTablePanel {
         timeRangePanel.setVisible(true);
         resourcePanel.setVisible(true);
         levelPanel.setVisible(true);
+        saveFiltersButton.setVisible(true);
         logLevelLabel.setEnabled(false);
         resourceLabel.setEnabled(false);
         AzureTaskManager.getInstance().runInBackground("load filters", () -> {
@@ -169,6 +174,10 @@ public class MonitorLogTablePanel {
 
     public void addRunActionListener(ActionListener listener) {
         this.runButton.addActionListener(listener);
+    }
+
+    public void addSaveActionListener(ActionListener listener) {
+        this.saveFiltersButton.addActionListener(listener);
     }
 
     @Nullable
@@ -256,6 +265,7 @@ public class MonitorLogTablePanel {
         this.timeRangePanel.setVisible(false);
         this.resourcePanel.setVisible(false);
         this.levelPanel.setVisible(false);
+        this.saveFiltersButton.setVisible(false);
     }
 
     @AzureOperation(name = "user/monitor.export_query_result")

@@ -10,16 +10,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.ui.RelativeFont;
 import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
@@ -30,7 +34,7 @@ import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
 import java.util.*;
 
-public class MonitorTreePanel extends JPanel {
+public class MonitorTreePanel extends JPanel implements PersistentStateComponent<List<MonitorTreePanel.QueryData>> {
     private JPanel contentPanel;
     private Tree tree;
     private DefaultTreeModel treeModel;
@@ -38,6 +42,8 @@ public class MonitorTreePanel extends JPanel {
     private String currentNodeText;
     @Setter
     private boolean isTableTab;
+    private final List<QueryData> customQueries = new ArrayList<>();
+    private final String CUSTOM_QUERIES_TAB = "Custom Queries";
 
     public MonitorTreePanel() {
         super();
@@ -67,6 +73,10 @@ public class MonitorTreePanel extends JPanel {
         } else {
             return node.toString();
         }
+    }
+
+    public void addQueryNode(QueryData data) {
+        this.customQueries.add(data);
     }
 
     private void initListener() {
@@ -144,6 +154,14 @@ public class MonitorTreePanel extends JPanel {
             });
         } catch (final Exception ignored) {
         }
+        if (this.customQueries.size() > 0) {
+            final DefaultMutableTreeNode tabNode = new DefaultMutableTreeNode(CUSTOM_QUERIES_TAB);
+            this.customQueries.forEach(queryData -> {
+                final DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(queryData);
+                tabNode.add(treeNode);
+            });
+            root.add(tabNode);
+        }
         AzureTaskManager.getInstance().runLater(() -> {
             this.treeModel.reload();
             TreeUtil.expandAll(this.tree);
@@ -174,6 +192,16 @@ public class MonitorTreePanel extends JPanel {
         this.treeModel = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor"));
         this.tree = this.initTree(this.treeModel);
         this.initListener();
+    }
+
+    @Override
+    public @Nullable List<QueryData> getState() {
+        return this.customQueries;
+    }
+
+    @Override
+    public void loadState(@NotNull List<QueryData> state) {
+        XmlSerializerUtil.copyBean(state, this.customQueries);
     }
 
     @Getter
