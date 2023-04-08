@@ -53,6 +53,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -62,6 +63,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -153,6 +155,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         if (model.getRowCount() <= 0) {
             table.getEmptyText().setText("No subscriptions");
         }
+        this.updateSelectionInfoInner();
     }
 
     protected JPanel createSouthAdditionalPanel() {
@@ -169,7 +172,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         final long count = ObjectUtils.firstNonNull(this.candidates, Collections.<SimpleSubscription>emptyList()).stream().filter(SimpleSubscription::isSelected).count();
         final String msg = count < 1 ? "No subscription is selected" : count == 1 ? "1 subscription is selected" : count + " subscriptions are selected";
         this.selectionInfo.setText(msg);
-        this.table.getAccessibleContext().setAccessibleDescription(msg);
+        final int searchResultCount = Optional.ofNullable(table).map(JTable::getModel).map(TableModel::getRowCount).orElse(0);
+        final String accessibleDescription = searchResultCount < 1 ? "No search results found. " + msg : msg;
+        Optional.ofNullable(this.table.getAccessibleContext()).ifPresent(c -> c.setAccessibleDescription(accessibleDescription));
     }
 
     @Override
