@@ -6,24 +6,24 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.left;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ide.util.treeView.NodeRenderer;
-import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.ui.RelativeFont;
 import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.SimpleTree;
-import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.ui.treeStructure.Tree;
-import com.intellij.util.xmlb.XmlSerializerUtil;
+import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
@@ -34,7 +34,7 @@ import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
 import java.util.*;
 
-public class MonitorTreePanel extends JPanel implements PersistentStateComponent<List<MonitorTreePanel.QueryData>> {
+public class MonitorTreePanel extends JPanel {
     private JPanel contentPanel;
     private Tree tree;
     private DefaultTreeModel treeModel;
@@ -42,6 +42,7 @@ public class MonitorTreePanel extends JPanel implements PersistentStateComponent
     private String currentNodeText;
     @Setter
     private boolean isTableTab;
+    @Getter
     private final List<QueryData> customQueries = new ArrayList<>();
     private final String CUSTOM_QUERIES_TAB = "Custom Queries";
 
@@ -76,7 +77,12 @@ public class MonitorTreePanel extends JPanel implements PersistentStateComponent
     }
 
     public void addQueryNode(QueryData data) {
+        getOrCreateCustomQueriesTabNode().add(new DefaultMutableTreeNode(data));
         this.customQueries.add(data);
+        AzureTaskManager.getInstance().runLater(() -> {
+            this.treeModel.reload();
+            TreeUtil.expandAll(this.tree);
+        }, AzureTask.Modality.ANY);
     }
 
     private void initListener() {
@@ -154,6 +160,14 @@ public class MonitorTreePanel extends JPanel implements PersistentStateComponent
             });
         } catch (final Exception ignored) {
         }
+        final List<String> customQueryList = PropertiesComponent.getInstance().getList(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST);
+        Optional.ofNullable(customQueryList).ifPresent(l -> l.forEach(s -> {
+            final ObjectMapper mapper = new ObjectMapper();
+            try {
+                customQueries.add(mapper.readValue(s, QueryData.class));
+            } catch (final JsonProcessingException ignored) {
+            }
+        }));
         if (this.customQueries.size() > 0) {
             final DefaultMutableTreeNode tabNode = new DefaultMutableTreeNode(CUSTOM_QUERIES_TAB);
             this.customQueries.forEach(queryData -> {
@@ -166,6 +180,14 @@ public class MonitorTreePanel extends JPanel implements PersistentStateComponent
             this.treeModel.reload();
             TreeUtil.expandAll(this.tree);
         }, AzureTask.Modality.ANY);
+    }
+
+    private DefaultMutableTreeNode getOrCreateCustomQueriesTabNode() {
+        final DefaultMutableTreeNode node = TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), n -> Objects.equals(n.toString(), CUSTOM_QUERIES_TAB));
+        if (Objects.nonNull(node)) {
+            return node;
+        }
+        return new DefaultMutableTreeNode(CUSTOM_QUERIES_TAB);
     }
 
     private Tree initTree(DefaultTreeModel treeModel) {
@@ -192,16 +214,6 @@ public class MonitorTreePanel extends JPanel implements PersistentStateComponent
         this.treeModel = new DefaultTreeModel(new DefaultMutableTreeNode("Azure Monitor"));
         this.tree = this.initTree(this.treeModel);
         this.initListener();
-    }
-
-    @Override
-    public @Nullable List<QueryData> getState() {
-        return this.customQueries;
-    }
-
-    @Override
-    public void loadState(@NotNull List<QueryData> state) {
-        XmlSerializerUtil.copyBean(state, this.customQueries);
     }
 
     @Getter

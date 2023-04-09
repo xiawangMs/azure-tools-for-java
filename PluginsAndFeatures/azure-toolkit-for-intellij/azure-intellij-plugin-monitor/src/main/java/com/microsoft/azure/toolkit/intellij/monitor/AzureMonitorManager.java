@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.monitor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -12,6 +15,8 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.ContentManagerListener;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
@@ -28,12 +33,14 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.*;
 import java.util.*;
 
 public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
     public static final String AZURE_MONITOR_TRIGGERED = "AzureMonitor.Triggered";
     public static final String AZURE_MONITOR_SELECTED_WORKSPACE = "AzureMonitor.SelectedLogAnalyticsWorkspace";
+    public static final String AZURE_MONITOR_CUSTOM_QUERY_LIST = "AzureMonitor.CustomQueryList";
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
         return instance;
@@ -101,6 +108,23 @@ public class AzureMonitorManager {
             } catch (final Exception e) {
                 instance.initToolWindow(project, null, null);
             }
+            toolWindow.getContentManager().addContentManagerListener(new ContentManagerListener() {
+                @Override
+                public void contentRemoved(@NotNull ContentManagerEvent event) {
+                    final JComponent contentComponent = event.getContent().getComponent();
+                    if (contentComponent instanceof AzureMonitorView) {
+                        final List<String> customQueryList = new ArrayList<>();
+                        ((AzureMonitorView) contentComponent).getMonitorTreePanel().getCustomQueries().forEach(q -> {
+                            try {
+                                final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+                                customQueryList.add(ow.writeValueAsString(q));
+                            } catch (final JsonProcessingException ignored) {
+                            }
+                        });
+                        PropertiesComponent.getInstance().setList(AZURE_MONITOR_CUSTOM_QUERY_LIST, customQueryList);
+                    }
+                }
+            });
         }
 
         @Override

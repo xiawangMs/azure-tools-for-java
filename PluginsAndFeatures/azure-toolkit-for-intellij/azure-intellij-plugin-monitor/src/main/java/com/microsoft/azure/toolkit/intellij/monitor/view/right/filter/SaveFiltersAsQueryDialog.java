@@ -24,6 +24,7 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
 
     public SaveFiltersAsQueryDialog(@Nullable Project project, String queryContent) {
         super(project, false);
+        setTitle("Save as Query");
         $$$setupUI$$$();
         init();
         this.queryContent.setText(queryContent);
