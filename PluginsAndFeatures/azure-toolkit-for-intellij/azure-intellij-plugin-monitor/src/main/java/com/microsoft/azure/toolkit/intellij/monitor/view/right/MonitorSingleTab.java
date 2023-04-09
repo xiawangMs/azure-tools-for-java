@@ -84,7 +84,7 @@ public class MonitorSingleTab {
                 AzureTaskManager.getInstance().runLater(() -> {
                     final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(ProjectManager.getInstance().getDefaultProject(), queryContent);
                     if (dialog.showAndGet()) {
-                        parentView.getMonitorTreePanel().addQueryNode(dialog.getQueryDataToSave());
+                        AzureEventBus.emit("azure.monitor.add_query_node", dialog.getQueryDataToSave());
                     }
                 });
             }

@@ -5,9 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.monitor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -34,7 +31,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class AzureMonitorManager {
     public static final String AZURE_MONITOR_WINDOW = "Azure Monitor";
@@ -113,15 +112,7 @@ public class AzureMonitorManager {
                 public void contentRemoved(@NotNull ContentManagerEvent event) {
                     final JComponent contentComponent = event.getContent().getComponent();
                     if (contentComponent instanceof AzureMonitorView) {
-                        final List<String> customQueryList = new ArrayList<>();
-                        ((AzureMonitorView) contentComponent).getMonitorTreePanel().getCustomQueries().forEach(q -> {
-                            try {
-                                final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-                                customQueryList.add(ow.writeValueAsString(q));
-                            } catch (final JsonProcessingException ignored) {
-                            }
-                        });
-                        PropertiesComponent.getInstance().setList(AZURE_MONITOR_CUSTOM_QUERY_LIST, customQueryList);
+                        ((AzureMonitorView) contentComponent).getMonitorTreePanel().dispose();
                     }
                 }
             });
