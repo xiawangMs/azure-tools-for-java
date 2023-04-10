@@ -1,5 +1,5 @@
-plugins {
-    id 'java'
+intellij {
+    plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java']
 }
 
 group 'com.microsoft.azuretools'
