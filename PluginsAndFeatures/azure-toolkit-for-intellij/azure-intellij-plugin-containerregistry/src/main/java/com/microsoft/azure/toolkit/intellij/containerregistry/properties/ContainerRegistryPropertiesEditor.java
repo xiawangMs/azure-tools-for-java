@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.properties;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
@@ -499,9 +497,8 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
                     .createImageSettingWithRegistry(registry);
                 final String image = String.format("%s:%s", currentRepo, currentTag);
                 final String fullImageTagName = String.format("%s/%s", registry.getLoginServerUrl(), image);
-                DockerClient docker = DockerClientBuilder.getInstance().build();
-                DockerUtil.pullImage(docker, Objects.requireNonNull(registry.getLoginServerUrl()), setting.getUsername(),
-                    setting.getPassword(), fullImageTagName);
+                DockerUtil.pullImage(Objects.requireNonNull(registry.getLoginServerUrl()), setting.getUsername(),
+                    setting.getPassword(), currentRepo, currentTag);
                 String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
                 UIUtils.showNotification(statusBar, message, MessageType.INFO);
                 sendTelemetry(true, subscriptionId, null);
