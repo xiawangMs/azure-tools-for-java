@@ -42,6 +42,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String STREAMING_LOG_ACTIONS = "actions.containerapps.streaming_log.group";
 
     public static final Action.Id<ContainerAppsEnvironment> CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app");
+    public static final Action.Id<ContainerAppsEnvironment> START_ENV_LOG_STREAM = Action.Id.of("user/containerapps.start_log_streams.environment");
     public static final Action.Id<AzureContainerApps> CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment");
     public static final Action.Id<ContainerApp> BROWSE = Action.Id.of("user/containerapps.open_in_browser.app");
     public static final Action.Id<ContainerApp> ACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.activate_latest_revision.app");
@@ -65,6 +66,13 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withShortcut(am.getIDEDefaultShortcuts().add())
             .register(am);
+
+        new Action<>(START_ENV_LOG_STREAM)
+                .withLabel("Start Streaming Logs")
+                .withIcon(AzureIcons.Action.LOG.getIconPath())
+                .withIdParam(AbstractAzResource::getName)
+                .visibleWhen(s -> s instanceof ContainerAppsEnvironment)
+                .register(am);
 
         new Action<>(CREATE_CONTAINER_APPS_ENVIRONMENT)
                 .withLabel("Create Container Apps Environment")
@@ -230,7 +238,9 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
             ContainerAppsActionsContributor.CREATE_CONTAINER_APP,
-            ResourceCommonActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE,
+            "---",
+            ContainerAppsActionsContributor.START_ENV_LOG_STREAM
         );
         am.registerGroup(ENVIRONMENT_ACTIONS, environmentActionGroup);
 

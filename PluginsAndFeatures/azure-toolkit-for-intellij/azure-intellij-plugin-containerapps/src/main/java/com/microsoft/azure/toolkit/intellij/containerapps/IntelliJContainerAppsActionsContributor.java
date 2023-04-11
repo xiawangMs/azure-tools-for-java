@@ -79,6 +79,8 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 ContainerAppStreamingLogManager.getInstance().showSystemStreamingLog(e.getProject(), app));
         am.registerHandler(ContainerAppsActionsContributor.OPEN_CONSOLE_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
                 showConsoleStreamingLog(e.getProject(), app));
+        am.registerHandler(ContainerAppsActionsContributor.START_ENV_LOG_STREAM, (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
+                ContainerAppStreamingLogManager.getInstance().showEnvStreamingLog(e.getProject(), appsEnvironment));
     }
 
     @Override
