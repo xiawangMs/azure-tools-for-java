@@ -11,26 +11,17 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManagerEvent;
-import com.intellij.ui.content.ContentManagerListener;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 public class StreamingLogsToolWindowManager {
 
     private static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
-
-    private final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
     private final BidiMap<String, String> resourceIdToNameMap = new DualHashBidiMap<>();
 
     public static StreamingLogsToolWindowManager getInstance() {
@@ -61,15 +52,15 @@ public class StreamingLogsToolWindowManager {
         toolWindow.activate(null);
     }
 
-    public void removeConsoleView(String resourceId) {
-        resourceIdToNameMap.remove(resourceId);
-    }
-
     @Nullable
     public Content getToolWindowContent(Project project, String resourceId) {
         final ToolWindow toolWindow = getToolWindow(project);
         final String consoleName = Optional.ofNullable(resourceIdToNameMap.get(resourceId)).orElse(StringUtils.EMPTY);
         return toolWindow.getContentManager().findContent(consoleName);
+    }
+
+    public void removeConsoleViewName(String value) {
+        this.resourceIdToNameMap.removeValue(value);
     }
 
     private String getConsoleViewName(String resourceId, String resourceName) {
@@ -86,31 +77,7 @@ public class StreamingLogsToolWindowManager {
     }
 
     private ToolWindow getToolWindow(Project project) {
-        if (toolWindowMap.containsKey(project)) {
-            return toolWindowMap.get(project);
-        }
-        // Add content manager listener when get tool window at the first time
-        final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(LOG_TOOL_WINDOW);
-        Optional.ofNullable(toolWindow).ifPresent(w -> w.getContentManager().addContentManagerListener(new ContentManagerListener() {
-            @Override
-            public void contentRemoved(ContentManagerEvent contentManagerEvent) {
-                final String displayName = contentManagerEvent.getContent().getDisplayName();
-                resourceIdToNameMap.removeValue(displayName);
-            }
-
-            @Override
-            public void contentRemoveQuery(@NotNull ContentManagerEvent event) {
-                final String displayName = event.getContent().getDisplayName();
-                final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
-                        "This will stop streaming log of \"{0}\", are you sure to do this?", displayName));
-                if (!canClose) {
-                    event.consume();
-                }
-            }
-
-        }));
-        toolWindowMap.put(project, toolWindow);
-        return toolWindow;
+        return ToolWindowManager.getInstance(project).getToolWindow(LOG_TOOL_WINDOW);
     }
 
     private static final class SingletonHolder {
