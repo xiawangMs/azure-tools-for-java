@@ -67,7 +67,10 @@ public class ContainerSelectionDialog extends DialogWrapper {
         if (containerComboBox.getItems().size() == 0) {
             return new ValidationInfo(GO_TO_REVISION_MANAGEMENT, containerComboBox);
         }
-        return new ValidationInfo("Container is required", containerComboBox);
+        if (Objects.isNull(containerComboBox.getValue())) {
+            return new ValidationInfo("Container is required", containerComboBox);
+        }
+        return null;
     }
 
     private void initListeners() {
