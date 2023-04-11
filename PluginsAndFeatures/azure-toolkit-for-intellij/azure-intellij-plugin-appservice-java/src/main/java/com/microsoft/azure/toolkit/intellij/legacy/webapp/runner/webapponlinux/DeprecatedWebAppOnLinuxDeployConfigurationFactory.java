@@ -16,10 +16,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Azure Web App (Container)";
+public class DeprecatedWebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
+    private static final String FACTORY_NAME = "Web App for Containers";
 
-    public WebAppOnLinuxDeployConfigurationFactory(ConfigurationType configurationType) {
+    public DeprecatedWebAppOnLinuxDeployConfigurationFactory(ConfigurationType configurationType) {
         super(configurationType);
     }
 
@@ -32,7 +32,7 @@ public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactor
 
     @Override
     public String getName() {
-        return FACTORY_NAME;
+        return "Web App for Containers (Deprecated, please use 'Azure Web App (Container)` for instead')";
     }
 
     @Override

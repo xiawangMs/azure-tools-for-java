@@ -57,8 +57,8 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
         return FACTORIES_FUNCTION_MAP.values().stream().map(function -> function.apply(this)).toArray(ConfigurationFactory[]::new);
     }
 
-    public static void registerConfigurationFactory(String name, Function<AzureDockerSupportConfigurationType, ConfigurationFactory> factoryFunction) {
-        FACTORIES_FUNCTION_MAP.put(name, factoryFunction);
+    public static void registerConfigurationFactory(String id, Function<AzureDockerSupportConfigurationType, ConfigurationFactory> factoryFunction) {
+        FACTORIES_FUNCTION_MAP.put(id, factoryFunction);
     }
 
     // Todo: Migrate web app on linux to web app configuration type

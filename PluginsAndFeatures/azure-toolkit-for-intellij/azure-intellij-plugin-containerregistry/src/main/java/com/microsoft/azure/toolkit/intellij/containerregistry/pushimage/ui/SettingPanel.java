@@ -11,7 +11,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
-import com.microsoft.azure.toolkit.intellij.containerregistry.ContainerSettingPanel;
+import com.microsoft.azure.toolkit.intellij.containerregistry.component.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
