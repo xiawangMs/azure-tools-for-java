@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.containerapps;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -14,6 +15,8 @@ import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryAction
 import com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageToAzureContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppsEnvironmentAction;
+import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.ContainerAppStreamingLogManager;
+import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.ContainerSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.containerapps.updateimage.UpdateContainerImageAction;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -72,6 +75,10 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
             Optional.ofNullable(e.getProject()).ifPresent(project -> AzureTaskManager.getInstance().runLater(() ->
                     AzureMonitorManager.getInstance().openMonitorWindow(e.getProject(), workspace, app.getId())));
         });
+        am.registerHandler(ContainerAppsActionsContributor.OPEN_SYSTEM_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
+                ContainerAppStreamingLogManager.getInstance().showSystemStreamingLog(e.getProject(), app));
+        am.registerHandler(ContainerAppsActionsContributor.OPEN_CONSOLE_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
+                showConsoleStreamingLog(e.getProject(), app));
     }
 
     @Override
@@ -134,6 +141,13 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
             AzureMessager.getMessager().info(message("azure.monitor.info.workspaceNotFoundInACA", app.getName()));
         }
         return result;
+    }
+
+    private void showConsoleStreamingLog(Project project, ContainerApp app) {
+        AzureTaskManager.getInstance().runLater(() -> {
+            final ContainerSelectionDialog dialog = new ContainerSelectionDialog(project, app);
+            dialog.show();
+        });
     }
 
     @Override

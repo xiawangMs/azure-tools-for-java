@@ -9,16 +9,19 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.*;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.ContentManagerListener;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.CipherSpi;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.swing.text.html.Option;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +30,8 @@ public class StreamingLogsToolWindowManager {
 
     private static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
 
-    private Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
-    private BidiMap<String, String> resourceIdToNameMap = new DualHashBidiMap<>();
+    private final Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
+    private final BidiMap<String, String> resourceIdToNameMap = new DualHashBidiMap<>();
 
     public static StreamingLogsToolWindowManager getInstance() {
         return SingletonHolder.INSTANCE;
@@ -37,7 +40,7 @@ public class StreamingLogsToolWindowManager {
     @AzureOperation(name = "boundary/common.open_log_streaming_console.resource", params = {"resourceName"})
     public void showStreamingLogConsole(Project project, String resourceId, String resourceName, ConsoleView consoleView) {
         final ToolWindow toolWindow = getToolWindow(project);
-        final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        final ContentFactory contentFactory = ContentFactory.getInstance();
         final String consoleName = getConsoleViewName(resourceId, resourceName);
         Content content = toolWindow.getContentManager().findContent(consoleName);
         if (content == null) {
@@ -50,8 +53,23 @@ public class StreamingLogsToolWindowManager {
         toolWindow.activate(null);
     }
 
+    @AzureOperation(name = "boundary/common.open_log_streaming_console.resource", params = {"resourceName"})
+    public void showStreamingLogConsole(Project project, String resourceName, Content content) {
+        final ToolWindow toolWindow = getToolWindow(project);
+        toolWindow.getContentManager().setSelectedContent(content);
+        toolWindow.setAvailable(true);
+        toolWindow.activate(null);
+    }
+
     public void removeConsoleView(String resourceId) {
         resourceIdToNameMap.remove(resourceId);
+    }
+
+    @Nullable
+    public Content getToolWindowContent(Project project, String resourceId) {
+        final ToolWindow toolWindow = getToolWindow(project);
+        final String consoleName = Optional.ofNullable(resourceIdToNameMap.get(resourceId)).orElse(StringUtils.EMPTY);
+        return toolWindow.getContentManager().findContent(consoleName);
     }
 
     private String getConsoleViewName(String resourceId, String resourceName) {

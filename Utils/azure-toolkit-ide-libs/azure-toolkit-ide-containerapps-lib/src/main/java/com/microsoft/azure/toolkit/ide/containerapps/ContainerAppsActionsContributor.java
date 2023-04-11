@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEn
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.SHOW_PROPERTIES;
@@ -38,6 +39,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String CONTAINER_APP_ACTIONS = "actions.containerapps.containerapp";
     public static final String REVISION_ACTIONS = "actions.containerapps.revision";
     public static final String REVISION_MODULE_ACTIONS = "actions.containerapps.revision_module";
+    public static final String STREAMING_LOG_ACTIONS = "actions.containerapps.streaming_log.group";
+
     public static final Action.Id<ContainerAppsEnvironment> CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app");
     public static final Action.Id<AzureContainerApps> CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment");
     public static final Action.Id<ContainerApp> BROWSE = Action.Id.of("user/containerapps.open_in_browser.app");
@@ -45,7 +48,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final Action.Id<ContainerApp> DEACTIVATE_LATEST_REVISION = Action.Id.of("user/containerapps.deactivate_latest_revision.app");
     public static final Action.Id<ContainerApp> RESTART_LATEST_REVISION = Action.Id.of("user/containerapps.restart_latest_revision.app");
     public static final Action.Id<ContainerApp> UPDATE_IMAGE = Action.Id.of("user/containerapps.update_image.app");
-    public static final Action.Id<ContainerApp> OPEN_LOG_STREAMS = Action.Id.of("user/containerapps.open_log_streams.app");
+    public static final Action.Id<ContainerApp> OPEN_CONSOLE_LOG_STREAMS = Action.Id.of("user/containerapps.open_console_log_streams.app");
+    public static final Action.Id<ContainerApp> OPEN_SYSTEM_LOG_STREAMS = Action.Id.of("user/containerapps.open_system_log_streams.app");
     public static final Action.Id<ContainerApp> OPEN_LOGS_IN_MONITOR = Action.Id.of("user/containerapps.open_azure_monitor.app");
     public static final Action.Id<Revision> ACTIVATE = Action.Id.of("user/containerapps.activate.revision");
     public static final Action.Id<Revision> DEACTIVATE = Action.Id.of("user/containerapps.deactivate.revision");
@@ -127,14 +131,19 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .enableWhen(s -> s.getFormalStatus(true).isConnected())
             .register(am);
 
-        new Action<>(OPEN_LOG_STREAMS)
-            .withLabel("Open Log Streams")
-            .withIcon(AzureIcons.Action.LOG.getIconPath())
+        new Action<>(OPEN_CONSOLE_LOG_STREAMS)
+            .withLabel("Console")
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof ContainerApp)
             .enableWhen(s -> s.getFormalStatus(true).isConnected())
-            .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getPortalUrl() + "/logstream"))
             .register(am);
+
+        new Action<>(OPEN_SYSTEM_LOG_STREAMS)
+                .withLabel("System")
+                .withIdParam(AbstractAzResource::getName)
+                .visibleWhen(s -> s instanceof ContainerApp)
+                .enableWhen(s -> s.getFormalStatus(true).isConnected())
+                .register(am);
 
         new Action<>(OPEN_LOGS_IN_MONITOR)
                 .withLabel("Open Logs with Azure Monitor")
@@ -201,6 +210,12 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
 
     @Override
     public void registerGroups(AzureActionManager am) {
+        final IView.Label.Static view = new IView.Label.Static("Start Streaming Logs", "/icons/Common/AzureActiveLog.svg");
+        final ActionGroup streamingLogActionGroup = new ActionGroup(new ArrayList<>(), view);
+        streamingLogActionGroup.addAction(OPEN_CONSOLE_LOG_STREAMS);
+        streamingLogActionGroup.addAction(OPEN_SYSTEM_LOG_STREAMS);
+        am.registerGroup(STREAMING_LOG_ACTIONS, streamingLogActionGroup);
+
         final ActionGroup serviceActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
             "---",
@@ -235,7 +250,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ContainerAppsActionsContributor.DEACTIVATE_LATEST_REVISION,
             ContainerAppsActionsContributor.RESTART_LATEST_REVISION,
             "---",
-            ContainerAppsActionsContributor.OPEN_LOG_STREAMS,
+            ContainerAppsActionsContributor.STREAMING_LOG_ACTIONS,
             ContainerAppsActionsContributor.OPEN_LOGS_IN_MONITOR
         );
         am.registerGroup(CONTAINER_APP_ACTIONS, containerAppActionGroup);
