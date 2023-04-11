@@ -39,14 +39,17 @@ public class ContainerAppStreamingLogManager {
     private void showStreamingLog(Project project, AzResource app, String logType, String revisionName,
                                   String replicaName, String containerName) {
         final String resourceId;
+        final String resourceName;
         if (Objects.equals(logType, ContainerApp.LOG_TYPE_CONSOLE)) {
             resourceId = String.format("%s/revision/%s/replica/%s/container/%s", app.getId(), revisionName, replicaName, containerName);
+            resourceName = String.format("%s-%s-%s-%s", app.getName(), revisionName, replicaName, containerName);
         } else {
             resourceId = app.getId();
+            resourceName = app.getName();
         }
         final Content content = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
         if (Objects.nonNull(content)) {
-            StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, app.getName(), content);
+            StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, resourceName, content);
             return;
         }
         final AzureString title = AzureString.fromString("open streaming logs");
@@ -54,16 +57,18 @@ public class ContainerAppStreamingLogManager {
             try {
                 final AppStreamingLogConsoleView consoleView = new AppStreamingLogConsoleView(project);
                 final Flux<String> log;
+                // refer to https://learn.microsoft.com/en-us/azure/container-apps/log-streaming?tabs=bash#view-log-streams-via-the-azure-cli
+                // tail lines must be between 0 and 300, default is 20
                 if (app instanceof ContainerApp) {
-                    log = ((ContainerApp) app).streamingLogs(logType, revisionName, replicaName, containerName, true, 100);
+                    log = ((ContainerApp) app).streamingLogs(logType, revisionName, replicaName, containerName, true, 20);
                 } else if (app instanceof ContainerAppsEnvironment) {
-                    log = ((ContainerAppsEnvironment) app).streamingLogs(true, 100);
+                    log = ((ContainerAppsEnvironment) app).streamingLogs(true, 20);
                 } else {
                     return;
                 }
                 consoleView.startStreamingLog(log);
                 AzureTaskManager.getInstance().runLater(() ->
-                        StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, resourceId, app.getName(), consoleView)
+                        StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, resourceId, resourceName, consoleView)
                 );
             } catch (final AzureToolkitRuntimeException e) {
                 throw e;
