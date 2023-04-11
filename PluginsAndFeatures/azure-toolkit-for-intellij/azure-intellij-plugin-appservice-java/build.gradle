@@ -8,7 +8,6 @@ dependencies {
     implementation project(':azure-intellij-plugin-appservice')
     implementation project(':azure-intellij-plugin-guidance')
     implementation project(':azure-intellij-resource-connector-lib')
-    implementation project(':azure-intellij-plugin-container-lib')
     implementation project(':azure-intellij-plugin-containerregistry')
     implementation 'com.github.docker-java:docker-java:3.3.0'
     implementation 'com.microsoft.azure:azure-toolkit-appservice-lib'

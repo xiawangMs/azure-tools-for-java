@@ -19,6 +19,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.intellij.openapi.util.io.FileUtil;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class DockerUtil {
@@ -65,6 +67,12 @@ public class DockerUtil {
             .withTags(Set.of(imageNameWithTag))
             .exec(callback).awaitImageId();
         return imageId == null ? null : imageNameWithTag;
+    }
+
+    @AzureOperation(name = "boundary/docker.list_local_images")
+    public static List<DockerImage> listLocalImages(@Nonnull DockerClient dockerClient)
+            throws DockerException {
+        return dockerClient.listImagesCmd().exec().stream().map(DockerImage::new).collect(Collectors.toList());
     }
 
     @AzureOperation(name = "boundary/docker.push_image.image|registry", params = {"targetImageName", "registryUrl"})
