@@ -17,6 +17,8 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 public class StreamingLogsToolWindowManager {
@@ -61,6 +63,10 @@ public class StreamingLogsToolWindowManager {
 
     public void removeConsoleViewName(String value) {
         this.resourceIdToNameMap.removeValue(value);
+    }
+
+    public Map<String, String> getResourceIdToNameMap() {
+        return Collections.unmodifiableMap(resourceIdToNameMap);
     }
 
     private String getConsoleViewName(String resourceId, String resourceName) {

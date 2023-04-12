@@ -1,11 +1,13 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.streaminglog;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.Content;
 import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -36,13 +38,29 @@ public class ContainerAppStreamingLogManager {
                 showStreamingLog(project, appsEnvironment, null, null, null, null));
     }
 
+    public void closeStreamingLog(Project project, String resourceId) {
+        final Content content = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
+        if (Objects.isNull(content)) {
+            AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager().warning("Streaming log is not started."));
+            return;
+        }
+        final Disposable disposable = content.getDisposer();
+        if (disposable instanceof AppStreamingLogConsoleView) {
+            ((AppStreamingLogConsoleView) disposable).closeStreamingLog();
+        }
+    }
+
+    public boolean isStreamingLogStarted(String resourceId) {
+        return StreamingLogsToolWindowManager.getInstance().getResourceIdToNameMap().keySet().stream().anyMatch(k -> k.contains(resourceId));
+    }
+
     private void showStreamingLog(Project project, AzResource app, String logType, String revisionName,
                                   String replicaName, String containerName) {
         final String resourceId;
         final String resourceName;
         if (Objects.equals(logType, ContainerApp.LOG_TYPE_CONSOLE)) {
-            resourceId = String.format("%s/revision/%s/replica/%s/container/%s", app.getId(), revisionName, replicaName, containerName);
-            resourceName = String.format("%s-%s-%s-%s", app.getName(), revisionName, replicaName, containerName);
+            resourceName = String.format("%s-%s-%s", revisionName, replicaName, containerName);
+            resourceId = String.format("%s/revisionManagement/%s", app.getId(), resourceName);
         } else {
             resourceId = app.getId();
             resourceName = app.getName();

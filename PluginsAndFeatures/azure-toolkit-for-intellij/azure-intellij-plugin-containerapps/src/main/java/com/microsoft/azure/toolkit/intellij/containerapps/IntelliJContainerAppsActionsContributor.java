@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContain
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppsEnvironmentAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.ContainerAppStreamingLogManager;
 import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.ContainerSelectionDialog;
+import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.StreamingToolwindowSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.containerapps.updateimage.UpdateContainerImageAction;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -75,12 +76,27 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
             Optional.ofNullable(e.getProject()).ifPresent(project -> AzureTaskManager.getInstance().runLater(() ->
                     AzureMonitorManager.getInstance().openMonitorWindow(e.getProject(), workspace, app.getId())));
         });
-        am.registerHandler(ContainerAppsActionsContributor.OPEN_SYSTEM_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
+        am.registerHandler(ContainerAppsActionsContributor.START_SYSTEM_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
                 ContainerAppStreamingLogManager.getInstance().showSystemStreamingLog(e.getProject(), app));
-        am.registerHandler(ContainerAppsActionsContributor.OPEN_CONSOLE_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
+        am.registerHandler(ContainerAppsActionsContributor.START_CONSOLE_LOG_STREAMS, (ContainerApp app, AnActionEvent e) ->
                 showConsoleStreamingLog(e.getProject(), app));
-        am.registerHandler(ContainerAppsActionsContributor.START_ENV_LOG_STREAM, (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
-                ContainerAppStreamingLogManager.getInstance().showEnvStreamingLog(e.getProject(), appsEnvironment));
+        am.registerHandler(ContainerAppsActionsContributor.START_ENV_LOG_STREAM,
+                (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
+                        !ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(appsEnvironment.getId()),
+                (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
+                        ContainerAppStreamingLogManager.getInstance().showEnvStreamingLog(e.getProject(), appsEnvironment));
+        am.registerHandler(ContainerAppsActionsContributor.STOP_ENV_LOG_STREAM,
+                (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
+                        ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(appsEnvironment.getId()),
+                (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
+                        ContainerAppStreamingLogManager.getInstance().closeStreamingLog(e.getProject(), appsEnvironment.getId()));
+        am.registerHandler(ContainerAppsActionsContributor.STOP_APP_LOG_STREAMS,
+                (ContainerApp app, AnActionEvent e) ->
+                        ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(app.getId()),
+                (ContainerApp app, AnActionEvent e) -> AzureTaskManager.getInstance().runLater(() -> {
+                    final StreamingToolwindowSelectionDialog dialog = new StreamingToolwindowSelectionDialog(e.getProject(), app);
+                    dialog.show();
+                }));
     }
 
     @Override
