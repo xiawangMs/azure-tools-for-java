@@ -1,4 +1,5 @@
 <idea-plugin>
+    <depends optional="true" config-file="azure-intellij-plugin-containerregistry-docker.xml">Docker</depends>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor"/>
@@ -11,7 +12,7 @@
     </extensions>
     <actions>
         <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.containerregistry.action.AddDockerSupportAction"
-                text="Add Docker Support" description="Add Docker Support"
+                text="Add Docker Support" description="Add docker support"
                 icon="/icons/DockerSupport/DockerSupport.svg">
         </action>
         <action id="Actions.RunOnDockerHost" class="com.microsoft.azure.toolkit.intellij.containerregistry.action.RunOnDockerHostAction"

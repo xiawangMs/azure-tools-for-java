@@ -1,9 +1,6 @@
 intellij {
-    plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java', 'Docker', 'terminal']
 }
-
-group 'com.microsoft.azuretools'
-version 'unspecified'
 
 repositories {
     mavenCentral()

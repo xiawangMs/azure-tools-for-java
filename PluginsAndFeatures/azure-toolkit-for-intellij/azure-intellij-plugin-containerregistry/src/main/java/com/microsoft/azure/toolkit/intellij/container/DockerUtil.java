@@ -5,24 +5,30 @@
 
 package com.microsoft.azure.toolkit.intellij.container;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.PushImageCmd;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.intellij.openapi.util.io.FileUtil;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -31,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -43,6 +50,10 @@ public class DockerUtil {
             .sslConfig(config.getSSLConfig())
             .build();
         return DockerClientBuilder.getInstance(config).withDockerHttpClient(httpClient).build();
+    }
+
+    public static ObjectMapper getDefaultObjectMapper() {
+        return DockerClientConfig.getDefaultObjectMapper();
     }
 
     public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) {
@@ -126,13 +137,36 @@ public class DockerUtil {
     }
 
     @AzureOperation(name = "boundary/docker.pull_image.image|registry", params = {"repository", "registryUrl"})
-    public static void pullImage(@Nonnull DockerClient dockerClient, @Nonnull String registryUrl, String username, String password,
-                                 @Nonnull String repository, @Nonnull String tag)
+    public static String pullImage(@Nonnull DockerClient dockerClient, @Nonnull String registryUrl, String username, String password,
+                                   @Nonnull String repository, @Nonnull String tag)
         throws DockerException, InterruptedException {
         final AuthConfig authConfig = new AuthConfig().withUsername(username).withPassword(password).withRegistryAddress(registryUrl);
         final String fullRepositoryName = String.format("%s/%s", registryUrl, repository);
         final PullImageCmd cmd = dockerClient.pullImageCmd(fullRepositoryName).withRegistry(registryUrl).withTag(tag).withAuthConfig(authConfig);
-        cmd.exec(new ResultCallback.Adapter<>()).awaitCompletion();
+        final String[] imageId = new String[1];
+        final ResultCallback.Adapter<PullResponseItem> adapter = cmd.exec(new ResultCallback.Adapter<>() {
+            @Override
+            public void onNext(PullResponseItem object) {
+                imageId[0] = object.getId();
+            }
+        }).awaitCompletion();
+        return imageId[0];
+    }
+
+    @AzureOperation(name = "boundary/docker.inspect_image.image", params = {"imageId"})
+    public static InspectImageResponse inspectImage(String imageId)
+        throws DockerException {
+        final DockerClient dockerClient = getDefaultDockerClient();
+        return dockerClient.inspectImageCmd(imageId).exec();
+    }
+
+    public static Image getImage(Tag tag)
+        throws DockerException {
+        final DockerClient dockerClient = getDefaultDockerClient();
+        final List<Image> images = dockerClient.listImagesCmd().exec();
+        return images.stream()
+            .filter(i -> Arrays.stream(i.getRepoTags()).anyMatch(t -> t.equalsIgnoreCase(tag.getFullName())))
+            .findAny().orElse(null);
     }
 
     public static void stopContainer(@Nonnull String containerId) throws DockerException {

@@ -77,8 +77,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     private JPanel pnlProjectDetails;
     private JPanel pnlContainerAppsEnvironment;
 
-    public static final ContainerAppDraft.ImageConfig QUICK_START_IMAGE = ContainerAppDraft.ImageConfig.builder()
-            .fullImageName("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest").environmentVariables(new ArrayList<>()).build();
+    public static final ContainerAppDraft.ImageConfig QUICK_START_IMAGE = new ContainerAppDraft.ImageConfig("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest");
     public static final IngressConfig QUICK_START_INGRESS = IngressConfig.builder().enableIngress(true).external(true).targetPort(80).build();
 
     private final Project project;
