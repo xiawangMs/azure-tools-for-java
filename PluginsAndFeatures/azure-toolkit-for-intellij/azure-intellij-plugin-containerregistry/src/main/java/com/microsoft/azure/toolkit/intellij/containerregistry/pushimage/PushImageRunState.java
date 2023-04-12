@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
@@ -65,9 +63,8 @@ public class PushImageRunState extends AzureRunProfileState<String> {
         // build image
         PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
         processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
-        DockerClient docker = DockerClientBuilder.getInstance().build();
-        DockerUtil.ping(docker);
-        String image = DockerUtil.buildImage(docker,
+        DockerUtil.ping();
+        String image = DockerUtil.buildImage(
             acrInfo.getImageTagWithServerUrl(),
             targetDockerfile.toFile(),
             targetDockerfile.getParent().toFile()
@@ -75,7 +72,7 @@ public class PushImageRunState extends AzureRunProfileState<String> {
 
         // push to ACR
         processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
-        DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
+        DockerUtil.pushImage(acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
             acrInfo.getImageTagWithServerUrl());
 
         return image;
