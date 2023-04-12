@@ -14,6 +14,7 @@ dependencies {
     implementation project(':azure-intellij-plugin-lib-java')
     implementation project(':azure-intellij-resource-connector-lib')
     implementation 'com.github.docker-java:docker-java:3.3.0'
+    implementation 'com.github.docker-java:docker-java-transport-zerodep:3.3.0'
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib:' + azureToolkitVersion
