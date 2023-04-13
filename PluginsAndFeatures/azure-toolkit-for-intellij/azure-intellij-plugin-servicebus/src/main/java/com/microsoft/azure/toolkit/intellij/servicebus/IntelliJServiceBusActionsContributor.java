@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.servicebus.ServiceBusNamespace;
 import com.microsoft.azure.toolkit.lib.servicebus.model.ServiceBusInstance;
 
 import java.util.function.BiConsumer;
@@ -66,7 +67,7 @@ public class IntelliJServiceBusActionsContributor implements IActionsContributor
         final BiConsumer<ServiceBusInstance<?, ?, ?>, AnActionEvent> handler = (c, e) -> {
             final String connectionString = c.getOrCreateListenConnectionString();
             am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
-            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"));
+            AzureMessager.getMessager().info(AzureBundle.message("azure.servicebus.info.copyConnectionString"));
         };
         am.registerHandler(ServiceBusActionsContributor.COPY_CONNECTION_STRING, condition, handler);
     }
@@ -98,6 +99,16 @@ public class IntelliJServiceBusActionsContributor implements IActionsContributor
             am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
         };
         am.registerHandler(ServiceBusActionsContributor.GROUP_CREATE_SERVICE_BUS, (r, e) -> true, (r, e) -> handler.accept(r, (AnActionEvent) e));
+    }
+
+    private void registerCopyNamespaceConnectionStringActionHandler(AzureActionManager am) {
+        final BiPredicate<ServiceBusNamespace, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<ServiceBusNamespace, AnActionEvent> handler = (c, e) -> {
+            final String connectionString = c.getOrCreateConnectionString();
+            am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
+            AzureMessager.getMessager().info(AzureBundle.message("azure.servicebus.info.copyConnectionString"));
+        };
+        am.registerHandler(ServiceBusActionsContributor.COPY_NAMESPACE_CONNECTION_STRING, condition, handler);
     }
 
     @Override

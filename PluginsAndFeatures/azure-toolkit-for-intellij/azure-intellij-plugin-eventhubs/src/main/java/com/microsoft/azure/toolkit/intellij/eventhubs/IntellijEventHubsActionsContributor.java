@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
+import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsNamespace;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -87,6 +88,16 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
             am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
         };
         am.registerHandler(EventHubsActionsContributor.GROUP_CREATE_EVENT_HUBS, (r, e) -> true, (r, e) -> handler.accept(r, (AnActionEvent) e));
+    }
+
+    private void registerCopyNamespaceConnectionStringActionHandler(AzureActionManager am) {
+        final BiPredicate<EventHubsNamespace, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<EventHubsNamespace, AnActionEvent> handler = (c, e) -> {
+            final String connectionString = c.getOrCreateListenConnectionString();
+            am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
+            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"));
+        };
+        am.registerHandler(EventHubsActionsContributor.COPY_CONNECTION_STRING_NAMESPACE, condition, handler);
     }
 
     @Override
