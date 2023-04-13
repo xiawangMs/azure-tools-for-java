@@ -6,55 +6,45 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import lombok.SneakyThrows;
-import org.apache.http.HttpException;
-import org.apache.http.client.utils.URIBuilder;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.ConsoleViewStatus.ACTIVE;
-import static com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.ConsoleViewStatus.STOPPED;
+import java.util.Objects;
 
 public class SpringCloudStreamingLogManager {
 
-    private final Map<String, SpringCloudStreamingLogConsoleView> consoleViewMap = new HashMap<>();
+    private final Map<String, AppStreamingLogConsoleView> consoleViewMap = new HashMap<>();
 
     public static SpringCloudStreamingLogManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
     public void showStreamingLog(Project project, SpringCloudApp app, String instanceName) {
-        final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
-                instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
+        final AppStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
+                instanceName, name -> new AppStreamingLogConsoleView(project));
         final AzureString title = OperationBundle.description("internal/springcloud.start_log_stream.instance", instanceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             try {
-                consoleView.startLog(() -> {
-                    try {
-                        // refer to https://github.com/Azure/azure-cli-extensions/blob/main/src/spring/azext_spring/app.py#app_tail_log_internal
-                        return getLogStream(app, instanceName, 300, 500, 1024 * 1024, true);
-                    } catch (final IOException | HttpException e) {
-                        return null;
-                    }
-                });
-                AzureTaskManager.getInstance().runLater(() -> {
-                    StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, instanceName, instanceName, consoleView);
-                });
+                final SpringCloudDeployment deployment = app.getActiveDeployment();
+                if (Objects.isNull(deployment)) {
+                    throw new AzureToolkitRuntimeException(String.format("No active deployment in current app %s", app.getName()));
+                }
+                consoleView.startStreamingLog(deployment.streamLogs(instanceName, 300, 500, 1024 * 1024, true));
+                AzureTaskManager.getInstance().runLater(() ->
+                        StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, instanceName, instanceName, consoleView));
             } catch (final Throwable e) {
                 AzureMessager.getMessager().error(e.getMessage(), "Failed to start streaming log");
-                consoleView.shutdown();
+                consoleView.closeStreamingLog();
             }
         }));
     }
@@ -62,9 +52,9 @@ public class SpringCloudStreamingLogManager {
     public void closeStreamingLog(String instanceName) {
         final AzureString title = OperationBundle.description("boundary/springcloud.close_log_stream.instance", instanceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, title, false, () -> {
-            final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
-            if (consoleView != null && consoleView.getStatus() == ACTIVE) {
-                consoleView.shutdown();
+            final AppStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
+            if (consoleView != null && consoleView.isActive()) {
+                consoleView.closeStreamingLog();
             } else {
                 AzureMessager.getMessager().error("Log is not started.", "Failed to close streaming log");
             }
@@ -73,40 +63,6 @@ public class SpringCloudStreamingLogManager {
 
     public void removeConsoleView(String instanceName) {
         consoleViewMap.remove(instanceName);
-    }
-
-    public ConsoleViewStatus getConsoleViewStatus(String instanceName) {
-        return consoleViewMap.containsKey(instanceName) ? consoleViewMap.get(instanceName).getStatus() : STOPPED;
-    }
-
-    @SneakyThrows
-    public static InputStream getLogStream(SpringCloudApp app, String instanceName, int sinceSeconds, int tailLines, int limitBytes, boolean follow)
-            throws IOException, HttpException {
-        final URIBuilder endpoint = new URIBuilder(app.getLogStreamingEndpoint(instanceName));
-        endpoint.addParameter("follow", String.valueOf(follow));
-        if (sinceSeconds > 0) {
-            endpoint.addParameter("sinceSeconds", String.valueOf(sinceSeconds));
-        }
-        if (tailLines > 0) {
-            endpoint.addParameter("tailLines", String.valueOf(tailLines));
-        }
-        if (limitBytes > 0) {
-            endpoint.addParameter("limitBytes", String.valueOf(limitBytes));
-        }
-        final String password = app.getParent().getTestKey();
-        final String userPass = "primary:" + password;
-        final String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes()));
-        final HttpURLConnection connection = (HttpURLConnection) endpoint.build().toURL().openConnection();
-        connection.setRequestProperty("Authorization", basicAuth);
-        connection.setReadTimeout(600000);
-        connection.setConnectTimeout(3000);
-        connection.setRequestMethod("GET");
-        connection.connect();
-        if (connection.getResponseCode() == 200) {
-            return connection.getInputStream();
-        } else {
-            throw new HttpException("Failed to get log stream due to http error, unexpectedly status code: " + connection.getResponseCode());
-        }
     }
 
     private static final class SingletonHolder {
