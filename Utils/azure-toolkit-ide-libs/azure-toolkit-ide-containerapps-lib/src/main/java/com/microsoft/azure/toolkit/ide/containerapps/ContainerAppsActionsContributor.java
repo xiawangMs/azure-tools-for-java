@@ -110,8 +110,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof ContainerApp &&
                 ((ContainerApp) s).getFormalStatus(true).isConnected() &&
-                Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
-                !((ContainerApp) s).getLatestRevision().isActive())
+                Objects.nonNull(((ContainerApp) s).getCachedLatestRevision()) &&
+                !((ContainerApp) s).getCachedLatestRevision().isActive())
             .withHandler(ContainerApp::activate)
             .register(am);
 
@@ -121,8 +121,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof ContainerApp &&
                 ((ContainerApp) s).getFormalStatus(true).isConnected() &&
-                Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
-                ((ContainerApp) s).getLatestRevision().isActive())
+                Objects.nonNull(((ContainerApp) s).getCachedLatestRevision()) &&
+                ((ContainerApp) s).getCachedLatestRevision().isActive())
             .withHandler(ContainerApp::deactivate)
             .register(am);
 
@@ -132,8 +132,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof ContainerApp &&
                 ((ContainerApp) s).getFormalStatus(true).isConnected() &&
-                Objects.nonNull(((ContainerApp) s).getLatestRevision()) &&
-                ((ContainerApp) s).getLatestRevision().isActive())
+                Objects.nonNull(((ContainerApp) s).getCachedLatestRevision()) &&
+                ((ContainerApp) s).getCachedLatestRevision().isActive())
             .withHandler(ContainerApp::restart)
             .register(am);
 
