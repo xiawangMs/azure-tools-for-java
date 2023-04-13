@@ -91,8 +91,10 @@ public class MonitorTreePanel extends JPanel {
         }
         getOrCreateCustomQueriesTabNode().add(new DefaultMutableTreeNode(data));
         this.customQueries.add(data);
-        this.treeModel.reload();
-        TreeUtil.expandAll(this.tree);
+        AzureTaskManager.getInstance().runLater(() -> {
+            this.treeModel.reload();
+            TreeUtil.expandAll(this.tree);
+        });
         AzureTaskManager.getInstance().runInBackground("save query", () -> {
             final List<String> customQueryList = new ArrayList<>();
             this.customQueries.forEach(q -> {
