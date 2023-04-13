@@ -44,7 +44,8 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
     public static final Action.Id<Tag> COPY_DIGEST = Action.Id.of("user/acr.copy_digest.image");
     public static final Action.Id<Tag> COPY_PULL_COMMAND = Action.Id.of("user/acr.copy_pull_command.image");
     public static final Action.Id<Tag> COPY_RUN_COMMAND = Action.Id.of("user/acr.copy_run_command.image");
-    public static final Action.Id<Tag> DEPLOY_IMAGE = Action.Id.of("user/acr.deploy_image.image");
+    public static final Action.Id<Tag> DEPLOY_IMAGE_ACA = Action.Id.of("user/acr.deploy_image_aca.image");
+    public static final Action.Id<Tag> DEPLOY_IMAGE_WEBAPP = Action.Id.of("user/acr.deploy_image_webapp.image");
     public static final Action.Id<Tag> INSPECT_IMAGE = Action.Id.of("user/acr.inspect_image.image");
     public static final Action.Id<Tag> RUN_LOCALLY = Action.Id.of("user/acr.run_image.image");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_CONTAINER_REGISTRY = Action.Id.of("user/acr.create_registry.group");
@@ -107,7 +108,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             .register(am);
 
         new Action<>(LOGOUT)
-            .withLabel("Logout")
+            .withLabel("Docker Logout")
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof ContainerRegistry)
             .register(am);
@@ -218,9 +219,16 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             .visibleWhen(s -> s instanceof Tag)
             .register(am);
 
-        new Action<>(DEPLOY_IMAGE)
+        new Action<>(DEPLOY_IMAGE_ACA)
             .withIcon(t -> AzureIcons.Action.DEPLOY.getIconPath())
             .withLabel("Deploy to Container App")
+            .withIdParam(Tag::getImageName)
+            .visibleWhen(s -> s instanceof Tag)
+            .register(am);
+
+        new Action<>(DEPLOY_IMAGE_WEBAPP)
+            .withIcon(t -> AzureIcons.Action.DEPLOY.getIconPath())
+            .withLabel("Deploy to Web App")
             .withIdParam(Tag::getImageName)
             .visibleWhen(s -> s instanceof Tag)
             .register(am);
@@ -279,9 +287,11 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
+            ContainerRegistryActionsContributor.DEPLOY_IMAGE_ACA,
+            ContainerRegistryActionsContributor.DEPLOY_IMAGE_WEBAPP,
+            "---",
             ContainerRegistryActionsContributor.PULL_IMAGE,
             ContainerRegistryActionsContributor.INSPECT_IMAGE,
-            ContainerRegistryActionsContributor.DEPLOY_IMAGE,
             "---",
             ContainerRegistryActionsContributor.COPY_DIGEST,
             ContainerRegistryActionsContributor.COPY_PULL_COMMAND,

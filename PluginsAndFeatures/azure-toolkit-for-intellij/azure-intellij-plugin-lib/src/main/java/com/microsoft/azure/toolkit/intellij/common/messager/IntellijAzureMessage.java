@@ -48,7 +48,7 @@ public class IntellijAzureMessage extends AzureHtmlMessage {
     }
 
     protected String getValueColor() {
-        return "#" + Integer.toHexString(JBColor.BLUE.getRGB()).substring(2);
+        return "#" + Integer.toHexString(JBColor.CYAN.getRGB()).substring(2);
     }
 }
 
