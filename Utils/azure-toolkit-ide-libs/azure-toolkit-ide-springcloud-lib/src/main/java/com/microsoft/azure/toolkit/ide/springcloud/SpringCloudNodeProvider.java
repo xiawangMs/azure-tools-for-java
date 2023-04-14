@@ -80,7 +80,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof SpringCloudAppInstanceModule) {
             final SpringCloudAppInstanceModule module = (SpringCloudAppInstanceModule) data;
             return new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "Instances"))
+                    .view(new AzureModuleLabelView<>(module, "Instances", AzureIcons.SpringCloud.INSTANCE_MODULE.getIconPath()))
                     .addChildren(SpringCloudAppInstanceModule::list, (d, p) -> this.createNode(d, p, manager));
         }
         else if (data instanceof SpringCloudAppInstance) {
@@ -91,7 +91,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof ServiceLinkerModule) {
             final ServiceLinkerModule module = (ServiceLinkerModule) data;
             return new Node<>(module)
-                    .view(new AzureModuleLabelView<>(module, "Service Connectors"))
+                    .view(new AzureModuleLabelView<>(module, "Service Connectors", AzureIcons.Connector.SERVICE_LINKER_MODULE.getIconPath()))
                     .addChildren(ServiceLinkerModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ServiceLinker) {
             final ServiceLinker serviceLinker = (ServiceLinker) data;
