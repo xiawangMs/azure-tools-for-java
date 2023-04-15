@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -22,16 +23,12 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import lombok.SneakyThrows;
-import org.jetbrains.plugins.terminal.ShellTerminalWidget;
-import org.jetbrains.plugins.terminal.TerminalView;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -52,42 +49,14 @@ public class IntelliJContainerRegistryActionsContributor implements IActionsCont
             final Action<ContainerRegistry> enableAdminUser = am.getAction(ContainerRegistryActionsContributor.ENABLE_ADMIN_USER).bind(s);
             throw new AzureToolkitRuntimeException(String.format("Admin user is not enabled for (%s), but it is required to docker login to an Azure Container Registry.", s.getName()), enableAdminUser);
         }
-        AzureTaskManager.getInstance().runLater(() -> {
-            TerminalView terminalView = TerminalView.getInstance(project);
-            ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, s.getName());
-            final String command = String.format("docker login %s -u %s", s.getLoginServerUrl(), s.getUserName());
-            AzureTaskManager.getInstance().runInBackground(OperationBundle.description("user/acr.login_registry.registry", s.getName()), () -> {
-                try {
-                    int count = 0;
-                    while ((shellTerminalWidget.getTtyConnector() == null || shellTerminalWidget.getTerminalStarter() == null) && count++ < 30) {
-                        Thread.sleep(500);
-                    }
-                    shellTerminalWidget.executeCommand(command);
-                } catch (IOException | InterruptedException t) {
-                    throw new AzureToolkitRuntimeException(t);
-                }
-            });
-        }, AzureTask.Modality.ANY);
+        final String command = String.format("docker login %s -u %s", s.getLoginServerUrl(), s.getUserName());
+        TerminalUtils.executeInTerminal(project, command, s.getName());
     }
 
     private static void logout(ContainerRegistry s, AnActionEvent e) {
         final Project project = Objects.requireNonNull(e.getProject());
-        AzureTaskManager.getInstance().runLater(() -> {
-            TerminalView terminalView = TerminalView.getInstance(project);
-            ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, s.getName());
-            final String command = String.format("docker logout %s", s.getLoginServerUrl());
-            AzureTaskManager.getInstance().runInBackground(OperationBundle.description("user/acr.logout_registry.registry", s.getName()), () -> {
-                try {
-                    int count = 0;
-                    while ((shellTerminalWidget.getTtyConnector() == null || shellTerminalWidget.getTerminalStarter() == null) && count++ < 30) {
-                        Thread.sleep(500);
-                    }
-                    shellTerminalWidget.executeCommand(command);
-                } catch (IOException | InterruptedException t) {
-                    throw new AzureToolkitRuntimeException(t);
-                }
-            });
-        }, AzureTask.Modality.ANY);
+        final String command = String.format("docker logout %s", s.getLoginServerUrl());
+        TerminalUtils.executeInTerminal(project, command, s.getName());
     }
 
     private static void runImage(Tag tag, AnActionEvent e) {
