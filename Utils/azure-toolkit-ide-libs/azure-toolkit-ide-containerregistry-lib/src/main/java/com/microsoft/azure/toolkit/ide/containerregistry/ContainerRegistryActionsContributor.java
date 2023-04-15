@@ -67,9 +67,9 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             .withHandler(s -> {
                 s.enableAdminUser();
                 final AzureString message = AzureString.format("Admin user is enabled for Azure Container Registry %s. You can docker login to it now.", s.getName());
-                Action<ContainerRegistry> login = am.getAction(LOGIN).bind(s).withLabel("Login Now!");
-                Action<ContainerRegistry> copyPassword = am.getAction(COPY_PASSWORD).bind(s);
-                Action<ContainerRegistry> copyLoginCommand = am.getAction(COPY_LOGIN_COMMAND).bind(s);
+                final Action<ContainerRegistry> login = am.getAction(LOGIN).bind(s).withLabel("Login Now!");
+                final Action<ContainerRegistry> copyPassword = am.getAction(COPY_PASSWORD).bind(s);
+                final Action<ContainerRegistry> copyLoginCommand = am.getAction(COPY_LOGIN_COMMAND).bind(s);
                 AzureMessager.getMessager().success(message, login, copyPassword, copyLoginCommand);
             })
             .register(am);
@@ -82,7 +82,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
                 final String message = "You will not be able to docker login to this container registry if admin user is disabled, Azure you sure to disable it?";
                 if (AzureMessager.getMessager().confirm(message)) {
                     s.disableAdminUser();
-                    Action<ContainerRegistry> logout = am.getAction(LOGOUT).bind(s);
+                    final Action<ContainerRegistry> logout = am.getAction(LOGOUT).bind(s);
                     AzureMessager.getMessager().success(AzureString.format("Admin user is disabled for Azure Container Registry %s", s.getName()), logout);
                 }
             })
@@ -173,7 +173,7 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             .withHandler(s -> {
                 final String command = String.format("docker pull %s", s.getFullName());
                 am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(command);
-                Action<Tag> pull = am.getAction(ContainerRegistryActionsContributor.PULL_IMAGE).bind(s).withLabel("Pull Now!");
+                final Action<Tag> pull = am.getAction(ContainerRegistryActionsContributor.PULL_IMAGE).bind(s).withLabel("Pull Now!");
                 final ContainerRegistry registry = s.getParent().getParent().getParent();
                 if (!registry.isAdminUserEnabled()) {
                     final Action<ContainerRegistry> enableAdminUser = am.getAction(ContainerRegistryActionsContributor.ENABLE_ADMIN_USER).bind(registry);

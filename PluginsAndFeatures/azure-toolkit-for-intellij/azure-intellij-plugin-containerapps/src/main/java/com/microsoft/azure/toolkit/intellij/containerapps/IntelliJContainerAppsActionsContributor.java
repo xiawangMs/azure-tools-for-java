@@ -40,7 +40,7 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<ContainerApp, AnActionEvent> serviceCondition = (r, e) -> r != null;
         am.<ContainerApp, AnActionEvent>registerHandler(ContainerAppsActionsContributor.UPDATE_IMAGE, UpdateContainerImageAction::openUpdateDialog);
-        am.<Tag, AnActionEvent>registerHandler(ContainerRegistryActionsContributor.DEPLOY_IMAGE, UpdateContainerImageAction::openUpdateDialog);
+        am.<Tag, AnActionEvent>registerHandler(ContainerRegistryActionsContributor.DEPLOY_IMAGE_ACA, UpdateContainerImageAction::openUpdateDialog);
 
         am.registerHandler(ContainerAppsActionsContributor.CREATE_CONTAINER_APP,
                 (ContainerAppsEnvironment r, AnActionEvent e) -> r.getFormalStatus(true).isConnected(),
