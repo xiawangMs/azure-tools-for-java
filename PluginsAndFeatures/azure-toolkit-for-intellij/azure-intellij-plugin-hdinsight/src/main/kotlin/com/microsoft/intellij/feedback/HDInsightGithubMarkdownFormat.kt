@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.feedback
 
-object GithubMarkdownFormat {
+object HDInsightGithubMarkdownFormat {
     fun toCode(value: String): String {
         return "\n```\n$value\n```"
     }
