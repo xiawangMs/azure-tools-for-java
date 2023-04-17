@@ -28,6 +28,7 @@ public class WebAppActionsContributor implements IActionsContributor {
     public static final String WEBAPP_ACTIONS = "actions.webapp.management";
     public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployment_slots";
     public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployment_slot";
+    public static final String SERVICE_LINKER_MODULE_ACTIONS = "actions.webapp.service_linker_module";
 
     public static final Action.Id<WebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("user/webapp.swap_deployment.deployment|app");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_WEBAPP = Action.Id.of("user/webapp.create_app.group");
@@ -85,6 +86,8 @@ public class WebAppActionsContributor implements IActionsContributor {
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, deploymentSlotActionGroup);
 
         am.registerGroup(DEPLOYMENT_SLOTS_ACTIONS, new ActionGroup(ResourceCommonActionsContributor.REFRESH));
+
+        am.registerGroup(SERVICE_LINKER_MODULE_ACTIONS, new ActionGroup(ResourceCommonActionsContributor.REFRESH));
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
         group.addAction(GROUP_CREATE_WEBAPP);

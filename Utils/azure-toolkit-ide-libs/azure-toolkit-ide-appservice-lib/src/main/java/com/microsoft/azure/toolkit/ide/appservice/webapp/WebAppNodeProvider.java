@@ -9,11 +9,7 @@ import com.microsoft.azure.toolkit.ide.appservice.AppServiceDeploymentSlotsNodeV
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.*;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -95,11 +91,11 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
             final ServiceLinkerModule module = (ServiceLinkerModule) data;
             return new Node<>(module)
                     .view(new AzureModuleLabelView<>(module, "Service Connectors", AzureIcons.Connector.SERVICE_LINKER_MODULE.getIconPath()))
+                    .actions(WebAppActionsContributor.SERVICE_LINKER_MODULE_ACTIONS)
                     .addChildren(ServiceLinkerModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ServiceLinker) {
             final ServiceLinker serviceLinker = (ServiceLinker) data;
-            return new Node<>(serviceLinker)
-                    .view(new AzureResourceLabelView<>(serviceLinker));
+            return new ServiceLinkerNode(serviceLinker);
         }
         return null;
     }

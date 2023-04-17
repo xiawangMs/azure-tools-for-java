@@ -7,10 +7,7 @@ package com.microsoft.azure.toolkit.ide.containerapps;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.*;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
@@ -83,6 +80,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
             final RevisionModule module = (RevisionModule) data;
             return new Node<>(module)
                     .view(new AzureModuleLabelView<>(module, "Revisions", AzureIcons.ContainerApps.REVISION_MODULE.getIconPath()))
+                    .actions(ContainerAppsActionsContributor.REVISION_MODULE_ACTIONS)
                     .addChildren(RevisionModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof Revision) {
             final Revision revision = (Revision) data;
@@ -94,11 +92,11 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
             final ServiceLinkerModule module = (ServiceLinkerModule) data;
             return new Node<>(module)
                     .view(new AzureModuleLabelView<>(module, "Service Connectors", AzureIcons.Connector.SERVICE_LINKER_MODULE.getIconPath()))
+                    .actions(ContainerAppsActionsContributor.SERVICE_LINKER_MODULE_ACTIONS)
                     .addChildren(ServiceLinkerModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ServiceLinker) {
             final ServiceLinker serviceLinker = (ServiceLinker) data;
-            return new Node<>(serviceLinker)
-                    .view(new AzureResourceLabelView<>(serviceLinker));
+            return new ServiceLinkerNode(serviceLinker);
         }
         return null;
     }

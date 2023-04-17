@@ -27,6 +27,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
     public static final String SERVICE_ACTIONS = "actions.springcloud.service";
     public static final String APP_INSTANCE_ACTIONS = "actions.springcould.appInstance";
+    public static final String APP_INSTANCE_MODULE_ACTIONS = "actions.springcould.app_instance_module";
+    public static final String SERVICE_LINKER_MODULE_ACTIONS = "actions.springcould.service_linker_module";
     public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("user/springcloud.open_public_url.app");
     public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("user/springcloud.open_test_url.app");
     public static final Action.Id<SpringCloudApp> STREAM_LOG_APP = Action.Id.of("user/springcloud.open_stream_log.app");
@@ -153,12 +155,22 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
 
+        final ActionGroup appInstanceModuleGroup = new ActionGroup(
+                ResourceCommonActionsContributor.REFRESH
+        );
+        am.registerGroup(APP_INSTANCE_MODULE_ACTIONS, appInstanceModuleGroup);
+
         final ActionGroup appInstanceGroup = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
             SpringCloudActionsContributor.ATTACH_DEBUGGER,
             SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);
+
+        final ActionGroup serviceLinkerModuleGroup = new ActionGroup(
+                ResourceCommonActionsContributor.REFRESH
+        );
+        am.registerGroup(SERVICE_LINKER_MODULE_ACTIONS, serviceLinkerModuleGroup);
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
         group.addAction(GROUP_CREATE_CLUSTER);

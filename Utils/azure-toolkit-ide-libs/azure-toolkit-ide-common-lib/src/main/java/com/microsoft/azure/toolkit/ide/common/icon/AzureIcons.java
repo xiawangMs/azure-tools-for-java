@@ -213,6 +213,7 @@ public final class AzureIcons {
     public static final class Connector {
         public static final AzureIcon CONNECT = AzureIcon.builder().iconPath("/icons/connector/connect.svg").build();
         public static final AzureIcon SERVICE_LINKER_MODULE = AzureIcon.builder().iconPath("/icons/connector/service_connector.svg").build();
+        public static final AzureIcon FOCUS_ON_CONNECTED_SERVICE = AzureIcon.builder().iconPath("/icons/connector/service_connector_jump.svg").build();
     }
 
     public static final class Files {
