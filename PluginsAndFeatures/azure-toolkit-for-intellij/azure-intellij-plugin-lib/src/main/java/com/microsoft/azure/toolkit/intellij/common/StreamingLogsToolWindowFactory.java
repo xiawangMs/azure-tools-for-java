@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -39,6 +40,10 @@ public class StreamingLogsToolWindowFactory implements ToolWindowFactory {
 
             @Override
             public void contentRemoveQuery(@NotNull ContentManagerEvent event) {
+                final Disposable disposable = event.getContent().getDisposer();
+                if (disposable instanceof AppStreamingLogConsoleView && !((AppStreamingLogConsoleView) disposable).isActive()) {
+                    return;
+                }
                 final String displayName = event.getContent().getDisplayName();
                 final boolean canClose = AzureMessager.getMessager().confirm(AzureString.format(
                         "This will stop streaming log of \"{0}\", are you sure to do this?", displayName));
