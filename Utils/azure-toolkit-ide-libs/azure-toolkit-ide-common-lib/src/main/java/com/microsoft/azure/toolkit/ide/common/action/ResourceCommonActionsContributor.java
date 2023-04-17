@@ -264,7 +264,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .visibleWhen(s -> s instanceof ServiceLinker)
                 .withHandler((r) -> {
                     final AzResource resource = Azure.az().getById(r.getTargetResourceId());
-                    AzureEventBus.emit("azure.explorer.highlight_resource", resource);
+                    AzureEventBus.emit("azure.explorer.focus_resource", resource);
                 })
                 .withAuthRequired(false)
                 .register(am);

@@ -119,6 +119,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 TreeUtils.focusResource(tree, (AbstractAzResource<?, ?, ?>) e.getSource());
             }
         }));
+        AzureEventBus.on("azure.explorer.focus_resource", new AzureEventBus.EventListener(e -> {
+            if (e.getSource() instanceof AbstractAzResource<?,?,?>) {
+                TreeUtils.focusResource(tree, (AbstractAzResource<?, ?, ?>) e.getSource());
+            }
+        }));
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
