@@ -59,7 +59,7 @@ public class ContainerAppStreamingLogManager {
         final String resourceId;
         final String resourceName;
         if (Objects.equals(logType, ContainerApp.LOG_TYPE_CONSOLE)) {
-            resourceName = String.format("%s-%s-%s", revisionName, replicaName, containerName);
+            resourceName = String.format("%s-%s", replicaName, containerName);
             resourceId = String.format("%s/revisionManagement/%s", app.getId(), resourceName);
         } else {
             resourceId = app.getId();
