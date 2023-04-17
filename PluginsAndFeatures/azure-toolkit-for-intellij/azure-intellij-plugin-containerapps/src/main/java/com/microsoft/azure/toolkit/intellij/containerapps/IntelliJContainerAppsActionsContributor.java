@@ -82,17 +82,17 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 showConsoleStreamingLog(e.getProject(), app));
         am.registerHandler(ContainerAppsActionsContributor.START_ENV_LOG_STREAM,
                 (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
-                        !ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(appsEnvironment.getId()),
+                        !ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(e.getProject(), appsEnvironment.getId()),
                 (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
                         ContainerAppStreamingLogManager.getInstance().showEnvStreamingLog(e.getProject(), appsEnvironment));
         am.registerHandler(ContainerAppsActionsContributor.STOP_ENV_LOG_STREAM,
                 (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
-                        ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(appsEnvironment.getId()),
+                        ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(e.getProject(), appsEnvironment.getId()),
                 (ContainerAppsEnvironment appsEnvironment, AnActionEvent e) ->
                         ContainerAppStreamingLogManager.getInstance().closeStreamingLog(e.getProject(), appsEnvironment.getId()));
         am.registerHandler(ContainerAppsActionsContributor.STOP_APP_LOG_STREAMS,
                 (ContainerApp app, AnActionEvent e) ->
-                        ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(app.getId()),
+                        ContainerAppStreamingLogManager.getInstance().isStreamingLogStarted(e.getProject(), app.getId()),
                 (ContainerApp app, AnActionEvent e) -> AzureTaskManager.getInstance().runLater(() -> {
                     final StreamingToolwindowSelectionDialog dialog = new StreamingToolwindowSelectionDialog(e.getProject(), app);
                     dialog.show();

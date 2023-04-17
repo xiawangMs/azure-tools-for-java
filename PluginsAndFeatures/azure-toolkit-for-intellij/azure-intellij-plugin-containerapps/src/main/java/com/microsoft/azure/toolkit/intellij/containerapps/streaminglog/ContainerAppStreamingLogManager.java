@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEn
 import reactor.core.publisher.Flux;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class ContainerAppStreamingLogManager {
     private static final ContainerAppStreamingLogManager instance = new ContainerAppStreamingLogManager();
@@ -50,8 +51,14 @@ public class ContainerAppStreamingLogManager {
         }
     }
 
-    public boolean isStreamingLogStarted(String resourceId) {
-        return StreamingLogsToolWindowManager.getInstance().getResourceIdToNameMap().keySet().stream().anyMatch(k -> k.contains(resourceId));
+    public boolean isStreamingLogStarted(Project project, String resourceId) {
+        final Content content = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
+        return Optional.ofNullable(content).map(Content::getDisposer).map(disposable -> {
+            if (disposable instanceof AppStreamingLogConsoleView) {
+                return ((AppStreamingLogConsoleView) disposable).isActive();
+            }
+            return false;
+        }).orElse(false);
     }
 
     private void showStreamingLog(Project project, AzResource app, String logType, String revisionName,
