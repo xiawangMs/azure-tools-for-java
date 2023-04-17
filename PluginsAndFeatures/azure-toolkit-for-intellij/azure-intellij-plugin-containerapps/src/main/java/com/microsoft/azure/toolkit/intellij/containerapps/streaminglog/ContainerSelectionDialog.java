@@ -25,7 +25,7 @@ public class ContainerSelectionDialog extends DialogWrapper {
     private AzureComboBox<String> containerComboBox;
     private final ContainerApp containerApp;
     private final Project project;
-    private final String GO_TO_REVISION_MANAGEMENT = "You need at least one instance to view logs. To change settings, go to Revision management.";
+    private final String GO_TO_REVISION_MANAGEMENT = "You need at least one instance to view logs. To change settings, go to Revision management in portal.";
 
     public ContainerSelectionDialog(@Nullable final Project project, ContainerApp containerApp) {
         super(project, false);
