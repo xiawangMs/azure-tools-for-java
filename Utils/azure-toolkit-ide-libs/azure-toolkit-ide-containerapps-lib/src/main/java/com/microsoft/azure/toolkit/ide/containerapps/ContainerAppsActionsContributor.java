@@ -38,8 +38,6 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String CONTAINER_APP_ACTIONS = "actions.containerapps.containerapp";
     public static final String REVISION_ACTIONS = "actions.containerapps.revision";
     public static final String REVISION_MODULE_ACTIONS = "actions.containerapps.revision_module";
-    public static final String SERVICE_LINKER_MODULE_ACTIONS = "actions.containerapps.service_linker_module";
-
     public static final Action.Id<ContainerAppsEnvironment> CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app");
     public static final Action.Id<AzureContainerApps> CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment");
     public static final Action.Id<ContainerApp> BROWSE = Action.Id.of("user/containerapps.open_in_browser.app");
@@ -248,9 +246,6 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ContainerAppsActionsContributor.RESTART
         );
         am.registerGroup(REVISION_ACTIONS, revisionActionGroup);
-
-        final ActionGroup serviceLinkerModuleGroup = new ActionGroup(ResourceCommonActionsContributor.REFRESH);
-        am.registerGroup(SERVICE_LINKER_MODULE_ACTIONS, serviceLinkerModuleGroup);
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
         group.addAction(GROUP_CREATE_CONTAINER_APP);

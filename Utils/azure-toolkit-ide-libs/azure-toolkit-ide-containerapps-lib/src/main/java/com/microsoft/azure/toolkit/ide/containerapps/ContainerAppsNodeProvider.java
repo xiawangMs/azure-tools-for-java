@@ -92,7 +92,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
             final ServiceLinkerModule module = (ServiceLinkerModule) data;
             return new Node<>(module)
                     .view(new AzureModuleLabelView<>(module, "Service Connectors", AzureIcons.Connector.SERVICE_LINKER_MODULE.getIconPath()))
-                    .actions(ContainerAppsActionsContributor.SERVICE_LINKER_MODULE_ACTIONS)
+                    .actions(ResourceCommonActionsContributor.SERVICE_LINKER_MODULE_ACTIONS)
                     .addChildren(ServiceLinkerModule::list, (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ServiceLinker) {
             final ServiceLinker serviceLinker = (ServiceLinker) data;

@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Startable;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
+import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinkerModule;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
@@ -64,8 +65,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<File> REVEAL_FILE = Action.Id.of("user/common.reveal_file_in_explorer");
     public static final Action.Id<File> OPEN_FILE = Action.Id.of("user/common.open_file_in_editor");
     public static final Action.Id<ServiceLinker> FOCUS_ON_CONNECTED_SERVICE = Action.Id.of("user/common.focus_on_connected_service");
+    public static final Action.Id<ServiceLinkerModule> CREATE_SERVICE_LINKER_IN_PORTAL = Action.Id.of("user/resource.create_service_linker_in_portal");
 
     public static final String SERVICE_LINKER_ACTIONS = "actions.resource.service_linker";
+    public static final String SERVICE_LINKER_MODULE_ACTIONS = "actions.resource.service_linker_module";
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 
     @Override
@@ -268,6 +271,16 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 })
                 .withAuthRequired(false)
                 .register(am);
+
+        new Action<>(CREATE_SERVICE_LINKER_IN_PORTAL)
+                .withLabel(s -> "Create In Azure Portal")
+                .withIcon(AzureIcons.Action.CREATE.getIconPath())
+                .visibleWhen(s -> s instanceof ServiceLinkerModule)
+                .withHandler((r) -> {
+                    final String parentUrl = r.getParent().getPortalUrl();
+                    am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(String.format("%s/serviceConnector", parentUrl));
+                })
+                .register(am);
     }
 
     @AzureOperation(name = "boundary/common.copy_string.string", params = {"s"})
@@ -285,6 +298,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.FOCUS_ON_CONNECTED_SERVICE,
                 ResourceCommonActionsContributor.DELETE
+        ));
+        am.registerGroup(SERVICE_LINKER_MODULE_ACTIONS, new ActionGroup(
+                ResourceCommonActionsContributor.REFRESH,
+                "---",
+                ResourceCommonActionsContributor.CREATE_SERVICE_LINKER_IN_PORTAL
         ));
     }
 
