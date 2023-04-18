@@ -31,7 +31,7 @@ public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureF
 
     public CustomTimeRangeDialog() {
         super();
-        this.dateFilterComponent = new DateFilterComponent(false, DateFormatUtil.getDateFormat().getDelegate());
+        this.dateFilterComponent = new DateFilterComponent(false, DateFormatUtil.getDateTimeFormat().getDelegate());
         restoreDate();
         init();
     }
@@ -100,7 +100,7 @@ public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureF
 
     private void setCustomKustoString() {
         final VcsLogDateFilter filter = VcsLogFilterObject.fromDates(dateFilterComponent.getAfter(), dateFilterComponent.getBefore());
-        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String kustoAfter = Optional.ofNullable(filter.getAfter())
                 .map(d -> String.format("where TimeGenerated >= datetime(%s)", formatter.format(d))).orElse(StringUtils.EMPTY);
         final String kustoBefore = Optional.ofNullable(filter.getBefore())

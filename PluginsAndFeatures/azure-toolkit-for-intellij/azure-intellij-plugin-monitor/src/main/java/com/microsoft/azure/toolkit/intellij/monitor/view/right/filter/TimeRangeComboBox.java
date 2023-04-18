@@ -99,7 +99,7 @@ public class TimeRangeComboBox extends AzureComboBox<TimeRangeComboBox.TimeRange
         try {
             final Date afterDate = new Date(after);
             final Date beforeDate = new Date(before);
-            final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             final String kustoAfter = String.format("where TimeGenerated >= datetime(%s)", formatter.format(afterDate));
             final String kustoBefore = String.format("where TimeGenerated <= datetime(%s)", formatter.format(beforeDate));
             customKustoString = StringUtils.join(new String[] {kustoBefore, kustoAfter}, " | ");

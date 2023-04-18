@@ -29,7 +29,7 @@ import org.apache.http.message.BasicNameValuePair
 import java.net.URI
 import java.nio.charset.StandardCharsets
 
-class GithubIssue<T : Reportable>(private val reportable: T) {
+class HDInsightGithubIssue<T : HDInsightReportable>(private val reportable: T) {
     private val plugin = reportable.plugin
     private val loginPrefix = "https://github.com/login"
     private val labels = mutableSetOf("IntelliJ")
@@ -71,7 +71,7 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
         BrowserUtil.browse(getRequestUrl())
     }
 
-    fun withLabel(label: String): GithubIssue<T> {
+    fun withLabel(label: String): HDInsightGithubIssue<T> {
         labels.add(label)
 
         return this
