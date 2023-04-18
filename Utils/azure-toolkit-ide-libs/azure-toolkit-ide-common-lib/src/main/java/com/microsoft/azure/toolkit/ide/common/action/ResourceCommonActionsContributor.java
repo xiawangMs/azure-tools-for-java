@@ -281,8 +281,10 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final ActionGroup resourceGroupCreateActions = new ActionGroup(new ArrayList<>(), view);
         am.registerGroup(RESOURCE_GROUP_CREATE_ACTIONS, resourceGroupCreateActions);
         am.registerGroup(SERVICE_LINKER_ACTIONS, new ActionGroup(
+                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                "---",
                 ResourceCommonActionsContributor.FOCUS_ON_CONNECTED_SERVICE,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL
+                ResourceCommonActionsContributor.DELETE
         ));
     }
 

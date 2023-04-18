@@ -59,7 +59,7 @@ public class ServiceLinkerNode extends Node<ServiceLinker> {
 
         @Override
         public String getDescription() {
-            return getLabel();
+            return serviceLinker.getStatus();
         }
 
         @Override
