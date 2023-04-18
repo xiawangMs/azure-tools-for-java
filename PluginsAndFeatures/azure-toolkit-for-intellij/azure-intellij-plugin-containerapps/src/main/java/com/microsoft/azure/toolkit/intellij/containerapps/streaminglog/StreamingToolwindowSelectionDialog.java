@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.containerapps.streaminglog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class StreamingToolwindowSelectionDialog extends DialogWrapper {
@@ -24,7 +26,9 @@ public class StreamingToolwindowSelectionDialog extends DialogWrapper {
         this.project = project;
         init();
         this.logStreamInstanceComboBox.setItemsLoader(() -> StreamingLogsToolWindowManager.getInstance()
-                .getResourceIdToNameMap().keySet().stream().filter(k -> k.contains(containerApp.getId()))
+                .getResourceIdToNameMap().keySet().stream().filter(k -> k.contains(containerApp.getId()) &&
+                        Optional.ofNullable(StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, k))
+                                .map(AppStreamingLogConsoleView::isActive).orElse(false))
                 .collect(Collectors.toList()));
     }
 
