@@ -87,7 +87,10 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
         final List<EnvironmentVar> vars = dataModel.getEnvironmentVariables().entrySet().stream()
                 .map(e -> new EnvironmentVar().withName(e.getKey()).withValue(e.getValue()))
                 .collect(Collectors.toList());
-        config.setImageConfig(ContainerAppDraft.ImageConfig.builder().containerRegistry(registry).fullImageName(imageAndTag).environmentVariables(vars).build());
+        final ContainerAppDraft.ImageConfig imageConfig = new ContainerAppDraft.ImageConfig(imageAndTag);
+        imageConfig.setContainerRegistry(registry);
+        imageConfig.setEnvironmentVariables(vars);
+        config.setImageConfig(imageConfig);
         config.setIngressConfig(dataModel.getIngressConfig());
         draft.setConfig(config);
         draft.updateIfExist();

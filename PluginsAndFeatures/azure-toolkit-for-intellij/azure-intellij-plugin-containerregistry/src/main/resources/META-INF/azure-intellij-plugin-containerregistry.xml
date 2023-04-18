@@ -1,12 +1,9 @@
 <idea-plugin>
-<<<<<<< HEAD
     <depends optional="true" config-file="azure-intellij-plugin-containerregistry-docker.xml">Docker</depends>
-=======
     <extensionPoints>
         <extensionPoint name="dockerfileActionsProvider"
                         interface="com.microsoft.azure.toolkit.intellij.containerregistry.runner.DockerfileActionsProvider"/>
     </extensionPoints>
->>>>>>> 808c5434f (Support push image to azure container app from docker file directly)
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <dockerfileActionsProvider implementation="com.microsoft.azure.toolkit.intellij.containerregistry.runner.ContainerRegistryDockerfileActionsProvider"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryNodeProvider"/>

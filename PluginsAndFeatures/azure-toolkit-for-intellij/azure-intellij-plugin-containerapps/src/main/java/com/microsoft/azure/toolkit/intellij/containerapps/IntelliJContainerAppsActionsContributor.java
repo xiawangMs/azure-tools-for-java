@@ -9,11 +9,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.containerapps.ContainerAppsActionsContributor;
-<<<<<<< HEAD
 import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor;
-=======
 import com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageToAzureContainerAppAction;
->>>>>>> 808c5434f (Support push image to azure container app from docker file directly)
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppsEnvironmentAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.updateimage.UpdateContainerImageAction;
