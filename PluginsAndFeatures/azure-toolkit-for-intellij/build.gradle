@@ -234,7 +234,6 @@ dependencies {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
-    implementation 'com.spotify:docker-client:8.16.0'
     implementation group: 'org.dom4j', name: 'dom4j', {
         exclude group: "javax.xml.stream", module: "stax-api"
         exclude group: "xpp3", module: "xpp3"

@@ -25,6 +25,9 @@ import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
+import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.DeprecatedWebAppOnLinuxDeployConfigurationFactory;
+import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.WebAppOnLinuxDeployConfigurationFactory;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -136,7 +139,8 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
             HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
-
+            // workaround fixes for web app on linux run configuration
+            AzureDockerSupportConfigurationType.registerConfigurationFactory("Web App for Containers", DeprecatedWebAppOnLinuxDeployConfigurationFactory::new);
             try {
                 loadPluginSettings();
             } catch (final IOException e) {
