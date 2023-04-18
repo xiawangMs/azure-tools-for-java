@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.common.subscription;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
@@ -73,7 +72,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSC
 public class SubscriptionsDialog extends AzureDialogWrapper implements TableModelListener {
     private static final int CHECKBOX_COLUMN = 0;
     private static final int SUBSCRIPTION_COLUMN = 2;
-    private static final Logger LOGGER = Logger.getInstance(SubscriptionsDialog.class);
     private final Project project;
     private final TailingDebouncer filter;
     private final TailingDebouncer updateSelectionInfo;
