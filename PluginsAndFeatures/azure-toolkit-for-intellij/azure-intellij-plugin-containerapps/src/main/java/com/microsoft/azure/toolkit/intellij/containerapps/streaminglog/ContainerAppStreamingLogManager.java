@@ -1,8 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.streaminglog;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.content.Content;
 import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -40,25 +38,17 @@ public class ContainerAppStreamingLogManager {
     }
 
     public void closeStreamingLog(Project project, String resourceId) {
-        final Content content = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
-        if (Objects.isNull(content)) {
+        final AppStreamingLogConsoleView consoleView = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
+        if (Objects.isNull(consoleView) || !consoleView.isActive()) {
             AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager().warning("Streaming log is not started."));
             return;
         }
-        final Disposable disposable = content.getDisposer();
-        if (disposable instanceof AppStreamingLogConsoleView) {
-            ((AppStreamingLogConsoleView) disposable).closeStreamingLog();
-        }
+        consoleView.closeStreamingLog();
     }
 
     public boolean isStreamingLogStarted(Project project, String resourceId) {
-        final Content content = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
-        return Optional.ofNullable(content).map(Content::getDisposer).map(disposable -> {
-            if (disposable instanceof AppStreamingLogConsoleView) {
-                return ((AppStreamingLogConsoleView) disposable).isActive();
-            }
-            return false;
-        }).orElse(false);
+        final AppStreamingLogConsoleView consoleView = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
+        return Optional.ofNullable(consoleView).map(AppStreamingLogConsoleView::isActive).orElse(false);
     }
 
     private void showStreamingLog(Project project, AzResource app, String logType, String revisionName,
@@ -72,15 +62,10 @@ public class ContainerAppStreamingLogManager {
             resourceId = app.getId();
             resourceName = app.getName();
         }
-        final Content content = StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, resourceId);
-        if (Objects.nonNull(content)) {
-            StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, resourceName, content);
-            return;
-        }
-        final AzureString title = AzureString.fromString("open streaming logs");
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
+        final AppStreamingLogConsoleView consoleView = Optional.ofNullable(StreamingLogsToolWindowManager.getInstance()
+                .getToolWindowContent(project, resourceId)).orElse(new AppStreamingLogConsoleView(project));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, AzureString.fromString("open streaming logs"), false, () -> {
             try {
-                final AppStreamingLogConsoleView consoleView = new AppStreamingLogConsoleView(project);
                 final Flux<String> log;
                 // refer to https://learn.microsoft.com/en-us/azure/container-apps/log-streaming?tabs=bash#view-log-streams-via-the-azure-cli
                 // tail lines must be between 0 and 300, default is 20

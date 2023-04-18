@@ -55,10 +55,12 @@ public class StreamingLogsToolWindowManager {
     }
 
     @Nullable
-    public Content getToolWindowContent(Project project, String resourceId) {
+    public AppStreamingLogConsoleView getToolWindowContent(Project project, String resourceId) {
         final ToolWindow toolWindow = getToolWindow(project);
         final String consoleName = Optional.ofNullable(resourceIdToNameMap.get(resourceId)).orElse(StringUtils.EMPTY);
-        return toolWindow.getContentManager().findContent(consoleName);
+        return (AppStreamingLogConsoleView) Optional.ofNullable(toolWindow.getContentManager().findContent(consoleName))
+                .map(Content::getDisposer)
+                .orElse(null);
     }
 
     public void removeConsoleViewName(String value) {
