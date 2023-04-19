@@ -22,6 +22,7 @@ import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureActionListenerWrapper;
 import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
+import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
@@ -161,6 +162,8 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
         });
         menu.add(menuItem);
         disableWidgets(true, true);
+        final ContainerRegistry registry = (ContainerRegistry) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
+        this.onReadProperty(registry.getSubscriptionId(), registry.getId());
     }
 
     @Override
