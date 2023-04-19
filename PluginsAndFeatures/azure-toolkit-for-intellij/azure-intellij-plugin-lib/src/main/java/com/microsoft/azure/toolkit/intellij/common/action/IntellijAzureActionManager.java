@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonShortcuts;
@@ -106,6 +107,11 @@ public class IntellijAzureActionManager extends AzureActionManager {
             this.action = action;
         }
 
+        @Override
+        public @Nonnull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
+        }
+
         @Nullable
         public ShortcutSet getShortcuts() {
             final Object shortcuts = action.getShortcut();
@@ -134,10 +140,10 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final Presentation presentation = e.getPresentation();
             final IView.Label view = this.action.getView(source);
 
-            boolean visible;
+            final boolean visible;
             final boolean isAbstractAzResource = source instanceof AbstractAzResource;
 
-            if(isAbstractAzResource && ((AbstractAzResource<?, ?, ?>) source).getSubscription().getId().equals("[LinkedCluster]")) {
+            if (isAbstractAzResource && "[LinkedCluster]".equals(((AbstractAzResource<?, ?, ?>) source).getSubscription().getId())) {
                 visible = true;
             } else {
                 final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired();
@@ -227,8 +233,8 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
         public void registerCustomShortcutSetForActions(JComponent component, @Nullable Disposable disposable) {
             for (final AnAction origin : this.getChildActionsOrStubs()) {
-                final AnAction real = origin instanceof EmptyAction.MyDelegatingAction ?
-                    ((EmptyAction.MyDelegatingAction) origin).getDelegate() : origin;
+                final AnAction real = origin instanceof com.intellij.openapi.actionSystem.AnActionWrapper ?
+                    ((com.intellij.openapi.actionSystem.AnActionWrapper) origin).getDelegate() : origin;
                 if (real instanceof AnActionWrapper) {
                     final ShortcutSet shortcuts = ((AnActionWrapper<?>) real).getShortcuts();
                     if (Objects.nonNull(shortcuts)) {
