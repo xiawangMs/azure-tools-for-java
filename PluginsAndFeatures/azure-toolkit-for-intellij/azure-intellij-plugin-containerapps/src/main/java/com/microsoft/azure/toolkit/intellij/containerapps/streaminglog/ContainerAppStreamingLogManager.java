@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.streaminglog;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
@@ -70,9 +71,15 @@ public class ContainerAppStreamingLogManager {
                 // refer to https://learn.microsoft.com/en-us/azure/container-apps/log-streaming?tabs=bash#view-log-streams-via-the-azure-cli
                 // tail lines must be between 0 and 300, default is 20
                 if (app instanceof ContainerApp) {
-                    log = ((ContainerApp) app).streamingLogs(logType, revisionName, replicaName, containerName, true, 20);
+                    log = ((ContainerApp) app).streamingLogs(
+                            ((ContainerApp) app).getLogStreamingEndpoint(logType, revisionName, replicaName, containerName),
+                            ImmutableMap.of("follow", String.valueOf(true),
+                                    "tailLines", String.valueOf(20)));
                 } else if (app instanceof ContainerAppsEnvironment) {
-                    log = ((ContainerAppsEnvironment) app).streamingLogs(true, 20);
+                    log = ((ContainerAppsEnvironment) app).streamingLogs(
+                            ((ContainerAppsEnvironment) app).getLogStreamingEndpoint(),
+                            ImmutableMap.of("follow", String.valueOf(true),
+                            "tailLines", String.valueOf(20)));
                 } else {
                     return;
                 }

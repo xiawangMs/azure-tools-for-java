@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
@@ -39,7 +40,11 @@ public class SpringCloudStreamingLogManager {
                 if (Objects.isNull(deployment)) {
                     throw new AzureToolkitRuntimeException(String.format("No active deployment in current app %s", app.getName()));
                 }
-                consoleView.startStreamingLog(deployment.streamLogs(instanceName, 300, 500, 1024 * 1024, true));
+                consoleView.startStreamingLog(deployment.streamingLogs(deployment.getParent().getLogStreamingEndpoint(instanceName),
+                        ImmutableMap.of("follow", String.valueOf(true),
+                                "sinceSeconds", String.valueOf(300),
+                                "tailLines", String.valueOf(500),
+                                "limitBytes", String.valueOf(1024 * 1024))));
                 AzureTaskManager.getInstance().runLater(() ->
                         StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, instanceName, instanceName, consoleView));
             } catch (final Throwable e) {

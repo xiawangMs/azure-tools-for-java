@@ -74,17 +74,17 @@ public class ContainerSelectionDialog extends DialogWrapper {
     }
 
     private void initListeners() {
-        revisionComboBox.setItemsLoader(containerApp::getRevisionList);
+        revisionComboBox.setItemsLoader(containerApp::getRevisions);
         revisionComboBox.addItemListener(e -> replicaComboBox.reloadItems());
         replicaComboBox.setItemsLoader(() -> {
             final Revision revision = revisionComboBox.getValue();
-            return Optional.ofNullable(revision).map(Revision::getReplicaList).orElse(Collections.emptyList());
+            return Optional.ofNullable(revision).map(Revision::getReplicas).orElse(Collections.emptyList());
         });
         replicaComboBox.addItemListener(e -> containerComboBox.reloadItems());
         containerComboBox.setItemsLoader(() -> {
             final Replica replica = replicaComboBox.getValue();
             return Optional.ofNullable(replica)
-                    .map(r -> r.getContainerList().stream().map(ReplicaContainer::name).collect(Collectors.toList()))
+                    .map(r -> r.getContainers().stream().map(ReplicaContainer::name).collect(Collectors.toList()))
                     .orElse(Collections.emptyList());
         });
     }

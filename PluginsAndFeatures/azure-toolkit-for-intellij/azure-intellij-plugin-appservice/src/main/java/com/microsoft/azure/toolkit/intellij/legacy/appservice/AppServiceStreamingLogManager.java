@@ -176,7 +176,7 @@ public enum AppServiceStreamingLogManager {
                 openLiveMetricsStream();
                 return null;
             }
-            return functionApp.streamAllLogsAsync();
+            return functionApp.streamingLogs(null, null);
         }
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0.JAVA17/src/
@@ -267,7 +267,7 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public Flux<String> getStreamingLogContent() {
-            return webApp.streamAllLogsAsync();
+            return webApp.streamingLogs(null, null);
         }
     }
 
@@ -300,7 +300,7 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public Flux<String> getStreamingLogContent() {
-            return deploymentSlot.streamAllLogsAsync();
+            return deploymentSlot.streamingLogs(null, null);
         }
     }
 
