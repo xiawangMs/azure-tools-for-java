@@ -33,7 +33,7 @@ import java.util.List;
 
 public class WebAppOnLinuxAction extends AzureAnAction {
 
-    private static final String DIALOG_TITLE = "Run on Web App for Containers";
+    private static final String DIALOG_TITLE = "Deploy Image to Web App";
 
     private DockerImage dockerImage;
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();

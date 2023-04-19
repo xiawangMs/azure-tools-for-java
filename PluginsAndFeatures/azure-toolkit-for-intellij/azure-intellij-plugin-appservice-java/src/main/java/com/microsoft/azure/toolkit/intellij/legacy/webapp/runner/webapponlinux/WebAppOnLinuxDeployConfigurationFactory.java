@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Azure Web App (Container)";
+    private static final String FACTORY_NAME = "Azure Web App (Docker Container)";
 
     public WebAppOnLinuxDeployConfigurationFactory(ConfigurationType configurationType) {
         super(configurationType);

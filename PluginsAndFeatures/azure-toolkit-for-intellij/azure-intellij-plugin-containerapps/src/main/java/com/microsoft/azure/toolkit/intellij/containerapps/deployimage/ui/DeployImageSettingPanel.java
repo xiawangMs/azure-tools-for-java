@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
-import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.ContainerAppComboBox;
@@ -38,7 +37,6 @@ public class DeployImageSettingPanel implements AzureFormPanel<DeployImageModel>
     @Getter
     private JPanel pnlRoot;
     private JPanel pnlDockerPanel;
-    private SubscriptionComboBox cbSubscription;
     private ContainerAppComboBox cbContainerApp;
     private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
     private JLabel lblEnv;
@@ -58,7 +56,6 @@ public class DeployImageSettingPanel implements AzureFormPanel<DeployImageModel>
         pnlDockerConfiguration = new DockerImageConfigurationPanel(project);
         pnlDockerPanel.add(pnlDockerConfiguration.getPnlRoot(), new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 3, 3, null, null, null, 0));
         this.pnlDockerConfiguration.enableContainerRegistryPanel();
-        this.cbSubscription.addItemListener(this::onSelectSubscription);
         this.cbContainerApp.addItemListener(this::onSelectContainerApp);
         final AzureFormInput.AzureValueChangeListener<DockerImage> runnable = image -> AzureTaskManager.getInstance().runLater(() ->
                 DockerBuildTaskUtils.updateDockerBuildBeforeRunTasks(DataManager.getInstance().getDataContext(pnlRoot), this.configuration, image), AzureTask.Modality.ANY);
@@ -86,10 +83,7 @@ public class DeployImageSettingPanel implements AzureFormPanel<DeployImageModel>
         Optional.ofNullable(data.getEnvironmentVariables()).ifPresent(inputEnv::setEnvironmentVariables);
         Optional.ofNullable(data.getContainerAppId())
                 .map(id -> (ContainerApp) Azure.az(AzureContainerApps.class).getById(id))
-                .ifPresent(app -> {
-                    cbContainerApp.setValue(app);
-                    cbSubscription.setValue(app.getSubscription());
-                });
+                .ifPresent(app -> cbContainerApp.setValue(app));
     }
 
     @Override
@@ -106,7 +100,7 @@ public class DeployImageSettingPanel implements AzureFormPanel<DeployImageModel>
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(cbSubscription, cbContainerApp, pnlDockerConfiguration);
+        return Arrays.asList(cbContainerApp, pnlDockerConfiguration);
     }
 
     private void createUIComponents() {

@@ -63,7 +63,7 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(DEPLOY_IMAGE_TO_ACA)
-                .withLabel("Deploy Image to Azure Container Apps")
+                .withLabel("Deploy Image to Container App")
                 .withIcon(AzureIcons.ContainerApps.MODULE.getIconPath())
                 .visibleWhen(s -> s instanceof VirtualFile)
                 .withHandler(DeployImageToAzureContainerAppAction::deployImageToAzureContainerApps)

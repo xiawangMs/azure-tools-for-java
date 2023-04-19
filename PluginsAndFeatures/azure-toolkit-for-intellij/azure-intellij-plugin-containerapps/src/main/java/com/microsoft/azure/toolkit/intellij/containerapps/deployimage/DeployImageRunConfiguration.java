@@ -7,11 +7,7 @@ package com.microsoft.azure.toolkit.intellij.containerapps.deployimage;
 
 import com.intellij.configurationStore.XmlSerializer;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.LocatableConfiguration;
-import com.intellij.execution.configurations.LocatableConfigurationBase;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
@@ -19,9 +15,6 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
-import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -70,10 +63,6 @@ public class DeployImageRunConfiguration extends LocatableConfigurationBase<Elem
         this.dataModel = Optional.ofNullable(element.getChild("SpringCloudAppConfig"))
                 .map(e -> XmlSerializer.deserialize(e, DeployImageModel.class))
                 .orElse(DeployImageModel.builder().build());
-//        Optional.ofNullable(element.getChild("Registry"))
-//                .map(e -> e.getAttributeValue("id"))
-//                .map(id -> (ContainerRegistry)Azure.az(AzureContainerRegistry.class).getById(id))
-//                .ifPresent(this.dataModel::setContainerRegistryId);
     }
 
     @Override
@@ -82,10 +71,5 @@ public class DeployImageRunConfiguration extends LocatableConfigurationBase<Elem
         Optional.ofNullable(this.dataModel)
                 .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"containerRegistry".equalsIgnoreCase(accessor.getName())))
                 .ifPresent(element::addContent);
-//        Optional.ofNullable(this.dataModel)
-//                .map(DeployImageModel::getContainerRegistryId)
-//                .map(ContainerRegistry::getId)
-//                .map(id -> new org.jdom.Element("Registry").setAttribute("id", id))
-//                .ifPresent(element::addContent);
     }
 }

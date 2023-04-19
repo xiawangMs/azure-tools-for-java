@@ -75,7 +75,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         Mono.fromCallable(() -> Optional.ofNullable(value).map(r -> r.getLoginServerUrl() + "/").orElse(null))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(prefix -> AzureTaskManager.getInstance().runLater(() -> {
-                    lblRepositoryPrefix.setText(prefix);
+                    lblRepositoryPrefix.setText(" " + prefix);
                     lblRepositoryPrefix.setVisible(StringUtils.isNotBlank(prefix));
                 }, AzureTask.Modality.ANY));
     }
@@ -87,11 +87,9 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         this.txtRepositoryName.setRequired(isDraftImage);
         this.txtRepositoryName.revalidate();
         Optional.ofNullable(image).map(DockerImage::getRepositoryName).ifPresent(this.txtRepositoryName::setValue);
-        this.lblRepository.setEnabled(isDraftImage);
         this.txtTagName.setEnabled(isDraftImage);
         this.txtTagName.setRequired(isDraftImage);
         this.txtTagName.revalidate();
-        this.lblTagName.setEnabled(isDraftImage);
         Optional.ofNullable(image).map(DockerImage::getTagName).ifPresent(this.txtTagName::setValue);
         pnlImageName.setVisible(!hideImageNamePanelForExistingImage || isDraftImage);
     }

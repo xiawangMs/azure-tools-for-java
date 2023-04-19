@@ -37,7 +37,7 @@ import java.util.List;
 
 public class PushImageAction extends AzureAnAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
-    private static final String DIALOG_TITLE = "Push Image";
+    private static final String DIALOG_TITLE = "Push Image to Container Registry";
     private final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
 
     private DockerImage dockerImage;

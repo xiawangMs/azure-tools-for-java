@@ -7,9 +7,11 @@ package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
 import com.github.dockerjava.api.DockerClient;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComponentWithBrowseButton;
+import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.ui.AnimatedIcon;
-import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
@@ -26,7 +28,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
@@ -36,12 +37,13 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
     public static final String CONNECTION_SUCCEEDED = "Connection Succeeded";
     private JPanel pnlRoot;
     private JCheckBox chkEnableTLS;
-    private JLabel lblCertPath;
     private AzureFileInput txtCertPath;
     private JLabel lblDockerHost;
     private AzureTextInput txtDockerHost;
-    private JButton btnTestConnection;
-    private JBLabel lblValidation;
+    private JLabel lblCertPath;
+    private JPanel outputContainer;
+    private JTextPane outputPanel;
+    private JLabel outputStatusIcon;
 
     private Project project;
 
@@ -54,40 +56,22 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
     @Override
     protected void init() {
         super.init();
-        txtDockerHost.setRequired(true);
         chkEnableTLS.addItemListener(this::onSelectTLS);
-        btnTestConnection.addActionListener(this::onTestConnection);
         txtDockerHost.addValueChangedListener(ignore -> resetValidationMessage());
         txtCertPath.addValueChangedListener(ignore -> resetValidationMessage());
+        txtCertPath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Cert for Docker Host", null, txtCertPath,
+                project, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
     }
 
     private void resetValidationMessage() {
-        lblValidation.setText(StringUtils.EMPTY);
-        lblValidation.setIcon(null);
-    }
-
-    private void onTestConnection(ActionEvent actionEvent) {
-        lblValidation.setText("Connecting...");
-        lblValidation.setIconWithAlignment(AnimatedIcon.Default.INSTANCE, SwingConstants.LEFT, SwingConstants.CENTER);
-        Mono.fromRunnable(() -> {
-                    final DockerClient dockerClient = DockerUtil.getDockerClient(getValue());
-                    DockerUtil.ping(dockerClient);
-                }).subscribeOn(Schedulers.boundedElastic())
-                .doOnError(e -> AzureTaskManager.getInstance().runLater(() -> {
-                    lblValidation.setText(ExceptionUtils.getRootCauseMessage(e));
-                    lblValidation.setIconWithAlignment(AllIcons.General.Error, SwingConstants.LEFT, SwingConstants.CENTER);
-                }, AzureTask.Modality.ANY))
-                .doOnSuccess(e -> AzureTaskManager.getInstance().runLater(() -> {
-                    lblValidation.setText(CONNECTION_SUCCEEDED);
-                    lblValidation.setIconWithAlignment(AllIcons.General.InspectionsOK, SwingConstants.LEFT, SwingConstants.CENTER);
-                }, AzureTask.Modality.ANY)).subscribe();
+        outputPanel.setText(StringUtils.EMPTY);
+        outputStatusIcon.setIcon(null);
+        outputContainer.setVisible(false);
     }
 
     private void onSelectTLS(ItemEvent itemEvent) {
-        lblCertPath.setEnabled(chkEnableTLS.isSelected());
-        txtCertPath.setEnabled(chkEnableTLS.isSelected());
-        txtCertPath.setRequired(chkEnableTLS.isSelected());
-        txtCertPath.revalidate();
+        lblCertPath.setVisible(chkEnableTLS.isSelected());
+        txtCertPath.setVisible(chkEnableTLS.isSelected());
     }
 
     @Override
@@ -124,6 +108,26 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
         return Arrays.asList(txtDockerHost, txtCertPath);
     }
 
+    @Override
+    protected void doOKAction() {
+        outputContainer.setVisible(true);
+        outputPanel.setText("Connecting...");
+        outputStatusIcon.setIcon(AnimatedIcon.Default.INSTANCE);
+        Mono.fromRunnable(() -> {
+                    final DockerClient dockerClient = DockerUtil.getDockerClient(getValue());
+                    DockerUtil.ping(dockerClient);
+                }).subscribeOn(Schedulers.boundedElastic())
+                .doOnError(e -> AzureTaskManager.getInstance().runLater(() -> {
+                    outputContainer.setVisible(true);
+                    outputPanel.setText(ExceptionUtils.getRootCauseMessage(e));
+                    outputStatusIcon.setIcon(AllIcons.General.Error);
+                }, AzureTask.Modality.ANY))
+                .doOnSuccess(e -> AzureTaskManager.getInstance().runLater(() -> {
+                    outputContainer.setVisible(true);
+                    outputPanel.setText(CONNECTION_SUCCEEDED);
+                    outputStatusIcon.setIcon(AllIcons.General.InspectionsOK);
+                }, AzureTask.Modality.ANY)).subscribe();
+    }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
