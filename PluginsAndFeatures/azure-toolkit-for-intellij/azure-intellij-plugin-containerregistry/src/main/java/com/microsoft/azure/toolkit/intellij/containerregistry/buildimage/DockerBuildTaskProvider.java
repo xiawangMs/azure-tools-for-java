@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.buildimage;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.model.BuildResponseItem;
 import com.intellij.execution.BeforeRunTask;
@@ -28,7 +27,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerConfiguration;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -103,11 +102,11 @@ public class DockerBuildTaskProvider extends BeforeRunTaskProvider<DockerBuildTa
             if (Objects.isNull(image) || Objects.isNull(configuration.getDockerHostConfiguration())) {
                 return false;
             }
-            final DockerClient dockerClient = DockerUtil.getDockerClient(configuration.getDockerHostConfiguration());
+            final AzureDockerClient dockerClient = AzureDockerClient.from(configuration.getDockerHostConfiguration());
             final ConsoleView consoleView = AzureTaskManager.getInstance().runAndWaitAsObservable(new AzureTask<>(() ->
                     createConsoleView(configuration.getProject(), image.getImageName()))).toBlocking().first();
             final BuildImageResultCallback callback = createBuildImageResultCallback(consoleView);
-            DockerUtil.buildImage(dockerClient, image, callback);
+            dockerClient.buildImage(image.getImageName(), image.getDockerFile(), image.getBaseDirectory(), callback);
             return true;
         }
 

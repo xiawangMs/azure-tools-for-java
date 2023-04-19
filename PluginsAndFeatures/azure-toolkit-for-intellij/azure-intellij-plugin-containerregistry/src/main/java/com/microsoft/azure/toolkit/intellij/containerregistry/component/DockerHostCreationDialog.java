@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
-import com.github.dockerjava.api.DockerClient;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
@@ -15,7 +14,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -114,8 +113,8 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
         outputPanel.setText("Connecting...");
         outputStatusIcon.setIcon(AnimatedIcon.Default.INSTANCE);
         Mono.fromRunnable(() -> {
-                    final DockerClient dockerClient = DockerUtil.getDockerClient(getValue());
-                    DockerUtil.ping(dockerClient);
+                    final AzureDockerClient dockerClient = AzureDockerClient.from(getValue());
+                    dockerClient.ping();
                 }).subscribeOn(Schedulers.boundedElastic())
                 .doOnError(e -> AzureTaskManager.getInstance().runLater(() -> {
                     outputContainer.setVisible(true);

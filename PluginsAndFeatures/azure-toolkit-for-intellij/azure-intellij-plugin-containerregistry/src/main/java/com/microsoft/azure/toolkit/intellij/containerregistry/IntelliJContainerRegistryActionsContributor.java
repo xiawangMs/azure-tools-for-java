@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -66,11 +66,12 @@ public class IntelliJContainerRegistryActionsContributor implements IActionsCont
 
     @SneakyThrows(JsonProcessingException.class)
     private static void inspectImage(Tag tag, AnActionEvent event) {
-        final Image image = DockerUtil.getImage(tag);
+        final AzureDockerClient client = AzureDockerClient.getDefault();
+        final Image image = client.getImage(tag);
         final String message = String.format("Image %s is not found locally, it must be pulled first.", tag.getImageName());
         final Action<Tag> pull = AzureActionManager.getInstance().getAction(ContainerRegistryActionsContributor.PULL_IMAGE).bind(tag);
         final Action<AzResource> manifest = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_PORTAL_URL).bind(tag).withLabel("Open Manifest in Portal");
-        final InspectImageResponse inspection = Optional.ofNullable(image).map(i -> DockerUtil.inspectImage(i.getId()))
+        final InspectImageResponse inspection = Optional.ofNullable(image).map(i -> client.inspectImage(i.getId()))
             .orElseThrow(() -> new AzureToolkitRuntimeException(message, pull, manifest));
         final String content = DockerClientConfig.getDefaultObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(inspection);
         final Project project = Objects.requireNonNull(event.getProject());
@@ -93,7 +94,7 @@ public class IntelliJContainerRegistryActionsContributor implements IActionsCont
         }
         final String imageNameWithTag = String.format("%s:%s", imageName, t.getName());
         try {
-            DockerUtil.pullImage(Objects.requireNonNull(registry.getLoginServerUrl()), registry.getUserName(),
+            AzureDockerClient.getDefault().pullImage(Objects.requireNonNull(registry.getLoginServerUrl()), registry.getUserName(),
                 registry.getPrimaryCredential(), imageName, t.getName());
             final Action<Tag> inspect = am.getAction(ContainerRegistryActionsContributor.INSPECT_IMAGE).withLabel("Inspect").bind(t);
             final Action<Tag> run = am.getAction(ContainerRegistryActionsContributor.RUN_LOCALLY).bind(t);

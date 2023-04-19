@@ -5,26 +5,22 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerPort;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.Constant;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -49,18 +45,18 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
 
     @Override
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
-        final DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(), dataModel.getDockerCertPath());
+        final AzureDockerClient docker = AzureDockerClient.from(dataModel.getDockerHost(), dataModel.isTlsEnabled(), dataModel.getDockerCertPath());
         final File file = Optional.ofNullable(dataModel.getDockerFilePath()).map(File::new).filter(File::exists).orElse(null);
-        Optional.ofNullable(containerId).filter(StringUtils::isNoneBlank).ifPresent(id -> DockerUtil.stopContainer(docker, id));
-        containerId = DockerUtil.createContainer(docker, String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), null);
+        Optional.ofNullable(containerId).filter(StringUtils::isNoneBlank).ifPresent(docker::stopContainer);
+        containerId = docker.createContainer(String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), null);
 
-        final Container container = DockerUtil.runContainer(docker, containerId);
+        final Container container = docker.runContainer(containerId);
         // props
         final String hostname = new URI(dataModel.getDockerHost()).getHost();
         String publicPort = null;
         final ContainerPort[] ports = container.getPorts();
         if (ports != null) {
-            for (ContainerPort portMapping : ports) {
+            for (final ContainerPort portMapping : ports) {
                 publicPort = String.valueOf(portMapping.getPublicPort());
             }
         }
@@ -69,9 +65,9 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         ));
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
-            public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+            public void processWillTerminate(@Nonnull ProcessEvent event, boolean willBeDestroyed) {
                 try {
-                    DockerUtil.stopContainer(docker, containerId);
+                    docker.stopContainer(containerId);
                 } catch (final Exception e) {
                     AzureMessager.getMessager().warning(String.format("Failed to stop container %s", containerId), e);
                 }

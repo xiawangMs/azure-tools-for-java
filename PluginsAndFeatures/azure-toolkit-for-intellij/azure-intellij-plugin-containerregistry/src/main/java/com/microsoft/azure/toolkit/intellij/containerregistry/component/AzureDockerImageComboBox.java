@@ -20,7 +20,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import lombok.Getter;
@@ -106,8 +106,10 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     private List<DockerImage> getLocalDockerImages() {
         try {
             return Optional.ofNullable(this.dockerHost)
-                    .map(DockerUtil::getDockerClient)
-                    .map(DockerUtil::listLocalImages).orElse(Collections.emptyList());
+                .map(AzureDockerClient::from)
+                .map(AzureDockerClient::listLocalImages)
+                .map(l -> l.stream().map(DockerImage::new).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
         } catch (final RuntimeException e) {
             return Collections.emptyList();
         }

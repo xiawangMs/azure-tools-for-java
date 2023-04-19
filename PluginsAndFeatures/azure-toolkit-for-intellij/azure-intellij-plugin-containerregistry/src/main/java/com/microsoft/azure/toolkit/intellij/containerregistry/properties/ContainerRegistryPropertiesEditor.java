@@ -23,7 +23,7 @@ import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureActionListenerWrapper;
 import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -108,7 +108,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
     private AnActionButton btnTagRefresh;
     private AnActionButton btnTagPrevious;
     private AnActionButton btnTagNext;
-    private JPopupMenu menu;
+    private final JPopupMenu menu;
 
     /**
      * Constructor of ACR property view.
@@ -125,7 +125,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
         btnPrimaryPassword.addActionListener(event -> {
             try {
                 copyToSystemClipboard(password);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 onError(e.getMessage());
             }
         });
@@ -133,7 +133,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
         btnSecondaryPassword.addActionListener(event -> {
             try {
                 copyToSystemClipboard(password2);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 onError(e.getMessage());
             }
         });
@@ -147,13 +147,13 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
             onAdminUserBtnClick();
         });
 
-        HideableDecorator propertyDecorator = new HideableDecorator(pnlPropertyHolder,
+        final HideableDecorator propertyDecorator = new HideableDecorator(pnlPropertyHolder,
             PROPERTY, false /*adjustWindow*/);
         propertyDecorator.setContentComponent(pnlProperty);
         propertyDecorator.setOn(true);
 
         menu = new JPopupMenu();
-        JMenuItem menuItem = new JMenuItem(PULL_IMAGE);
+        final JMenuItem menuItem = new JMenuItem(PULL_IMAGE);
         menuItem.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "menuItem", null) {
             @Override
             protected void actionPerformedFunc(ActionEvent e) {
@@ -173,7 +173,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
     }
 
     private void createUIComponents() {
-        DefaultTableModel repoModel = new DefaultTableModel() {
+        final DefaultTableModel repoModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -190,11 +190,11 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
             if (event.getValueIsAdjusting()) {
                 return;
             }
-            int selectedRow = tblRepo.getSelectedRow();
+            final int selectedRow = tblRepo.getSelectedRow();
             if (selectedRow < 0 || selectedRow >= tblRepo.getRowCount()) {
                 return;
             }
-            String selectedRepo = (String) tblRepo.getModel().getValueAt(selectedRow, 0);
+            final String selectedRepo = (String) tblRepo.getModel().getValueAt(selectedRow, 0);
             if (StringUtils.isEmpty(selectedRepo) || Objects.equals(selectedRepo, currentRepo)) {
                 return;
             }
@@ -246,14 +246,14 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
             }
         };
 
-        ToolbarDecorator repoDecorator = ToolbarDecorator.createDecorator(tblRepo)
+        final ToolbarDecorator repoDecorator = ToolbarDecorator.createDecorator(tblRepo)
             .addExtraActions(btnRepoRefresh, btnRepoPrevious, btnRepoNext)
             .setToolbarPosition(ActionToolbarPosition.BOTTOM)
             .setToolbarBorder(JBUI.Borders.empty());
 
         pnlRepoTable = repoDecorator.createPanel();
 
-        DefaultTableModel tagModel = new DefaultTableModel() {
+        final DefaultTableModel tagModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -270,7 +270,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    int rowIndex = tblTag.getSelectedRow();
+                    final int rowIndex = tblTag.getSelectedRow();
                     if (rowIndex < 0 || rowIndex >= tblTag.getRowCount()) {
                         return;
                     }
@@ -327,7 +327,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
             }
         };
 
-        ToolbarDecorator tagDecorator = ToolbarDecorator.createDecorator(tblTag)
+        final ToolbarDecorator tagDecorator = ToolbarDecorator.createDecorator(tblTag)
             .addExtraActions(btnTagRefresh, btnTagPrevious, btnTagNext)
             .setToolbarPosition(ActionToolbarPosition.BOTTOM)
             .setToolbarBorder(JBUI.Borders.empty());
@@ -435,7 +435,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
 
     private void fillTable(List<String> list, @Nonnull JBTable table) {
         if (list != null && !list.isEmpty()) {
-            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            final DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.getDataVector().clear();
             list.stream().sorted().forEach(item -> model.addRow(new String[]{item}));
         } else {
@@ -500,12 +500,12 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
                     .createImageSettingWithRegistry(registry);
                 final String image = String.format("%s:%s", currentRepo, currentTag);
                 final String fullImageTagName = String.format("%s/%s", registry.getLoginServerUrl(), image);
-                DockerUtil.pullImage(Objects.requireNonNull(registry.getLoginServerUrl()), setting.getUsername(),
+                AzureDockerClient.getDefault().pullImage(Objects.requireNonNull(registry.getLoginServerUrl()), setting.getUsername(),
                     setting.getPassword(), currentRepo, currentTag);
-                String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
+                final String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
                 UIUtils.showNotification(statusBar, message, MessageType.INFO);
                 sendTelemetry(true, subscriptionId, null);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 UIUtils.showNotification(statusBar, e.getMessage(), MessageType.ERROR);
                 sendTelemetry(false, subscriptionId, e.getMessage());
             }
@@ -518,7 +518,7 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
     }
 
     private void sendTelemetry(boolean success, @Nonnull String subscriptionId, @Nullable String errorMsg) {
-        Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new HashMap<>();
         map.put("SubscriptionId", subscriptionId);
         map.put("Success", String.valueOf(success));
         map.put(AzureTelemeter.SERVICE_NAME, "ACR");
@@ -530,12 +530,12 @@ public class ContainerRegistryPropertiesEditor extends BaseEditor implements Con
     }
 
     private static void copyToSystemClipboard(String key) throws Exception {
-        StringSelection stringSelection = new StringSelection(key);
-        Toolkit toolKit = Toolkit.getDefaultToolkit();
+        final StringSelection stringSelection = new StringSelection(key);
+        final Toolkit toolKit = Toolkit.getDefaultToolkit();
         if (toolKit == null) {
             throw new Exception("Cannot copy to system clipboard.");
         }
-        Clipboard clipboard = toolKit.getSystemClipboard();
+        final Clipboard clipboard = toolKit.getSystemClipboard();
         clipboard.setContents(stringSelection, null);
     }
 }
