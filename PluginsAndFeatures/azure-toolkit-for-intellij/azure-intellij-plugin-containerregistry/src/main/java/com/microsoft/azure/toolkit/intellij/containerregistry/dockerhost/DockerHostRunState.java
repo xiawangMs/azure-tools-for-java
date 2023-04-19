@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.container.Constant;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -49,10 +51,8 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         final DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(), dataModel.getDockerCertPath());
         final File file = Optional.ofNullable(dataModel.getDockerFilePath()).map(File::new).filter(File::exists).orElse(null);
-        final String dockerFileContent = file == null ? null : FileUtils.readFileToString(file, "UTF-8");
-        final String containerServerPort = Optional.ofNullable(dockerFileContent).map(this::getPortFromDockerfile).orElse(DEFAULT_PORT);
         Optional.ofNullable(containerId).filter(StringUtils::isNoneBlank).ifPresent(id -> DockerUtil.stopContainer(docker, id));
-        containerId = DockerUtil.createContainer(docker, String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), containerServerPort);
+        containerId = DockerUtil.createContainer(docker, String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), null);
 
         final Container container = DockerUtil.runContainer(docker, containerId);
         // props
@@ -61,9 +61,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         final ContainerPort[] ports = container.getPorts();
         if (ports != null) {
             for (ContainerPort portMapping : ports) {
-                if (StringUtils.equals(containerServerPort, String.valueOf(portMapping.getPrivatePort()))) {
-                    publicPort = String.valueOf(portMapping.getPublicPort());
-                }
+                publicPort = String.valueOf(portMapping.getPublicPort());
             }
         }
         processHandler.setText(String.format(Constant.MESSAGE_CONTAINER_STARTED,
@@ -72,7 +70,11 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
-                DockerUtil.stopContainer(containerId);
+                try {
+                    DockerUtil.stopContainer(containerId);
+                } catch (final Exception e) {
+                    AzureMessager.getMessager().warning(String.format("Failed to stop container %s", containerId), e);
+                }
             }
         });
         return hostname;

@@ -16,12 +16,14 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,6 +33,8 @@ public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
     private static final String DOCKER_HOST_HISTORY = "azure_toolkit.docker.docker_host_history";
     private static final int MAX_HISTORY_SIZE = 15;
     private final Project project;
+    @Getter
+    private final List<DockerHost> drafts = new ArrayList<>();
 
     public AzureDockerHostComboBox(Project project) {
         super();
@@ -45,7 +49,7 @@ public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
     @Nonnull
     @Override
     protected List<? extends DockerHost> loadItems() throws Exception {
-        return Stream.of(DockerUtil.getDockerHosts(), loadHistory()).flatMap(List::stream).distinct().toList();
+        return Stream.of(DockerUtil.getDockerHosts(), loadHistory(), drafts).flatMap(List::stream).distinct().toList();
     }
 
     // todo: make it an configuration item in AzureConfiguration

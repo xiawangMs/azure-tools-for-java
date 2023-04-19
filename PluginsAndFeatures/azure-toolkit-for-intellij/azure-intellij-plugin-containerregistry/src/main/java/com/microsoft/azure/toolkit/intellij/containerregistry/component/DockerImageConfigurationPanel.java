@@ -116,7 +116,10 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
 
     @Override
     public void setValue(@Nonnull final DockerPushConfiguration data) {
-        Optional.ofNullable(data.getDockerHost()).ifPresent(cbDockerHost::setValue);
+        Optional.ofNullable(data.getDockerHost()).ifPresent(host -> {
+            cbDockerHost.getDrafts().add(host);
+            cbDockerHost.setValue(host);
+        });
         Optional.ofNullable(data.getDockerImage()).ifPresent(image -> {
             this.cbDockerImage.setValue(new AzureComboBox.ItemReference<>(i -> (!image.isDraft() && StringUtils.equals(i.getImageName(), image.getImageName())) ||
                     (image.isDraft() && Objects.equals(i.getDockerFile(), image.getDockerFile()))));

@@ -95,10 +95,15 @@ public class DockerUtil {
         return createContainer(getDefaultDockerClient(), imageNameWithTag, port);
     }
 
-    public static String createContainer(@Nonnull DockerClient docker, @Nonnull String imageNameWithTag, String port) throws DockerException {
-        final CreateContainerCmd cmd = docker.createContainerCmd(imageNameWithTag)
-            .withPortBindings(new PortBinding(Ports.Binding.bindPort(findFreePort()), ExposedPort.parse(port)));
-        final CreateContainerResponse container = cmd.exec();
+    public static String createContainer(@Nonnull DockerClient docker, @Nonnull String imageNameWithTag, @Nullable String port) throws DockerException {
+        final InspectImageResponse image = docker.inspectImageCmd(imageNameWithTag).exec();
+        final List<PortBinding> portBindings =
+                Arrays.stream(image.getConfig().getExposedPorts()).map(p -> new PortBinding(Ports.Binding.bindPort(findFreePort()), p)).collect(Collectors.toList());
+        if (StringUtils.isNotEmpty(port)) {
+            portBindings.add(new PortBinding(Ports.Binding.bindPort(findFreePort()), ExposedPort.parse(port)));
+        }
+        final CreateContainerResponse container = docker.createContainerCmd(imageNameWithTag)
+                .withPortBindings(portBindings).exec();
         return container.getId();
     }
 
@@ -225,8 +230,8 @@ public class DockerUtil {
         final DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
         final String certPath = config.getSSLConfig() instanceof LocalDirectorySSLConfig ? ((LocalDirectorySSLConfig) config.getSSLConfig()).getDockerCertPath() : null;
         result.add(new DockerHost(config.getDockerHost().toString(), certPath));
-        if (!SystemInfo.isWindows && result.contains(DEFAULT_WINDOWS_HOST)) {
-            result.add(DEFAULT_WINDOWS_HOST);
+        if (SystemInfo.isWindows && !result.contains(DEFAULT_WINDOWS_HOST)) {
+            result.add(0, DEFAULT_WINDOWS_HOST);
         }
         return result;
     }
@@ -263,7 +268,7 @@ public class DockerUtil {
     }
 
     public static List<DockerImage> listLocalImages(@Nonnull final DockerClient dockerClient) {
-        final List<Image> images = dockerClient.listImagesCmd().exec();
+        final List<Image> images = dockerClient.listImagesCmd().withDanglingFilter(false).exec();
         return images.stream().map(DockerImage::new).collect(Collectors.toList());
     }
 
@@ -273,6 +278,10 @@ public class DockerUtil {
             return repoTags != null && Arrays.asList(repoTags).contains(imageName);
         }).findFirst().map(DockerImage::new).orElse(null);
     }
+
+//    public static void buildContainer() {
+//        getDefaultDockerClient().createContainerCmd().with
+//    }
 
     // todo: move to socket utils
     private static int findFreePort() {

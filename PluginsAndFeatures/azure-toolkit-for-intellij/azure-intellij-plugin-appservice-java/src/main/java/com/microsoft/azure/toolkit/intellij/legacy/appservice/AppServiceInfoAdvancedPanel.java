@@ -96,12 +96,13 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         if (Objects.nonNull(planConfig) && servicePlan.isDraftForCreating()) {
             planConfig.setResourceGroupName(config.getResourceGroupName());
             planConfig.setRegion(region);
-            planConfig.setOs(Objects.requireNonNull(runtime).isWindows() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
+            final Boolean isWindows = Optional.ofNullable(runtime).map(Runtime::isWindows).orElse(false);
+            planConfig.setOs(isWindows ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
         }
         config.setServicePlan(planConfig);
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-            final String path = this.selectorApplication.getValue().getFileForDeployment();
+            final String path = artifact.getFileForDeployment();
             config.setApplication(Paths.get(path));
         }
         return config;
@@ -197,7 +198,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             final Runtime runtime = this.selectorRuntime.getValue();
-            return StringUtils.isNotBlank(ext) && WebAppUtils.isSupportedArtifactType(runtime, ext);
+            return StringUtils.isNotBlank(ext) && (runtime == null || WebAppUtils.isSupportedArtifactType(runtime, ext));
         });
     }
 
