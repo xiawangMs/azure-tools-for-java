@@ -1,15 +1,18 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.streaminglog;
 
 import com.azure.resourcemanager.appcontainers.models.ReplicaContainer;
+import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Replica;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
 import org.apache.commons.lang3.StringUtils;
+import reactor.core.publisher.Flux;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -47,7 +50,7 @@ public class ContainerSelectionDialog extends DialogWrapper {
         final String revisionName = Objects.requireNonNull(revisionComboBox.getValue()).getName();
         final String replicaName = Objects.requireNonNull(replicaComboBox.getValue()).getName();
         AzureTaskManager.getInstance().runInBackground("Start Streaming Log", () ->
-                ContainerAppStreamingLogManager.getInstance().showConsoleStreamingLog(project, containerApp, revisionName, replicaName, containerComboBox.getValue()));
+                startStreamingLog(project, containerApp, revisionName, replicaName, containerComboBox.getValue()));
     }
 
     @Override
@@ -71,6 +74,16 @@ public class ContainerSelectionDialog extends DialogWrapper {
             return new ValidationInfo("Container is required", containerComboBox);
         }
         return null;
+    }
+
+    private void startStreamingLog(Project project, ContainerApp app, String revisionName, String replicaName, String containerName) {
+        final String resourceName = String.format("%s-%s", replicaName, containerName);
+        final String resourceId = String.format("%s/revisionManagement/%s", app.getId(), resourceName);
+        final Flux<String> logs = app.streamingLogs(app.getLogStreamingEndpoint(ContainerApp.LOG_TYPE_CONSOLE, revisionName, replicaName, containerName),
+                ImmutableMap.of("follow", String.valueOf(true),
+                        "tailLines", String.valueOf(20)));
+        AzureTaskManager.getInstance().runLater(() ->
+                StreamingLogsManager.getInstance().showStreamingLog(project, resourceId, resourceName, logs));
     }
 
     private void initListeners() {

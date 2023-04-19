@@ -2,9 +2,10 @@ package com.microsoft.azure.toolkit.intellij.containerapps.streaminglog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.microsoft.azure.toolkit.intellij.common.AppStreamingLogConsoleView;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsConsoleView;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsManager;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +29,7 @@ public class StreamingToolwindowSelectionDialog extends DialogWrapper {
         this.logStreamInstanceComboBox.setItemsLoader(() -> StreamingLogsToolWindowManager.getInstance()
                 .getResourceIdToNameMap().keySet().stream().filter(k -> k.contains(containerApp.getId()) &&
                         Optional.ofNullable(StreamingLogsToolWindowManager.getInstance().getToolWindowContent(project, k))
-                                .map(AppStreamingLogConsoleView::isActive).orElse(false))
+                                .map(StreamingLogsConsoleView::isActive).orElse(false))
                 .collect(Collectors.toList()));
     }
 
@@ -40,7 +41,7 @@ public class StreamingToolwindowSelectionDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         final String resourceIdToClose = logStreamInstanceComboBox.getValue();
-        ContainerAppStreamingLogManager.getInstance().closeStreamingLog(project, resourceIdToClose);
+        StreamingLogsManager.getInstance().closeStreamingLog(project, resourceIdToClose);
         super.doOKAction();
     }
 

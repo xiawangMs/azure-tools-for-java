@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.intellij.common.streaminglog;
 
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
@@ -46,19 +46,11 @@ public class StreamingLogsToolWindowManager {
         toolWindow.activate(null);
     }
 
-    @AzureOperation(name = "boundary/common.open_log_streaming_console.resource", params = {"resourceName"})
-    public void showStreamingLogConsole(Project project, String resourceName, Content content) {
-        final ToolWindow toolWindow = getToolWindow(project);
-        toolWindow.getContentManager().setSelectedContent(content);
-        toolWindow.setAvailable(true);
-        toolWindow.activate(null);
-    }
-
     @Nullable
-    public AppStreamingLogConsoleView getToolWindowContent(Project project, String resourceId) {
+    public StreamingLogsConsoleView getToolWindowContent(Project project, String resourceId) {
         final ToolWindow toolWindow = getToolWindow(project);
         final String consoleName = Optional.ofNullable(resourceIdToNameMap.get(resourceId)).orElse(StringUtils.EMPTY);
-        return (AppStreamingLogConsoleView) Optional.ofNullable(toolWindow.getContentManager().findContent(consoleName))
+        return (StreamingLogsConsoleView) Optional.ofNullable(toolWindow.getContentManager().findContent(consoleName))
                 .map(Content::getDisposer)
                 .orElse(null);
     }

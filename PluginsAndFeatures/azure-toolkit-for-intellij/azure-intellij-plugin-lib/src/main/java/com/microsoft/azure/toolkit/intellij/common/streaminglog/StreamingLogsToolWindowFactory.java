@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.intellij.common.streaminglog;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
@@ -41,7 +41,7 @@ public class StreamingLogsToolWindowFactory implements ToolWindowFactory {
             @Override
             public void contentRemoveQuery(@NotNull ContentManagerEvent event) {
                 final Disposable disposable = event.getContent().getDisposer();
-                if (disposable instanceof AppStreamingLogConsoleView && !((AppStreamingLogConsoleView) disposable).isActive()) {
+                if (disposable instanceof StreamingLogsConsoleView && !((StreamingLogsConsoleView) disposable).isActive()) {
                     return;
                 }
                 final String displayName = event.getContent().getDisplayName();

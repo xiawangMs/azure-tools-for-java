@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azure.toolkit.intellij.common.streaminglog;
 
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -12,12 +12,12 @@ import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
 import static com.intellij.execution.ui.ConsoleViewContentType.SYSTEM_OUTPUT;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class AppStreamingLogConsoleView extends ConsoleViewImpl {
+public class StreamingLogsConsoleView extends ConsoleViewImpl {
     private static final String SEPARATOR = System.getProperty("line.separator");
     private boolean isDisposed;
     private Disposable subscription;
 
-    public AppStreamingLogConsoleView(@NotNull Project project) {
+    public StreamingLogsConsoleView(@NotNull Project project) {
         super(project, true);
         this.isDisposed = false;
         this.setUpdateFoldingsEnabled(false);
