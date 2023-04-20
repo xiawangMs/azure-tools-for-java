@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.action;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -15,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -267,6 +269,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .visibleWhen(s -> s instanceof ServiceLinker)
                 .withHandler((r) -> {
                     final AzResource resource = Azure.az().getById(r.getTargetServiceId());
+                    if (Objects.isNull(resource)) {
+                        final String serviceName = ResourceId.fromString(r.getTargetServiceId()).name();
+                        AzureMessager.getMessager().info(AzureString.format("Cannot find connected service(%s) in Azure Explorer.", serviceName));
+                        return;
+                    }
                     AzureEventBus.emit("azure.explorer.focus_resource", resource);
                 })
                 .withAuthRequired(false)
