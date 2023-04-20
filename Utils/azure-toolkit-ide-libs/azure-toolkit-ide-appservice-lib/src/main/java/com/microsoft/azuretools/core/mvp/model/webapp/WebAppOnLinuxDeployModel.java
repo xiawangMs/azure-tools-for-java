@@ -31,6 +31,8 @@ public class WebAppOnLinuxDeployModel {
     private String targetName;
     private String dockerFilePath;
 
+    private Integer port;
+
     // web server log
     private boolean enableWebServerLogging = false;
     private Integer webServerLogQuota = 35;

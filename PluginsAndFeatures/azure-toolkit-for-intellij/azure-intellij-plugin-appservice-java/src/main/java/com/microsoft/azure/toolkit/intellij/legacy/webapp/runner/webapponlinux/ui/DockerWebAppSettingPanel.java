@@ -8,6 +8,8 @@ import com.intellij.ide.DataManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.ui.JBIntSpinner;
+import com.intellij.ui.PortField;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
@@ -19,6 +21,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.W
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 
@@ -30,6 +33,8 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
     private JPanel pnlRoot;
     private JPanel pnlDockerConfigurationHolder;
     private DockerWebAppComboBox cbWebApp;
+    private JLabel lblWebApp;
+    private JBIntSpinner txtTargetPort;
 
     private DockerImageConfigurationPanel pnlDockerConfiguration;
 
@@ -69,6 +74,7 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
         }
         cbWebApp.setValue(configuration.getWebAppConfig());
         pnlDockerConfiguration.setValue(configuration.getDockerPushConfiguration());
+        Optional.ofNullable(configuration.getPort()).ifPresent(txtTargetPort::setNumber);
     }
 
     @Override
@@ -77,6 +83,7 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
         final WebAppConfig webappConfig = cbWebApp.getValue();
         Optional.ofNullable(webappConfig).ifPresent(configuration::setWebAppConfig);
         Optional.ofNullable(value).ifPresent(configuration::setDockerPushConfiguration);
+        Optional.ofNullable(txtTargetPort.getNumber()).ifPresent(configuration::setPort);
     }
 
     @Override
@@ -105,5 +112,6 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.cbWebApp = new DockerWebAppComboBox(project);
+        this.txtTargetPort = new JBIntSpinner(80, 1, 65535);
     }
 }

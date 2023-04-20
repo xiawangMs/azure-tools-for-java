@@ -308,6 +308,14 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         return getModel().getContainerRegistryId();
     }
 
+    public Integer getPort() {
+        return getModel().getPort();
+    }
+
+    public void setPort(final Integer port) {
+        getModel().setPort(port);
+    }
+
     public WebAppConfig getWebAppConfig() {
         final Subscription subscription = new Subscription(this.getSubscriptionId());
         final Region region = StringUtils.isEmpty(this.getLocationName()) ? null : Region.fromName(this.getLocationName());

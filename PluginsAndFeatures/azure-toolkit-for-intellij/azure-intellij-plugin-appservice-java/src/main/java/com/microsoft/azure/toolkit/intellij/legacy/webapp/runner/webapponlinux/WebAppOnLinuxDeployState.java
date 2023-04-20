@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
+    public static final String WEBSITES_PORT = "WEBSITES_PORT";
     private final WebAppOnLinuxDeployModel deployModel;
     private final WebAppOnLinuxDeployConfiguration configuration;
 
@@ -86,6 +87,9 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
         DockerUtil.pushImage(dockerClient, Objects.requireNonNull(loginServerUrl), registry.getUserName(), registry.getPrimaryCredential(), imageAndTag, callBack);
         // deploy
         final WebAppConfig webAppConfig = configuration.getWebAppConfig();
+        final Map<String, String> appSettings = ObjectUtils.firstNonNull(webAppConfig.getAppSettings(), new HashMap<>());
+        appSettings.put(WEBSITES_PORT, String.valueOf(configuration.getPort()));
+        webAppConfig.setAppSettings(appSettings);
         final AppServiceConfig appServiceConfig = WebAppService.convertToTaskConfig(webAppConfig);
         // update image configuration
         final RuntimeConfig runtime = appServiceConfig.runtime();
