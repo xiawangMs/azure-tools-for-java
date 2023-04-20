@@ -42,7 +42,7 @@ public class ServiceLinkerNode extends Node<ServiceLinker> {
         @Override
         public String getLabel() {
             try {
-                final ResourceId resourceId = ResourceId.fromString(this.serviceLinker.getTargetResourceId());
+                final ResourceId resourceId = ResourceId.fromString(this.serviceLinker.getTargetServiceId());
                 return resourceId.name();
             } catch (final Exception ignored) {}
             return serviceLinker.getName();
@@ -51,7 +51,7 @@ public class ServiceLinkerNode extends Node<ServiceLinker> {
         @Override
         public String getIconPath() {
             try {
-                final ResourceId resourceId = ResourceId.fromString(this.serviceLinker.getTargetResourceId());
+                final ResourceId resourceId = ResourceId.fromString(this.serviceLinker.getTargetServiceId());
                 return String.format("/icons/%s/default.svg", resourceId.fullResourceType());
             } catch (final Exception ignored) {}
             return AzureIcons.Connector.SERVICE_LINKER_MODULE.getIconPath();

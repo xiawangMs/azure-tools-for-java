@@ -266,7 +266,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .withIcon(s -> AzureIcons.Connector.FOCUS_ON_CONNECTED_SERVICE.getIconPath())
                 .visibleWhen(s -> s instanceof ServiceLinker)
                 .withHandler((r) -> {
-                    final AzResource resource = Azure.az().getById(r.getTargetResourceId());
+                    final AzResource resource = Azure.az().getById(r.getTargetServiceId());
                     AzureEventBus.emit("azure.explorer.focus_resource", resource);
                 })
                 .withAuthRequired(false)
