@@ -262,7 +262,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(FOCUS_ON_CONNECTED_SERVICE)
-                .withLabel(s -> "Jump to Connected Service")
+                .withLabel(s -> "Focus on Connected Resource")
                 .withIcon(s -> AzureIcons.Connector.FOCUS_ON_CONNECTED_SERVICE.getIconPath())
                 .visibleWhen(s -> s instanceof ServiceLinker)
                 .withHandler((r) -> {
@@ -295,13 +295,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerGroup(RESOURCE_GROUP_CREATE_ACTIONS, resourceGroupCreateActions);
         am.registerGroup(SERVICE_LINKER_ACTIONS, new ActionGroup(
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                "---",
                 ResourceCommonActionsContributor.FOCUS_ON_CONNECTED_SERVICE,
                 ResourceCommonActionsContributor.DELETE
         ));
         am.registerGroup(SERVICE_LINKER_MODULE_ACTIONS, new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
-                "---",
                 ResourceCommonActionsContributor.CREATE_SERVICE_LINKER_IN_PORTAL
         ));
     }
