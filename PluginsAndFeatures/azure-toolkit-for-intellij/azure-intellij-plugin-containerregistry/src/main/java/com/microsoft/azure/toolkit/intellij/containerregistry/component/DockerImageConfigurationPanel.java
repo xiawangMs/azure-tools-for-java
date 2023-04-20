@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
@@ -29,9 +28,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfiguration> {
     @Getter
@@ -119,14 +116,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
             cbDockerHost.getDrafts().add(host);
             cbDockerHost.setValue(host);
         });
-        Optional.ofNullable(data.getDockerImage()).ifPresent(image -> {
-            if (image.isDraft()) {
-                cbDockerImage.addDraftValue(image);
-            }
-            final Predicate<DockerImage> predicate = i -> (!image.isDraft() && StringUtils.equals(i.getImageName(), image.getImageName())) ||
-                    (image.isDraft() && Objects.equals(i.getDockerFile(), image.getDockerFile()));
-            this.cbDockerImage.setValue(new AzureComboBox.ItemReference<>(predicate));
-        });
+        Optional.ofNullable(data.getDockerImage()).ifPresent(image -> cbDockerImage.setValue(image));
         Optional.ofNullable(data.getContainerRegistryId())
                 .map(id -> (ContainerRegistry)Azure.az(AzureContainerRegistry.class).getById(id))
                 .ifPresent(cbContainerRegistry::setValue);

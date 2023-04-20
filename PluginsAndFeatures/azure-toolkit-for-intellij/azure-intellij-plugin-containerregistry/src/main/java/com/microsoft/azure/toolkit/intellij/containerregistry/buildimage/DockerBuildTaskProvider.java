@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerConfiguration;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
