@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class ServiceLinkerNode extends Node<ServiceLinker> {
     public ServiceLinkerNode(@Nonnull ServiceLinker data) {
@@ -43,7 +44,7 @@ public class ServiceLinkerNode extends Node<ServiceLinker> {
         public String getLabel() {
             try {
                 final ResourceId resourceId = ResourceId.fromString(this.serviceLinker.getTargetServiceId());
-                return resourceId.name();
+                return Optional.ofNullable(resourceId.name()).orElse(serviceLinker.getName());
             } catch (final Exception ignored) {}
             return serviceLinker.getName();
         }
