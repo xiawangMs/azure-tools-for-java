@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,11 +52,14 @@ public class ServiceLinkerNode extends Node<ServiceLinker> {
 
         @Override
         public String getIconPath() {
+            String iconPath = AzureIcons.Resources.GENERIC_RESOURCE.getIconPath();
             try {
                 final ResourceId resourceId = ResourceId.fromString(this.serviceLinker.getTargetServiceId());
-                return String.format("/icons/%s/default.svg", resourceId.fullResourceType());
+                if (StringUtils.isNotBlank(resourceId.fullResourceType())) {
+                    iconPath = String.format("/icons/%s/default.svg", resourceId.fullResourceType());
+                }
             } catch (final Exception ignored) {}
-            return AzureIcons.Connector.SERVICE_LINKER_MODULE.getIconPath();
+            return iconPath;
         }
 
         @Override
