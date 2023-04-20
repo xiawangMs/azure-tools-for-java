@@ -31,11 +31,11 @@ public class ContainerService {
         final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getRepositoryName(), loginServerUrl) ? image.getRepositoryName() : loginServerUrl + "/" + image.getRepositoryName();
         final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
         // tag image with ACR url
         if (!StringUtils.startsWith(image.getImageName(), loginServerUrl)) {
-            DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
+            DockerUtil.tagImage(dockerClient, image.getImageName(), fullRepositoryName, image.getTagName());
         }
         // push to ACR
         messager.info(String.format("Pushing to ACR ... [%s] ", loginServerUrl));

@@ -53,8 +53,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
         final DockerImage image = configuration.getDockerImageConfiguration();
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
-        final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
+        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
         ContainerService.getInstance().pushDockerImage(configuration);
         // deploy
         final WebAppConfig webAppConfig = configuration.getWebAppConfig();

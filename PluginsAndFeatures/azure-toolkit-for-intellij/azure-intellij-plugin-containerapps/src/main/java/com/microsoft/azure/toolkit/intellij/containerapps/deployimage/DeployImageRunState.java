@@ -46,8 +46,7 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
         final DockerImage image = configuration.getDockerImageConfiguration();
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(dataModel.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
-        final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
+        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
         ContainerService.getInstance().pushDockerImage(configuration);
         // update Image
         final String containerAppId = dataModel.getContainerAppId();
