@@ -54,21 +54,17 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
 
     // todo: @hanli Remove duplicates with push image run state
     @Override
-    @AzureOperation(name = "platform/docker.deploy_image")
+    @AzureOperation(name = "platform/webapp.deploy_image")
     public AppServiceAppBase<?, ?, ?> executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();
         final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
         // tag image with ACR url
-        final DockerImage localImage = DockerUtil.getImageWithName(dockerClient, image.getImageName());
-        final DockerImage taggedImage = DockerUtil.getImageWithName(dockerClient, imageAndTag);
-        if (ObjectUtils.allNull(localImage, taggedImage)) {
-            throw new AzureToolkitRuntimeException(String.format("Image %s was not found locally.", image.getImageName()));
-        } else if (Objects.isNull(taggedImage)) {
-            // tag image
+        if (!StringUtils.startsWith(image.getImageName(), loginServerUrl)) {
             DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
         }
         // push to ACR

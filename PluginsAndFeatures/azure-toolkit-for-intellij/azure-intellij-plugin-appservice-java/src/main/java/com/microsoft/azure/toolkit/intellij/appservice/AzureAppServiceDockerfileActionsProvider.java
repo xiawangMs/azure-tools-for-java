@@ -26,6 +26,6 @@ public class AzureAppServiceDockerfileActionsProvider implements DockerfileActio
 
     @Override
     public int getPriority() {
-        return DockerfileActionsProvider.super.getPriority() + 20;
+        return DockerfileActionsProvider.super.getPriority() + 10;
     }
 }

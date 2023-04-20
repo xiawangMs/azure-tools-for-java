@@ -131,6 +131,12 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
         return extensions;
     }
 
+    public void addDraftValue(@Nonnull final DockerImage value) {
+        if (value.isDraft()) {
+            draftImages.add(value);
+        }
+    }
+
     private void selectDockerFile() {
         final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
         descriptor.withTitle("Select Dockerfile");

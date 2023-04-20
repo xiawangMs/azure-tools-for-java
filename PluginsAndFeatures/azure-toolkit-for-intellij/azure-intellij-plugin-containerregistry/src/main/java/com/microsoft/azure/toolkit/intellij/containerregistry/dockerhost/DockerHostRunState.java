@@ -71,7 +71,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
             @Override
             public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
                 try {
-                    DockerUtil.stopContainer(containerId);
+                    DockerUtil.stopContainer(docker, containerId);
                 } catch (final Exception e) {
                     AzureMessager.getMessager().warning(String.format("Failed to stop container %s", containerId), e);
                 }

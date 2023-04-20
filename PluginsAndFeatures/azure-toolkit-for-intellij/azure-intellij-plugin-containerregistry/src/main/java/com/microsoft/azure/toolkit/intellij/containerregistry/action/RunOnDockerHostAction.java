@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.action;
 
-import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -18,25 +17,22 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
+import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class RunOnDockerHostAction extends AzureAnAction {
 
     private static final String DIALOG_TITLE = "Run on Docker Host";
-    private DockerImage dockerImage;
+    private final DockerImage dockerImage;
     private final AzureDockerSupportConfigurationType configType;
 
     public RunOnDockerHostAction() {
@@ -51,7 +47,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
 
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
-        Module module = DataKeys.MODULE.getData(event.getDataContext());
+        final Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
             return true;
         }
@@ -71,7 +67,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
 
     @SuppressWarnings({"deprecation", "Duplicates"})
     private void runConfiguration(Module module) {
-        Project project = module.getProject();
+        final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getDockerHostRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
@@ -86,8 +82,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
             Optional.ofNullable(dockerImage).ifPresent(image -> ((DockerHostRunConfiguration) configuration).setDockerImage(image));
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-            List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(configuration));
-            manager.addConfiguration(settings, false, tasks, false);
+            manager.addConfiguration(settings, false);
             manager.setSelectedConfiguration(settings);
             ProgramRunnerUtil.executeConfiguration(project, settings, DefaultRunExecutor.getRunExecutorInstance());
         }

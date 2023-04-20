@@ -25,6 +25,6 @@ public class AzureContainerAppsDockerfileActionsProvider implements DockerfileAc
 
     @Override
     public int getPriority() {
-        return DockerfileActionsProvider.super.getPriority() + 10;
+        return DockerfileActionsProvider.super.getPriority() + 20;
     }
 }

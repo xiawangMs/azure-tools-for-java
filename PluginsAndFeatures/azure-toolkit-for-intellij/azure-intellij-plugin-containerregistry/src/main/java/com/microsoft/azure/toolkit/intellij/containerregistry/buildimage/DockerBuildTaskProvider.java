@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +45,8 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DockerBuildTaskProvider extends BeforeRunTaskProvider<DockerBuildTaskProvider.DockerBuildBeforeRunTask> {
     private static final Key<DockerBuildBeforeRunTask> ID = Key.create("DockerBuildBeforeRunTaskProviderId");
@@ -110,15 +113,22 @@ public class DockerBuildTaskProvider extends BeforeRunTaskProvider<DockerBuildTa
         private BuildImageResultCallback createBuildImageResultCallback(@Nonnull final ConsoleView consoleView) {
             return new BuildImageResultCallback() {
                 @Override
-                public void onNext(BuildResponseItem object) {
-                    super.onNext(object);
-                    consoleView.print(object.getStream() + System.lineSeparator(), ConsoleViewContentType.LOG_INFO_OUTPUT);
+                public void onNext(BuildResponseItem item) {
+                    super.onNext(item);
+                    final String stream = item.getStream();
+                    final String status = item.getStatus();
+                    final String id = item.getId();
+                    final String progress = item.getProgress();
+                    final String message = Stream.of(stream, status, id, progress).filter(StringUtils::isNoneBlank).collect(Collectors.joining(" "));
+                    if (StringUtils.isNoneBlank(message)) {
+                        consoleView.print(message + System.lineSeparator(), ConsoleViewContentType.SYSTEM_OUTPUT);
+                    }
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
                     super.onError(throwable);
-                    consoleView.print(ExceptionUtils.getStackTrace(throwable), ConsoleViewContentType.LOG_ERROR_OUTPUT);
+                    consoleView.print(ExceptionUtils.getStackTrace(throwable) + System.lineSeparator(), ConsoleViewContentType.LOG_ERROR_OUTPUT);
                 }
             };
         }

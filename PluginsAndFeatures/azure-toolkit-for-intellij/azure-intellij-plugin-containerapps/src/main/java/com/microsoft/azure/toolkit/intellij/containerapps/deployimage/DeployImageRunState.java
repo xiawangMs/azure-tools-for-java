@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
@@ -49,21 +50,18 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
 
     // todo: remove duplicate codes with PushImageRunState
     @Override
+    @AzureOperation(name = "platform/aca.deploy_image")
     public ContainerApp executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();
         final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(dataModel.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
         // tag image with ACR url
-        final DockerImage localImage = DockerUtil.getImageWithName(dockerClient, image.getImageName());
-        final DockerImage taggedImage = DockerUtil.getImageWithName(dockerClient, imageAndTag);
-        if (ObjectUtils.allNull(localImage, taggedImage)) {
-            throw new AzureToolkitRuntimeException(String.format("Image %s was not found locally.", image.getImageName()));
-        } else if (Objects.isNull(taggedImage)) {
-            // tag image
-            DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
+        if (!StringUtils.startsWith(image.getImageName(), loginServerUrl)) {
+            DockerUtil.tagImage(dockerClient, image.getImageName(), fullRepositoryName, image.getTagName());
         }
         // push to ACR
         processHandler.setText(String.format("Pushing to ACR ... [%s] ", loginServerUrl));
@@ -104,8 +102,11 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
     }
 
     @Override
-    protected void onSuccess(@Nonnull final ContainerApp image, @Nonnull RunProcessHandler processHandler) {
-        processHandler.setText(image.isIngressEnabled() ? "Deployment succeed" : String.format("Deployment succeed, you may access your app with https://%s", image.getIngressFqdn()));
+    protected void onSuccess(@Nonnull final ContainerApp app, @Nonnull RunProcessHandler processHandler) {
+        processHandler.setText(String.format("Image (%s) has been deployed to Container App (%s) successfully.", configuration.getDockerImageConfiguration().getImageName(), app.getName()));
+        if (app.isIngressEnabled()) {
+            processHandler.setText(String.format("URL: https://%s", app.getIngressFqdn()));
+        }
         processHandler.notifyComplete();
     }
 

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.action;
 
-import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -20,27 +19,24 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azure.toolkit.intellij.container.Constant;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class PushImageAction extends AzureAnAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String DIALOG_TITLE = "Push Image to Container Registry";
     private final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
 
-    private DockerImage dockerImage;
+    private final DockerImage dockerImage;
 
     public PushImageAction() {
         this(null);
@@ -55,7 +51,7 @@ public class PushImageAction extends AzureAnAction {
     @AzureOperation(name = "user/docker.push_image")
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
 
-        Module module = DataKeys.MODULE.getData(event.getDataContext());
+        final Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return true;
@@ -76,7 +72,7 @@ public class PushImageAction extends AzureAnAction {
 
     @SuppressWarnings({"deprecation", "Duplicates"})
     private void runConfiguration(Module module) {
-        Project project = module.getProject();
+        final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
@@ -90,15 +86,14 @@ public class PushImageAction extends AzureAnAction {
             ((PushImageRunConfiguration) settings.getConfiguration()).setDockerImage(dockerImage);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-            List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
-            manager.addConfiguration(settings, false, tasks, false);
+            manager.addConfiguration(settings, false);
             manager.setSelectedConfiguration(settings);
             ProgramRunnerUtil.executeConfiguration(project, settings, DefaultRunExecutor.getRunExecutorInstance());
         }
     }
 
     private void notifyError(String msg) {
-        Notification notification = new Notification(NOTIFICATION_GROUP_ID, DIALOG_TITLE, msg, NotificationType.ERROR);
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, DIALOG_TITLE, msg, NotificationType.ERROR);
         Notifications.Bus.notify(notification);
     }
 }

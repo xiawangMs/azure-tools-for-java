@@ -106,7 +106,6 @@ public class DockerRunLineMarkerProvider implements LineMarkerProvider {
         return getTaskProviders().stream()
                 .sorted(Comparator.comparing(DockerfileActionsProvider::getPriority))
                 .map(provider -> provider.getActions(dockerfile))
-                .map(actions -> ArrayUtils.add(actions, Separator.create()))
                 .filter(Objects::nonNull)
                 .flatMap(Arrays::stream)
                 .toArray(AnAction[]::new);

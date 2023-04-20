@@ -122,7 +122,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value="Container Registry"/>
+              <text value="Container Registry:"/>
             </properties>
           </component>
           <component id="a39b" class="com.microsoft.azure.toolkit.intellij.containerregistry.component.AzureContainerRegistryComboBox" binding="cbContainerRegistry" custom-create="true">

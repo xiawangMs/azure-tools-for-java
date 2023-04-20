@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfiguration> {
     @Getter
@@ -119,12 +120,12 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
             cbDockerHost.setValue(host);
         });
         Optional.ofNullable(data.getDockerImage()).ifPresent(image -> {
-            this.cbDockerImage.setValue(new AzureComboBox.ItemReference<>(i -> (!image.isDraft() && StringUtils.equals(i.getImageName(), image.getImageName())) ||
-                    (image.isDraft() && Objects.equals(i.getDockerFile(), image.getDockerFile()))));
             if (image.isDraft()) {
-                this.txtRepositoryName.setValue(image.getRepositoryName());
-                this.txtTagName.setValue(image.getTagName());
+                cbDockerImage.addDraftValue(image);
             }
+            final Predicate<DockerImage> predicate = i -> (!image.isDraft() && StringUtils.equals(i.getImageName(), image.getImageName())) ||
+                    (image.isDraft() && Objects.equals(i.getDockerFile(), image.getDockerFile()));
+            this.cbDockerImage.setValue(new AzureComboBox.ItemReference<>(predicate));
         });
         Optional.ofNullable(data.getContainerRegistryId())
                 .map(id -> (ContainerRegistry)Azure.az(AzureContainerRegistry.class).getById(id))

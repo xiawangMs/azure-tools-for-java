@@ -49,14 +49,10 @@ public class PushImageRunState extends AzureRunProfileState<String> {
         final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
         // tag image with ACR url
-        final DockerImage localImage = DockerUtil.getImageWithName(dockerClient, image.getImageName());
-        final DockerImage taggedImage = DockerUtil.getImageWithName(dockerClient, imageAndTag);
-        if (ObjectUtils.allNull(localImage, taggedImage)) {
-            throw new AzureToolkitRuntimeException(String.format("Image %s was not found locally.", image.getImageName()));
-        } else if (Objects.isNull(taggedImage)) {
-            // tag image
+        if (!StringUtils.startsWith(image.getImageName(), loginServerUrl)) {
             DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
         }
         // push to ACR
@@ -64,16 +60,13 @@ public class PushImageRunState extends AzureRunProfileState<String> {
         final PushImageResultCallback callBack = new PushImageResultCallback() {
             @Override
             public void onNext(PushResponseItem item) {
-                final String status = item.getStatus();
-                final String id = item.getId();
-                final String progress = item.getProgress();
-                final String message = Stream.of(status, id, progress).filter(StringUtils::isNoneBlank).collect(Collectors.joining(" "));
+                final String message = Stream.of(item.getStatus(), item.getId(), item.getProgress()).filter(StringUtils::isNoneBlank).collect(Collectors.joining(" "));
                 processHandler.println(message, ProcessOutputTypes.SYSTEM);
                 super.onNext(item);
             }
         };
         DockerUtil.pushImage(dockerClient, Objects.requireNonNull(loginServerUrl), registry.getUserName(), registry.getPrimaryCredential(), imageAndTag, callBack);
-        return image.getImageName();
+        return loginServerUrl;
     }
 
     @Nonnull
@@ -83,8 +76,9 @@ public class PushImageRunState extends AzureRunProfileState<String> {
     }
 
     @Override
-    protected void onSuccess(String image, @Nonnull RunProcessHandler processHandler) {
-        processHandler.setText("pushed.");
+    protected void onSuccess(String registry, @Nonnull RunProcessHandler processHandler) {
+        final String message = String.format("Image (%s) has been pushed to registry (%s)", configuration.getDockerImageConfiguration().getImageName(), registry);
+        processHandler.setText(message);
         processHandler.notifyComplete();
     }
 
