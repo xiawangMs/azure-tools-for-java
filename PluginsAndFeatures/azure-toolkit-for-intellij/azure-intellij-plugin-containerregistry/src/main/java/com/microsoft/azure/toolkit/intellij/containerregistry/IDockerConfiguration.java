@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.containerregistry.buildimage;
+package com.microsoft.azure.toolkit.intellij.containerregistry;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;

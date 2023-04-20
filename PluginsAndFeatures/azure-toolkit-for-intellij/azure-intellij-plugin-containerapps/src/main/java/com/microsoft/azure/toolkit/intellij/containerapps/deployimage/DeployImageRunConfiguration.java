@@ -14,7 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
-import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
+import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerPushConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
 import java.util.Optional;
 
-public class DeployImageRunConfiguration extends LocatableConfigurationBase<Element> implements LocatableConfiguration, IDockerConfiguration {
+public class DeployImageRunConfiguration extends LocatableConfigurationBase<Element> implements LocatableConfiguration, IDockerPushConfiguration {
     @Getter
     @Setter
     private DeployImageModel dataModel;
@@ -71,5 +71,10 @@ public class DeployImageRunConfiguration extends LocatableConfigurationBase<Elem
         Optional.ofNullable(this.dataModel)
                 .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"containerRegistry".equalsIgnoreCase(accessor.getName())))
                 .ifPresent(element::addContent);
+    }
+
+    @Override
+    public String getContainerRegistryId() {
+        return getDataModel().getContainerRegistryId();
     }
 }

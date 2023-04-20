@@ -15,7 +15,7 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
-import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
+import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import org.apache.commons.lang3.StringUtils;

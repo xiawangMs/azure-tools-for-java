@@ -15,7 +15,7 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
-import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
+import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerPushConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
@@ -28,10 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Objects;
 import java.util.Optional;
 
-public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushImageRunModel> implements IDockerConfiguration {
+public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushImageRunModel> implements IDockerPushConfiguration {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";

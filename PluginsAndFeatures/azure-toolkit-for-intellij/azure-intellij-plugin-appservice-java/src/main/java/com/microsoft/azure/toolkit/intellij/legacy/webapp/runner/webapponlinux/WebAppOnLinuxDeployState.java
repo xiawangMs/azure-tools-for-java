@@ -5,15 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.PushResponseItem;
-import com.github.dockerjava.core.command.PushImageResultCallback;
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.containerregistry.ContainerService;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
@@ -21,7 +17,6 @@ import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateWebAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
@@ -38,8 +33,6 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
     public static final String WEBSITES_PORT = "WEBSITES_PORT";
@@ -58,29 +51,11 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
     public AppServiceAppBase<?, ?, ?> executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();
-        final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
         final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
         final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
-        // tag image with ACR url
-        if (!StringUtils.startsWith(image.getImageName(), loginServerUrl)) {
-            DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
-        }
-        // push to ACR
-        processHandler.setText(String.format("Pushing to ACR ... [%s] ", loginServerUrl));
-        final PushImageResultCallback callBack = new PushImageResultCallback() {
-            @Override
-            public void onNext(PushResponseItem item) {
-                final String status = item.getStatus();
-                final String id = item.getId();
-                final String progress = item.getProgress();
-                final String message = Stream.of(status, id, progress).filter(StringUtils::isNoneBlank).collect(Collectors.joining(" "));
-                processHandler.println(message, ProcessOutputTypes.SYSTEM);
-                super.onNext(item);
-            }
-        };
-        DockerUtil.pushImage(dockerClient, Objects.requireNonNull(loginServerUrl), registry.getUserName(), registry.getPrimaryCredential(), imageAndTag, callBack);
+        ContainerService.getInstance().pushDockerImage(configuration);
         // deploy
         final WebAppConfig webAppConfig = configuration.getWebAppConfig();
         final Map<String, String> appSettings = ObjectUtils.firstNonNull(webAppConfig.getAppSettings(), new HashMap<>());

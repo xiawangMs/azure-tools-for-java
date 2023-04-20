@@ -5,33 +5,24 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.PushResponseItem;
-import com.github.dockerjava.core.command.PushImageResultCallback;
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.containerregistry.ContainerService;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
-import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 public class PushImageRunState extends AzureRunProfileState<String> {
     private final PushImageRunModel dataModel;
@@ -44,29 +35,10 @@ public class PushImageRunState extends AzureRunProfileState<String> {
     }
 
     @Override
+    @AzureOperation(name = "platform/docker.push_image")
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
-        final DockerImage image = configuration.getDockerImageConfiguration();
-        final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
-        final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
-        final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String fullRepositoryName = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
-        final String imageAndTag = fullRepositoryName + ":" + ObjectUtils.defaultIfNull(image.getTagName(), "latest");
-        // tag image with ACR url
-        if (!StringUtils.startsWith(image.getImageName(), loginServerUrl)) {
-            DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
-        }
-        // push to ACR
-        processHandler.setText(String.format("Pushing to ACR ... [%s] ", loginServerUrl));
-        final PushImageResultCallback callBack = new PushImageResultCallback() {
-            @Override
-            public void onNext(PushResponseItem item) {
-                final String message = Stream.of(item.getStatus(), item.getId(), item.getProgress()).filter(StringUtils::isNoneBlank).collect(Collectors.joining(" "));
-                processHandler.println(message, ProcessOutputTypes.SYSTEM);
-                super.onNext(item);
-            }
-        };
-        DockerUtil.pushImage(dockerClient, Objects.requireNonNull(loginServerUrl), registry.getUserName(), registry.getPrimaryCredential(), imageAndTag, callBack);
-        return loginServerUrl;
+        OperationContext.current().setMessager(getProcessHandlerMessenger());
+        return ContainerService.getInstance().pushDockerImage(configuration);
     }
 
     @Nonnull
@@ -77,8 +49,8 @@ public class PushImageRunState extends AzureRunProfileState<String> {
 
     @Override
     protected void onSuccess(String registry, @Nonnull RunProcessHandler processHandler) {
-        final String message = String.format("Image (%s) has been pushed to registry (%s)", configuration.getDockerImageConfiguration().getImageName(), registry);
-        processHandler.setText(message);
+        final String imageName = Optional.ofNullable(configuration.getDockerImageConfiguration()).map(DockerImage::getImageName).orElse(null);
+        processHandler.setText(String.format("Image (%s) has been pushed to registry (%s)", imageName, registry));
         processHandler.notifyComplete();
     }
 

@@ -18,14 +18,11 @@ import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
-import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
+import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerPushConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.*;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
@@ -41,7 +38,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Optional;
 
-public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> implements IDockerConfiguration {
+public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> implements IDockerPushConfiguration {
 
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
     private static final String MISSING_USERNAME = "Please specify Username.";
