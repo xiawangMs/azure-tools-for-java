@@ -69,9 +69,6 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
                 .addInlineAction(ResourceCommonActionsContributor.DEPLOY)
                 .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(SpringCloudActionsContributor.APP_ACTIONS)
-                .addChildren(cloudApp -> cloudApp.getSubModules().stream()
-                                .filter(m -> !(m instanceof SpringCloudDeploymentModule)).collect(Collectors.toList()),
-                        (module, moduleMode) -> this.createNode(module, moduleMode, manager))
                 .addChildren(c -> Optional.ofNullable(c.getActiveDeployment()).map(SpringCloudDeployment::getSubModules).orElse(Collections.emptyList()),
                     (instanceModule, moduleNode) -> this.createNode(instanceModule, moduleNode, manager));
         } else if (data instanceof SpringCloudAppInstanceModule) {
