@@ -1,5 +1,4 @@
 <idea-plugin>
-    <depends optional="true" config-file="azure-intellij-plugin-containerregistry-docker.xml">Docker</depends>
     <extensionPoints>
         <extensionPoint name="dockerfileActionsProvider"
                         interface="com.microsoft.azure.toolkit.intellij.containerregistry.runner.DockerfileActionsProvider"/>
