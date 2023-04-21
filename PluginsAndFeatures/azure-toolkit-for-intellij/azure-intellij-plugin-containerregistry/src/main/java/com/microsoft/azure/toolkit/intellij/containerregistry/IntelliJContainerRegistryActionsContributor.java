@@ -17,13 +17,13 @@ import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryAction
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
+import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.RunOnDockerHostAction;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
@@ -60,8 +60,7 @@ public class IntelliJContainerRegistryActionsContributor implements IActionsCont
     }
 
     private static void runImage(Tag tag, AnActionEvent e) {
-        final Action<Object> action = AzureActionManager.getInstance().getAction(Action.Id.of("Actions.RunOnDockerHost"));
-        AzureTaskManager.getInstance().runLater(() -> action.handle(null, e), AzureTask.Modality.ANY);
+        RunOnDockerHostAction.run(tag, Objects.requireNonNull(e.getProject()));
     }
 
     @SneakyThrows(JsonProcessingException.class)

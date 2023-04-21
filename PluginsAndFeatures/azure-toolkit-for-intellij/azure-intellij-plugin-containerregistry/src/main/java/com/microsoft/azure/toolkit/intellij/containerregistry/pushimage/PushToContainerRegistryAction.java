@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.containerregistry.action;
+package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;

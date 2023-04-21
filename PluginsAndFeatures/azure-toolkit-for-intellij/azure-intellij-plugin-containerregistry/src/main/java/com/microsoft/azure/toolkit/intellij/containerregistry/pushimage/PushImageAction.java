@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.webapp.action;
+package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
@@ -16,8 +16,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
-import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.WebAppOnLinuxDeployConfiguration;
+import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -28,23 +28,25 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public class WebAppOnLinuxAction extends AnAction {
-    private static final String DIALOG_TITLE = "Deploy Image to Web App";
-    private static final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
+public class PushImageAction extends AnAction {
+    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+    private static final String DIALOG_TITLE = "Push Image to Azure Container Registry";
+    private static final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
+
     private final DockerImage dockerImage;
 
-    public WebAppOnLinuxAction() {
+    public PushImageAction() {
         this(null);
     }
 
-    public WebAppOnLinuxAction(@Nullable DockerImage dockerImage) {
+    public PushImageAction(@Nullable DockerImage dockerImage) {
         //noinspection DialogTitleCapitalization
-        super(DIALOG_TITLE, "Build/push local image to Azure Web App", IntelliJAzureIcons.getIcon("/icons/DockerSupport/RunOnWebApp.svg"));
+        super(DIALOG_TITLE, "Build/push local image to Azure Container Registry", IntelliJAzureIcons.getIcon("/icons/DockerSupport/PushImage.svg"));
         this.dockerImage = dockerImage;
     }
 
     @Override
-    @AzureOperation(name = "user/docker.start_app")
+    @AzureOperation(name = "user/docker.push_image")
     public void actionPerformed(@Nonnull AnActionEvent e) {
         final Project project = e.getProject();
         if (project != null) {
@@ -53,7 +55,7 @@ public class WebAppOnLinuxAction extends AnAction {
         }
     }
 
-    public static void deploy(@Nonnull Tag tag, @Nonnull Project project) {
+    public static void push(@Nonnull Tag tag, @Nonnull Project project) {
         final DockerImage image = DockerImage.builder()
             .isDraft(false)
             .repositoryName(tag.getParent().getParent().getName())
@@ -62,15 +64,15 @@ public class WebAppOnLinuxAction extends AnAction {
         runConfiguration(project, image);
     }
 
-    private static void runConfiguration(@Nonnull Project project, @Nullable DockerImage image) {
+    private static void runConfiguration(@Nonnull Project project, DockerImage image) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final ConfigurationFactory factory = configType.getWebAppOnLinuxConfigurationFactory();
+        final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
         final RunnerAndConfigurationSettings existingSettings = manager.findConfigurationByName(configurationName);
         final RunnerAndConfigurationSettings settings = Optional.ofNullable(existingSettings)
             .orElseGet(() -> manager.createConfiguration(configurationName, factory));
-        if (settings.getConfiguration() instanceof WebAppOnLinuxDeployConfiguration) {
-            ((WebAppOnLinuxDeployConfiguration) settings.getConfiguration()).setDockerImage(image);
+        if (settings.getConfiguration() instanceof PushImageRunConfiguration) {
+            ((PushImageRunConfiguration) settings.getConfiguration()).setDockerImage(image);
         }
         AzureTaskManager.getInstance().runLater(() -> {
             if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {

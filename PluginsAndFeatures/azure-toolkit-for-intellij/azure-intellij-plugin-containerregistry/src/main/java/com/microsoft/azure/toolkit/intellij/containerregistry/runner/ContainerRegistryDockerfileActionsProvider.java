@@ -8,8 +8,8 @@ package com.microsoft.azure.toolkit.intellij.containerregistry.runner;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
-import com.microsoft.azure.toolkit.intellij.containerregistry.action.PushImageAction;
-import com.microsoft.azure.toolkit.intellij.containerregistry.action.RunOnDockerHostAction;
+import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageAction;
+import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.RunOnDockerHostAction;
 
 public class ContainerRegistryDockerfileActionsProvider implements DockerfileActionsProvider {
     @Override
