@@ -114,12 +114,13 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     public void setValue(@Nonnull final DockerPushConfiguration data) {
         Optional.ofNullable(data.getDockerHost()).ifPresent(host -> {
             cbDockerHost.getDrafts().add(host);
-            cbDockerHost.setValue(host);
+            cbDockerHost.setValue(h -> StringUtils.equalsIgnoreCase(host.getDockerHost(), h.getDockerHost()));
         });
-        Optional.ofNullable(data.getDockerImage()).ifPresent(image -> cbDockerImage.setValue(image));
+        Optional.ofNullable(data.getDockerImage())
+            .ifPresent(image -> cbDockerImage.setValue(i -> StringUtils.equalsIgnoreCase(i.getImageId(), image.getImageId()) || StringUtils.equalsIgnoreCase(i.getImageName(), image.getImageName())));
         Optional.ofNullable(data.getContainerRegistryId())
-                .map(id -> (ContainerRegistry)Azure.az(AzureContainerRegistry.class).getById(id))
-                .ifPresent(cbContainerRegistry::setValue);
+            .map(id -> (ContainerRegistry) Azure.az(AzureContainerRegistry.class).getById(id))
+            .ifPresent(r -> cbContainerRegistry.setValue(registry -> StringUtils.equalsIgnoreCase(r.getLoginServerUrl(), registry.getLoginServerUrl())));
         updateImageConfigurationUI();
     }
 
