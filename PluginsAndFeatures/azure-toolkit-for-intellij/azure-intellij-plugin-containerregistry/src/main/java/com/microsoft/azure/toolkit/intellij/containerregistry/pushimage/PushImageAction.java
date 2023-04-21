@@ -17,11 +17,11 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
-import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 
 import javax.annotation.Nonnull;
@@ -51,7 +51,7 @@ public class PushImageAction extends AnAction {
         final Project project = e.getProject();
         if (project != null) {
             AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH)
-                .handle(() -> runConfiguration(project, this.dockerImage));
+                .handle(() -> runConfiguration(project, this.dockerImage, null));
         }
     }
 
@@ -61,10 +61,14 @@ public class PushImageAction extends AnAction {
             .repositoryName(tag.getParent().getParent().getName())
             .tagName(tag.getName())
             .build();
-        runConfiguration(project, image);
+        runConfiguration(project, image, null);
     }
 
-    private static void runConfiguration(@Nonnull Project project, DockerImage image) {
+    public static void push(@Nonnull ContainerRegistry registry, @Nonnull Project project) {
+        runConfiguration(project, null, registry);
+    }
+
+    private static void runConfiguration(@Nonnull Project project, @Nullable DockerImage image, @Nullable ContainerRegistry registry) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
@@ -72,7 +76,8 @@ public class PushImageAction extends AnAction {
         final RunnerAndConfigurationSettings settings = Optional.ofNullable(existingSettings)
             .orElseGet(() -> manager.createConfiguration(configurationName, factory));
         if (settings.getConfiguration() instanceof PushImageRunConfiguration) {
-            ((PushImageRunConfiguration) settings.getConfiguration()).setDockerImage(image);
+            Optional.ofNullable(image).ifPresent(i -> ((PushImageRunConfiguration) settings.getConfiguration()).setDockerImage(i));
+            Optional.ofNullable(registry).ifPresent(i -> ((PushImageRunConfiguration) settings.getConfiguration()).setContainerRegistryId(i.getId()));
         }
         AzureTaskManager.getInstance().runLater(() -> {
             if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
