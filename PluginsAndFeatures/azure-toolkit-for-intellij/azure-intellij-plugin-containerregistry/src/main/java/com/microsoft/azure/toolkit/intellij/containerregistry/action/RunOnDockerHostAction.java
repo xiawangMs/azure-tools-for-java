@@ -13,8 +13,6 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
@@ -24,16 +22,16 @@ import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerH
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 public class RunOnDockerHostAction extends AzureAnAction {
-
     private static final String DIALOG_TITLE = "Run on Docker Host";
+    private static final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
     private final DockerImage dockerImage;
-    private final AzureDockerSupportConfigurationType configType;
 
     public RunOnDockerHostAction() {
         this(null);
@@ -41,17 +39,16 @@ public class RunOnDockerHostAction extends AzureAnAction {
 
     public RunOnDockerHostAction(@Nullable final DockerImage dockerImage) {
         super(DIALOG_TITLE, "Build image and run in local docker host", IntelliJAzureIcons.getIcon("/icons/DockerSupport/Run.svg"));
-        this.configType = AzureDockerSupportConfigurationType.getInstance();
         this.dockerImage = dockerImage;
     }
 
     @Override
-    public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
-        final Module module = DataKeys.MODULE.getData(event.getDataContext());
-        if (module == null) {
+    public boolean onActionPerformed(@Nonnull AnActionEvent event, @Nullable Operation operation) {
+        final Project project = event.getProject();
+        if (project == null) {
             return true;
         }
-        AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
+        AzureTaskManager.getInstance().runLater(() -> runConfiguration(project));
         return true;
     }
 
@@ -65,26 +62,28 @@ public class RunOnDockerHostAction extends AzureAnAction {
         return TelemetryConstants.DEPLOY_WEBAPP_DOCKERHOST;
     }
 
-    @SuppressWarnings({"deprecation", "Duplicates"})
-    private void runConfiguration(Module module) {
-        final Project project = module.getProject();
-        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final ConfigurationFactory factory = configType.getDockerHostRunConfigurationFactory();
-        RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()));
-        if (settings == null) {
-            settings = manager.createConfiguration(
-                    String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
-                    factory);
-        }
+    @SuppressWarnings({"Duplicates"})
+    private void runConfiguration(Project project) {
+        final RunnerAndConfigurationSettings settings = getOrCreateConfigurationSettings(project);
         final RunConfiguration configuration = settings.getConfiguration();
         if (configuration instanceof DockerHostRunConfiguration) {
             Optional.ofNullable(dockerImage).ifPresent(image -> ((DockerHostRunConfiguration) configuration).setDockerImage(image));
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-            manager.addConfiguration(settings, false);
+            final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
+            settings.storeInLocalWorkspace();
+            manager.addConfiguration(settings);
             manager.setSelectedConfiguration(settings);
-            ProgramRunnerUtil.executeConfiguration(project, settings, DefaultRunExecutor.getRunExecutorInstance());
+            ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
         }
+    }
+
+    @Nonnull
+    private static RunnerAndConfigurationSettings getOrCreateConfigurationSettings(@Nonnull Project project) {
+        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
+        final ConfigurationFactory factory = configType.getDockerHostRunConfigurationFactory();
+        final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
+        final RunnerAndConfigurationSettings existed = manager.findConfigurationByName(configurationName);
+        return Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
     }
 }
