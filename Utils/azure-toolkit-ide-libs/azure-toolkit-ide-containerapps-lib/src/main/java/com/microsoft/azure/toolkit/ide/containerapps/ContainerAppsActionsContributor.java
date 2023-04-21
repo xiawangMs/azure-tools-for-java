@@ -37,7 +37,7 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final String ENVIRONMENT_ACTIONS = "actions.containerapps.environment";
     public static final String CONTAINER_APP_ACTIONS = "actions.containerapps.containerapp";
     public static final String REVISION_ACTIONS = "actions.containerapps.revision";
-
+    public static final String REVISION_MODULE_ACTIONS = "actions.containerapps.revision_module";
     public static final Action.Id<ContainerAppsEnvironment> CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app");
     public static final Action.Id<AzureContainerApps> CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment");
     public static final Action.Id<ContainerApp> BROWSE = Action.Id.of("user/containerapps.open_in_browser.app");
@@ -229,6 +229,9 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ContainerAppsActionsContributor.OPEN_LOG_STREAMS
         );
         am.registerGroup(CONTAINER_APP_ACTIONS, containerAppActionGroup);
+
+        final ActionGroup revisionModuleGroup = new ActionGroup(ResourceCommonActionsContributor.REFRESH);
+        am.registerGroup(REVISION_MODULE_ACTIONS, revisionModuleGroup);
 
         final ActionGroup revisionActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.PIN,

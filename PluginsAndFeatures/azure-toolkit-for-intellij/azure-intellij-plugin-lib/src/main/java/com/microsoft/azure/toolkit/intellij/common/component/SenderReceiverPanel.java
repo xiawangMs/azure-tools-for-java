@@ -26,7 +26,6 @@ import reactor.core.scheduler.Schedulers;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.Objects;
 import java.util.Optional;
 
 public class SenderReceiverPanel extends JPanel {
@@ -51,7 +50,7 @@ public class SenderReceiverPanel extends JPanel {
     }
 
     public void startListeningProcess() {
-        if (Objects.nonNull(this.listenProcessHandler)) {
+        if (this.instance.isListening()) {
             return;
         }
         this.listenProcessHandler = new RunProcessHandler();
