@@ -5,15 +5,18 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.task;
 
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Task;
-import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogManager;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import org.apache.commons.collections4.CollectionUtils;
+import reactor.core.publisher.Flux;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -37,7 +40,14 @@ public class OpenLogStreamingTask implements Task {
         if (CollectionUtils.isEmpty(instances)) {
             AzureMessager.getMessager().warning(AzureString.format("App `%s` is still starting up, please try again later.", app.getName()));
         } else {
-            SpringCloudStreamingLogManager.getInstance().showStreamingLog(context.getProject(), app, instances.get(0).getName());
+            final Flux<String> logs = Optional.ofNullable(app.getActiveDeployment()).map(d ->
+                    d.streamingLogs(app.getLogStreamingEndpoint(instances.get(0).getName()),
+                            ImmutableMap.of("follow", String.valueOf(true),
+                                    "sinceSeconds", String.valueOf(300),
+                                    "tailLines", String.valueOf(500),
+                                    "limitBytes", String.valueOf(1024 * 1024)))).orElse(Flux.empty());
+            AzureTaskManager.getInstance().runLater(() ->
+                    StreamingLogsManager.getInstance().showStreamingLog(context.getProject(), app.getId(), app.getName(), logs));
         }
     }
 

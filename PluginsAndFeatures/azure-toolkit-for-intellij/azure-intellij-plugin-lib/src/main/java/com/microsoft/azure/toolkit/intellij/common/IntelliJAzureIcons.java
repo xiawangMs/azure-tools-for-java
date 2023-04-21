@@ -65,6 +65,7 @@ public class IntelliJAzureIcons {
             put(AzureIcons.Action.ATTACH_DEBUGGER, AllIcons.Debugger.AttachToProcess);
             put(AzureIcons.Action.REMOTE_DEBUG, AllIcons.RunConfigurations.RemoteDebug);
             put(AzureIcons.Action.SEARCH, AllIcons.Actions.Search);
+            put(AzureIcons.Action.LOG, AllIcons.Nodes.LogFolder);
         }
     };
 

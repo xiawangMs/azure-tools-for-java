@@ -1,13 +1,8 @@
-/*
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- */
-package com.microsoft.azure.toolkit.intellij.legacy.appservice;
+package com.microsoft.azure.toolkit.intellij.common.streaminglog;
 
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.jetbrains.annotations.NotNull;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -17,19 +12,15 @@ import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
 import static com.intellij.execution.ui.ConsoleViewContentType.SYSTEM_OUTPUT;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
-
+public class StreamingLogsConsoleView extends ConsoleViewImpl {
     private static final String SEPARATOR = System.getProperty("line.separator");
-
     private boolean isDisposed;
-    private String resourceId;
     private Disposable subscription;
 
-    public AppServiceStreamingLogConsoleView(@NotNull Project project, String resourceId) {
+    public StreamingLogsConsoleView(@NotNull Project project) {
         super(project, true);
         this.isDisposed = false;
         this.setUpdateFoldingsEnabled(false);
-        this.resourceId = resourceId;
     }
 
     public void startStreamingLog(Flux<String> logStreaming) {
@@ -41,7 +32,6 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
         }
     }
 
-    @AzureOperation(name = "boundary/appservice.close_log_streaming")
     public void closeStreamingLog() {
         if (isActive()) {
             subscription.dispose();
