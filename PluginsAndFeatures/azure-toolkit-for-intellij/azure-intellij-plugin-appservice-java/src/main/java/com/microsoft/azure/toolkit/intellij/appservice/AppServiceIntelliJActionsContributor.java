@@ -25,7 +25,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePro
 import com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionEnableRemoteDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.function.remotedebug.FunctionRemoteDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.*;
-import com.microsoft.azure.toolkit.intellij.containerregistry.action.PushToContainerRegistryAction;
+import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushToContainerRegistryAction;
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.CreateWebAppAction;

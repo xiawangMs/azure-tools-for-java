@@ -17,7 +17,6 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.RunConfigurationUtils;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -60,7 +59,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                 this.onSuccess(res, processHandler);
             },
             (err) -> {
-                processHandlerMessenger.error(err, null, (Object[]) getErrorActions(executor, programRunner, err));
+                processHandlerMessenger.error(err);
                 this.sendTelemetry(operation, err);
                 this.onFail(err, processHandler);
             });
@@ -87,10 +86,6 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
             EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), null, null);
         }
         operation.complete();
-    }
-
-    protected Action<Void>[] getErrorActions(final Executor executor, @NotNull ProgramRunner programRunner, final Throwable throwable) {
-        return new Action[]{Action.retryFromFailure(() -> this.execute(executor, programRunner))};
     }
 
     protected abstract T executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception;

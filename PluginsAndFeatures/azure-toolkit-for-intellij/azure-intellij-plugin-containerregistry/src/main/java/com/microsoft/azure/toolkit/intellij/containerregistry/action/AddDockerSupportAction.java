@@ -19,8 +19,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.Constant;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -63,13 +63,13 @@ public class AddDockerSupportAction extends AzureAnAction {
         pomXmlBasePath = getModulePath(module);
         String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
         String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(module.getProject()).getProjects();
-        Optional<MavenProject> res = mavenProjects.stream().filter(mvnprj ->
+        final List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(module.getProject()).getProjects();
+        final Optional<MavenProject> res = mavenProjects.stream().filter(mvnprj ->
             Comparing.equal(Paths.get(mvnprj.getDirectory()).normalize(), Paths.get(pomXmlBasePath).normalize())
         ).findFirst();
         if (res.isPresent()) {
-            MavenProject mvnPrj = res.get();
-            String artifactName = mvnPrj.getFinalName() + "." + mvnPrj.getPackaging();
+            final MavenProject mvnPrj = res.get();
+            final String artifactName = mvnPrj.getFinalName() + "." + mvnPrj.getPackaging();
             artifactRelativePath = Paths.get(pomXmlBasePath).toUri()
                 .relativize(Paths.get(mvnPrj.getBuildDirectory(), artifactName).toUri())
                 .getPath();
@@ -85,15 +85,15 @@ public class AddDockerSupportAction extends AzureAnAction {
         final Path path = Paths.get(pomXmlBasePath, Constant.DOCKERFILE_NAME);
         try {
             // create docker file
-            DockerUtil.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_NAME,
+            AzureDockerClient.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_NAME,
                 String.format(dockerFileContent, artifactRelativePath));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
-                VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(path.toString());
+                final VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(path.toString());
                 if (virtualDockerFile != null) {
                     new OpenFileDescriptor(module.getProject(), virtualDockerFile).navigate(true);
                 }
             });
-        } catch (IOException e) {
+        } catch (final IOException e) {
             EventUtil.logError(operation, ErrorType.userError, e, null, null);
             e.printStackTrace();
             notifyError(e.getMessage());
@@ -123,20 +123,20 @@ public class AddDockerSupportAction extends AzureAnAction {
         module = PlatformDataKeys.MODULE.getData(event.getDataContext());
         boolean dockerFileExists = false;
         if (module != null) {
-            String basePath = getModulePath(module);
+            final String basePath = getModulePath(module);
             dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_NAME).toFile().exists();
         }
         event.getPresentation().setEnabledAndVisible(!dockerFileExists);
     }
 
     private void notifyInfo(String msg) {
-        Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
             msg, NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
     }
 
     private void notifyError(String msg) {
-        Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, NOTIFICATION_TITLE,
             msg, NotificationType.ERROR);
         Notifications.Bus.notify(notification);
     }

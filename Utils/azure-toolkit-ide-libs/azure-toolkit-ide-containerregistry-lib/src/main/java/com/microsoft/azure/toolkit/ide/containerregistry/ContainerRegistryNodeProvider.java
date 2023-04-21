@@ -37,7 +37,8 @@ public class ContainerRegistryNodeProvider implements IExplorerNodeProvider {
 
     @Override
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
-        return data instanceof AzureContainerRegistry || data instanceof ContainerRegistry;
+        return data instanceof AzureContainerRegistry || data instanceof ContainerRegistry ||
+            data instanceof Repository || data instanceof Tag;
     }
 
     @Nullable
@@ -64,6 +65,7 @@ public class ContainerRegistryNodeProvider implements IExplorerNodeProvider {
             final Repository repository = (Repository) data;
             return new Node<>(repository)
                 .view(new AzureResourceLabelView<>(repository, r -> ""))
+                .addInlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(ContainerRegistryActionsContributor.REPOSITORY_ACTIONS)
                 .addChildren(r -> r.getArtifactModule().list().stream().flatMap(i -> i.getTagModule().list().stream()).collect(Collectors.toList()), ((tag, repositoryNode) -> this.createNode(tag, repositoryNode, manager)))
                 .hasMoreChildren(c -> c.getArtifactModule().hasMoreResources())

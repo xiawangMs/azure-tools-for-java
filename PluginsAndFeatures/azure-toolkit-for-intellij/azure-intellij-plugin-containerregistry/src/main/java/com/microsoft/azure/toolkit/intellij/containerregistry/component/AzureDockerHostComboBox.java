@@ -13,7 +13,7 @@ import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
     @Nonnull
     @Override
     protected List<? extends DockerHost> loadItems() throws Exception {
-        return Stream.of(DockerUtil.getDockerHosts(), loadHistory(), drafts).flatMap(List::stream).distinct().toList();
+        return Stream.of(AzureDockerClient.getDockerHosts(), loadHistory(), drafts).flatMap(List::stream).distinct().toList();
     }
 
     // todo: make it an configuration item in AzureConfiguration
@@ -60,8 +60,8 @@ public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
             try {
                 return JsonUtils.fromJson(history, new TypeReference<>() {
                 });
-            } catch (final Exception ignore) {
-                ignore.printStackTrace();
+            } catch (final Exception e) {
+                e.printStackTrace();
                 // ignore since the history data is not important
             }
         }
