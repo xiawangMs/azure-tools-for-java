@@ -36,6 +36,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -107,7 +108,7 @@ public class AzureDockerClient {
         this.ping();
         final InspectImageResponse image = this.client.inspectImageCmd(imageNameWithTag).exec();
         final ContainerConfig config = Objects.requireNonNull(image.getConfig());
-        final List<PortBinding> portBindings = Arrays.stream(config.getExposedPorts())
+        final List<PortBinding> portBindings = Arrays.stream(ObjectUtils.firstNonNull(config.getExposedPorts(), new ExposedPort[0]))
             .map(p -> new PortBinding(Ports.Binding.bindPort(findFreePort()), p)).collect(Collectors.toList());
         if (StringUtils.isNotEmpty(port)) {
             portBindings.add(new PortBinding(Ports.Binding.bindPort(findFreePort()), ExposedPort.parse(port)));
