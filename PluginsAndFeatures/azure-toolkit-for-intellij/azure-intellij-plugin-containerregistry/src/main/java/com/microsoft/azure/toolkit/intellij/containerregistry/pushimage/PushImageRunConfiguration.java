@@ -134,6 +134,10 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
         return this.dataModel.getContainerRegistryId();
     }
 
+    public void setContainerRegistryId(String id) {
+        this.dataModel.setContainerRegistryId(id);
+    }
+
     public void setDockerImage(@Nullable DockerImage image) {
         final DockerHostRunSetting dockerHostRunSetting = Optional.ofNullable(getDockerHostRunSetting()).orElseGet(DockerHostRunSetting::new);
         dockerHostRunSetting.setImageName(Optional.ofNullable(image).map(DockerImage::getRepositoryName).orElse(null));
