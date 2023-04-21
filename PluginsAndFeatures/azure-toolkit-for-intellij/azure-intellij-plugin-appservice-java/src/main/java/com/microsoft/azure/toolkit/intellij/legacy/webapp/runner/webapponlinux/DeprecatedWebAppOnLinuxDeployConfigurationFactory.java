@@ -32,7 +32,7 @@ public class DeprecatedWebAppOnLinuxDeployConfigurationFactory extends Configura
 
     @Override
     public String getName() {
-        return "Web App for Containers (Deprecated, please use 'Azure Web App (Container)` for instead')";
+        return "Web App for Containers (Deprecated)";
     }
 
     @Override

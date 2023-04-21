@@ -5,104 +5,74 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux;
 
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.container.Constant;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.containerregistry.ContainerService;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
+import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateWebAppTask;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
+    public static final String WEBSITES_PORT = "WEBSITES_PORT";
     private final WebAppOnLinuxDeployModel deployModel;
+    private final WebAppOnLinuxDeployConfiguration configuration;
 
-    public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
+    public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployConfiguration configuration) {
         super(project);
-        this.deployModel = webAppOnLinuxDeployModel;
+        this.configuration = configuration;
+        this.deployModel = configuration.getModel();
     }
 
+    // todo: @hanli Remove duplicates with push image run state
     @Override
-    @AzureOperation(name = "platform/docker.deploy_image")
+    @AzureOperation(name = "platform/webapp.deploy_image")
     public AppServiceAppBase<?, ?, ?> executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
-        processHandler.setText("Starting job ...  ");
-        final String basePath = project.getBasePath();
-        if (basePath == null) {
-            processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
-            throw new FileNotFoundException("Project base path is null.");
-        }
-        // locate artifact to specified location
-        final String targetFilePath = deployModel.getTargetPath();
-        processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
-        // validate dockerfile
-        final Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
-        processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-        if (!targetDockerfile.toFile().exists()) {
-            throw new FileNotFoundException("Dockerfile not found.");
-        }
-        processHandler.setText(String.format("dockerfile [%s] is located and validated.", targetDockerfile));
-        // replace placeholder if exists
-        String content = new String(Files.readAllBytes(targetDockerfile));
-        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
-        );
-        Files.write(targetDockerfile, content.getBytes());
-
-        // build image
-        final PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
-        processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
-        DockerUtil.ping();
-        DockerUtil.buildImage(
-            acrInfo.getImageTagWithServerUrl(),
-            targetDockerfile.toFile(),
-            targetDockerfile.getParent().toFile());
-        processHandler.setText(String.format("Image [%s] is built successfully.", acrInfo.getImageTagWithServerUrl()));
-
-        // push to ACR
-        processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
-        DockerUtil.pushImage(acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-            acrInfo.getImageTagWithServerUrl());
-        processHandler.setText(String.format("[%s] is pushed to ACR successfully.", acrInfo.getServerUrl()));
-
+        OperationContext.current().setMessager(getProcessHandlerMessenger());
+        final DockerImage image = configuration.getDockerImageConfiguration();
+        final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
+        final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
+        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        ContainerService.getInstance().pushDockerImage(configuration);
         // deploy
-        if (deployModel.isCreatingNewWebAppOnLinux()) {
-            // create new WebApp
-            processHandler.setText(String.format("Creating new WebApp ... [%s]", deployModel.getWebAppName()));
-            final WebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(deployModel);
-            if (app != null) {
-                processHandler.setText(String.format("WebApp [%s] is created successfully.", app.getName()));
-                processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", app.getName()));
-                updateConfigurationDataModel(app);
-            }
-            return app;
-        } else {
-            // update WebApp
-            processHandler.setText(String.format("Updating WebApp ... [%s]",
-                deployModel.getWebAppName()));
-            final WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(deployModel.getWebAppId(), acrInfo);
-            if (app != null) {
-                processHandler.setText(String.format("WebApp [%s] is updated successfully.", app.getName()));
-                processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", app.getName()));
-            }
-            return app;
+        final WebAppConfig webAppConfig = configuration.getWebAppConfig();
+        final Map<String, String> appSettings = ObjectUtils.firstNonNull(webAppConfig.getAppSettings(), new HashMap<>());
+        appSettings.put(WEBSITES_PORT, String.valueOf(configuration.getPort()));
+        webAppConfig.setAppSettings(appSettings);
+        final AppServiceConfig appServiceConfig = WebAppService.convertToTaskConfig(webAppConfig);
+        // update image configuration
+        final RuntimeConfig runtime = appServiceConfig.runtime();
+        final DockerImage dockerImageConfiguration = configuration.getDockerImageConfiguration();
+        runtime.registryUrl(loginServerUrl).image(imageAndTag).username(registry.getUserName()).password(registry.getPrimaryCredential());
+        final CreateOrUpdateWebAppTask task = new CreateOrUpdateWebAppTask(appServiceConfig);
+        final WebAppBase<?, ?, ?> result = task.execute();
+        if (result != null) {
+            processHandler.setText(String.format("WebApp [%s] is created/updated successfully.", result.getName()));
+            processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", result.getName()));
+            updateConfigurationDataModel(result);
         }
+        return result;
     }
 
     @Override
@@ -122,15 +92,10 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
         telemetryMap.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
         telemetryMap.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
         telemetryMap.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
-        String fileType = "";
-        if (null != deployModel.getTargetName()) {
-            fileType = MavenRunTaskUtil.getFileType(deployModel.getTargetName());
-        }
-        telemetryMap.put("FileType", fileType);
         return telemetryMap;
     }
 
-    private void updateConfigurationDataModel(WebApp app) {
+    private void updateConfigurationDataModel(WebAppBase<?, ?, ?> app) {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.getId());
         deployModel.setResourceGroupName(app.getResourceGroupName());

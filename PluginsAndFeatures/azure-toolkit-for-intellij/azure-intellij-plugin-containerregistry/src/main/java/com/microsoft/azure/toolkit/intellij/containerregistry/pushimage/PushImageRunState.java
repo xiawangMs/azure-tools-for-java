@@ -5,14 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.container.Constant;
-import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.containerregistry.ContainerService;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -20,62 +20,25 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 public class PushImageRunState extends AzureRunProfileState<String> {
     private final PushImageRunModel dataModel;
+    private final PushImageRunConfiguration configuration;
 
-    public PushImageRunState(Project project, PushImageRunModel pushImageRunModel) {
+    public PushImageRunState(Project project, PushImageRunConfiguration configuration) {
         super(project);
-        this.dataModel = pushImageRunModel;
+        this.configuration = configuration;
+        this.dataModel = configuration.getModel();
     }
 
     @Override
+    @AzureOperation(name = "platform/docker.push_image")
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
-        processHandler.setText("Starting job ...  ");
-        String basePath = project.getBasePath();
-        if (basePath == null) {
-            processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
-            throw new FileNotFoundException("Project base path is null.");
-        }
-        // locate artifact to specified location
-        String targetFilePath = dataModel.getTargetPath();
-        processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
-        // validate dockerfile
-        Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
-        processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-        if (!targetDockerfile.toFile().exists()) {
-            throw new FileNotFoundException("Dockerfile not found.");
-        }
-        // replace placeholder if exists
-        String content = new String(Files.readAllBytes(targetDockerfile));
-        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
-        );
-        Files.write(targetDockerfile, content.getBytes());
-
-        // build image
-        PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
-        processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
-        DockerUtil.ping();
-        String image = DockerUtil.buildImage(
-            acrInfo.getImageTagWithServerUrl(),
-            targetDockerfile.toFile(),
-            targetDockerfile.getParent().toFile()
-        );
-
-        // push to ACR
-        processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
-        DockerUtil.pushImage(acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-            acrInfo.getImageTagWithServerUrl());
-
-        return image;
+        OperationContext.current().setMessager(getProcessHandlerMessenger());
+        return ContainerService.getInstance().pushDockerImage(configuration);
     }
 
     @Nonnull
@@ -85,8 +48,9 @@ public class PushImageRunState extends AzureRunProfileState<String> {
     }
 
     @Override
-    protected void onSuccess(String image, @Nonnull RunProcessHandler processHandler) {
-        processHandler.setText("pushed.");
+    protected void onSuccess(String registry, @Nonnull RunProcessHandler processHandler) {
+        final String imageName = Optional.ofNullable(configuration.getDockerImageConfiguration()).map(DockerImage::getImageName).orElse(null);
+        processHandler.setText(String.format("Image (%s) has been pushed to registry (%s)", imageName, registry));
         processHandler.notifyComplete();
     }
 
