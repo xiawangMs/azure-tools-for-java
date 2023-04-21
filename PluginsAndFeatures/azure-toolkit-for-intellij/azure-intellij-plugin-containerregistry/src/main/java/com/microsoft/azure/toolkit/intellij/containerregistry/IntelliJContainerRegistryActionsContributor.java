@@ -83,19 +83,19 @@ public class IntelliJContainerRegistryActionsContributor implements IActionsCont
 
     private static void pullImage(Tag t) {
         final AzureActionManager am = AzureActionManager.getInstance();
-        final String imageName = t.getParent().getName();
+        final String repositoryName = t.getParent().getParent().getName();
         if (!t.exists()) {
-            throw new AzureToolkitRuntimeException(String.format("image %s:%s doesn't exist", imageName, t.getName()));
+            throw new AzureToolkitRuntimeException(String.format("image %s:%s doesn't exist", repositoryName, t.getName()));
         }
         final ContainerRegistry registry = t.getParent().getParent().getParent();
         if (!registry.isAdminUserEnabled()) {
             final Action<ContainerRegistry> enableAdminUser = am.getAction(ContainerRegistryActionsContributor.ENABLE_ADMIN_USER).bind(registry);
             throw new AzureToolkitRuntimeException(String.format("Admin user is not enabled for (%s), but it is required to pull image from Azure Container Registry.", registry.getName()), enableAdminUser);
         }
-        final String imageNameWithTag = String.format("%s:%s", imageName, t.getName());
+        final String imageNameWithTag = String.format("%s:%s", repositoryName, t.getName());
         try {
             AzureDockerClient.getDefault().pullImage(Objects.requireNonNull(registry.getLoginServerUrl()), registry.getUserName(),
-                registry.getPrimaryCredential(), imageName, t.getName());
+                registry.getPrimaryCredential(), repositoryName, t.getName());
             final Action<Tag> inspect = am.getAction(ContainerRegistryActionsContributor.INSPECT_IMAGE).withLabel("Inspect").bind(t);
             final Action<Tag> run = am.getAction(ContainerRegistryActionsContributor.RUN_LOCALLY).bind(t);
             final Action<Tag> copyRunCommand = am.getAction(ContainerRegistryActionsContributor.COPY_RUN_COMMAND).bind(t);
