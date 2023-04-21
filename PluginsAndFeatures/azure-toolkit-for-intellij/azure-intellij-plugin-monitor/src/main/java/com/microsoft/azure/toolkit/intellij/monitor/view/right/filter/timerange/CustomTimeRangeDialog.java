@@ -3,11 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter;
+package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.timerange;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.vcs.versionBrowser.DateFilterComponent;
 import com.intellij.util.text.DateFormatUtil;
 import com.intellij.vcs.log.VcsLogDateFilter;
 import com.intellij.vcs.log.visible.filters.VcsLogFilterObject;
@@ -24,14 +23,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureForm<String> {
-    private final DateFilterComponent dateFilterComponent;
+    private final CustomTimeRangePanel customTimeRangePanel;
     private String customKustoString;
     public static final String CUSTOM_BEFORE = "AzureMonitor.Custom.Before";
     public static final String CUSTOM_AFTER = "AzureMonitor.Custom.After";
 
     public CustomTimeRangeDialog() {
         super();
-        this.dateFilterComponent = new DateFilterComponent(false, DateFormatUtil.getDateTimeFormat().getDelegate());
+        this.customTimeRangePanel = new CustomTimeRangePanel();
         restoreDate();
         init();
     }
@@ -47,22 +46,22 @@ public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureF
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        return this.dateFilterComponent.getPanel();
+        return this.customTimeRangePanel.getPanel();
     }
 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
-        return this.dateFilterComponent.getPanel();
+        return this.customTimeRangePanel.getPanel();
     }
 
     @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<ValidationInfo> res = new ArrayList<>();
-        Optional.ofNullable(dateFilterComponent.validateInput()).ifPresent(s -> res.add(new ValidationInfo(s).asWarning()));
-        if (dateFilterComponent.getBefore() < 0 && dateFilterComponent.getAfter() < 0) {
+        Optional.ofNullable(customTimeRangePanel.validateInput()).ifPresent(s -> res.add(new ValidationInfo(s).asWarning()));
+        if (customTimeRangePanel.getBefore() < 0 && customTimeRangePanel.getAfter() < 0) {
             res.add(new ValidationInfo("Need to set at least one time.").asWarning());
         }
-        if (dateFilterComponent.getBefore() < dateFilterComponent.getAfter()) {
+        if (customTimeRangePanel.getBefore() < customTimeRangePanel.getAfter()) {
             res.add(new ValidationInfo("Before date should be larger or equal to after date.").asWarning());
         }
         return res;
@@ -70,8 +69,8 @@ public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureF
 
     @Override
     protected void doOKAction() {
-        PropertiesComponent.getInstance().setValue(CUSTOM_AFTER, String.valueOf(dateFilterComponent.getAfter()));
-        PropertiesComponent.getInstance().setValue(CUSTOM_BEFORE, String.valueOf(dateFilterComponent.getBefore()));
+        PropertiesComponent.getInstance().setValue(CUSTOM_AFTER, String.valueOf(customTimeRangePanel.getAfter()));
+        PropertiesComponent.getInstance().setValue(CUSTOM_BEFORE, String.valueOf(customTimeRangePanel.getBefore()));
         setCustomKustoString();
         super.doOKAction();
     }
@@ -93,13 +92,13 @@ public class CustomTimeRangeDialog extends AzureDialog<String> implements AzureF
     }
 
     private void restoreDate() {
-        Optional.ofNullable(PropertiesComponent.getInstance().getValue(CUSTOM_AFTER)).ifPresent(t -> this.dateFilterComponent.setAfter(Long.parseLong(t)));
-        Optional.ofNullable(PropertiesComponent.getInstance().getValue(CUSTOM_BEFORE)).ifPresent(t -> this.dateFilterComponent.setBefore(Long.parseLong(t)));
+        Optional.ofNullable(PropertiesComponent.getInstance().getValue(CUSTOM_AFTER)).ifPresent(t -> this.customTimeRangePanel.setAfter(Long.parseLong(t)));
+        Optional.ofNullable(PropertiesComponent.getInstance().getValue(CUSTOM_BEFORE)).ifPresent(t -> this.customTimeRangePanel.setBefore(Long.parseLong(t)));
         setCustomKustoString();
     }
 
     private void setCustomKustoString() {
-        final VcsLogDateFilter filter = VcsLogFilterObject.fromDates(dateFilterComponent.getAfter(), dateFilterComponent.getBefore());
+        final VcsLogDateFilter filter = VcsLogFilterObject.fromDates(customTimeRangePanel.getAfter(), customTimeRangePanel.getBefore());
         final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String kustoAfter = Optional.ofNullable(filter.getAfter())
                 .map(d -> String.format("where TimeGenerated >= datetime(%s)", formatter.format(d))).orElse(StringUtils.EMPTY);
