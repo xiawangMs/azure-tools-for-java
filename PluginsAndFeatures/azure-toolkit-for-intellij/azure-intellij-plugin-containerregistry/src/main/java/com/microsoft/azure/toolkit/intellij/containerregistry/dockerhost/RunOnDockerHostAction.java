@@ -18,9 +18,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
-import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.containerregistry.Repository;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 
 import javax.annotation.Nonnull;
@@ -48,9 +48,10 @@ public class RunOnDockerHostAction extends AnAction {
     }
 
     public static void run(@Nonnull Tag tag, @Nonnull Project project) {
+        final Repository repository = tag.getParent().getParent();
         final DockerImage image = DockerImage.builder()
             .isDraft(false)
-            .repositoryName(tag.getParent().getParent().getName())
+            .repositoryName(repository.getFullName())
             .tagName(tag.getName())
             .build();
         runConfiguration(project, image);
