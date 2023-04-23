@@ -9,7 +9,7 @@ plugins {
 
 ext {
     azureToolkitVersion = "0.32.0"
-    azureToolkitUtilsVersion = "3.76.0-SNAPSHOT"
+    azureToolkitUtilsVersion = "3.76.0"
 }
 
 group 'com.microsoft.azure.toolkit'
@@ -50,7 +50,7 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     ext {
         azureToolkitVersion = "0.32.0"
-        azureToolkitUtilsVersion = "3.76.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.76.0"
     }
 
     sourceCompatibility = javaVersion
