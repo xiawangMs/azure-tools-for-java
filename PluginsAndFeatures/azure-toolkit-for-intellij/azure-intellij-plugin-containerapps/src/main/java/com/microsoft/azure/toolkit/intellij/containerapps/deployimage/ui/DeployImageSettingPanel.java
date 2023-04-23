@@ -56,6 +56,7 @@ public class DeployImageSettingPanel implements AzureFormPanel<DeployImageModel>
         pnlDockerConfiguration = new DockerImageConfigurationPanel(project);
         pnlDockerPanel.add(pnlDockerConfiguration.getPnlRoot(), new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 3, 3, null, null, null, 0));
         this.pnlDockerConfiguration.enableContainerRegistryPanel();
+        this.cbContainerApp.setRequired(true);
         this.cbContainerApp.addItemListener(this::onSelectContainerApp);
         final AzureFormInput.AzureValueChangeListener<DockerImage> runnable = image -> AzureTaskManager.getInstance().runLater(() ->
                 DockerBuildTaskUtils.updateDockerBuildBeforeRunTasks(DataManager.getInstance().getDataContext(pnlRoot), this.configuration, image), AzureTask.Modality.ANY);
