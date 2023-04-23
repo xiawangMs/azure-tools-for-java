@@ -19,6 +19,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
@@ -42,7 +43,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -67,9 +67,10 @@ import java.util.stream.StreamSupport;
 public class TreeUtils {
     public static final Key<Pair<Object, Long>> HIGHLIGHTED_RESOURCE_KEY = Key.create("TreeHighlightedResource");
     public static final Key<List<AbstractAzResource<?, ?, ?>>> RESOURCES_TO_FOCUS_KEY = Key.create("ResourcesToFocus");
-    public static final int INLINE_ACTION_ICON_OFFSET = 28;
+    public static final int NODE_PADDING = 12;
     public static final int INLINE_ACTION_ICON_WIDTH = 16;
-    public static final int INLINE_ACTION_ICON_MARGIN = 8;
+    public static final int INLINE_ACTION_ICON_MARGIN = 4;
+    public static final String KEY_SCROLL_PANE = "SCROLL_PANE";
 
     public static void installSelectionListener(@Nonnull JTree tree) {
         tree.addTreeSelectionListener(e -> {
@@ -119,8 +120,8 @@ public class TreeUtils {
             @Override
             public void mouseMoved(MouseEvent e) {
                 final Tree.TreeNode<?> node = getTreeNodeAtMouse(tree, e);
-                final boolean isMouseAtActionIcon = isMouseAtInlineActionIcon(tree, e, Optional.ofNullable(node)
-                        .map(Tree.TreeNode::getInlineActionViews).map(List::size).orElse(0));
+                final boolean isMouseAtActionIcon = isHoverInlineAction(tree, e, Optional.ofNullable(node)
+                    .map(Tree.TreeNode::getInlineActionViews).map(List::size).orElse(0));
                 final Cursor cursor = isMouseAtActionIcon ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor();
                 tree.setCursor(cursor);
             }
@@ -160,11 +161,10 @@ public class TreeUtils {
             @Override
             public void mousePressed(MouseEvent e) {
                 final Tree.TreeNode<?> node = getTreeNodeAtMouse(tree, e);
-                final int inlineActionIndex = getHoverInlineActionIndex(tree, e);
                 final List<IView.Label> inlineActionViews = Optional.ofNullable(node)
-                        .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
-                final boolean isMouseAtInlineActionIcon = isMouseAtInlineActionIcon(tree, e, inlineActionViews.size());
-                if (Objects.nonNull(node) && e.getClickCount() == 1 && isMouseAtInlineActionIcon) {
+                    .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
+                final int inlineActionIndex = getHoverInlineActionIndex(tree, e, inlineActionViews.size());
+                if (Objects.nonNull(node) && e.getClickCount() == 1 && inlineActionIndex > -1) {
                     final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
@@ -188,17 +188,23 @@ public class TreeUtils {
         return null;
     }
 
-    private static boolean isMouseAtInlineActionIcon(@Nonnull JTree tree, MouseEvent e, int maxIndex) {
-        final int hoverIndex = getHoverInlineActionIndex(tree, e);
-        final int offset = tree.getWidth() - e.getX() - INLINE_ACTION_ICON_OFFSET + INLINE_ACTION_ICON_WIDTH - hoverIndex * (INLINE_ACTION_ICON_WIDTH + INLINE_ACTION_ICON_MARGIN);
-        final boolean isInActionIcon = offset > 0 && offset < INLINE_ACTION_ICON_WIDTH;
-        return hoverIndex >= 0 && hoverIndex <= maxIndex && isInActionIcon;
+    private static boolean isHoverInlineAction(@Nonnull JTree tree, MouseEvent e, int actionCount) {
+        return getHoverInlineActionIndex(tree, e, actionCount) > -1;
     }
 
-    private static int getHoverInlineActionIndex(@Nonnull JTree tree, MouseEvent e) {
-        final int width = tree.getWidth();
-        final int x = e.getX() - INLINE_ACTION_ICON_WIDTH;
-        return (width - x - INLINE_ACTION_ICON_OFFSET) / (INLINE_ACTION_ICON_WIDTH + INLINE_ACTION_ICON_MARGIN);
+    private static int getHoverInlineActionIndex(@Nonnull JTree tree, MouseEvent e, int actionCount) {
+        final JBScrollPane scrollPane = (JBScrollPane) tree.getClientProperty(KEY_SCROLL_PANE);
+        final Rectangle viewRect = scrollPane.getViewport().getViewRect();
+        // `viewRect.x` is the scrolled width, `viewRect.width` is the width of the visible view port.
+        final int rightX = viewRect.x + viewRect.width - NODE_PADDING; // the `right` edge of the right action icon.
+        final int iconBoxWidth = INLINE_ACTION_ICON_WIDTH + INLINE_ACTION_ICON_MARGIN;
+        final int distance = rightX - e.getX();
+        final int m = distance % iconBoxWidth;
+        if (m < INLINE_ACTION_ICON_MARGIN / 2 || m > INLINE_ACTION_ICON_WIDTH + INLINE_ACTION_ICON_MARGIN / 2) {// hover at the margin area between icons
+            return -1;
+        }
+        final int index = distance / iconBoxWidth;
+        return index < actionCount ? index : -1;
     }
 
     private static IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(IActionGroup actions) {
@@ -329,7 +335,7 @@ public class TreeUtils {
         private final JTree tree;
 
         @Override
-        protected void process(@NotNull TreeModelEvent event, @NotNull EventType type) {
+        protected void process(@Nonnull TreeModelEvent event, @Nonnull EventType type) {
             final Object[] path = event.getPath();
             final Object sourceNode = ArrayUtils.isEmpty(path) ? null : path[path.length - 1];
             if (type == EventType.StructureChanged && sourceNode instanceof Tree.TreeNode<?> && isInAppCentricView((DefaultMutableTreeNode) sourceNode)) {

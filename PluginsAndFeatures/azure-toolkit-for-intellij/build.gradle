@@ -8,8 +8,8 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.32.0-SNAPSHOT"
-    azureToolkitUtilsVersion = "3.76.0-SNAPSHOT"
+    azureToolkitVersion = "0.32.0"
+    azureToolkitUtilsVersion = "3.76.0"
     azureToolkitHDInsightVersion = "0.1.0"
 }
 
@@ -85,8 +85,8 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.32.0-SNAPSHOT"
-        azureToolkitUtilsVersion = "3.76.0-SNAPSHOT"
+        azureToolkitVersion = "0.32.0"
+        azureToolkitUtilsVersion = "3.76.0"
         azureToolkitHDInsightVersion = "0.1.0"
     }
 
@@ -224,17 +224,16 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.microsoft.azuretools:azuretools-core:3.76.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:azuretools-core:3.76.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:azure-explorer-common:3.76.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:azure-explorer-common:3.76.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.76.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.76.0', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 
-    implementation 'com.spotify:docker-client:8.16.0'
     implementation group: 'org.dom4j', name: 'dom4j', {
         exclude group: "javax.xml.stream", module: "stax-api"
         exclude group: "xpp3", module: "xpp3"

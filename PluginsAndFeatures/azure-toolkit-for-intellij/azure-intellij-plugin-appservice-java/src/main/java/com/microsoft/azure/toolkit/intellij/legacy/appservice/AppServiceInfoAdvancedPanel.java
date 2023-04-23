@@ -38,11 +38,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
@@ -101,12 +97,13 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         if (Objects.nonNull(planConfig) && servicePlan.isDraftForCreating()) {
             planConfig.setResourceGroupName(config.getResourceGroupName());
             planConfig.setRegion(region);
-            planConfig.setOs(Objects.requireNonNull(runtime).getOperatingSystem());
+            final Boolean isWindows = Optional.ofNullable(runtime).map(Runtime::isWindows).orElse(false);
+            planConfig.setOs(isWindows ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
         }
         config.setServicePlan(planConfig);
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
-            final String path = this.selectorApplication.getValue().getFileForDeployment();
+            final String path = artifact.getFileForDeployment();
             config.setApplication(Paths.get(path));
         }
         return config;
@@ -202,7 +199,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             final Runtime runtime = this.selectorRuntime.getValue();
-            return StringUtils.isNotBlank(ext) && WebAppUtils.isSupportedArtifactType(runtime, ext);
+            return StringUtils.isNotBlank(ext) && (runtime == null || WebAppUtils.isSupportedArtifactType(runtime, ext));
         });
 
         this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
@@ -226,7 +223,9 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private void onRuntimeChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final Runtime runtime = (Runtime) e.getItem();
-            final OperatingSystem operatingSystem = Objects.isNull(runtime) ? null : runtime.getOperatingSystem();
+            final OperatingSystem operatingSystem = Objects.isNull(runtime) ? null :
+                    // Docker runtime use Linux service plan too
+                    runtime.isWindows() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
             this.selectorServicePlan.setOperatingSystem(operatingSystem);
         }
     }
@@ -268,5 +267,11 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     public void setValidRuntime(List<Runtime> runtimes) {
         selectorRuntime.setPlatformList(runtimes);
+    }
+
+    public void setFixedRuntime(final Runtime runtime) {
+        selectorRuntime.setPlatformList(Collections.singletonList(runtime));
+        lblPlatform.setVisible(false);
+        selectorRuntime.setVisible(false);
     }
 }

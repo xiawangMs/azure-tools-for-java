@@ -226,7 +226,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         if (StringUtils.equals(webAppSettingModel.getSlotName(), Constants.CREATE_NEW_SLOT)) {
             return AzureWebAppMvpModel.getInstance().createDeploymentSlotFromSettingModel(webApp, webAppSettingModel);
         } else {
-            return Objects.requireNonNull(webApp.slots().get(webAppSettingModel.getSlotName(), webAppSettingModel.getResourceGroup()));
+            return Objects.requireNonNull(webApp.slots().get(webAppSettingModel.getSlotName(), webAppSettingModel.getResourceGroup()),
+                    String.format("Failed to get deployment slot with name %s", webAppSettingModel.getSlotName()));
         }
     }
 

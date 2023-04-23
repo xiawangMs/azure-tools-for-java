@@ -7,7 +7,6 @@ package com.microsoft.intellij.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
-import com.intellij.ide.ui.UISettings;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -77,6 +76,8 @@ import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
+import static com.microsoft.azure.toolkit.intellij.common.component.TreeUtils.INLINE_ACTION_ICON_WIDTH;
+import static com.microsoft.azure.toolkit.intellij.common.component.TreeUtils.KEY_SCROLL_PANE;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener, DumbAware {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -119,6 +120,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 TreeUtils.focusResource(tree, (AbstractAzResource<?, ?, ?>) e.getSource());
             }
         }));
+        AzureEventBus.on("azure.explorer.focus_resource", new AzureEventBus.EventListener(e -> {
+            if (e.getSource() instanceof AbstractAzResource<?,?,?>) {
+                TreeUtils.focusResource(tree, (AbstractAzResource<?, ?, ?>) e.getSource());
+            }
+        }));
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
@@ -154,7 +160,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             }
         });
         // add the tree to the window
-        toolWindow.getComponent().add(new JBScrollPane(tree));
+        final JBScrollPane scrollPane = new JBScrollPane(tree);
+        tree.putClientProperty(KEY_SCROLL_PANE, scrollPane);
+        toolWindow.getComponent().add(scrollPane);
 
         // set tree and tree path to expand the node later
         azureModule.setTree(tree);
@@ -202,7 +210,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private Node getTreeNodeOnMouseClick(JTree tree, TreePath treePath) {
         final Object raw = treePath.getLastPathComponent();
         if (raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || raw instanceof LoadingNode ||
-                raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode) {
+            raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode) {
             return null;
         }
         final SortableTreeNode treeNode = (SortableTreeNode) raw;
@@ -361,6 +369,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
     private static class NodeTreeCellRenderer extends NodeRenderer {
         private final List<Icon> inlineActionIcons = new ArrayList<>();
+        private Rectangle viewportRect;
+        private int scrolledWidth;
 
         @Override
         public void customizeCellRenderer(@NotNull JTree jtree,
@@ -376,9 +386,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
                 final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
                 inlineActionIcons.addAll(node.getInlineActionViews().stream()
-                        .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath()))
-                        // TODO @miller should not check the value of inlineActionIcon
-                        .filter(icon -> hoveredRow == row || icon == AllIcons.Nodes.Favorite).toList());
+                    .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath()))
+                    // TODO @miller should not check the value of inlineActionIcon
+                    .filter(icon -> hoveredRow == row || icon == AllIcons.Nodes.Favorite).toList());
+                final JBScrollPane scrollPane = (JBScrollPane) jtree.getClientProperty(KEY_SCROLL_PANE);
+                if (Objects.nonNull(scrollPane)) {
+                    this.viewportRect = scrollPane.getViewport().getViewRect();
+                }
                 TreeUtils.renderMyTreeNode(jtree, node, selected, this);
                 return;
             } else if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.LoadMoreNode) {
@@ -417,29 +431,26 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         @Override
         public void paintComponent(Graphics g) {
-            UISettings.setupAntialiasing(g);
-            Shape clip = null;
-            int width = this.myTree.getWidth() - this.getX();
-            final int height = this.getHeight();
-            if (isOpaque()) {
-                // paint background for expanded row
-                g.setColor(getBackground());
-                g.fillRect(0, 0, width, height);
-            }
-            width -= TreeUtils.INLINE_ACTION_ICON_OFFSET;
-            for (final Icon icon : inlineActionIcons) {
-                if (width > 0 && height > 0) {
-                    paintIcon(g, icon, width);
-                    clip = g.getClip();
-                    g.clipRect(0, 0, width, height);
-                }
-                width -= (TreeUtils.INLINE_ACTION_ICON_WIDTH + TreeUtils.INLINE_ACTION_ICON_MARGIN);
-            }
-
             super.paintComponent(g);
-            // restore clip area if needed
-            if (clip != null) {
-                g.setClip(clip);
+            // WARNING: `this.getX()` is `0` when painting hovered floating overflow node.
+            if (this.getX() > 0) {
+                paintInlineActionIcons(g);
+            }
+        }
+
+        private void paintInlineActionIcons(Graphics g) {
+            // WARNING: `this.getX()` is `0` when painting hovered floating overflow node.
+            int prevIconBoxOffset = this.viewportRect.x + this.viewportRect.width - this.getX() - TreeUtils.NODE_PADDING;
+            for (final Icon icon : inlineActionIcons) {
+                final int iconBoxWidth = INLINE_ACTION_ICON_WIDTH + TreeUtils.INLINE_ACTION_ICON_MARGIN;
+                final int iconBoxOffset = prevIconBoxOffset - iconBoxWidth;
+                if (iconBoxOffset > 0) {
+                    final int iconOffset = iconBoxOffset + TreeUtils.INLINE_ACTION_ICON_MARGIN / 2;
+                    g.setColor(getBackground());
+                    g.fillRect(iconBoxOffset, 0, iconBoxWidth, getHeight());
+                    paintIcon(g, icon, iconOffset);
+                    prevIconBoxOffset = iconBoxOffset;
+                }
             }
         }
     }
@@ -460,8 +471,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("user/AzureToolkit.OpenSdkReferenceBook");
             final AnAction openResourceConnectionExplorerAction = ActionManager.getInstance().getAction("AzureToolkit.OpenResourceConnectionExplorerAction");
             final AnAction openAzureSettingsAction = ActionManager.getInstance().getAction(OPEN_AZURE_SETTINGS.getId());
-            (toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, openAzureSettingsAction,openResourceConnectionExplorerAction,
-                    Separator.create(), reportIssueAction, featureRequestAction, feedbackAction, Separator.create(), devBlogsAction, documentAction));
+            (toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, openAzureSettingsAction, openResourceConnectionExplorerAction,
+                Separator.create(), reportIssueAction, featureRequestAction, feedbackAction, Separator.create(), devBlogsAction, documentAction));
         }
     }
 
