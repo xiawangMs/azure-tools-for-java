@@ -108,7 +108,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
             return Optional.ofNullable(this.dockerHost)
                 .map(AzureDockerClient::from)
                 .map(AzureDockerClient::listLocalImages)
-                .map(l -> l.stream().map(DockerImage::new).collect(Collectors.toList()))
+                .map(l -> l.stream().flatMap(image -> DockerImage.fromImage(image).stream()).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         } catch (final RuntimeException e) {
             return Collections.emptyList();
