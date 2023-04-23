@@ -74,7 +74,7 @@ public class DockerBuildTaskProvider extends BeforeRunTaskProvider<DockerBuildTa
             try {
                 return task.buildImage((IDockerConfiguration) configuration);
             } catch (final Throwable t) {
-                AzureMessager.getMessager().error(t.getMessage());
+                AzureMessager.getMessager().error(t);
             }
         }
         return false;
