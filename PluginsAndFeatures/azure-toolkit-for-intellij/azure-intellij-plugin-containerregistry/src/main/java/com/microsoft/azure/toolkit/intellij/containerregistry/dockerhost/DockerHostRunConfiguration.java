@@ -19,9 +19,9 @@ import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerConfigurati
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Optional;
 
@@ -39,7 +39,7 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
     private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
     private final DockerHostRunSetting dataModel;
 
-    protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
+    protected DockerHostRunConfiguration(@Nonnull Project project, @Nonnull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         dataModel = new DockerHostRunSetting();
     }
@@ -49,7 +49,7 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         return dataModel;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new DockerHostRunSettingsEditor(this.getProject(), this);
@@ -78,25 +78,8 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
+    public RunProfileState getState(@Nonnull Executor executor, @Nonnull ExecutionEnvironment executionEnvironment) {
         return new DockerHostRunState(getProject(), dataModel);
-    }
-
-    @javax.annotation.Nullable
-    @Override
-    public DockerImage getDockerImageConfiguration() {
-        final DockerImage image = new DockerImage();
-        image.setRepositoryName(this.getImageName());
-        image.setTagName(this.getTagName());
-        image.setDockerFile(Optional.ofNullable(this.getDockerFilePath()).map(File::new).orElse(null));
-        image.setDraft(StringUtils.isNoneBlank(this.getDockerFilePath()));
-        return image;
-    }
-
-    @javax.annotation.Nullable
-    @Override
-    public DockerHost getDockerHostConfiguration() {
-        return new DockerHost(dataModel.getDockerHost(), dataModel.getDockerCertPath());
     }
 
     public String getDockerHost() {
@@ -168,6 +151,24 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
     @Override
     public String getSubscriptionId() {
         return "";
+    }
+
+    @Nullable
+    public DockerImage getDockerImageConfiguration() {
+        if (StringUtils.isAllBlank(getImageName(), getDockerFilePath())) {
+            return null;
+        }
+        final DockerImage image = new DockerImage();
+        image.setDraft(false);
+        image.setRepositoryName(getImageName());
+        image.setTagName(getTagName());
+        image.setDockerFile(Optional.ofNullable(getDockerFilePath()).map(File::new).orElse(null));
+        image.setDraft(StringUtils.isNoneBlank(this.getDockerFilePath()));
+        return image;
+    }
+
+    public DockerHost getDockerHostConfiguration() {
+        return StringUtils.isNoneBlank(getDockerHost()) ? new DockerHost(getDockerHost(), getDockerCertPath()) : null;
     }
 
     public void setDockerImage(@Nullable DockerImage image) {

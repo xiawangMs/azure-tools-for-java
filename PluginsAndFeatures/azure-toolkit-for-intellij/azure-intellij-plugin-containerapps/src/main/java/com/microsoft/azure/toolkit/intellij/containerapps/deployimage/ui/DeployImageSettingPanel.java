@@ -90,9 +90,13 @@ public class DeployImageSettingPanel implements AzureFormPanel<DeployImageModel>
     public DeployImageModel getValue() {
         final DeployImageModel model = new DeployImageModel();
         Optional.ofNullable(cbContainerApp.getValue()).map(ContainerApp::getId).ifPresent(model::setContainerAppId);
-        Optional.ofNullable(pnlDockerConfiguration.getValue()).map(DockerPushConfiguration::getDockerImage).ifPresent(model::setDockerImage);
-        Optional.ofNullable(pnlDockerConfiguration.getValue()).map(DockerPushConfiguration::getDockerHost).ifPresent(model::setDockerHost);
-        Optional.ofNullable(pnlDockerConfiguration.getValue()).map(DockerPushConfiguration::getContainerRegistryId).ifPresent(model::setContainerRegistryId);
+        Optional.ofNullable(pnlDockerConfiguration.getValue()).ifPresent(conf -> {
+            model.setFinalRepositoryName(conf.getFinalRepositoryName());
+            model.setFinalTagName(conf.getFinalTagName());
+            model.setDockerHost(conf.getDockerHost());
+            model.setDockerImage(conf.getDockerImage());
+            model.setContainerRegistryId(conf.getContainerRegistryId());
+        });
         Optional.ofNullable(pnlIngressConfiguration.getValue()).ifPresent(model::setIngressConfig);
         Optional.ofNullable(inputEnv.getEnvironmentVariables()).ifPresent(model::setEnvironmentVariables);
         return model;

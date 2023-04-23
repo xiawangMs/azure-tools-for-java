@@ -65,7 +65,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     @Override
     public void setValue(DockerImage value) {
         final Boolean isDraftImage = Optional.ofNullable(value).map(DockerImage::isDraft).orElse(false);
-        if (!draftImages.contains(value) && isDraftImage) {
+        if (!(getItems().contains(value) || draftImages.contains(value)) && isDraftImage) {
             this.draftImages.removeIf(image -> Objects.equals(image.getDockerFile(), value.getDockerFile()));
             this.draftImages.add(0, value);
             this.reloadItems();
