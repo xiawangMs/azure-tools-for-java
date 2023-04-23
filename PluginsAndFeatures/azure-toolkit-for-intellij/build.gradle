@@ -8,7 +8,7 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.32.0-SNAPSHOT"
+    azureToolkitVersion = "0.32.0"
     azureToolkitUtilsVersion = "3.76.0-SNAPSHOT"
     azureToolkitHDInsightVersion = "0.1.0"
 }
@@ -85,7 +85,7 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.32.0-SNAPSHOT"
+        azureToolkitVersion = "0.32.0"
         azureToolkitUtilsVersion = "3.76.0-SNAPSHOT"
         azureToolkitHDInsightVersion = "0.1.0"
     }
