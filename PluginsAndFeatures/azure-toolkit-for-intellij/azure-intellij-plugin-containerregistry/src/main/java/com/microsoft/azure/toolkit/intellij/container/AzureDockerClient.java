@@ -134,7 +134,7 @@ public class AzureDockerClient {
         this.client.removeContainerCmd(containerId).exec();
     }
 
-    @AzureOperation(name = "boundary/docker.build_image.image|dir", params = {"imageNameWithTag", "baseDir"})
+    @AzureOperation(name = "boundary/docker.build_image.image|file", params = {"imageNameWithTag", "dockerFile"})
     public void buildImage(String imageNameWithTag, @Nonnull File dockerFile, File baseDir, @Nullable BuildImageResultCallback callback) {
         this.ping();
         baseDir = Optional.ofNullable(baseDir).orElseGet(dockerFile::getParentFile);

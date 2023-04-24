@@ -46,7 +46,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
 
     // todo: @hanli Remove duplicates with push image run state
     @Override
-    @AzureOperation(name = "platform/webapp.deploy_image")
+    @AzureOperation(name = "platform/webapp.deploy_image.app", params = {"this.configuration.getWebAppConfig().getName()"})
     public AppServiceAppBase<?, ?, ?> executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();

@@ -38,7 +38,7 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
     }
 
     @Override
-    @AzureOperation(name = "platform/aca.deploy_image")
+    @AzureOperation(name = "platform/containerapps.deploy_image.app", params = {"nameFromResourceId(this.dataModel.getContainerAppId())"})
     public ContainerApp executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();
