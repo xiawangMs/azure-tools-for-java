@@ -34,7 +34,7 @@ public class ContainerService {
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
         if (Objects.nonNull(registry) && !registry.isAdminUserEnabled()) {
             final Action<ContainerRegistry> enableAdminUser = AzureActionManager.getInstance().getAction(ContainerRegistryActionsContributor.ENABLE_ADMIN_USER).bind(registry);
-            throw new AzureToolkitRuntimeException(String.format("Admin user is not enabled for (%s), but it is required to pull image from Azure Container Registry.", registry.getName()), enableAdminUser);
+            throw new AzureToolkitRuntimeException(String.format("Admin user is not enabled for (%s), but it is required to push image to Azure Container Registry.", registry.getName()), enableAdminUser);
         }
         final AzureDockerClient dockerClient = AzureDockerClient.from(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
         final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
