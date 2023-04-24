@@ -22,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -40,7 +39,7 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
     }
 
     @Override
-    @AzureOperation(name = "platform/aca.deploy_image")
+    @AzureOperation(name = "platform/containerapps.deploy_image.app", params = {"nameFromResourceId(this.dataModel.getContainerAppId())"})
     public ContainerApp executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();

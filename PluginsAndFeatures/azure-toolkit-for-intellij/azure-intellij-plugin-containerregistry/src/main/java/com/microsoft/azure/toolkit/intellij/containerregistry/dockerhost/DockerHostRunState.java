@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.Constant;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -44,6 +45,10 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
     }
 
     @Override
+    @AzureOperation(
+        name = "platform/docker.run_image.repo|tag|host",
+        params = {"this.dataModel.getImageName()", "this.dataModel.getTagName()", "this.dataModel.getDockerHost()"}
+    )
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         final AzureDockerClient docker = AzureDockerClient.from(dataModel.getDockerHost(), dataModel.isTlsEnabled(), dataModel.getDockerCertPath());
         final File file = Optional.ofNullable(dataModel.getDockerFilePath()).map(File::new).filter(File::exists).orElse(null);
