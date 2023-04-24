@@ -22,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -44,8 +43,6 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();
         final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(dataModel.getContainerRegistryId());
-        final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
         ContainerService.getInstance().pushDockerImage(configuration);
         // update Image
         final String containerAppId = dataModel.getContainerAppId();
@@ -55,7 +52,7 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
         final List<EnvironmentVar> vars = dataModel.getEnvironmentVariables().entrySet().stream()
                 .map(e -> new EnvironmentVar().withName(e.getKey()).withValue(e.getValue()))
                 .collect(Collectors.toList());
-        final ContainerAppDraft.ImageConfig imageConfig = new ContainerAppDraft.ImageConfig(imageAndTag);
+        final ContainerAppDraft.ImageConfig imageConfig = new ContainerAppDraft.ImageConfig(configuration.getFinalImageName());
         imageConfig.setContainerRegistry(registry);
         imageConfig.setEnvironmentVariables(vars);
         config.setImageConfig(imageConfig);

@@ -28,7 +28,9 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfiguration> {
     @Getter
@@ -45,9 +47,11 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     private JPanel pnlContainerRegistry;
 
     private final Project project;
+    private final AtomicReference<String> repositoryReference = new AtomicReference<>();
     @Getter
     @Setter
-    private boolean hideImageNamePanelForExistingImage;
+    private boolean enableCustomizedImageName = true;
+    private DockerImage image;
 
     public DockerImageConfigurationPanel(final Project project) {
         this.project = project;
@@ -60,36 +64,52 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         this.cbDockerImage.setRequired(true);
         this.cbContainerRegistry.addItemListener(this::onSelectContainerRegistry);
         this.cbDockerHost.addItemListener(this::onDockerHostChanged);
-        this.cbDockerImage.addItemListener(ignore -> updateImageConfigurationUI());
+        this.cbDockerImage.addValueChangedListener(this::onSelectNewDockerImage);
     }
 
     public void enableContainerRegistryPanel() {
         pnlContainerRegistry.setVisible(true);
         cbContainerRegistry.reloadItems();
+        cbContainerRegistry.setRequired(true);
     }
 
     private void onSelectContainerRegistry(ItemEvent itemEvent) {
         final ContainerRegistry value = cbContainerRegistry.getValue();
-        Mono.fromCallable(() -> Optional.ofNullable(value).map(r -> r.getLoginServerUrl() + "/").orElse(null))
+        Mono.fromCallable(() -> Optional.ofNullable(value).map(r -> r.getLoginServerUrl()).orElse(null))
                 .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(prefix -> AzureTaskManager.getInstance().runLater(() -> {
-                    lblRepositoryPrefix.setText(" " + prefix);
-                    lblRepositoryPrefix.setVisible(StringUtils.isNotBlank(prefix));
+                .subscribe(loginServerUrl -> AzureTaskManager.getInstance().runLater(() -> {
+                    lblRepositoryPrefix.setText(" " + loginServerUrl + "/");
+                    lblRepositoryPrefix.setVisible(StringUtils.isNotBlank(loginServerUrl));
+                    repositoryReference.set(loginServerUrl);
+                    final String repositoryName = txtRepositoryName.getValue();
+                    if (StringUtils.startsWith(repositoryName, loginServerUrl)) {
+                        txtRepositoryName.setValue(StringUtils.removeStart(repositoryName, loginServerUrl));
+                    }
                 }, AzureTask.Modality.ANY));
     }
 
-    private void updateImageConfigurationUI() {
-        final DockerImage image = this.cbDockerImage.getValue();
-        final boolean isDraftImage = Optional.ofNullable(image).map(DockerImage::isDraft).orElse(false);
-        this.txtRepositoryName.setEnabled(isDraftImage);
-        this.txtRepositoryName.setRequired(isDraftImage);
-        this.txtRepositoryName.revalidate();
-        Optional.ofNullable(image).map(DockerImage::getRepositoryName).ifPresent(this.txtRepositoryName::setValue);
-        this.txtTagName.setEnabled(isDraftImage);
-        this.txtTagName.setRequired(isDraftImage);
-        this.txtTagName.revalidate();
-        Optional.ofNullable(image).map(DockerImage::getTagName).ifPresent(this.txtTagName::setValue);
-        pnlImageName.setVisible(!hideImageNamePanelForExistingImage || isDraftImage);
+    private void onSelectNewDockerImage(final DockerImage image) {
+        // workaround for reload issue
+        if (Objects.equals(image, this.image)) {
+            return;
+        } else if (Objects.isNull(image)) {
+            AzureTaskManager.getInstance().runLater(() -> {
+                txtRepositoryName.setValue(StringUtils.EMPTY);
+                txtTagName.setValue(StringUtils.EMPTY);
+            }, AzureTask.Modality.ANY);
+            return;
+        }
+        this.image = image;
+        final boolean isDraftImage = image.isDraft();
+        final String loginServerUrl = repositoryReference.get();
+        final String repositoryName = image.getRepositoryName();
+        final String fixedRepositoryName = StringUtils.isNotEmpty(loginServerUrl) && StringUtils.startsWith(repositoryName, loginServerUrl) ?
+                StringUtils.removeStart(repositoryName, loginServerUrl + "/") : repositoryName;
+        AzureTaskManager.getInstance().runLater(() -> {
+            txtRepositoryName.setValue(fixedRepositoryName);
+            txtTagName.setValue(image.getTagName());
+            pnlImageName.setVisible(enableCustomizedImageName || isDraftImage);
+        }, AzureTask.Modality.ANY);
     }
 
     private void onDockerHostChanged(@Nullable final ItemEvent event) {
@@ -99,14 +119,19 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     @Override
     public DockerPushConfiguration getValue() {
         final DockerPushConfiguration result = new DockerPushConfiguration();
-        result.setDockerHost(this.cbDockerHost.getValue());
         final DockerImage image = this.cbDockerImage.getValue();
+        final ContainerRegistry registry = this.cbContainerRegistry.getValue();
+        result.setDockerHost(this.cbDockerHost.getValue());
         result.setDockerImage(image);
         if (Optional.ofNullable(image).map(DockerImage::isDraft).orElse(false)) {
             image.setRepositoryName(this.txtRepositoryName.getValue());
             image.setTagName(this.txtTagName.getValue());
         }
-        result.setContainerRegistryId(Optional.ofNullable(cbContainerRegistry.getValue()).map(ContainerRegistry::getId).orElse(null));
+        Optional.ofNullable(registry).ifPresent(cr -> {
+            result.setContainerRegistryId(cr.getId());
+            result.setFinalRepositoryName(cr.getLoginServerUrl() + "/" + this.txtRepositoryName.getValue());
+            result.setFinalTagName(this.txtTagName.getValue());
+        });
         return result;
     }
 
@@ -116,12 +141,21 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
             cbDockerHost.getDrafts().add(host);
             cbDockerHost.setValue(h -> StringUtils.equalsIgnoreCase(host.getDockerHost(), h.getDockerHost()));
         });
-        Optional.ofNullable(data.getDockerImage())
-            .ifPresent(image -> cbDockerImage.setValue(i -> StringUtils.equalsIgnoreCase(i.getImageId(), image.getImageId()) || StringUtils.equalsIgnoreCase(i.getImageName(), image.getImageName())));
+        Optional.ofNullable(data.getDockerImage()).ifPresent(i -> {
+            this.image = i;
+            this.cbDockerImage.setValue(i);
+        });
         Optional.ofNullable(data.getContainerRegistryId())
             .map(id -> (ContainerRegistry) Azure.az(AzureContainerRegistry.class).getById(id))
-            .ifPresent(r -> cbContainerRegistry.setValue(registry -> StringUtils.equalsIgnoreCase(r.getLoginServerUrl(), registry.getLoginServerUrl())));
-        updateImageConfigurationUI();
+            .ifPresent(cbContainerRegistry::setValue);
+        final String repositoryName = Optional.ofNullable(data.getFinalRepositoryName())
+                .orElseGet(() -> Optional.ofNullable(data.getDockerImage()).map(DockerImage::getRepositoryName).orElse(null));
+        final String tagName = Optional.ofNullable(data.getFinalTagName())
+                .orElseGet(() -> Optional.ofNullable(data.getDockerImage()).map(DockerImage::getTagName).orElse(null));
+        Optional.ofNullable(repositoryName).ifPresent(txtRepositoryName::setValue);
+        Optional.ofNullable(tagName).ifPresent(txtTagName::setValue);
+        final boolean isDraftImage = Optional.ofNullable(data.getDockerImage()).map(DockerImage::isDraft).orElse(false);
+        pnlImageName.setVisible(isDraftImage || enableCustomizedImageName);
     }
 
     public void addImageListener(@Nonnull final AzureValueChangeListener<DockerImage> listener) {

@@ -27,7 +27,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -51,9 +50,8 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
     public AppServiceAppBase<?, ?, ?> executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
         final DockerImage image = configuration.getDockerImageConfiguration();
-        final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
-        final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
-        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        final ContainerRegistry registry = Objects.requireNonNull(Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId()),
+                String.format("Registry (%s) was not found", configuration.getContainerRegistryId()));
         ContainerService.getInstance().pushDockerImage(configuration);
         // deploy
         final WebAppConfig webAppConfig = configuration.getWebAppConfig();
@@ -64,7 +62,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
         // update image configuration
         final RuntimeConfig runtime = appServiceConfig.runtime();
         final DockerImage dockerImageConfiguration = configuration.getDockerImageConfiguration();
-        runtime.registryUrl(loginServerUrl).image(imageAndTag).username(registry.getUserName()).password(registry.getPrimaryCredential());
+        runtime.registryUrl(registry.getLoginServerUrl()).image(configuration.getFinalImageName()).username(registry.getUserName()).password(registry.getPrimaryCredential());
         final CreateOrUpdateWebAppTask task = new CreateOrUpdateWebAppTask(appServiceConfig);
         final WebAppBase<?, ?, ?> result = task.execute();
         if (result != null) {

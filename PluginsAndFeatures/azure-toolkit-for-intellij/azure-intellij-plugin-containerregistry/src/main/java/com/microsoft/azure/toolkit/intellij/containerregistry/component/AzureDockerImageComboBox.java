@@ -65,7 +65,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     @Override
     public void setValue(DockerImage value) {
         final Boolean isDraftImage = Optional.ofNullable(value).map(DockerImage::isDraft).orElse(false);
-        if (!draftImages.contains(value) && isDraftImage) {
+        if (!(getItems().contains(value) || draftImages.contains(value)) && isDraftImage) {
             this.draftImages.removeIf(image -> Objects.equals(image.getDockerFile(), value.getDockerFile()));
             this.draftImages.add(0, value);
             this.reloadItems();
@@ -108,7 +108,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
             return Optional.ofNullable(this.dockerHost)
                 .map(AzureDockerClient::from)
                 .map(AzureDockerClient::listLocalImages)
-                .map(l -> l.stream().map(DockerImage::new).collect(Collectors.toList()))
+                .map(l -> l.stream().flatMap(image -> DockerImage.fromImage(image).stream()).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         } catch (final RuntimeException e) {
             return Collections.emptyList();
