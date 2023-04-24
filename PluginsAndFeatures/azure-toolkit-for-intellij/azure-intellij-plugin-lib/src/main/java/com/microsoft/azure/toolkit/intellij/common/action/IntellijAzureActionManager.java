@@ -180,6 +180,14 @@ public class IntellijAzureActionManager extends AzureActionManager {
             this.addActions(group.getActions());
         }
 
+        @Override
+        public void update(@Nonnull AnActionEvent e) {
+            super.update(e);
+            final IView.Label view = this.group.getView();
+            final Presentation presentation = e.getPresentation();
+            Optional.ofNullable(view).ifPresent(v -> presentation.setIcon(IntelliJAzureIcons.getIcon(v.getIconPath())));
+        }
+
         private void addActions(List<Object> actions) {
             for (final Object raw : actions) {
                 doAddAction(raw);

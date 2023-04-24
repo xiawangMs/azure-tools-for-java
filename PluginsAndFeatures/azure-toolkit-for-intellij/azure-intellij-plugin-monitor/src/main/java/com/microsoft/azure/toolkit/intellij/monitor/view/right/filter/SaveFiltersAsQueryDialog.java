@@ -1,5 +1,8 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
@@ -7,12 +10,18 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.EditorTextField;
+import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.MonitorTreePanel;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class SaveFiltersAsQueryDialog extends DialogWrapper {
     private JPanel rootPanel;
@@ -45,9 +54,30 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
+        final String queryName = queryNameField.getText();
+        if (isExistingQuery(queryName) && !isOverride(queryName)) {
+            return;
+        }
         this.queryDataToSave.setDisplayName(queryNameField.getText());
         this.queryDataToSave.setQueryString(queryContent.getText());
         super.doOKAction();
+    }
+
+    private boolean isExistingQuery(String queryName) {
+        final List<String> customQueryList = Optional.ofNullable(PropertiesComponent.getInstance()
+                .getList(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST)).orElse(new ArrayList<>());
+        return customQueryList.stream().map(s -> {
+            final ObjectMapper mapper = new ObjectMapper();
+            try {
+                return mapper.readValue(s, MonitorTreePanel.QueryData.class);
+            } catch (final JsonProcessingException ignored) {
+            }
+            return new MonitorTreePanel.QueryData();
+        }).anyMatch(q -> queryName.equals(q.getDisplayName()));
+    }
+
+    private boolean isOverride(String queryName) {
+        return AzureMessager.getMessager().confirm(AzureString.format("A query with the same name {0} already exists, do you want to override?", queryName));
     }
 
     private EditorTextField createEditorTextField() {

@@ -113,6 +113,7 @@ public class AzureMonitorManager {
                     final JComponent contentComponent = event.getContent().getComponent();
                     if (contentComponent instanceof AzureMonitorView) {
                         ((AzureMonitorView) contentComponent).getMonitorTreePanel().dispose();
+                        ((AzureMonitorView) contentComponent).dispose();
                     }
                 }
             });
