@@ -170,13 +170,6 @@ public class IntellijAzureActionManager extends AzureActionManager {
             super();
             this.group = group;
             this.setPopup(true);
-            final IView.Label view = this.group.getView();
-            final Presentation template = this.getTemplatePresentation();
-            if (Objects.nonNull(view)) {
-                template.setText(view.getLabel());
-            } else {
-                template.setText("Action Group");
-            }
             this.addActions(group.getActions());
         }
 
@@ -185,7 +178,15 @@ public class IntellijAzureActionManager extends AzureActionManager {
             super.update(e);
             final IView.Label view = this.group.getView();
             final Presentation presentation = e.getPresentation();
-            Optional.ofNullable(view).ifPresent(v -> presentation.setIcon(IntelliJAzureIcons.getIcon(v.getIconPath())));
+            Optional.ofNullable(view).ifPresent(v -> {
+                presentation.setText(v.getLabel());
+                presentation.setIcon(IntelliJAzureIcons.getIcon(v.getIconPath()));
+            });
+        }
+
+        @Override
+        public @Nonnull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
         }
 
         private void addActions(List<Object> actions) {
