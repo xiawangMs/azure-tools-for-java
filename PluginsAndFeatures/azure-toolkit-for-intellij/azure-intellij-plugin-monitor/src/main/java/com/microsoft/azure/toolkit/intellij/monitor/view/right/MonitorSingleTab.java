@@ -82,7 +82,8 @@ public class MonitorSingleTab {
             public void actionPerformed(ActionEvent e) {
                 final String queryContent = monitorLogTablePanel.getQueryStringFromFilters(tabName);
                 AzureTaskManager.getInstance().runLater(() -> {
-                    final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(ProjectManager.getInstance().getDefaultProject(), queryContent);
+                    final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(ProjectManager.getInstance().getDefaultProject(),
+                            queryContent, parentView.getMonitorTreePanel().getCustomQueries());
                     if (dialog.showAndGet()) {
                         AzureEventBus.emit("azure.monitor.add_query_node", dialog.getQueryDataToSave());
                     }
