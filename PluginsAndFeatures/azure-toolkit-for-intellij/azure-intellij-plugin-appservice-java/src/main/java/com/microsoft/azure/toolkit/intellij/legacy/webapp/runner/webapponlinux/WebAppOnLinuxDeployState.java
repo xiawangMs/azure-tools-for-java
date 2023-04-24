@@ -16,7 +16,6 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateWebAppTask;
-import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
@@ -32,6 +31,7 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
     public static final String WEBSITES_PORT = "WEBSITES_PORT";
@@ -64,13 +64,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
         final DockerImage dockerImageConfiguration = configuration.getDockerImageConfiguration();
         runtime.registryUrl(registry.getLoginServerUrl()).image(configuration.getFinalImageName()).username(registry.getUserName()).password(registry.getPrimaryCredential());
         final CreateOrUpdateWebAppTask task = new CreateOrUpdateWebAppTask(appServiceConfig);
-        final WebAppBase<?, ?, ?> result = task.execute();
-        if (result != null) {
-            processHandler.setText(String.format("WebApp [%s] is created/updated successfully.", result.getName()));
-            processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", result.getName()));
-            updateConfigurationDataModel(result);
-        }
-        return result;
+        return task.execute();
     }
 
     @Override
@@ -80,8 +74,12 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
 
     @Override
     @AzureOperation(name = "boundary/webapp.complete_deployment.app", params = {"this.deployModel.getWebAppName()"})
-    protected void onSuccess(AppServiceAppBase<?, ?, ?> result, @Nonnull RunProcessHandler processHandler) {
+    protected void onSuccess(@Nonnull AppServiceAppBase<?, ?, ?> result, @Nonnull RunProcessHandler processHandler) {
+        final String image = Optional.ofNullable(configuration.getDockerImageConfiguration()).map(DockerImage::getImageName).orElse(null);
+        processHandler.setText(String.format("Image (%s) has been deployed to Web App (%s).", image, result.getName()));
+        processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", result.getName()));
         processHandler.notifyComplete();
+        updateConfigurationDataModel(result);
     }
 
     protected Map<String, String> getTelemetryMap() {
@@ -93,7 +91,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<AppServiceApp
         return telemetryMap;
     }
 
-    private void updateConfigurationDataModel(WebAppBase<?, ?, ?> app) {
+    private void updateConfigurationDataModel(AppServiceAppBase<?, ?, ?> app) {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.getId());
         deployModel.setResourceGroupName(app.getResourceGroupName());

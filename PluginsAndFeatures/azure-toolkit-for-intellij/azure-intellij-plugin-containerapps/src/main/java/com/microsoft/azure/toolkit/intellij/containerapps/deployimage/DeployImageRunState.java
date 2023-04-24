@@ -71,7 +71,7 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
     @Override
     protected void onSuccess(@Nonnull final ContainerApp app, @Nonnull RunProcessHandler processHandler) {
         final String image = Optional.ofNullable(configuration.getDockerImageConfiguration()).map(DockerImage::getImageName).orElse(null);
-        processHandler.setText(String.format("Image (%s) has been deployed to Container App (%s) successfully.", image, app.getName()));
+        processHandler.setText(String.format("Image (%s) has been deployed to Container App (%s).", image, app.getName()));
         if (app.isIngressEnabled()) {
             processHandler.setText(String.format("URL: https://%s", app.getIngressFqdn()));
         }
