@@ -264,7 +264,6 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-            ResourceCommonActionsContributor.SHOW_PROPERTIES,
             "---",
             ContainerRegistryActionsContributor.ENABLE_ADMIN_USER,
             ContainerRegistryActionsContributor.DISABLE_ADMIN_USER,
