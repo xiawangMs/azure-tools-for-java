@@ -117,7 +117,7 @@ public class IntelliJServiceBusActionsContributor implements IActionsContributor
     private static Action<?> generateConfigAction(AzResource resource) {
         final String sasKeyUrl = String.format("%s/saskey", resource.getPortalUrl());
         return new Action<>(Action.Id.of("user/servicebus.config_shared_access_key"))
-                .withLabel("Config")
+                .withLabel("Configure in Azure Portal")
                 .withHandler(s -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(sasKeyUrl));
     }
 
