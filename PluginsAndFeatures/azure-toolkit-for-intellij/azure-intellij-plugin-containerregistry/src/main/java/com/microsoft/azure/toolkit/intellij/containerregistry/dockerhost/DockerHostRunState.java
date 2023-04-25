@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -32,7 +33,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DockerHostRunState extends AzureRunProfileState<String> {
@@ -71,11 +71,13 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processWillTerminate(@Nonnull ProcessEvent event, boolean willBeDestroyed) {
-                try {
-                    docker.stopContainer(containerId);
-                } catch (final Exception e) {
-                    AzureMessager.getMessager().warning(String.format("Failed to stop container %s", containerId), e);
-                }
+                AzureTaskManager.getInstance().runInBackground(String.format("Stop Container %s", containerId), () -> {
+                    try {
+                        docker.stopContainer(containerId);
+                    } catch (final Exception e) {
+                        AzureMessager.getMessager().warning(String.format("Failed to stop container %s", containerId), e);
+                    }
+                });
             }
         });
         return hostname;
@@ -96,13 +98,4 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         final String fileType = dataModel.getTargetName() == null ? StringUtils.EMPTY : MavenRunTaskUtil.getFileType(dataModel.getTargetName());
         return Collections.singletonMap(TelemetryConstants.FILETYPE, fileType);
     }
-
-    private String getPortFromDockerfile(@Nonnull String dockerFileContent) {
-        final Matcher result = Arrays.stream(dockerFileContent.split("\\R+"))
-            .map(PORT_PATTERN::matcher)
-            .filter(Matcher::matches)
-            .findFirst().orElse(null);
-        return result == null ? DEFAULT_PORT : result.group(1);
-    }
-
 }
