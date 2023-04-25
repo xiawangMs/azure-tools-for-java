@@ -6,12 +6,14 @@
 package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.ActionLink;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
@@ -25,6 +27,7 @@ import reactor.core.scheduler.Schedulers;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +48,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     private JLabel lblRepositoryPrefix;
     private JPanel pnlImageName;
     private JPanel pnlContainerRegistry;
-
+    private ActionLink linkEnableAdminUser;
     private final Project project;
     private final AtomicReference<String> repositoryReference = new AtomicReference<>();
     @Getter
@@ -63,8 +66,32 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         this.cbDockerHost.setRequired(true);
         this.cbDockerImage.setRequired(true);
         this.cbContainerRegistry.addItemListener(this::onSelectContainerRegistry);
+        this.cbContainerRegistry.addValidator(this::validateAdminUserEnableStatus);
         this.cbDockerHost.addItemListener(this::onDockerHostChanged);
         this.cbDockerImage.addValueChangedListener(this::onSelectNewDockerImage);
+        this.linkEnableAdminUser.addActionListener(this::onEnableAdminUser);
+    }
+
+    private void onEnableAdminUser(ActionEvent actionEvent) {
+        final ContainerRegistry value = cbContainerRegistry.getValue();
+        if (Objects.nonNull(value)) {
+            AzureTaskManager.getInstance().runInBackground("Enable Admin User", () -> {
+                value.enableAdminUser(); // call method instead of action directly as we need to invoke callback actions
+                AzureTaskManager.getInstance().runLater(() -> {
+                    cbContainerRegistry.validateValueAsync();
+                    cbContainerRegistry.reloadItems();
+                }, AzureTask.Modality.ANY);
+            });
+        }
+    }
+
+    private AzureValidationInfo validateAdminUserEnableStatus() {
+        final ContainerRegistry value = cbContainerRegistry.getValue();
+        if (Objects.isNull(value)) {
+            return AzureValidationInfo.success(cbContainerRegistry);
+        }
+        return value.isAdminUserEnabled() ? AzureValidationInfo.success(cbContainerRegistry) :
+                AzureValidationInfo.error(String.format("Admin user is not enabled for registry (%s)", value.getName()), cbContainerRegistry);
     }
 
     public void enableContainerRegistryPanel() {
@@ -75,16 +102,18 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
 
     private void onSelectContainerRegistry(ItemEvent itemEvent) {
         final ContainerRegistry value = cbContainerRegistry.getValue();
-        Mono.fromCallable(() -> Optional.ofNullable(value).map(r -> r.getLoginServerUrl()).orElse(null))
+        Mono.fromCallable(() -> Optional.ofNullable(value).map(ContainerRegistry::getLoginServerUrl).orElse(null))
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(loginServerUrl -> AzureTaskManager.getInstance().runLater(() -> {
-                    lblRepositoryPrefix.setText(" " + loginServerUrl + "/");
+                    lblRepositoryPrefix.setText(" " + loginServerUrl + "/"); // add space to keep align with combo box
                     lblRepositoryPrefix.setVisible(StringUtils.isNotBlank(loginServerUrl));
                     repositoryReference.set(loginServerUrl);
                     final String repositoryName = txtRepositoryName.getValue();
                     if (StringUtils.startsWith(repositoryName, loginServerUrl)) {
-                        txtRepositoryName.setValue(StringUtils.removeStart(repositoryName, loginServerUrl));
+                        txtRepositoryName.setValue(StringUtils.removeStart(repositoryName, loginServerUrl + "/"));
                     }
+                    final boolean adminUserEnabled = Optional.ofNullable(value).map(ContainerRegistry::isAdminUserEnabled).orElse(true);
+                    linkEnableAdminUser.setVisible(!adminUserEnabled);
                 }, AzureTask.Modality.ANY));
     }
 
@@ -119,7 +148,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     @Override
     public DockerPushConfiguration getValue() {
         final DockerPushConfiguration result = new DockerPushConfiguration();
-        final DockerImage image = this.cbDockerImage.getValue();
+        final DockerImage image = Optional.ofNullable(this.cbDockerImage.getValue()).map(DockerImage::new).orElse(null);
         final ContainerRegistry registry = this.cbContainerRegistry.getValue();
         result.setDockerHost(this.cbDockerHost.getValue());
         result.setDockerImage(image);
