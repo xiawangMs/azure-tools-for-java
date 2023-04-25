@@ -157,11 +157,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     private void onSelectNewDockerImage(ItemEvent itemEvent) {
         final DockerImage image = cbDockerImage.getValue();
         // workaround for reload issue
-        if (Objects.equals(image, this.image)) {
-            return;
-        } else if (Objects.isNull(image)) {
-            txtRepositoryName.setValue(StringUtils.EMPTY);
-            txtTagName.setValue(StringUtils.EMPTY);
+        if (Objects.isNull(image) || Objects.equals(image, this.image)) {
             return;
         }
         this.image = image;
