@@ -55,7 +55,7 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
 
     private void onSelectImage(DockerImage image) {
         final DockerPushConfiguration value = pnlDockerConfiguration.getValue();
-        AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>(() -> AzureDockerClient.getExposedPorts(value.getDockerHost(), image)))
+        AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Inspecting image", () -> AzureDockerClient.getExposedPorts(value.getDockerHost(), image)))
                 .subscribe(ports -> {
                     final Integer port = ports.stream().findFirst().orElse(null);
                     Optional.ofNullable(port).ifPresent(p -> AzureTaskManager.getInstance().runLater(() -> txtTargetPort.setNumber(p), AzureTask.Modality.ANY));
