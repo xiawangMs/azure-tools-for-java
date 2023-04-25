@@ -35,6 +35,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.*;
+
 public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfiguration> {
     @Getter
     private JPanel pnlRoot;
@@ -68,8 +70,43 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         this.cbContainerRegistry.addItemListener(this::onSelectContainerRegistry);
         this.cbContainerRegistry.addValidator(this::validateAdminUserEnableStatus);
         this.cbDockerHost.addItemListener(this::onDockerHostChanged);
-        this.cbDockerImage.addValueChangedListener(this::onSelectNewDockerImage);
+        this.cbDockerImage.addItemListener(this::onSelectNewDockerImage);
         this.linkEnableAdminUser.addActionListener(this::onEnableAdminUser);
+        this.txtRepositoryName.addValidator(this::validateRepositoryName);
+        this.txtTagName.addValidator(this::validateTagName);
+    }
+
+    private AzureValidationInfo validateTagName() {
+        final String tagName = txtTagName.getValue();
+        if (StringUtils.isNotBlank(tagName)) {
+            if (tagName.length() > TAG_LENGTH) {
+                return AzureValidationInfo.error(TAG_LENGTH_INVALID, txtTagName);
+            }
+            if (!tagName.matches(TAG_REGEX)) {
+                return AzureValidationInfo.error(TAG_INVALID, txtTagName);
+            }
+        }
+        return AzureValidationInfo.success(txtTagName);
+    }
+
+    @Nonnull
+
+    private AzureValidationInfo validateRepositoryName() {
+        final String repositoryName = txtRepositoryName.getValue();
+        if (StringUtils.isBlank(repositoryName) || repositoryName.length() < 1 || repositoryName.length() > REPO_LENGTH) {
+            return AzureValidationInfo.error(REPO_LENGTH_INVALID, txtRepositoryName);
+        }
+        if (repositoryName.endsWith("/")) {
+            return AzureValidationInfo.error(CANNOT_END_WITH_SLASH, txtRepositoryName);
+        }
+        final String[] repoComponents = repositoryName.split("/");
+        for (final String component : repoComponents) {
+            if (!component.matches(REPO_COMPONENTS_REGEX)) {
+                final String message = String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX);
+                return AzureValidationInfo.error(message, txtRepositoryName);
+            }
+        }
+        return AzureValidationInfo.success(txtRepositoryName);
     }
 
     private void onEnableAdminUser(ActionEvent actionEvent) {
@@ -117,15 +154,14 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
                 }, AzureTask.Modality.ANY));
     }
 
-    private void onSelectNewDockerImage(final DockerImage image) {
+    private void onSelectNewDockerImage(ItemEvent itemEvent) {
+        final DockerImage image = cbDockerImage.getValue();
         // workaround for reload issue
         if (Objects.equals(image, this.image)) {
             return;
         } else if (Objects.isNull(image)) {
-            AzureTaskManager.getInstance().runLater(() -> {
-                txtRepositoryName.setValue(StringUtils.EMPTY);
-                txtTagName.setValue(StringUtils.EMPTY);
-            }, AzureTask.Modality.ANY);
+            txtRepositoryName.setValue(StringUtils.EMPTY);
+            txtTagName.setValue(StringUtils.EMPTY);
             return;
         }
         this.image = image;
@@ -134,11 +170,13 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         final String repositoryName = image.getRepositoryName();
         final String fixedRepositoryName = StringUtils.isNotEmpty(loginServerUrl) && StringUtils.startsWith(repositoryName, loginServerUrl) ?
                 StringUtils.removeStart(repositoryName, loginServerUrl + "/") : repositoryName;
-        AzureTaskManager.getInstance().runLater(() -> {
-            txtRepositoryName.setValue(fixedRepositoryName);
-            txtTagName.setValue(image.getTagName());
-            pnlImageName.setVisible(enableCustomizedImageName || isDraftImage);
-        }, AzureTask.Modality.ANY);
+        txtRepositoryName.setValue(fixedRepositoryName);
+        txtTagName.setValue(image.getTagName());
+        pnlImageName.setVisible(enableCustomizedImageName || isDraftImage);
+        txtRepositoryName.setRequired(enableCustomizedImageName || isDraftImage);
+        txtRepositoryName.validateValueAsync();
+        txtTagName.setRequired(enableCustomizedImageName || isDraftImage);
+        txtTagName.validateValueAsync();
     }
 
     private void onDockerHostChanged(@Nullable final ItemEvent event) {
@@ -175,8 +213,8 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
             this.cbDockerImage.setValue(i);
         });
         Optional.ofNullable(data.getContainerRegistryId())
-            .map(id -> (ContainerRegistry) Azure.az(AzureContainerRegistry.class).getById(id))
-            .ifPresent(cbContainerRegistry::setValue);
+                .map(id -> (ContainerRegistry) Azure.az(AzureContainerRegistry.class).getById(id))
+                .ifPresent(cbContainerRegistry::setValue);
         final String repositoryName = Optional.ofNullable(data.getFinalRepositoryName())
                 .orElseGet(() -> Optional.ofNullable(data.getDockerImage()).map(DockerImage::getRepositoryName).orElse(null));
         final String tagName = Optional.ofNullable(data.getFinalTagName())
