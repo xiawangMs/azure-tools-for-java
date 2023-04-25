@@ -22,7 +22,11 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
+import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
+import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.AzService;
@@ -226,7 +230,7 @@ public class TreeUtils {
         if (BooleanUtils.isFalse(node.loaded)) {
             renderer.setIcon(AnimatedIcon.Default.INSTANCE);
         } else {
-            renderer.setIcon(Optional.ofNullable(view.getIcon()).map(IntelliJAzureIcons::getIcon).orElse(null));
+            renderer.setIcon(Optional.ofNullable(view.getIcon()).map(IntelliJAzureIcons::getIcon).orElse(IntelliJAzureIcons.getIcon(AzureIcons.Resources.GENERIC_RESOURCE)));
         }
         final Object highlighted = tree.getClientProperty(HIGHLIGHTED_RESOURCE_KEY);
         final boolean toHighlightThisNode = Optional.ofNullable(highlighted).map(h -> ((Pair<Object, Long>) h))

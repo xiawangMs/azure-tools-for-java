@@ -89,8 +89,12 @@ public class MonitorTreePanel extends JPanel {
         if (isTableTab) {
             return;
         }
-        getOrCreateCustomQueriesTabNode().add(new DefaultMutableTreeNode(data));
-        this.customQueries.add(data);
+        final DefaultMutableTreeNode customQueryRootNode = getOrCreateCustomQueriesTabNode();
+        final DefaultMutableTreeNode overrideNode = TreeUtil.findNode(customQueryRootNode, n ->
+                n.getUserObject() instanceof QueryData && Objects.equals(((QueryData) n.getUserObject()).displayName, data.displayName));
+        Optional.ofNullable(overrideNode).ifPresentOrElse(n -> n.setUserObject(data), () -> customQueryRootNode.add(new DefaultMutableTreeNode(data)));
+        customQueries.stream().filter(q -> Objects.equals(q.displayName, data.displayName)).findAny()
+                .ifPresentOrElse(q -> q.setQueryString(data.queryString), () -> customQueries.add(data));
         AzureTaskManager.getInstance().runLater(() -> {
             this.treeModel.reload();
             TreeUtil.expandAll(this.tree);

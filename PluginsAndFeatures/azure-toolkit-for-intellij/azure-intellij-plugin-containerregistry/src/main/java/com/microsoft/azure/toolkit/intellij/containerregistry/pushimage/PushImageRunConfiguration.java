@@ -17,9 +17,6 @@ import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerPushConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
-import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -134,6 +131,24 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
         return this.dataModel.getContainerRegistryId();
     }
 
+    @Override
+    public String getFinalRepositoryName() {
+        return getModel().getFinalRepositoryName();
+    }
+
+    @Override
+    public String getFinalTagName() {
+        return getModel().getFinalTagName();
+    }
+
+    public void setFinalRepositoryName(final String value) {
+        getModel().setFinalRepositoryName(value);
+    }
+
+    public void setFinalTagName(final String value) {
+        getModel().setFinalTagName(value);
+    }
+
     public void setContainerRegistryId(String id) {
         this.dataModel.setContainerRegistryId(id);
     }
@@ -177,13 +192,6 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
             return null;
         }
         return new DockerHost(dockerHostRunSetting.getDockerHost(), dockerHostRunSetting.getDockerCertPath());
-    }
-
-    @javax.annotation.Nullable
-    @Override
-    public String getRegistryUrl() {
-        final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(getContainerRegistryId());
-        return Optional.ofNullable(registry).map(ContainerRegistry::getLoginServerUrl).orElse(null);
     }
 
     @Nullable

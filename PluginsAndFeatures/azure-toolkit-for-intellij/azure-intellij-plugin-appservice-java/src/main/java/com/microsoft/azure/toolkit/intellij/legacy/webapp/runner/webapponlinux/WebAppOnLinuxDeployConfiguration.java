@@ -305,6 +305,16 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         return getModel().getContainerRegistryId();
     }
 
+    @Override
+    public String getFinalRepositoryName() {
+        return getModel().getFinalRepositoryName();
+    }
+
+    @Override
+    public String getFinalTagName() {
+        return getModel().getFinalTagName();
+    }
+
     public Integer getPort() {
         return getModel().getPort();
     }
@@ -385,6 +395,16 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
     public void setDockerPushConfiguration(@Nonnull final DockerPushConfiguration configuration) {
         this.setHost(configuration.getDockerHost());
         this.setDockerImage(configuration.getDockerImage());
+        this.setFinalRepositoryName(configuration.getFinalRepositoryName());
+        this.setFinalTagName(configuration.getFinalTagName());
         this.getModel().setContainerRegistryId(configuration.getContainerRegistryId());
+    }
+
+    public void setFinalRepositoryName(final String value) {
+        getModel().setFinalRepositoryName(value);
+    }
+
+    public void setFinalTagName(final String value) {
+        getModel().setFinalTagName(value);
     }
 }
