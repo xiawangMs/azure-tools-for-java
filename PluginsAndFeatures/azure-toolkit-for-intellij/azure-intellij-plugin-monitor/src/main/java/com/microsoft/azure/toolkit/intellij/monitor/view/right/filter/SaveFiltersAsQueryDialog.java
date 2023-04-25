@@ -30,13 +30,15 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
     private EditorTextField queryContent;
     @Getter
     private final MonitorTreePanel.QueryData queryDataToSave = new MonitorTreePanel.QueryData();
+    private final List<MonitorTreePanel.QueryData> originData;
 
-    public SaveFiltersAsQueryDialog(@Nullable Project project, String queryContent) {
+    public SaveFiltersAsQueryDialog(@Nullable Project project, String queryContent, List<MonitorTreePanel.QueryData> originData) {
         super(project, false);
         setTitle("Save as Query");
         $$$setupUI$$$();
         init();
         this.queryContent.setText(queryContent);
+        this.originData = originData;
     }
 
     @Override
@@ -64,16 +66,7 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
     }
 
     private boolean isExistingQuery(String queryName) {
-        final List<String> customQueryList = Optional.ofNullable(PropertiesComponent.getInstance()
-                .getList(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST)).orElse(new ArrayList<>());
-        return customQueryList.stream().map(s -> {
-            final ObjectMapper mapper = new ObjectMapper();
-            try {
-                return mapper.readValue(s, MonitorTreePanel.QueryData.class);
-            } catch (final JsonProcessingException ignored) {
-            }
-            return new MonitorTreePanel.QueryData();
-        }).anyMatch(q -> queryName.equals(q.getDisplayName()));
+        return this.originData.stream().anyMatch(q -> queryName.equals(q.getDisplayName()));
     }
 
     private boolean isOverride(String queryName) {

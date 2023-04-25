@@ -3,6 +3,8 @@ package com.microsoft.azure.toolkit.intellij.eventhubs;
 import com.azure.resourcemanager.eventhubs.models.EntityStatus;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.eventhubs.EventHubsActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
@@ -12,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsInstance;
 import com.microsoft.azure.toolkit.lib.eventhubs.EventHubsNamespace;
@@ -76,7 +79,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
         final BiConsumer<EventHubsInstance, AnActionEvent> handler = (c, e) -> {
             final String connectionString = c.getOrCreateListenConnectionString();
             am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
-            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"));
+            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"), null, generateConfigAction(c));
         };
         am.registerHandler(EventHubsActionsContributor.COPY_CONNECTION_STRING, condition, handler);
     }
@@ -95,9 +98,16 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
         final BiConsumer<EventHubsNamespace, AnActionEvent> handler = (c, e) -> {
             final String connectionString = c.getOrCreateListenConnectionString();
             am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(connectionString);
-            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"));
+            AzureMessager.getMessager().info(AzureBundle.message("azure.eventhubs.info.copyConnectionString"), null, generateConfigAction(c));
         };
         am.registerHandler(EventHubsActionsContributor.COPY_CONNECTION_STRING_NAMESPACE, condition, handler);
+    }
+
+    private static Action<?> generateConfigAction(AzResource resource) {
+        final String sasKeyUrl = String.format("%s/saskey", resource.getPortalUrl());
+        return new Action<>(Action.Id.of("user/eventhub.config_shared_access_key"))
+                .withLabel("Configure in Azure Portal")
+                .withHandler(s -> AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(sasKeyUrl));
     }
 
     @Override
