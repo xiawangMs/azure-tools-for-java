@@ -16,11 +16,13 @@ import com.microsoft.azure.toolkit.intellij.container.Constant;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -50,24 +52,22 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         params = {"this.dataModel.getImageName()", "this.dataModel.getTagName()", "this.dataModel.getDockerHost()"}
     )
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
+        OperationContext.current().setMessager(getProcessHandlerMessenger());
         final AzureDockerClient docker = AzureDockerClient.from(dataModel.getDockerHost(), dataModel.isTlsEnabled(), dataModel.getDockerCertPath());
         final File file = Optional.ofNullable(dataModel.getDockerFilePath()).map(File::new).filter(File::exists).orElse(null);
         Optional.ofNullable(containerId).filter(StringUtils::isNoneBlank).ifPresent(docker::stopContainer);
-        containerId = docker.createContainer(String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), null);
+        containerId = docker.createContainer(String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), dataModel.getPort());
 
         final Container container = docker.runContainer(containerId);
         // props
-        final String hostname = new URI(dataModel.getDockerHost()).getHost();
-        String publicPort = null;
+        final String hostname = Optional.ofNullable(new URI(dataModel.getDockerHost()).getHost()).orElse("localhost");
         final ContainerPort[] ports = container.getPorts();
-        if (ports != null) {
-            for (final ContainerPort portMapping : ports) {
-                publicPort = String.valueOf(portMapping.getPublicPort());
-            }
+        final String message = ArrayUtils.getLength(ports) != 1 ? String.format("Container is running on %s now!", hostname):
+                String.format(Constant.MESSAGE_CONTAINER_STARTED, hostname + ":" + ports[0].getPublicPort());
+        AzureMessager.getMessager().info(message);
+        if (ArrayUtils.getLength(ports) > 1) {
+            Arrays.stream(ports).forEach(port -> AzureMessager.getMessager().info(String.format("\tImage port %s has been redirected to %s", port.getPrivatePort(), port.getPublicPort())));
         }
-        processHandler.setText(String.format(Constant.MESSAGE_CONTAINER_STARTED,
-            (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")
-        ));
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processWillTerminate(@Nonnull ProcessEvent event, boolean willBeDestroyed) {

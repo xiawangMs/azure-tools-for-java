@@ -182,4 +182,12 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         this.setDockerCertPath(Optional.ofNullable(host).map(DockerHost::getDockerCertPath).orElse(null));
         this.setTlsEnabled(Optional.ofNullable(host).map(DockerHost::isTlsEnabled).orElse(false));
     }
+
+    public Integer getPort() {
+        return getModel().getPort();
+    }
+
+    public void setPort(@Nonnull final Integer number) {
+        getModel().setPort(number);
+    }
 }

@@ -9,6 +9,8 @@ import com.intellij.ide.DataManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.ui.JBIntSpinner;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
@@ -16,17 +18,18 @@ import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.DockerB
 import com.microsoft.azure.toolkit.intellij.containerregistry.component.DockerImageConfigurationPanel;
 import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.util.Optional;
 
 public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> {
     private JPanel pnlRoot;
     private DockerImageConfigurationPanel pnlConfiguration;
+    private JBIntSpinner txtTargetPort;
     private final Project project;
     private final DockerHostRunConfiguration runConfiguration;
 
@@ -39,9 +42,18 @@ public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<Do
     }
 
     private void init() {
-        final AzureFormInput.AzureValueChangeListener<DockerImage> runnable = image -> AzureTaskManager.getInstance().runLater(() ->
+        this.pnlConfiguration.addImageListener(this::onSelectImage);
+    }
+
+    private void onSelectImage(DockerImage image) {
+        final DockerPushConfiguration value = pnlConfiguration.getValue();
+        AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Inspecting image", () -> AzureDockerClient.getExposedPorts(value.getDockerHost(), image)))
+                .subscribe(ports -> {
+                    final Integer port = ports.stream().findFirst().orElse(null);
+                    Optional.ofNullable(port).ifPresent(p -> AzureTaskManager.getInstance().runLater(() -> txtTargetPort.setNumber(p), AzureTask.Modality.ANY));
+                });
+        AzureTaskManager.getInstance().runLater(() ->
                 DockerBuildTaskUtils.updateDockerBuildBeforeRunTasks(DataManager.getInstance().getDataContext(getMainPanel()), this.runConfiguration, image), AzureTask.Modality.ANY);
-        this.pnlConfiguration.addImageListener(runnable);
     }
 
     @Override
@@ -60,6 +72,7 @@ public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<Do
         dockerConfiguration.setDockerHost(data.getDockerHostConfiguration());
         dockerConfiguration.setDockerImage(data.getDockerImageConfiguration());
         pnlConfiguration.setValue(dockerConfiguration);
+        Optional.ofNullable(data.getPort()).ifPresent(txtTargetPort::setNumber);
     }
 
     @Override
@@ -67,6 +80,7 @@ public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<Do
         final DockerConfiguration dockerConfiguration = pnlConfiguration.getValue();
         configuration.setHost(dockerConfiguration.getDockerHost());
         configuration.setDockerImage(dockerConfiguration.getDockerImage());
+        configuration.setPort(txtTargetPort.getNumber());
     }
 
     @Override
@@ -91,6 +105,7 @@ public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<Do
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
+        this.txtTargetPort = new JBIntSpinner(8080, 1, 65535);
         this.pnlConfiguration = new DockerImageConfigurationPanel(this.project);
         this.pnlConfiguration.setEnableCustomizedImageName(false);
     }
