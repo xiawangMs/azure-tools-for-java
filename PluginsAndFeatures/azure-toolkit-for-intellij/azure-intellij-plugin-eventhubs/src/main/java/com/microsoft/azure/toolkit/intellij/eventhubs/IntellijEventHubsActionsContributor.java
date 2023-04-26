@@ -34,6 +34,7 @@ public class IntellijEventHubsActionsContributor implements IActionsContributor 
         registerStopListeningActionHandler(am);
         registerCopyConnectionStringActionHandler(am);
         registerGroupCreateNamespaceActionHandler(am);
+        registerCopyNamespaceConnectionStringActionHandler(am);
     }
 
     private void registerActiveActionHandler(AzureActionManager am) {

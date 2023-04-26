@@ -39,6 +39,7 @@ public class IntelliJServiceBusActionsContributor implements IActionsContributor
         registerStartReceivingActionHandler(am);
         registerStopReceivingActionHandler(am);
         registerGroupCreateActionHandler(am);
+        registerCopyNamespaceConnectionStringActionHandler(am);
     }
 
     private void registerActiveActionHandler(AzureActionManager am) {
