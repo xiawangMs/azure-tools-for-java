@@ -27,32 +27,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.validateDockerHostConfiguration;
+import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.validateDockerImageConfiguration;
+
 public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushImageRunModel> implements IDockerPushConfiguration {
-    // TODO: move to util
-    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
-    private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
-    private static final String MISSING_USERNAME = "Please specify Username.";
-    private static final String MISSING_PASSWORD = "Please specify Password.";
-    private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
-    private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
-    private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag name is invalid";
-    private static final String INVALID_ARTIFACT_FILE = "The artifact name %s is invalid. "
-            + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-            + "and the digits '0' through '9', '.', '-' and '_'.";
-    private static final String CANNOT_END_WITH_COLON = "Image and tag name cannot end with ':'";
-    private static final String REPO_LENGTH_INVALID = "The length of repository name must be at least one character "
-            + "and less than 256 characters";
-    private static final String CANNOT_END_WITH_SLASH = "The repository name should not end with '/'";
-    private static final String REPO_COMPONENT_INVALID = "Invalid repository component: %s, should follow: %s";
-    private static final String TAG_LENGTH_INVALID = "The length of tag name must be no more than 128 characters";
-    private static final String TAG_INVALID = "Invalid tag: %s, should follow: %s";
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
-    private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
-    private static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
-    private static final String REPO_COMPONENTS_REGEX = "[a-z0-9]+(?:[._-][a-z0-9]+)*";
-    private static final String TAG_REGEX = "^[\\w]+[\\w.-]*$";
-    private static final int TAG_LENGTH = 128;
-    private static final int REPO_LENGTH = 255;
 
     private final PushImageRunModel dataModel;
 
@@ -80,6 +59,8 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
         if (dataModel == null) {
             throw new ConfigurationException(MISSING_MODEL);
         }
+        validateDockerHostConfiguration(getDockerHostConfiguration());
+        validateDockerImageConfiguration(getDockerImageConfiguration());
     }
 
     @Override

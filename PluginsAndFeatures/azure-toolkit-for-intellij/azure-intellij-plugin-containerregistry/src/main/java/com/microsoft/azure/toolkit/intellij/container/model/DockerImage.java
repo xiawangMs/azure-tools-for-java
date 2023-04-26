@@ -58,6 +58,14 @@ public class DockerImage {
         this.tagName = "latest";
     }
 
+    public DockerImage(@Nonnull final  DockerImage value) {
+        this.isDraft = value.isDraft;
+        this.dockerFile = value.dockerFile;
+        this.repositoryName = value.repositoryName;
+        this.tagName = value.tagName;
+        this.imageId = value.imageId;
+    }
+
     public static List<DockerImage> fromImage(@Nonnull final Image image) {
         if (ArrayUtils.isEmpty(image.getRepoTags())) {
             return Collections.emptyList();
