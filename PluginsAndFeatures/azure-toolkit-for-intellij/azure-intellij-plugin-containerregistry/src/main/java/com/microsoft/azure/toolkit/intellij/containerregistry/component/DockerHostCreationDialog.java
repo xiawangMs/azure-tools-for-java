@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -74,7 +73,7 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
     private AzureValidationInfo validateCertPath() {
         final String value = txtCertPath.getValue();
         if (StringUtils.isNotEmpty(value) && !FileUtil.exists(value)) {
-            return AzureValidationInfo.error(AzureString.format("File %s does not exists", value), txtCertPath);
+            return AzureValidationInfo.error(String.format("File %s does not exists", value), txtCertPath);
         }
         return AzureValidationInfo.success(txtCertPath);
     }
