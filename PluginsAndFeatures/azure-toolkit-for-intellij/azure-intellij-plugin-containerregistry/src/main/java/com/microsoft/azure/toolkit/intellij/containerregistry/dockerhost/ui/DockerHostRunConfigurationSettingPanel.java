@@ -105,7 +105,7 @@ public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<Do
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.txtTargetPort = new JBIntSpinner(8080, 1, 65535);
+        this.txtTargetPort = new JBIntSpinner(80, 1, 65535);
         this.pnlConfiguration = new DockerImageConfigurationPanel(this.project);
         this.pnlConfiguration.setEnableCustomizedImageName(false);
     }
