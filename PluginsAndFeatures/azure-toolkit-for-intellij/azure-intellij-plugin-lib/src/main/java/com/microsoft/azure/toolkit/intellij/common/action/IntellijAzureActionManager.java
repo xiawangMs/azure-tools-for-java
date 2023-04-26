@@ -180,7 +180,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final Presentation presentation = e.getPresentation();
             Optional.ofNullable(view).ifPresent(v -> {
                 presentation.setText(v.getLabel());
-                presentation.setIcon(IntelliJAzureIcons.getIcon(v.getIconPath()));
+                Optional.ofNullable(v.getIconPath()).filter(StringUtils::isNotBlank).ifPresent(IntelliJAzureIcons::getIcon);
             });
         }
 

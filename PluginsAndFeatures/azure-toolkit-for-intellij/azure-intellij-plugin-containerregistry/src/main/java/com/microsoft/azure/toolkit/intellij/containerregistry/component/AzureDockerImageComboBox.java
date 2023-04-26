@@ -102,13 +102,10 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     @Override
     protected List<? extends DockerImage> loadItems() throws Exception {
         final List<DockerImage> localImages = getLocalDockerImages();
-        final List<DockerImage> draftImages = this.draftImages.stream()
-                .filter(draft -> ListUtils.indexOf(localImages, image -> StringUtils.equals(image.getImageName(), draft.getImageName())) < 0)
-                .collect(Collectors.toList());
         final List<DockerImage> dockerImages = this.loadDockerFiles().stream()
                 .filter(draft -> ListUtils.indexOf(localImages, image -> Objects.equals(image.getDockerFile(), draft.getDockerFile())) < 0)
                 .collect(Collectors.toList());
-        return Stream.of(localImages, draftImages, dockerImages).flatMap(List::stream).collect(Collectors.toList());
+        return Stream.of(localImages, draftImages, dockerImages).flatMap(List::stream).distinct().collect(Collectors.toList());
     }
 
     private List<DockerImage> getLocalDockerImages() {

@@ -26,17 +26,25 @@ import java.io.File;
 import java.util.Optional;
 
 public class DockerHostRunConfiguration extends AzureRunConfigurationBase<DockerHostRunSetting> implements IDockerConfiguration {
-    // TODO: move to util
-    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
-    private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
-            + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-            + "and the digits '0' through '9', '.', '-' and '_'.";
+
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
-    private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String INVALID_DOCKER_HOST = "Please specify a valid docker host.";
     private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
     private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
-    private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
+    private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
+    private static final String CANNOT_END_WITH_COLON = "Image and tag name cannot end with ':'";
+    public static final String REPO_LENGTH_INVALID = "The length of repository name must be at least one character "
+            + "and less than 256 characters";
+    public static final String CANNOT_END_WITH_SLASH = "The repository name should not end with '/'";
+    public static final String REPO_COMPONENT_INVALID = "Invalid repository component: %s, should follow: %s";
+    public static final String TAG_LENGTH_INVALID = "The length of tag name must be at least one character " +
+            "and less than 128 characters";
+    public static final String TAG_INVALID = "Invalid tag: %s, should follow: %s";
+    public static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
+    public static final String REPO_COMPONENTS_REGEX = "[a-z0-9]+(?:[._-][a-z0-9]+)*";
+    public static final String TAG_REGEX = "^[\\w]+[\\w.-]*$";
+    public static final int TAG_LENGTH = 128;
+    public static final int REPO_LENGTH = 255;
     private final DockerHostRunSetting dataModel;
 
     protected DockerHostRunConfiguration(@Nonnull Project project, @Nonnull ConfigurationFactory factory, String name) {
@@ -64,15 +72,55 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         if (dataModel == null) {
             throw new ConfigurationException(MISSING_MODEL);
         }
-        // docker host
-        if (StringUtils.isEmpty(dataModel.getDockerHost())) {
+        validateDockerHostConfiguration(getDockerHostConfiguration());
+        validateDockerImageConfiguration(getDockerImageConfiguration());
+    }
+
+    public static void validateDockerHostConfiguration(@Nullable DockerHost host) throws ConfigurationException {
+        if (host == null) {
             throw new ConfigurationException(INVALID_DOCKER_HOST);
         }
-        if (dataModel.isTlsEnabled() && StringUtils.isEmpty(dataModel.getDockerCertPath())) {
+        // docker host
+        if (StringUtils.isEmpty(host.getDockerHost())) {
+            throw new ConfigurationException(INVALID_DOCKER_HOST);
+        }
+        if (host.isTlsEnabled() && StringUtils.isEmpty(host.getDockerCertPath())) {
             throw new ConfigurationException(INVALID_CERT_PATH);
         }
-        if (StringUtils.isEmpty(dataModel.getImageName())) {
-            throw new ConfigurationException(MISSING_IMAGE_NAME);
+    }
+
+    public static void validateDockerImageConfiguration(@Nullable DockerImage image) throws ConfigurationException {
+        if (image == null) {
+            throw new ConfigurationException(INVALID_DOCKER_FILE);
+        }
+        if (image.isDraft() && (image.getDockerFile() == null || !image.getDockerFile().exists())) {
+            throw new ConfigurationException(INVALID_DOCKER_FILE);
+        }
+        final String imageTag = image.getImageName();
+        if (StringUtils.isEmpty(imageTag)) {
+            throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
+        }
+        // check repository first
+        final String repositoryName = image.getRepositoryName();
+        if (StringUtils.isBlank(repositoryName) || repositoryName.length() < 1 || repositoryName.length() > REPO_LENGTH) {
+            throw new ConfigurationException(REPO_LENGTH_INVALID);
+        }
+        if (repositoryName.endsWith("/")) {
+            throw new ConfigurationException(CANNOT_END_WITH_SLASH);
+        }
+        final String[] repoComponents = repositoryName.split("/");
+        for (final String component : repoComponents) {
+            if (!component.matches(REPO_COMPONENTS_REGEX)) {
+                throw new ConfigurationException(String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
+            }
+        }
+        // check when contains tag
+        final String tagName = image.getTagName();
+        if (StringUtils.isBlank(tagName) || tagName.length() > TAG_LENGTH) {
+            throw new ConfigurationException(TAG_LENGTH_INVALID);
+        }
+        if (!tagName.matches(TAG_REGEX)) {
+            throw new ConfigurationException(String.format(TAG_INVALID, tagName, TAG_REGEX));
         }
     }
 
