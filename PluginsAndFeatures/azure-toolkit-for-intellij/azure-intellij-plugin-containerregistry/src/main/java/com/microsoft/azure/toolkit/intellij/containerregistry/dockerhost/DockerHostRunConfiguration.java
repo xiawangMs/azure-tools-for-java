@@ -37,7 +37,8 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
             + "and less than 256 characters";
     public static final String CANNOT_END_WITH_SLASH = "The repository name should not end with '/'";
     public static final String REPO_COMPONENT_INVALID = "Invalid repository component: %s, should follow: %s";
-    public static final String TAG_LENGTH_INVALID = "The length of tag name must be no more than 128 characters";
+    public static final String TAG_LENGTH_INVALID = "The length of tag name must be at least one character " +
+            "and less than 128 characters";
     public static final String TAG_INVALID = "Invalid tag: %s, should follow: %s";
     public static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
     public static final String REPO_COMPONENTS_REGEX = "[a-z0-9]+(?:[._-][a-z0-9]+)*";
@@ -99,9 +100,6 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         if (StringUtils.isEmpty(imageTag)) {
             throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
         }
-        if (imageTag.endsWith(":")) {
-            throw new ConfigurationException(CANNOT_END_WITH_COLON);
-        }
         // check repository first
         final String repositoryName = image.getRepositoryName();
         if (StringUtils.isBlank(repositoryName) || repositoryName.length() < 1 || repositoryName.length() > REPO_LENGTH) {
@@ -118,13 +116,11 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         }
         // check when contains tag
         final String tagName = image.getTagName();
-        if (StringUtils.isNotBlank(tagName)) {
-            if (tagName.length() > TAG_LENGTH) {
-                throw new ConfigurationException(TAG_LENGTH_INVALID);
-            }
-            if (!tagName.matches(TAG_REGEX)) {
-                throw new ConfigurationException(String.format(TAG_INVALID, tagName, TAG_REGEX));
-            }
+        if (StringUtils.isBlank(tagName) || tagName.length() > TAG_LENGTH) {
+            throw new ConfigurationException(TAG_LENGTH_INVALID);
+        }
+        if (!tagName.matches(TAG_REGEX)) {
+            throw new ConfigurationException(String.format(TAG_INVALID, tagName, TAG_REGEX));
         }
     }
 

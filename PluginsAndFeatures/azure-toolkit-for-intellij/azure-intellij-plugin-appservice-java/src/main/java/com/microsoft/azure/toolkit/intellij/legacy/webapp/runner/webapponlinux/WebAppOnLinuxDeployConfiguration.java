@@ -40,6 +40,7 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.validateDockerHostConfiguration;
 import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.validateDockerImageConfiguration;
+import static com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration.CONTAINER_REGISTRY_VALIDATION;
 
 public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> implements IDockerPushConfiguration {
 
@@ -85,6 +86,10 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         checkAzurePreconditions();
         validateDockerHostConfiguration(getDockerHostConfiguration());
         validateDockerImageConfiguration(getDockerImageConfiguration());
+        // registry
+        if (StringUtils.isEmpty(getContainerRegistryId())) {
+            throw new ConfigurationException(CONTAINER_REGISTRY_VALIDATION);
+        }
         // web app
         if (deployModel.isCreatingNewWebAppOnLinux()) {
             if (StringUtils.isEmpty(deployModel.getWebAppName())) {

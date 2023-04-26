@@ -51,6 +51,9 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     private JPanel pnlImageName;
     private JPanel pnlContainerRegistry;
     private ActionLink linkEnableAdminUser;
+    private JLabel lblContainerRegistry;
+    private JLabel lblDockerHost;
+    private JLabel lblDockerfile;
     private final Project project;
     private final AtomicReference<String> repositoryReference = new AtomicReference<>();
     @Getter
@@ -74,17 +77,20 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         this.linkEnableAdminUser.addActionListener(this::onEnableAdminUser);
         this.txtRepositoryName.addValidator(this::validateRepositoryName);
         this.txtTagName.addValidator(this::validateTagName);
+        lblRepository.setLabelFor(txtRepositoryName);
+        lblTagName.setLabelFor(txtTagName);
+        lblContainerRegistry.setLabelFor(cbContainerRegistry);
+        lblDockerfile.setLabelFor(cbDockerImage);
+        lblDockerHost.setLabelFor(cbDockerHost);
     }
 
     private AzureValidationInfo validateTagName() {
         final String tagName = txtTagName.getValue();
-        if (StringUtils.isNotBlank(tagName)) {
-            if (tagName.length() > TAG_LENGTH) {
-                return AzureValidationInfo.error(TAG_LENGTH_INVALID, txtTagName);
-            }
-            if (!tagName.matches(TAG_REGEX)) {
-                return AzureValidationInfo.error(TAG_INVALID, txtTagName);
-            }
+        if (StringUtils.isBlank(tagName) || tagName.length() > TAG_LENGTH) {
+            return AzureValidationInfo.error(TAG_LENGTH_INVALID, txtTagName);
+        }
+        if (!tagName.matches(TAG_REGEX)) {
+            return AzureValidationInfo.error(String.format(TAG_INVALID, tagName, TAG_REGEX), txtTagName);
         }
         return AzureValidationInfo.success(txtTagName);
     }
@@ -133,8 +139,9 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
 
     public void enableContainerRegistryPanel() {
         pnlContainerRegistry.setVisible(true);
-        cbContainerRegistry.reloadItems();
         cbContainerRegistry.setRequired(true);
+        cbContainerRegistry.validateValueAsync();
+        cbContainerRegistry.reloadItems();
     }
 
     private void onSelectContainerRegistry(ItemEvent itemEvent) {

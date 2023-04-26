@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="ae674" class="javax.swing.JLabel">
+      <component id="ae674" class="javax.swing.JLabel" binding="lblDockerHost">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="-1" height="24"/>
@@ -20,7 +20,7 @@
           <text value="Docker Host:"/>
         </properties>
       </component>
-      <component id="ed1d" class="javax.swing.JLabel">
+      <component id="ed1d" class="javax.swing.JLabel" binding="lblDockerfile">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="130" height="24"/>
@@ -113,7 +113,7 @@
         </properties>
         <border type="none"/>
         <children>
-          <component id="adfd6" class="javax.swing.JLabel">
+          <component id="adfd6" class="javax.swing.JLabel" binding="lblContainerRegistry">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <minimum-size width="130" height="24"/>
