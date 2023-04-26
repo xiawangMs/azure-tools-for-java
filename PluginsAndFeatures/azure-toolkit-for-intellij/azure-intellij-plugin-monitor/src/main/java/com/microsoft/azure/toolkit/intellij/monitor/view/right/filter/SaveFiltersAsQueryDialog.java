@@ -6,7 +6,6 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.EditorTextField;
@@ -31,6 +30,7 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
     @Getter
     private final MonitorTreePanel.QueryData queryDataToSave = new MonitorTreePanel.QueryData();
     private final List<MonitorTreePanel.QueryData> originData;
+    private final Project project;
 
     public SaveFiltersAsQueryDialog(@Nullable Project project, String queryContent, List<MonitorTreePanel.QueryData> originData) {
         super(project, false);
@@ -39,6 +39,7 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
         init();
         this.queryContent.setText(queryContent);
         this.originData = originData;
+        this.project = project;
     }
 
     @Override
@@ -74,7 +75,6 @@ public class SaveFiltersAsQueryDialog extends DialogWrapper {
     }
 
     private EditorTextField createEditorTextField() {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
         final DocumentImpl document = new DocumentImpl("", true);
         final EditorTextField result = new EditorTextField(document, project, PlainTextFileType.INSTANCE, true, false);
         result.addSettingsProvider(editor -> { // add scrolling/line number features/soft wrap

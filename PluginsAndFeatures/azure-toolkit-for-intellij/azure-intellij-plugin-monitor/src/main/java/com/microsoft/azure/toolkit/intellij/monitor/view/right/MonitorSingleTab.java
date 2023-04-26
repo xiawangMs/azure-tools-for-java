@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.JBSplitter;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
@@ -84,7 +83,7 @@ public class MonitorSingleTab {
             public void actionPerformed(ActionEvent e) {
                 final String queryContent = monitorLogTablePanel.getQueryStringFromFilters(tabName);
                 AzureTaskManager.getInstance().runLater(() -> {
-                    final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+                    final Project project = parentView.getProject();
                     final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(project, queryContent,
                             Optional.ofNullable(AzureMonitorManager.getInstance().getContentViewByTabName(project, AzureMonitorManager.QUERIES_TAB_NAME))
                                     .map(azureMonitorView -> azureMonitorView.getMonitorTreePanel().getCustomQueries()).orElse(Collections.emptyList()));
@@ -112,11 +111,10 @@ public class MonitorSingleTab {
     }
 
     private Action<?> selectWorkspaceAction() {
-        final Project project = ProjectManager.getInstance().getDefaultProject();
         return new Action<>(Action.Id.of("user/monitor.select_workspace"))
                 .withLabel("Select")
                 .withHandler((s, e) -> AzureTaskManager.getInstance().runLater(() -> {
-                    final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(project, null);
+                    final WorkspaceSelectionDialog dialog = new WorkspaceSelectionDialog(parentView.getProject(), null);
                     if (dialog.showAndGet()) {
                         Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> AzureEventBus.emit("azure.monitor.change_workspace", w));
                     }
