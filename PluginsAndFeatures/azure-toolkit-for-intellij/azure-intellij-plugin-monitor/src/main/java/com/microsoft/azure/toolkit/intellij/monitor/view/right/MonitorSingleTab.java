@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.JBSplitter;
+import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.intellij.monitor.view.AzureMonitorView;
 import com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.SaveFiltersAsQueryDialog;
@@ -22,6 +23,7 @@ import lombok.Getter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -82,8 +84,10 @@ public class MonitorSingleTab {
             public void actionPerformed(ActionEvent e) {
                 final String queryContent = monitorLogTablePanel.getQueryStringFromFilters(tabName);
                 AzureTaskManager.getInstance().runLater(() -> {
-                    final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(ProjectManager.getInstance().getDefaultProject(),
-                            queryContent, parentView.getMonitorTreePanel().getCustomQueries());
+                    final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+                    final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(project, queryContent,
+                            Optional.ofNullable(AzureMonitorManager.getInstance().getContentViewByTabName(project, AzureMonitorManager.QUERIES_TAB_NAME))
+                                    .map(azureMonitorView -> azureMonitorView.getMonitorTreePanel().getCustomQueries()).orElse(Collections.emptyList()));
                     if (dialog.showAndGet()) {
                         AzureEventBus.emit("azure.monitor.add_query_node", dialog.getQueryDataToSave());
                     }

@@ -40,6 +40,8 @@ public class AzureMonitorManager {
     public static final String AZURE_MONITOR_TRIGGERED = "AzureMonitor.Triggered";
     public static final String AZURE_MONITOR_SELECTED_WORKSPACE = "AzureMonitor.SelectedLogAnalyticsWorkspace";
     public static final String AZURE_MONITOR_CUSTOM_QUERY_LIST = "AzureMonitor.CustomQueryList";
+    public static final String QUERIES_TAB_NAME = "Queries";
+    public static final String TABLES_TAB_NAME = "Tables";
     private static final AzureMonitorManager instance = new AzureMonitorManager();
     public static AzureMonitorManager getInstance() {
         return instance;
@@ -55,6 +57,24 @@ public class AzureMonitorManager {
                     it.show();
                 }))
         );
+    }
+
+    @Nullable
+    public AzureMonitorView getContentViewByTabName(@Nonnull Project project, String tabName) {
+        return Optional.ofNullable(ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW))
+                .map(toolWindow -> toolWindow.getContentManager().findContent(tabName))
+                .map(content -> {
+                    if (content.getComponent() instanceof AzureMonitorView) {
+                        return (AzureMonitorView) content.getComponent();
+                    }
+                    return null;
+                }).orElse(null);
+    }
+
+    public void changeContentView(@Nonnull Project project, String tabName) {
+        Optional.ofNullable(ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW))
+                .ifPresent(toolWindow -> Optional.ofNullable(toolWindow.getContentManager().findContent(tabName))
+                        .ifPresent(content -> toolWindow.getContentManager().setSelectedContent(content)));
     }
 
     @Nullable
