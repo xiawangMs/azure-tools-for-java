@@ -63,12 +63,9 @@ public class AzureMonitorManager {
     public AzureMonitorView getContentViewByTabName(@Nonnull Project project, String tabName) {
         return Optional.ofNullable(ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW))
                 .map(toolWindow -> toolWindow.getContentManager().findContent(tabName))
-                .map(content -> {
-                    if (content.getComponent() instanceof AzureMonitorView) {
-                        return (AzureMonitorView) content.getComponent();
-                    }
-                    return null;
-                }).orElse(null);
+                .filter(content -> content.getComponent() instanceof AzureMonitorView)
+                .map(content -> (AzureMonitorView) content.getComponent())
+                .orElse(null);
     }
 
     public void changeContentView(@Nonnull Project project, String tabName) {
