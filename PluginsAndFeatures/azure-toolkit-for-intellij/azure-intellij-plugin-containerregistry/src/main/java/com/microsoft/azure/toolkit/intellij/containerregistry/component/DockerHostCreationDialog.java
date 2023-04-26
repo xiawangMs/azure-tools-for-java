@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -73,7 +74,7 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
     private AzureValidationInfo validateCertPath() {
         final String value = txtCertPath.getValue();
         if (StringUtils.isNotEmpty(value) && !FileUtil.exists(value)) {
-            return AzureValidationInfo.error(String.format("File %s does not exists", value), txtCertPath);
+            return AzureValidationInfo.error(AzureString.format("File %s does not exists", value), txtCertPath);
         }
         return AzureValidationInfo.success(txtCertPath);
     }
@@ -83,13 +84,13 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
         try {
             final URI uri = URI.create(value);
             if (StringUtils.isBlank(uri.getScheme())) {
-                return AzureValidationInfo.error("Invalid host value, schema of uri could not be empty", txtDockerHost);
+                return AzureValidationInfo.error("Invalid Docker host URI, schema of uri could not be empty", txtDockerHost);
             }
             if (StringUtils.isBlank(uri.getHost())) {
-                return AzureValidationInfo.error("Invalid host value, host of uri could not be empty", txtDockerHost);
+                return AzureValidationInfo.error("Invalid Docker host URI, host of uri could not be empty", txtDockerHost);
             }
         } catch (final Exception e) {
-            return AzureValidationInfo.error(String.format("Invalid host value, %s", e.getMessage()), txtDockerHost);
+            return AzureValidationInfo.error(String.format("Invalid Docker host URI, %s", e.getMessage()), txtDockerHost);
         }
         return AzureValidationInfo.success(txtDockerHost);
     }
