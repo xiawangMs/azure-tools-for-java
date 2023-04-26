@@ -32,6 +32,7 @@ import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.
 
 public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushImageRunModel> implements IDockerPushConfiguration {
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
+    public static final String CONTAINER_REGISTRY_VALIDATION = "Please specify the container registry";
 
     private final PushImageRunModel dataModel;
 
@@ -58,6 +59,9 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
     public void validate() throws ConfigurationException {
         if (dataModel == null) {
             throw new ConfigurationException(MISSING_MODEL);
+        }
+        if (StringUtils.isEmpty(getContainerRegistryId())) {
+            throw new ConfigurationException(CONTAINER_REGISTRY_VALIDATION);
         }
         validateDockerHostConfiguration(getDockerHostConfiguration());
         validateDockerImageConfiguration(getDockerImageConfiguration());
