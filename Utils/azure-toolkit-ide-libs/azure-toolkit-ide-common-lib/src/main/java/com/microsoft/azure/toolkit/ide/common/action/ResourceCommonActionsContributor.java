@@ -289,8 +289,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                     if (r.getParent() instanceof SpringCloudDeployment) {
                         final SpringCloudApp app = ((SpringCloudDeployment) r.getParent()).getParent();
                         final String appUrl = app.getParent().getPortalUrl();
-                        final String message = String.format("Please create Service Connector from {0}/{1}/{2}/{3} in <a href=\"%s\">Azure portal</a>.", appUrl);
-                        AzureMessager.getMessager().info(AzureString.format(message, "apps", app.getName(), "settings", "Service Connector"));
+                        final String message = String.format("Please create Service Connector from {0} in <a href=\"%s\">Azure portal</a>.", appUrl);
+                        AzureMessager.getMessager().info(AzureString.format(message, String.format("apps/%s/settings/Service Connector", app.getName())));
                         return;
                     }
                     final String parentUrl = r.getParent().getPortalUrl();

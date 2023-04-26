@@ -96,7 +96,7 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
         this.stopButton.addActionListener(e -> tm.runInBackground(stopTitle, this.draft::stop));
         final AzureString restartTitle = OperationBundle.description("user/resource.restart_resource.resource", this.draft.getName());
         this.restartButton.addActionListener(e -> tm.runInBackground(restartTitle, this.draft::restart));
-        final String saveTitle = String.format("Saving updates of app(%s)", this.draft.name());
+        final AzureString saveTitle = AzureString.format("Saving updates of app(%s)", this.draft.getName());
         this.saveButton.addActionListener(e -> tm.runInBackground(saveTitle, this::save));
         this.formConfig.setDataChangedListener((data) -> AzureTaskManager.getInstance().runOnPooledThread(this::refreshToolbar));
     }
