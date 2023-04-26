@@ -70,8 +70,12 @@ public class AzureMonitorManager {
 
     public void changeContentView(@Nonnull Project project, String tabName) {
         Optional.ofNullable(ToolWindowManager.getInstance(project).getToolWindow(AZURE_MONITOR_WINDOW))
-                .ifPresent(toolWindow -> Optional.ofNullable(toolWindow.getContentManager().findContent(tabName))
-                        .ifPresent(content -> toolWindow.getContentManager().setSelectedContent(content)));
+                .ifPresent(toolWindow -> {
+                    final Content content = toolWindow.getContentManager().findContent(tabName);
+                    if (Objects.nonNull(content)) {
+                        toolWindow.getContentManager().setSelectedContent(content);
+                    }
+                });
     }
 
     @Nullable
