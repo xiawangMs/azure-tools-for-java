@@ -54,10 +54,13 @@ public class AzureMonitorView extends JPanel {
     private LogAnalyticsWorkspace selectedWorkspace;
     private final AzureEventBus.EventListener workspaceChangeListener;
     private final AzureEventBus.EventListener subscriptionChangeListener;
+    @Getter
+    private final Project project;
 
     public AzureMonitorView(Project project, @Nullable LogAnalyticsWorkspace logAnalyticsWorkspace, boolean isTableTab, @Nullable String resourceId) {
         super();
         this.selectedWorkspace = logAnalyticsWorkspace;
+        this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init(isTableTab, resourceId);
         this.workspaceChangeListener =  new AzureEventBus.EventListener(e -> {
@@ -144,7 +147,7 @@ public class AzureMonitorView extends JPanel {
                 });
             }
         });
-        this.monitorTreePanel = new MonitorTreePanel();
+        this.monitorTreePanel = new MonitorTreePanel(project);
         this.tabbedPanePanel = new MonitorTabbedPane();
         this.rightPanel = tabbedPanePanel.getContentPanel();
     }
