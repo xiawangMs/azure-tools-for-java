@@ -85,9 +85,6 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
             if (StringUtils.isBlank(uri.getScheme())) {
                 return AzureValidationInfo.error("Invalid Docker host URI, schema of uri could not be empty", txtDockerHost);
             }
-            if (StringUtils.isBlank(uri.getHost())) {
-                return AzureValidationInfo.error("Invalid Docker host URI, host of uri could not be empty", txtDockerHost);
-            }
         } catch (final Exception e) {
             return AzureValidationInfo.error(String.format("Invalid Docker host URI, %s", e.getMessage()), txtDockerHost);
         }
