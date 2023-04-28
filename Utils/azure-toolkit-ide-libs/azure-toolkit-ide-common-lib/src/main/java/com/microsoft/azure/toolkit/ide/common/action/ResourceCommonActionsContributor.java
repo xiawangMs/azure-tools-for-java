@@ -9,10 +9,12 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -31,6 +33,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinkerModule;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
@@ -58,7 +62,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("user/resource.pin");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("user/common.open_url.url");
     public static final Action.Id<String> COPY_STRING = Action.Id.of("user/common.copy_string");
-    public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("user/common.open_azure_settings");
+    public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.OPEN_AZURE_SETTINGS;
     public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("user/common.open_azure_explorer");
     public static final Action.Id<Object> OPEN_AZURE_REFERENCE_BOOK = Action.Id.of("user/common.open_azure_reference_book");
     public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.highlight_resource_in_explorer");
@@ -284,9 +288,32 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .withIcon(AzureIcons.Action.CREATE.getIconPath())
                 .visibleWhen(s -> s instanceof ServiceLinkerModule)
                 .withHandler((r) -> {
+                    if (r.getParent() instanceof SpringCloudDeployment) {
+                        final SpringCloudApp app = ((SpringCloudDeployment) r.getParent()).getParent();
+                        final String appUrl = app.getParent().getPortalUrl();
+                        final String message = String.format("Please create Service Connector from {0} in <a href=\"%s\">Azure portal</a>.", appUrl);
+                        AzureMessager.getMessager().info(AzureString.format(message, String.format("apps/%s/settings/Service Connector", app.getName())));
+                        return;
+                    }
                     final String parentUrl = r.getParent().getPortalUrl();
                     am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(String.format("%s/serviceConnector", parentUrl));
                 })
+                .register(am);
+
+        new Action<>(Action.DISABLE_AUTH_CACHE)
+                .withLabel("Disable Auth Cache")
+                .visibleWhen(s -> Azure.az().config().isAuthPersistenceEnabled())
+                .withHandler((s) -> {
+                    Azure.az().config().setAuthPersistenceEnabled(false);
+                    AzureConfigInitializer.saveAzConfig();
+                    final AzureAccount az = Azure.az(AzureAccount.class);
+                    if (az.isLoggedIn()) {
+                        az.logout();
+                    }
+                    final Action<Object> signIn = am.getAction(Action.AUTHENTICATE);
+                    AzureMessager.getMessager().info("Auth cache disabled, please re-signin to take effect.", signIn);
+                })
+                .withAuthRequired(false)
                 .register(am);
     }
 
