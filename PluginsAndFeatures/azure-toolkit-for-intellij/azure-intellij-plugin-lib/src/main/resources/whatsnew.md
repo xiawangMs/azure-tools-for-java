@@ -1,5 +1,25 @@
-<!-- Version: 3.74.0 -->
+<!-- Version: 3.76.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.76.0
+### Added
+- Basic resource management support for service connections
+
+### Changed
+- Docker development experience enhancement
+  - New onclick action to deploy Dockerfile to Azure Container App 
+  - Migrate docker client to docker java to unblock docker experience in MacOS 
+  - UX enhancement for docker host run/deploy experience
+- UX enhancement for Azure Monitor
+  - Finer time control (hour, minute, seconds...) for montior queries
+  - Add customer filters persistence support
+
+### Fixed
+- [#7387](https://github.com/microsoft/azure-tools-for-java/issues/7387): Cannot invoke "com.intellij.openapi.editor.Editor.getDocument()" because "editor" is null
+- [#7020](https://github.com/microsoft/azure-tools-for-java/issues/7387): Uncaught Exception java.util.ConcurrentModificationException
+- [#7444](https://github.com/microsoft/azure-tools-for-java/issues/7444): Uncaught Exception com.microsoft.azure.toolkit.lib.common.operation.OperationException: initialize Azure explorer
+- [#7432](https://github.com/microsoft/azure-tools-for-java/issues/7432): Cannot invoke "com.intellij.psi.PsiDirectory.getVirtualFile()" because "dir" is null
+- [#7479](https://github.com/microsoft/azure-tools-for-java/issues/7479): Uncaught Exception java.lang.Throwable: Assertion failed
 
 ## 3.75.0
 ### Added
