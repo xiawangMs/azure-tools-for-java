@@ -31,6 +31,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinkerModule;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
@@ -284,6 +286,13 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .withIcon(AzureIcons.Action.CREATE.getIconPath())
                 .visibleWhen(s -> s instanceof ServiceLinkerModule)
                 .withHandler((r) -> {
+                    if (r.getParent() instanceof SpringCloudDeployment) {
+                        final SpringCloudApp app = ((SpringCloudDeployment) r.getParent()).getParent();
+                        final String appUrl = app.getParent().getPortalUrl();
+                        final String message = String.format("Please create Service Connector from {0} in <a href=\"%s\">Azure portal</a>.", appUrl);
+                        AzureMessager.getMessager().info(AzureString.format(message, String.format("apps/%s/settings/Service Connector", app.getName())));
+                        return;
+                    }
                     final String parentUrl = r.getParent().getPortalUrl();
                     am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(String.format("%s/serviceConnector", parentUrl));
                 })

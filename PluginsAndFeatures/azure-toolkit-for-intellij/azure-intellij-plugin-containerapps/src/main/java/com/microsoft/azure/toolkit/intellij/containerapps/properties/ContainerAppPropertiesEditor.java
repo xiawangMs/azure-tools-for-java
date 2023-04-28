@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.properties.AzResourceProperti
 import com.microsoft.azure.toolkit.intellij.containerapps.component.EnableComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -148,7 +149,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         this.resetButton.addActionListener(e -> this.reset());
         this.btnRefresh.addActionListener(e -> this.refresh());
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        final String saveTitle = String.format("Saving updates of app(%s)", this.draft.getName());
+        final AzureString saveTitle = AzureString.format("Saving updates of app(%s)", this.draft.getName());
         this.saveButton.addActionListener(e -> tm.runInBackground(saveTitle, this::save));
         final Runnable runnable = () -> AzureTaskManager.getInstance().runOnPooledThread(ContainerAppPropertiesEditor.this::refreshToolbar);
         this.txtTargetPort.addChangeListener(e -> runnable.run());
