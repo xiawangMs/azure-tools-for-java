@@ -25,6 +25,8 @@ import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfiguration> {
@@ -55,13 +57,13 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
 
     private void onSelectImage(DockerImage image) {
         final DockerPushConfiguration value = pnlDockerConfiguration.getValue();
-        AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Inspecting image", () -> AzureDockerClient.getExposedPorts(value.getDockerHost(), image)))
+        AzureTaskManager.getInstance().runLater(() ->
+                DockerBuildTaskUtils.updateDockerBuildBeforeRunTasks(DataManager.getInstance().getDataContext(getMainPanel()), this.configuration, image), AzureTask.Modality.ANY);
+        Optional.ofNullable(image).ifPresent(i -> AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>("Inspecting image", () -> AzureDockerClient.getExposedPorts(value.getDockerHost(), image)))
                 .subscribe(ports -> {
                     final Integer port = ports.stream().findFirst().orElse(null);
                     Optional.ofNullable(port).ifPresent(p -> AzureTaskManager.getInstance().runLater(() -> txtTargetPort.setNumber(p), AzureTask.Modality.ANY));
-                });
-        AzureTaskManager.getInstance().runLater(() ->
-                DockerBuildTaskUtils.updateDockerBuildBeforeRunTasks(DataManager.getInstance().getDataContext(getMainPanel()), this.configuration, image), AzureTask.Modality.ANY);
+                }));
     }
 
     @Override
