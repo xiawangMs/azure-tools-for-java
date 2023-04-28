@@ -313,6 +313,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                     final Action<Object> signIn = am.getAction(Action.AUTHENTICATE);
                     AzureMessager.getMessager().info("Auth cache disabled, please re-signin to take effect.", signIn);
                 })
+                .withAuthRequired(false)
                 .register(am);
     }
 
