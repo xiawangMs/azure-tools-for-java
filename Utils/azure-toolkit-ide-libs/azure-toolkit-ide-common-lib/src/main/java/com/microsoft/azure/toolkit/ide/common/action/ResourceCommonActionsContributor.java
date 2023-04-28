@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -305,6 +306,12 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                 .withHandler((s) -> {
                     Azure.az().config().setAuthPersistenceEnabled(false);
                     AzureConfigInitializer.saveAzConfig();
+                    final AzureAccount az = Azure.az(AzureAccount.class);
+                    if (az.isLoggedIn()) {
+                        az.logout();
+                    }
+                    final Action<Object> signIn = am.getAction(Action.AUTHENTICATE);
+                    AzureMessager.getMessager().info("Auth cache disabled, please re-signin to take effect.", signIn);
                 })
                 .register(am);
     }
