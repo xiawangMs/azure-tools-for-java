@@ -4,19 +4,22 @@
 ## 3.76.0
 ### Added
 - Basic resource management support for service connections
+- New one click action to deploy Dockerfile (build image first) to Azure Container App
+- Finer granular resource management(registry/repository/images/...) for Azure Container Registry    
+  <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="500"/>
+- Monitoring support for Azure Container Apps (azure monitor integration & log streaming)
 
 ### Changed
-- Docker development experience enhancement
-  - New onclick action to deploy Dockerfile to Azure Container App 
-  - Migrate docker client to docker java to unblock docker experience in MacOS 
+- Docker development/container based Azure services experience enhancement
   - UX enhancement for docker host run/deploy experience
+  - Migrate docker client to docker java to unblock docker experience in MacOS 
 - UX enhancement for Azure Monitor
   - Finer time control (hour, minute, seconds...) for montior queries
   - Add customer filters persistence support
 
 ### Fixed
 - [#7387](https://github.com/microsoft/azure-tools-for-java/issues/7387): Cannot invoke "com.intellij.openapi.editor.Editor.getDocument()" because "editor" is null
-- [#7020](https://github.com/microsoft/azure-tools-for-java/issues/7387): Uncaught Exception java.util.ConcurrentModificationException
+- [#7020](https://github.com/microsoft/azure-tools-for-java/issues/7020): Uncaught Exception java.util.ConcurrentModificationException
 - [#7444](https://github.com/microsoft/azure-tools-for-java/issues/7444): Uncaught Exception com.microsoft.azure.toolkit.lib.common.operation.OperationException: initialize Azure explorer
 - [#7432](https://github.com/microsoft/azure-tools-for-java/issues/7432): Cannot invoke "com.intellij.psi.PsiDirectory.getVirtualFile()" because "dir" is null
 - [#7479](https://github.com/microsoft/azure-tools-for-java/issues/7479): Uncaught Exception java.lang.Throwable: Assertion failed

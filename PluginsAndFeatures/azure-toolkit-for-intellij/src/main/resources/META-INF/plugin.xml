@@ -30,12 +30,14 @@
       <h3 id="3-76-0">3.76.0</h3>
       <h4 id="added">Added</h4>
       <ul>
-          <li>Basic resource management support for service connections</li>
+        <li>Basic resource management support for service connections</li>
+        <li>New one click action to deploy Dockerfile (build image first) to Azure Container App</li>
+        <li>Finer granular resource management(registry/repository/images/...) for Azure Container Registry</li>
+        <li>Monitoring support for Azure Container Apps (azure monitor integration &amp; log streaming)</li>
       </ul>
       <h4 id="changed">Changed</h4>
       <ul>
           <li>Docker development experience enhancement<ul>
-                  <li>New onclick action to deploy Dockerfile to Azure Container App </li>
                   <li>Migrate docker client to docker java to unblock docker experience in MacOS </li>
                   <li>UX enhancement for docker host run/deploy experience</li>
               </ul>
@@ -50,7 +52,7 @@
       <ul>
           <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7387">#7387</a>: Cannot invoke
               &quot;com.intellij.openapi.editor.Editor.getDocument()&quot; because &quot;editor&quot; is null</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7387">#7020</a>: Uncaught Exception
+          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7020">#7020</a>: Uncaught Exception
               java.util.ConcurrentModificationException</li>
           <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7444">#7444</a>: Uncaught Exception
               com.microsoft.azure.toolkit.lib.common.operation.OperationException: initialize Azure explorer</li>
