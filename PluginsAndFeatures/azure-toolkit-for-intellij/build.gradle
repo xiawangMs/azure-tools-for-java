@@ -32,9 +32,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
     duplicatesStrategy(DuplicatesStrategy.INCLUDE)
-    filesMatching('**/ApplicationInsights.xml') {
-        filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
-    }
 }
 
 group 'com.microsoft.azuretools'
@@ -340,4 +337,9 @@ buildPlugin {
 prepareSandbox {
     dependsOn(downloadBicepLanguageServer)
     finalizedBy(prepareBicepBinariesForSandbox)
+}
+
+runIde{
+    dependsOn(prepareBicepBinariesForSandbox)
+    jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
 }
