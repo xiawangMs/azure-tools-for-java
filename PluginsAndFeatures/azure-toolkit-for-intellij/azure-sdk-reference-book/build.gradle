@@ -1,5 +1,3 @@
-apply plugin: "io.freefair.aspectj.post-compile-weaving"
-
 intellij {
     plugins = ['java', 'maven', 'gradle', 'Groovy']
 }

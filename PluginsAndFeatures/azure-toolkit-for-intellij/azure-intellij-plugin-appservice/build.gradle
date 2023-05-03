@@ -1,6 +1,3 @@
-plugins {
-}
-
 intellij {
     plugins = ["properties", 'terminal']
 }

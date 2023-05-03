@@ -2,10 +2,6 @@ intellij {
     plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java']
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation project(':azure-intellij-plugin-lib')
     implementation project(':azure-intellij-plugin-lib-java')
