@@ -135,8 +135,8 @@ dependencies {
     implementation 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
 
-    implementation project(':azure-intellij-plugin-lib')
-    implementation project(':azure-intellij-plugin-service-explorer')
+    implementation project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-service-explorer', configuration: 'instrumentedJar')
 
     def modules = IntellijPluginModules.split(",")
     modules.each { m ->
