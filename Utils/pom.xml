@@ -276,11 +276,6 @@
                 <version>${azure.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-mgmt-storage</artifactId>
-                <version>${azure.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.reactivex</groupId>
                 <artifactId>rxjava</artifactId>
                 <version>${rx.version}</version>
