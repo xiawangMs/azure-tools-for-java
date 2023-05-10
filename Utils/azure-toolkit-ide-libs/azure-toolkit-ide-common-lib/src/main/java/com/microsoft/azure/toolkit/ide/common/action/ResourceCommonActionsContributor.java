@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
@@ -54,7 +53,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Refreshable> REFRESH = Action.Id.of("user/resource.refresh_resource.resource");
     public static final Action.Id<AzResource> DELETE = Action.Id.of("user/resource.delete_resource.resource");
     public static final Action.Id<AzResource> OPEN_PORTAL_URL = Action.Id.of("user/resource.open_portal_url.resource");
-    public static final Action.Id<AzResourceBase> SHOW_PROPERTIES = Action.Id.of("user/resource.show_properties.resource");
+    public static final Action.Id<AzResource> SHOW_PROPERTIES = Action.Id.of("user/resource.show_properties.resource");
     public static final Action.Id<AzResource> DEPLOY = Action.Id.of("user/resource.deploy_resource.resource");
     public static final Action.Id<AzResource> CONNECT = Action.Id.of("user/resource.connect_resource.resource");
     public static final Action.Id<Object> CREATE = Action.Id.of("user/resource.create_resource.type");
@@ -85,7 +84,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.START.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.start())
-            .visibleWhen(s -> s instanceof AzResource && s instanceof Startable && ((Startable) s).isStartable())
+            .visibleWhen(s -> s instanceof Startable && ((Startable) s).isStartable())
             .withHandler(s -> ((Startable) s).start())
             .register(am);
 
@@ -94,7 +93,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.STOP.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.stop())
-            .visibleWhen(s -> s instanceof AzResource && s instanceof Startable && ((Startable) s).isStoppable())
+            .visibleWhen(s -> s instanceof Startable && ((Startable) s).isStoppable())
             .withHandler(s -> ((Startable) s).stop())
             .register(am);
 
@@ -103,7 +102,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.RESTART.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.restart())
-            .visibleWhen(s -> s instanceof AzResource && s instanceof Startable && ((Startable) s).isRestartable())
+            .visibleWhen(s -> s instanceof Startable && ((Startable) s).isRestartable())
             .withHandler(s -> ((Startable) s).restart())
             .register(am);
 
@@ -168,15 +167,15 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withLabel("Connect to Project")
             .withIcon(AzureIcons.Connector.CONNECT.getIconPath())
             .withIdParam(AzResource::getName)
-            .visibleWhen(s -> s instanceof AzResourceBase)
+            .visibleWhen(s -> s instanceof AzResource)
             .enableWhen(s -> s.getFormalStatus(true).isRunning())
             .register(am);
 
         new Action<>(SHOW_PROPERTIES)
             .withLabel("Show Properties")
             .withIcon(AzureIcons.Action.PROPERTIES.getIconPath())
-            .withIdParam(AzResourceBase::getName)
-            .visibleWhen(s -> s instanceof AzResourceBase)
+            .withIdParam(AzResource::getName)
+            .visibleWhen(s -> s instanceof AzResource)
             .enableWhen(s -> s.getFormalStatus(true).isConnected())
             .withShortcut(shortcuts.edit())
             .register(am);
@@ -186,7 +185,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.DEPLOY.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
-            .visibleWhen(s -> s instanceof AzResourceBase)
+            .visibleWhen(s -> s instanceof AzResource)
             .enableWhen(s -> s.getFormalStatus(true).isRunning())
             .withShortcut(shortcuts.deploy())
             .register(am);
@@ -226,7 +225,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             })
             .withShortcut(shortcuts.add())
             .visibleWhen(s -> s instanceof AzService || s instanceof AzResourceModule || s instanceof AzResource)
-            .enableWhen(s -> !(s instanceof AzResource) || !StringUtils.equalsIgnoreCase(((AzResourceBase) s).getStatus(), AzResource.Status.CREATING))
+            .enableWhen(s -> !(s instanceof AzResource) || !StringUtils.equalsIgnoreCase(((AzResource) s).getStatus(), AzResource.Status.CREATING))
             .register(am);
 
         new Action<>(CREATE_IN_PORTAL)
