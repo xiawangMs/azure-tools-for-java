@@ -111,7 +111,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.DELETE.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.delete())
-            .visibleWhen(s -> s instanceof AzResource && s instanceof Deletable)
+            .visibleWhen(s -> (s instanceof AzResource && s instanceof Deletable) && !(s instanceof AbstractAzResource && ((AbstractAzResource) s).isEmulatorResource()))
             .enableWhen(s -> {
                 if (s instanceof AbstractAzResource) {
                     final AbstractAzResource<?, ?, ?> r = (AbstractAzResource<?, ?, ?>) s;
@@ -146,7 +146,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
-            .visibleWhen(s -> s instanceof AzResource)
+            .visibleWhen(s -> s instanceof AzResource && !(s instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) s).isEmulatorResource()))
             .withHandler(s -> am.getAction(OPEN_URL).handle(s.getPortalUrl()))
             .register(am);
 

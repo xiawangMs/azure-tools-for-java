@@ -93,7 +93,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = {BindingEnum.HttpOutput, BindingEnum.HttpTrigger};
     private static final List<String> AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS = Arrays.asList("httptrigger", "kafkatrigger", "rabbitmqtrigger",
             "orchestrationTrigger", "activityTrigger", "entityTrigger");
-    private static final String MISSING_AZURE_WEB_JOBS_STORAGE_WARNING = "Missing value for AzureWebJobsStorage in local.settings.json. " +
+    private static final String MISSING_AZURE_WEB_JOBS_STORAGE_WARNING = "Please set connection for `AzureWebJobsStorage`. " +
             "This is required for all triggers other than httptrigger, kafkatrigger, rabbitmqtrigger, orchestrationTrigger, activityTrigger, entityTrigger.";
     private boolean isDebuggerLaunched;
     private File stagingFolder;
@@ -350,6 +350,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             // show resource connection dialog for web job storage
             AzureTaskManager.getInstance().runAndWait(() -> {
                 final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage");
+                dialog.setTitle("Set Connection for `AzureWebJobsStorage`");
                 dialog.setFixedConnectionName(AZURE_WEB_JOB_STORAGE_KEY);
                 dialog.setDescription(MISSING_AZURE_WEB_JOBS_STORAGE_WARNING, AllIcons.General.Warning);
                 if (dialog.showAndGet()) {

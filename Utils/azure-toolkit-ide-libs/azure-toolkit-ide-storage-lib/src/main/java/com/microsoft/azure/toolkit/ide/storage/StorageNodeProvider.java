@@ -27,10 +27,7 @@ import org.apache.commons.io.FilenameUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -56,11 +53,9 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
     public Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager) {
         if (data instanceof AzureStorageAccount) {
             final AzureStorageAccount service = ((AzureStorageAccount) data);
-            final Function<AzureStorageAccount, List<StorageAccount>> accounts = asc -> asc.list().stream().flatMap(m -> m.storageAccounts().list().stream())
-                .collect(Collectors.toList());
             return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(StorageActionsContributor.SERVICE_ACTIONS)
-                .addChildren(accounts, (account, storageNode) -> this.createNode(account, storageNode, manager));
+                .addChildren(AzureStorageAccount::accounts, (account, storageNode) -> this.createNode(account, storageNode, manager));
         } else if (data instanceof StorageAccount) {
             final StorageAccount account = (StorageAccount) data;
             return new Node<>(account).view(new AzureResourceLabelView<>(account))

@@ -147,7 +147,8 @@ public class IntellijAzureActionManager extends AzureActionManager {
                 visible = true;
             } else {
                 final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired();
-                visible = !isResourceInOtherSubs && view.isVisible() && Objects.nonNull(action.getHandler(source, e));
+                final boolean enableResourceInOtherSubs = source instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) source).isEmulatorResource();
+                visible = (!isResourceInOtherSubs || enableResourceInOtherSubs) && view.isVisible() && Objects.nonNull(action.getHandler(source, e));
             }
 
             presentation.setVisible(visible);
