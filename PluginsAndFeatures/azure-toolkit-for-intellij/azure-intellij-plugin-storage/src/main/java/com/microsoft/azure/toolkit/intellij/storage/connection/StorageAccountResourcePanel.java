@@ -16,12 +16,14 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,13 +37,24 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
     protected AzureComboBox<StorageAccount> accountComboBox;
     @Getter
     protected JPanel contentPanel;
+    private JPanel pnlAzure;
+    private JRadioButton btnAzure;
+    private JRadioButton btnLocal;
 
     public StorageAccountResourcePanel() {
         this.init();
     }
 
     private void init() {
-        this.accountComboBox.setRequired(true);
+        final ButtonGroup environmentGroup = new ButtonGroup();
+        environmentGroup.add(btnAzure);
+        environmentGroup.add(btnLocal);
+        btnAzure.addItemListener(ignore -> onSelectEnvironment());
+        btnLocal.addItemListener(ignore -> onSelectEnvironment());
+
+        btnAzure.setSelected(true);
+        this.onSelectEnvironment();
+
         this.accountComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -52,23 +65,34 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
         });
     }
 
+    private void onSelectEnvironment() {
+        pnlAzure.setVisible(btnAzure.isSelected());
+        accountComboBox.setRequired(btnAzure.isSelected());
+        accountComboBox.validateValueAsync();
+    }
+
     @Override
     public void setValue(Resource<StorageAccount> accountResource) {
-        StorageAccount account = accountResource.getData();
+        final StorageAccount account = accountResource.getData();
         Optional.ofNullable(account).ifPresent((a -> {
-            this.subscriptionComboBox.setValue(new ItemReference<>(a.getSubscriptionId(), Subscription::getId));
-            this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name));
+            if (a instanceof AzuriteStorageAccount) {
+                btnLocal.setSelected(true);
+            } else {
+                btnAzure.setSelected(true);
+                this.subscriptionComboBox.setValue(new ItemReference<>(a.getSubscriptionId(), Subscription::getId));
+                this.accountComboBox.setValue(new ItemReference<>(a.getName(), StorageAccount::getName));
+            }
         }));
     }
 
     @Nullable
     @Override
     public Resource<StorageAccount> getValue() {
-        final StorageAccount account = this.accountComboBox.getValue();
         final AzureValidationInfo info = this.getValidationInfo(true);
         if (!info.isValid()) {
             return null;
         }
+        final StorageAccount account = btnAzure.isSelected() ? this.accountComboBox.getValue() : AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT;
         return StorageAccountResourceDefinition.INSTANCE.define(account);
     }
 
@@ -98,7 +122,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
 
             @Override
             protected String getItemText(Object item) {
-                return Optional.ofNullable(item).map(i -> ((StorageAccount) i).name()).orElse(StringUtils.EMPTY);
+                return Optional.ofNullable(item).map(i -> ((StorageAccount) i).getName()).orElse(StringUtils.EMPTY);
             }
 
             @Override

@@ -55,7 +55,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
             final AzureStorageAccount service = ((AzureStorageAccount) data);
             return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(StorageActionsContributor.SERVICE_ACTIONS)
-                .addChildren(AzureStorageAccount::accounts, (account, storageNode) -> this.createNode(account, storageNode, manager));
+                .addChildren(ignore -> service.accounts(true), (account, storageNode) -> this.createNode(account, storageNode, manager));
         } else if (data instanceof StorageAccount) {
             final StorageAccount account = (StorageAccount) data;
             return new Node<>(account).view(new AzureResourceLabelView<>(account))
