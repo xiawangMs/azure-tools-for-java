@@ -204,7 +204,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         props.put("subscriptionId", String.valueOf(cfg.getSubscriptionId()));
         props.put("public", String.valueOf(cfg.isPublic()));
         props.put("jvmOptions", String.valueOf(StringUtils.isNotEmpty(cfg.getDeployment().getJvmOptions())));
-        props.put("instanceCount", String.valueOf(cfg.getDeployment().getInstanceCount()));
+        props.put("instanceCount", String.valueOf(cfg.getDeployment().getCapacity()));
         props.put("memory", String.valueOf(cfg.getDeployment().getMemoryInGB()));
         props.put("cpu", String.valueOf(cfg.getDeployment().getCpu()));
         props.put("persistentStorage", String.valueOf(cfg.getDeployment().getEnablePersistentStorage()));

@@ -46,7 +46,7 @@ public class CreateSpringAppTask implements Task {
     public void execute() {
         final SpringCloudCluster cluster = (SpringCloudCluster) Objects.requireNonNull(context.getParameter(SPRING_APP_CLUSTER), "`cluster` is required to create spring app");
         final String name = (String) Objects.requireNonNull(context.getParameter(SPRING_APP_NAME), "`name` is required to create spring app");
-        final SpringCloudDeploymentConfig deploymentConfig = SpringCloudDeploymentConfig.builder().runtimeVersion(RuntimeVersion.JAVA_17.toString()).instanceCount(1).build();
+        final SpringCloudDeploymentConfig deploymentConfig = SpringCloudDeploymentConfig.builder().runtimeVersion(RuntimeVersion.JAVA_17.toString()).capacity(1).build();
         final SpringCloudAppConfig config = SpringCloudAppConfig.builder()
                 .appName(name)
                 .subscriptionId(cluster.getSubscriptionId())

@@ -212,7 +212,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
         deploymentConfig.setCpu(numCpu.getItem());
         deploymentConfig.setMemoryInGB(numMemory.getItem());
-        deploymentConfig.setInstanceCount(numInstance.getValue());
+        deploymentConfig.setCapacity(numInstance.getValue());
         deploymentConfig.setJvmOptions(Optional.ofNullable(this.txtJvmOptions.getText()).map(String::trim).orElse(""));
         deploymentConfig.setEnvironment(Optional.ofNullable(envTable.getEnvironmentVariables()).orElse(new HashMap<>()));
         appConfig.setDeployment(deploymentConfig);
@@ -235,7 +235,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
 
         Optional.ofNullable(deployment.getCpu()).ifPresent(c -> this.numCpu.setItem(c));
         Optional.ofNullable(deployment.getMemoryInGB()).ifPresent(c -> this.numMemory.setItem(c));
-        this.numInstance.setValue(Optional.ofNullable(deployment.getInstanceCount()).orElse(0));
+        this.numInstance.setValue(Optional.ofNullable(deployment.getCapacity()).orElse(0));
     }
 
     @Nonnull
