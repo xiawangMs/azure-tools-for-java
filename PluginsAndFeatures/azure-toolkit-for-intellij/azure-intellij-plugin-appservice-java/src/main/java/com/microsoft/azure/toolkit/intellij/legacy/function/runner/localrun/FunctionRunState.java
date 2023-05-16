@@ -33,7 +33,10 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTa
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteService;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -46,6 +49,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
+import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -359,6 +363,10 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                     if (Objects.nonNull(connection)) {
                         functionRunConfiguration.addConnection(connection);
                         applyResourceConnection(appSettings);
+                        if (connection.getResource().getData() instanceof AzuriteStorageAccount) {
+                            // start azurite if azurite connection is added
+                            AzuriteService.getInstance().startAzurite(project);
+                        }
                     }
                 }
             });
