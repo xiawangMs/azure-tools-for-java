@@ -7,10 +7,6 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
-processResources {
-    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
-}
-
 allprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
@@ -22,6 +18,10 @@ allprojects {
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+    processResources {
+        duplicatesStrategy(DuplicatesStrategy.INCLUDE)
+    }
 
     sourceSets {
         main {
