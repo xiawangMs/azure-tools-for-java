@@ -165,7 +165,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final String sku = service.getSku();
         final boolean enterprise = service.isEnterpriseTier();
         final boolean consumption = service.isConsumptionTier();
-        final boolean basic = !enterprise && !consumption;
+        final boolean standard = service.isStandardTier();
+        final boolean basic = !enterprise && !consumption && !standard;
         this.useJava8.setVisible(!enterprise);
         this.useJava11.setVisible(!enterprise);
         this.useJava17.setVisible(!enterprise);
