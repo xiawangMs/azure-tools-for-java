@@ -377,7 +377,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private boolean isWebJobStorageRequired(@Nonnull List<BindingEnum> bindings) {
         return bindings.stream().map(BindingEnum::getType)
                 .filter(type -> StringUtils.endsWithIgnoreCase(type, "Trigger"))
-                .anyMatch(type -> !AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS.contains(type));
+                .anyMatch(type -> !AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS.stream().anyMatch(trigger -> StringUtils.equalsIgnoreCase(type, trigger)));
     }
 
     private boolean isDebugMode() {
