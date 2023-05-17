@@ -21,13 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
-import com.microsoft.azure.toolkit.lib.common.model.Deletable;
-import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
-import com.microsoft.azure.toolkit.lib.common.model.Startable;
+import com.microsoft.azure.toolkit.lib.common.model.*;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
@@ -111,7 +105,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.DELETE.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut(shortcuts.delete())
-            .visibleWhen(s -> (s instanceof AzResource && s instanceof Deletable) && !(s instanceof AbstractAzResource && ((AbstractAzResource) s).isEmulatorResource()))
+            .visibleWhen(s -> (s instanceof AzResource && s instanceof Deletable))
             .enableWhen(s -> {
                 if (s instanceof AbstractAzResource) {
                     final AbstractAzResource<?, ?, ?> r = (AbstractAzResource<?, ?, ?>) s;
@@ -146,7 +140,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
-            .visibleWhen(s -> s instanceof AzResource && !(s instanceof AbstractAzResource && ((AbstractAzResource<?, ?, ?>) s).isEmulatorResource()))
+            .visibleWhen(s -> s instanceof AzResource)
             .withHandler(s -> am.getAction(OPEN_URL).handle(s.getPortalUrl()))
             .register(am);
 
@@ -169,6 +163,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AzResource)
             .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .setAuthRequired(false)
             .register(am);
 
         new Action<>(SHOW_PROPERTIES)
