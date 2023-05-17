@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.azurite;
 
-import com.intellij.execution.CommandLineUtil;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
@@ -17,6 +16,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -30,7 +30,7 @@ import com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContri
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
+import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +48,7 @@ public class AzuriteService {
     public static final String INSTALL_AZURITE_LINK = "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm";
     public static final String NODE_VERSION_ERROR_MESSAGE = "Failed to get node version, or node version is too old (lower than 8) to run azurite, please visit https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite for installation guidances.";
     public static final String AZURITE_INSTALL_COMMAND = "npm install -g azurite";
+    public static final String AZURITE_HAS_BEEN_TERMINATED = "Azurite has been terminated";
     private ProcessHandler processHandler;
 
     public static AzuriteService getInstance() {
@@ -68,8 +69,17 @@ public class AzuriteService {
             this.processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine);
             this.processHandler.addProcessListener(new ProcessAdapter() {
                 @Override
+                public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+                    if (StringUtils.containsIgnoreCase(event.getText(), "service is successfully listening at")) {
+                        AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT.refresh();
+                    }
+                }
+
+                @Override
                 public void processTerminated(@NotNull ProcessEvent event) {
-                    consoleView.print("Azurite has been terminated", ConsoleViewContentType.SYSTEM_OUTPUT);
+                    consoleView.print(AZURITE_HAS_BEEN_TERMINATED, ConsoleViewContentType.SYSTEM_OUTPUT);
+                    AzureMessager.getMessager().info(AZURITE_HAS_BEEN_TERMINATED);
+                    AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT.refresh();
                 }
             });
             consoleView.attachToProcess(processHandler);
@@ -83,7 +93,7 @@ public class AzuriteService {
 
     private Action<?>[] getAzuriteFailureActions(@Nonnull final Project project) {
         final Action<String> openBrowserAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL)
-                .bind(INSTALL_AZURITE_LINK).withLabel("Open Document");
+                .bind(INSTALL_AZURITE_LINK).withLabel("Learn More");
         final Action<?> installAzuriteAction = AzureActionManager.getInstance().getAction(IntellijStorageActionsContributor.INSTALL_AZURITE)
                 .bind(project);
         return isNodeMeetAzuriteRequirement() ? new Action[]{installAzuriteAction, openBrowserAction} : new Action[]{openBrowserAction};
@@ -142,6 +152,7 @@ public class AzuriteService {
                 AzuriteService.getInstance().stopAzurite();
             }
         });
+        toolWindow.getContentManager().setSelectedContent(result);
         return console;
     }
 
