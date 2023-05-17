@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.module.Module;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -20,6 +21,6 @@ public interface IConnectionAware extends RunConfiguration {
     }
 
     default boolean isConnectionEnabled() {
-        return this.getBeforeRunTasks().stream().anyMatch(task -> task instanceof ConnectionRunnerForRunConfiguration.MyBeforeRunTask);
+        return this.getBeforeRunTasks().stream().anyMatch(task -> task instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
     }
 }

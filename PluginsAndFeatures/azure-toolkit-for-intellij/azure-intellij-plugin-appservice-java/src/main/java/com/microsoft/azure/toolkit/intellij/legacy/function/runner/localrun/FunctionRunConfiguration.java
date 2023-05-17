@@ -20,7 +20,7 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -212,15 +211,15 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
             return;
         }
         final List<BeforeRunTask<?>> tasks = this.getBeforeRunTasks();
-        final List<ConnectionRunnerForRunConfiguration.MyBeforeRunTask> rcTasks = tasks.stream().filter(t -> t instanceof ConnectionRunnerForRunConfiguration.MyBeforeRunTask)
-                .map(t -> (ConnectionRunnerForRunConfiguration.MyBeforeRunTask)t)
+        final List<DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask> rcTasks = tasks.stream().filter(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)
+                .map(t -> (DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)t)
                 .collect(Collectors.toList());
-        final List<ConnectionRunnerForRunConfiguration.MyBeforeRunTask> invalidTasks =
+        final List<DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask> invalidTasks =
                 rcTasks.stream().filter(t -> !Objects.equals(this, t.getConfig())).toList();
         tasks.removeAll(invalidTasks);
         rcTasks.removeAll(invalidTasks);
         if (CollectionUtils.isEmpty(rcTasks) && connections.stream().anyMatch(c -> c.isApplicableFor(this))) {
-            this.getBeforeRunTasks().add(new ConnectionRunnerForRunConfiguration.MyBeforeRunTask(this));
+            this.getBeforeRunTasks().add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(this));
         }
     }
 

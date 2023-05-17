@@ -1,0 +1,127 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+package com.microsoft.azure.toolkit.intellij.connector.dotazure;
+
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.BeforeRunTaskProvider;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.concurrency.AsyncPromise;
+import org.jetbrains.concurrency.Promise;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+/**
+ * @see "org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider"
+ */
+@Slf4j
+public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask> {
+    private static final String NAME = "Load .env";
+    private static final String DESCRIPTION = "Load .env";
+    private static final Icon ICON = AllIcons.General.Gear;
+    private static final Key<LoadDotEnvBeforeRunTask> ID = Key.create("DotEnvLoaderBeforeTask");
+
+    @Getter
+    public String name = NAME;
+    @Getter
+    private final boolean configurable = true;
+    @Getter
+    public Key<LoadDotEnvBeforeRunTask> id = ID;
+    @Getter
+    public Icon icon = ICON;
+
+    @Override
+    public @Nullable
+    Icon getTaskIcon(LoadDotEnvBeforeRunTask task) {
+        return ICON;
+    }
+
+    @Override
+    @ExceptionNotification
+    @AzureOperation(name = "platform/dotenv.get_task_description")
+    public String getDescription(LoadDotEnvBeforeRunTask task) {
+        return Optional.ofNullable(task.getConfig().getProject()).map(ProjectUtil::guessProjectDir)
+            .flatMap(v -> Optional.ofNullable(task.getFile()).map(f -> v.toNioPath().relativize(f.toNioPath())))
+            .map(path -> String.format("Load .env '%s'", path))
+            .orElse("Load .env");
+    }
+
+    @Nullable
+    @Override
+    public LoadDotEnvBeforeRunTask createTask(@Nonnull RunConfiguration config) {
+        return new LoadDotEnvBeforeRunTask(config);
+    }
+
+    @Override
+    public Promise<Boolean> configureTask(@Nonnull DataContext context, @Nonnull RunConfiguration configuration, @Nonnull LoadDotEnvBeforeRunTask task) {
+        final AsyncPromise<Boolean> result = new AsyncPromise<>();
+        AzureTaskManager.getInstance().runLater(() -> {
+            final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("env");
+            descriptor.withTitle("Choose .env File");
+            final AzureModule project = AzureModule.from(configuration);
+            final VirtualFile file = FileChooser.chooseFile(descriptor, configuration.getProject(), project.getModuleDir());
+            if (Objects.nonNull(file)) {
+                task.setFile(file);
+                result.setResult(true);
+            } else {
+                result.setResult(false);
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public boolean canExecuteTask(@Nonnull RunConfiguration configuration, @Nonnull LoadDotEnvBeforeRunTask task) {
+        return Objects.nonNull(task.getFile());
+    }
+
+    @Override
+    @ExceptionNotification
+    public boolean executeTask(@Nonnull DataContext context, @Nonnull RunConfiguration config, @Nonnull ExecutionEnvironment env, @Nonnull LoadDotEnvBeforeRunTask task) {
+        return true;
+    }
+
+    @Getter
+    @Setter
+    public static class LoadDotEnvBeforeRunTask extends BeforeRunTask<LoadDotEnvBeforeRunTask> {
+        private final RunConfiguration config;
+        @Nullable
+        private VirtualFile file;
+
+        public LoadDotEnvBeforeRunTask(RunConfiguration configuration) {
+            super(ID);
+            this.config = configuration;
+            this.file = AzureModule.from(configuration).getDefaultDotEnvFile();
+        }
+
+        public List<Pair<String, String>> loadEnv() {
+            if (Objects.isNull(this.file)) {
+                this.file = AzureModule.from(this.config).getDefaultDotEnvFile();
+            }
+            return AzureModule.loadEnv(this.file);
+        }
+    }
+}
