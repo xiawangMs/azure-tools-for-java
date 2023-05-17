@@ -13,7 +13,7 @@ public class DotEnvRunConfigurationExtension extends RunConfigurationExtension {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/dotenv.load_env.config", params = {"config.getName()"})
+    @AzureOperation(name = "user/dotazure.load_env.config", params = {"config.getName()"})
     public <T extends RunConfigurationBase<?>> void updateJavaParameters(@Nonnull T config, @Nonnull JavaParameters params, RunnerSettings s) {
         final AzureModule module = AzureModule.from(config);
         if (module.isValid()) {
@@ -28,6 +28,6 @@ public class DotEnvRunConfigurationExtension extends RunConfigurationExtension {
 
     @Override
     public boolean isApplicableFor(@Nonnull RunConfigurationBase<?> configuration) {
-        return configuration.getBeforeRunTasks().stream().anyMatch(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
+        return AzureModule.from(configuration).isValid() || configuration.getBeforeRunTasks().stream().anyMatch(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
     }
 }

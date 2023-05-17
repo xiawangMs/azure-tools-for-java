@@ -42,7 +42,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
     private static final String NAME = "Load .env";
     private static final String DESCRIPTION = "Load .env";
     private static final Icon ICON = AllIcons.General.Gear;
-    private static final Key<LoadDotEnvBeforeRunTask> ID = Key.create("DotEnvLoaderBeforeTask");
+    private static final Key<LoadDotEnvBeforeRunTask> ID = Key.create("ConnectionRunnerForConfigurationId");
 
     @Getter
     public String name = NAME;
@@ -61,7 +61,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "platform/dotenv.get_task_description")
+    @AzureOperation(name = "platform/dotazure.get_task_description")
     public String getDescription(LoadDotEnvBeforeRunTask task) {
         return Optional.ofNullable(task.getConfig().getProject()).map(ProjectUtil::guessProjectDir)
             .flatMap(v -> Optional.ofNullable(task.getFile()).map(f -> v.toNioPath().relativize(f.toNioPath())))

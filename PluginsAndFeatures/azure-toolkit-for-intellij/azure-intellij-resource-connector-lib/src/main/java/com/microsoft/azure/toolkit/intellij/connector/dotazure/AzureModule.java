@@ -21,7 +21,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -98,7 +97,8 @@ public class AzureModule {
     public VirtualFile getDotEnvFile(@Nonnull final String envName) {
         final VirtualFile dotAzure = this.getDotAzureDir();
         return Optional.ofNullable(dotAzure)
-            .map(f -> f.findFileByRelativePath(envName + File.pathSeparator + ".env"))
+            .map(f -> f.findChild(envName))
+            .map(f -> f.findChild(".env"))
             .orElse(null);
     }
 
