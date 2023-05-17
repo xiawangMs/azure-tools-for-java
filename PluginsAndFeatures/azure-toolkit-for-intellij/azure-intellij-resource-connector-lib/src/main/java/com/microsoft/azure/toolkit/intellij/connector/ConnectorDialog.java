@@ -6,6 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBLabel;
@@ -15,6 +17,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -25,6 +29,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -117,6 +122,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
             if (connection.validate(this.project)) {
+                saveConnectionToDotEnv(connection, consumer);
                 resourceManager.addResource(resource);
                 resourceManager.addResource(consumer);
                 connectionManager.addConnection(connection);
@@ -127,6 +133,25 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
             }
         });
+    }
+
+    private void saveConnectionToDotEnv(Connection<?, ?> connection, Resource<?> consumer) {
+        if (consumer instanceof ModuleResource) {
+            final ModuleManager moduleManager = ModuleManager.getInstance(project);
+            final Module m = moduleManager.findModuleByName(consumer.getName());
+            if (Objects.nonNull(m)) {
+                final AzureModule module = new AzureModule(m);
+                AzureTaskManager.getInstance().write(() -> {
+                    try {
+                        module.initialize();
+                        module.createDefaultEnvironmentIfNot("default");
+                        module.addConnection(connection);
+                    } catch (IOException e) {
+                        throw new AzureToolkitRuntimeException(e);
+                    }
+                });
+            }
+        }
     }
 
     @Override

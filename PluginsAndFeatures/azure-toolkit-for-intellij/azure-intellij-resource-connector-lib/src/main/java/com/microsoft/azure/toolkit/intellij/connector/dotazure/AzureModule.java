@@ -10,6 +10,7 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -43,13 +44,19 @@ public class AzureModule {
         this.module = module;
     }
 
-    public void initializeIfNot(String envName) throws IOException {
-        this.initializeConfigJsonIfNot();
-        this.initializeEnvironmentIfNot(envName);
-        this.setDefaultEnvironment(envName);
+    public void initialize() throws IOException {
+        this.createConfigJsonIfNot();
     }
 
-    private void initializeConfigJsonIfNot() throws IOException {
+    public void initializeAndCreateDefaultEnv(String envName) throws IOException {
+        this.createConfigJsonIfNot();
+        if (StringUtils.isBlank(this.getDefaultEnvironmentName())) {
+            this.createEnvironmentIfNot(envName);
+            this.setDefaultEnvironment(envName);
+        }
+    }
+
+    private void createConfigJsonIfNot() throws IOException {
         final VirtualFile moduleDir = this.getModuleDir();
         if (Objects.nonNull(moduleDir) && Objects.isNull(this.getConfigJsonFile())) {
             final VirtualFile dotAzure = VfsUtil.createDirectoryIfMissing(moduleDir, ".azure");
@@ -57,12 +64,19 @@ public class AzureModule {
         }
     }
 
-    public void initializeEnvironmentIfNot(String envName) throws IOException {
+    public void createEnvironmentIfNot(String envName) throws IOException {
         final VirtualFile moduleDir = this.getModuleDir();
         if (Objects.nonNull(moduleDir) && Objects.isNull(this.getDotEnvFile(envName))) {
             final VirtualFile dotAzure = VfsUtil.createDirectoryIfMissing(moduleDir, ".azure");
             final VirtualFile envDir = VfsUtil.createDirectoryIfMissing(dotAzure, envName);
             final VirtualFile dotEnv = envDir.findOrCreateChildData(this, ".env");
+        }
+    }
+
+    public void createDefaultEnvironmentIfNot(String envName) throws IOException {
+        if (StringUtils.isBlank(this.getDefaultEnvironmentName())) {
+            this.createEnvironmentIfNot(envName);
+            this.setDefaultEnvironment(envName);
         }
     }
 
@@ -200,5 +214,22 @@ public class AzureModule {
             return ((IConnectionAware) configuration).getModule();
         }
         return null;
+    }
+
+    public void addConnection(@Nonnull Connection<?, ?> connection) {
+        final String name = this.getDefaultEnvironmentName();
+        if (StringUtils.isNotBlank(name)) {
+            final String envVariables = generateEnvironmentString(project, connection);
+            this.appendDotEnv(name, envVariables + System.lineSeparator());
+        }
+    }
+
+    public static String generateEnvironmentString(@Nonnull final Project project, @Nonnull final Connection<?, ?> connection) {
+        final StringBuilder string = new StringBuilder();
+        final String dataId = connection.getResource().getDataId();
+        string.append("# resource: ").append(dataId).append(System.lineSeparator());
+        connection.getEnvironmentVariables(project)
+            .forEach((k, v) -> string.append(k).append("=").append("\"").append(v).append("\"").append(System.lineSeparator()));
+        return string.toString();
     }
 }

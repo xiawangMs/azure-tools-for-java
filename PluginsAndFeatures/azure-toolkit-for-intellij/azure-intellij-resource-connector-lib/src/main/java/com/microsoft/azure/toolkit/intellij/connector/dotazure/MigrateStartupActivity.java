@@ -36,25 +36,13 @@ public class MigrateStartupActivity implements StartupActivity {
                 }
                 AzureTaskManager.getInstance().write(() -> {
                     try {
-                        module.initializeIfNot("default");
-                        final String envVariables = connections.stream()
-                            .map(c -> generateEnvironmentString(project, c))
-                            .collect(Collectors.joining(System.lineSeparator()));
-                        module.appendDotEnv("default", envVariables);
+                        module.initializeAndCreateDefaultEnv("default");
+                        connections.forEach(module::addConnection);
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
                     }
                 });
             }
         });
-    }
-
-    public static String generateEnvironmentString(@Nonnull final Project project, @Nonnull final Connection<?, ?> connection) {
-        final StringBuilder string = new StringBuilder();
-        final String dataId = connection.getResource().getDataId();
-        string.append("# resource: ").append(dataId).append(System.lineSeparator());
-        connection.getEnvironmentVariables(project)
-            .forEach((k, v) -> string.append(k).append("=").append(v).append(System.lineSeparator()));
-        return string.toString();
     }
 }
