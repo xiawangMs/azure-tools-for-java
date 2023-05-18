@@ -97,8 +97,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = {BindingEnum.HttpOutput, BindingEnum.HttpTrigger};
     private static final List<String> AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS = Arrays.asList("httptrigger", "kafkatrigger", "rabbitmqtrigger",
             "orchestrationTrigger", "activityTrigger", "entityTrigger");
-    private static final String MISSING_AZURE_WEB_JOBS_STORAGE_WARNING = "Please set connection for `AzureWebJobsStorage`. " +
-            "This is required for all triggers other than httptrigger, kafkatrigger, rabbitmqtrigger, orchestrationTrigger, activityTrigger, entityTrigger.";
+    private static final String MISSING_AZURE_WEB_JOBS_STORAGE_WARNING = "<html>`AzureWebJobsStorage` is missing, which is required for your project. Please refer this <a href=\"https://learn.microsoft.com/en-us/azure/azure-functions/functions-app-settings#azurewebjobsstorage\">document</a> for details</html>";
     private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process installProcess;
@@ -354,7 +353,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             // show resource connection dialog for web job storage
             AzureTaskManager.getInstance().runAndWait(() -> {
                 final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage");
-                dialog.setTitle("Set Connection for `AzureWebJobsStorage`");
+                dialog.setTitle("Set Resource Connection for `AzureWebJobsStorage`");
                 dialog.setFixedConnectionName(AZURE_WEB_JOB_STORAGE_KEY);
                 dialog.setDescription(MISSING_AZURE_WEB_JOBS_STORAGE_WARNING, AllIcons.General.Warning);
                 if (dialog.showAndGet()) {
@@ -363,7 +362,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                     if (Objects.nonNull(connection)) {
                         functionRunConfiguration.addConnection(connection);
                         applyResourceConnection(appSettings);
-                        if (connection.getResource().getData() instanceof AzuriteStorageAccount) {
+                        if (connection.getResource().getData() instanceof AzuriteStorageAccount && !AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT.getFormalStatus().isRunning()) {
                             // start azurite if azurite connection is added
                             AzuriteService.getInstance().startAzurite(project);
                         }

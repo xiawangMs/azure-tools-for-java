@@ -7,8 +7,11 @@ package com.microsoft.azure.toolkit.intellij.function.components.connection;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.HyperlinkAdapter;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -22,15 +25,20 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.intellij.function.connection.ConnectionTarget;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,6 +88,21 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         rdoConnectionString.addItemListener(ignore -> toggleSelectionMode());
         rdoSelectResource.setSelected(Objects.nonNull(definition));
         rdoConnectionString.setSelected(!Objects.nonNull(definition));
+        descriptionPane.addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            protected void hyperlinkActivated(@NotNull HyperlinkEvent e) {
+                if (Objects.nonNull(e.getURL())) {
+                    AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(e.getURL().toString());
+                }
+            }
+        });
+        final Font font = UIManager.getFont("Label.font");
+        final Color foregroundColor = UIManager.getColor("Label.foreground");
+        descriptionPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        if (font != null && foregroundColor != null) {
+            descriptionPane.setFont(font);
+            descriptionPane.setForeground(foregroundColor);
+        }
         if (Objects.nonNull(definition)) {
             initResourceSelectionPanel();
         }
@@ -179,6 +202,8 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         txtConnectionName.setValue(azureWebJobStorageKey);
         txtConnectionName.setEnabled(false);
         txtConnectionName.setEditable(false);
+        txtConnectionName.setVisible(false);
+        lblConnectionName.setVisible(false);
     }
 
     public void setDescription(@Nonnull final String description, @Nullable Icon icon) {

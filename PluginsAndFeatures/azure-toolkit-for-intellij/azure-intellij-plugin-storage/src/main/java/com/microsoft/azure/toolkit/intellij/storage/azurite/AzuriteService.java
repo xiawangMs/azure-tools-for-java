@@ -14,9 +14,14 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessHandlerFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -30,7 +35,9 @@ import com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContri
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +74,7 @@ public class AzuriteService {
         try {
             final ConsoleView consoleView = getOrCreateConsoleView(project);
             final GeneralCommandLine commandLine = new GeneralCommandLine(getAzuriteCommand());
+            commandLine.withEnvironment(System.getenv());
             this.processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine);
             this.processHandler.addProcessListener(new ProcessAdapter() {
                 @Override
@@ -149,7 +158,9 @@ public class AzuriteService {
             @Override
             public void contentRemoved(@Nonnull ContentManagerEvent event) {
                 // terminate process once closed
-                AzuriteService.getInstance().stopAzurite();
+                if (event.getContent() == result) {
+                    AzuriteService.getInstance().stopAzurite();
+                }
             }
         });
         toolWindow.getContentManager().setSelectedContent(result);
@@ -158,7 +169,9 @@ public class AzuriteService {
 
     private static String[] getAzuriteCommand() {
         final String fileLocation = System.getProperty("user.home");
-        return new String[]{"azurite", "-l", fileLocation};
+        final List<String> azurite = CommandUtils.resolveCommandPath("azurite");
+        final String command = azurite.stream().filter(StringUtils::isNoneBlank).filter(file -> StringUtils.isNoneBlank(FilenameUtils.getExtension(file))).findFirst().orElse("azurite.cmd");
+        return SystemInfo.isWindows ? new String[]{command, "-l", fileLocation} : new String[]{"azurite", "-l", fileLocation};
     }
 
     public void stopAzurite() {
