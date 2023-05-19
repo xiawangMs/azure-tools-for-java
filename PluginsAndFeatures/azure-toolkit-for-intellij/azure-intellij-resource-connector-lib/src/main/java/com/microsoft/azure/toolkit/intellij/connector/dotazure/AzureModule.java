@@ -14,7 +14,8 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import io.github.cdimascio.dotenv.Dotenv;
+import io.github.cdimascio.dotenv.internal.DotenvParser;
+import io.github.cdimascio.dotenv.internal.DotenvReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -129,13 +130,9 @@ public class AzureModule {
         if (Objects.isNull(dotEnvFile)) {
             return Collections.emptyList();
         }
-        final Dotenv dotenv = Dotenv.configure()
-            .directory(dotEnvFile.getParent().getPath())
-            .filename(dotEnvFile.getName()) // instead of '.env', use 'env'
-            .ignoreIfMissing()
-            .ignoreIfMalformed()
-            .load();
-        return dotenv.entries().stream().map(e -> Pair.of(e.getKey(), e.getValue())).toList();
+        final DotenvReader reader = new DotenvReader(dotEnvFile.getParent().getPath(), dotEnvFile.getName());
+        final DotenvParser parser = new DotenvParser(reader, false, false);
+        return parser.parse().stream().map(e -> Pair.of(e.getKey(), e.getValue())).toList();
     }
 
     @Nullable
