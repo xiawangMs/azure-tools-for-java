@@ -74,7 +74,9 @@ public class SpringCloudAppInstanceSelectionDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         instance = (SpringCloudAppInstance) cbInstances.getSelectedItem();
-        super.doOKAction();
+        if (instance != null) {
+            super.doOKAction();
+        }
     }
 
     @Override
