@@ -34,6 +34,10 @@ public class AzureModule {
     @Nullable
     private Environment environment;
 
+    public String getName() {
+        return module.getName();
+    }
+
     public AzureModule initialize() {
         return this.getModuleDir().map(moduleDir -> {
             try {

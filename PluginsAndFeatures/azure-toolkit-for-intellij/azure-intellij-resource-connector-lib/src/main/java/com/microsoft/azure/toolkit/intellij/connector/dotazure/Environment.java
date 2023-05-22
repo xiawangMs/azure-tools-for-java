@@ -145,4 +145,8 @@ public class Environment {
             }
         });
     }
+
+    public List<Connection<?, ?>> getConnections() {
+        return this.connectionManager.getConnections();
+    }
 }
