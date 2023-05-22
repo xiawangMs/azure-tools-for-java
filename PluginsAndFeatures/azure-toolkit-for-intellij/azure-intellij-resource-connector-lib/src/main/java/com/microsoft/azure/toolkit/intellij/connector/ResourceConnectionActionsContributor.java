@@ -26,7 +26,7 @@ import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CO
 
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("user/connector.refresh_connections");
-    public static final Action.Id<Module> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
+    public static final Action.Id<AzureModule> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
     public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("user/connector.edit_connection");
     public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("user/connector.remove_connection");
     public static final String MODULE_ACTIONS = "actions.connector.module";
@@ -44,7 +44,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         new Action<>(ADD_CONNECTION)
             .withLabel("Add")
             .withIcon(AzureIcons.Action.ADD.getIconPath())
-            .visibleWhen(m -> m instanceof Module)
+            .visibleWhen(m -> m instanceof AzureModule)
             .withHandler((m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject()))
             .withShortcut(am.getIDEDefaultShortcuts().add())
             .register(am);

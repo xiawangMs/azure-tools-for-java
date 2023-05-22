@@ -122,4 +122,8 @@ public class AzureModule {
         }
         return null;
     }
+
+    public Project getProject() {
+        return this.module.getProject();
+    }
 }
