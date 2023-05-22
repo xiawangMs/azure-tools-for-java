@@ -22,11 +22,14 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -49,7 +52,7 @@ public class ResourceConnectionExplorer extends Tree {
             .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).lazy(false)
                 .view(new NodeView.Static(m.getName(), "/icons/module"))
                 .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                .addChildren(module -> module.getEnvironment().getConnections(), (c, mn) -> new Node<>(c).lazy(false)
+                .addChildren(module -> Optional.ofNullable(module.getEnvironment()).map(Environment::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
                     .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
                     .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }

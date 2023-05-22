@@ -53,6 +53,7 @@ public class AzureModule {
         }).orElse(this);
     }
 
+    @Nullable
     public synchronized Environment getEnvironment() {
         if (Objects.isNull(this.environment)) {
             this.environment = this.getDotEnvFile().map(f -> new Environment(f, this.module)).orElse(null);
