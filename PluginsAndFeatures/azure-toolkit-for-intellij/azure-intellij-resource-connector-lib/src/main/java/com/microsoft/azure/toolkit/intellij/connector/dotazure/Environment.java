@@ -20,12 +20,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -34,6 +36,10 @@ public class Environment {
     private final VirtualFile dotEnvFile;
     @Nonnull
     private final Module module;
+    @Nullable
+    private ConnectionManager connectionManager;
+    @Nullable
+    private ResourceManager resourceManager;
 
     public List<Pair<String, String>> load() {
         return load(this.dotEnvFile);
@@ -45,29 +51,56 @@ public class Environment {
         return parser.parse().stream().map(e -> Pair.of(e.getKey(), e.getValue())).toList();
     }
 
-    public synchronized void addConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Environment addConnection(@Nonnull Connection<?, ?> connection) {
         this.addConnectionToDotEnv(connection);
+        if (Objects.isNull(this.connectionManager) || Objects.isNull(this.resourceManager)) {
+            this.initializeResourceConnectionManagersIfNot();
+        }
+        Objects.requireNonNull(this.resourceManager).addResource(connection.getResource());
+        Objects.requireNonNull(this.connectionManager).addConnection(connection);
+        return this;
     }
 
-    public synchronized void removeConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Environment removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
+        if (Objects.isNull(this.connectionManager) || Objects.isNull(this.resourceManager)) {
+            this.initializeResourceConnectionManagersIfNot();
+        }
+        Objects.requireNonNull(this.connectionManager).removeConnection(connection);
+        return this;
     }
 
-    public synchronized void updateConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Environment updateConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
         this.addConnection(connection);
+        return this;
     }
 
-    private void initializeConnectionFilesIfNot() {
+    public void save() {
+        if (Objects.isNull(this.connectionManager) || Objects.isNull(this.resourceManager)) {
+            return;
+        }
         try {
-            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-            final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, "connections.xml");
-            final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, "resources.xml");
+            this.resourceManager.save();
+            this.connectionManager.save();
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }
 
+    private void initializeResourceConnectionManagersIfNot() {
+        try {
+            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
+            final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, "connections.xml");
+            final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, "resources.xml");
+            this.connectionManager = new ConnectionManager(connectionsFile);
+            this.resourceManager = new ResourceManager(resourcesFile);
+        } catch (final IOException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
+    }
+
+    @AzureOperation("internal/connector.generate_env_variables")
     private static List<String> generateEnvLines(@Nonnull final Project project, @Nonnull final Connection<?, ?> connection) {
         final ArrayList<String> lines = new ArrayList<>();
         lines.add("# connection.id=" + connection.getId());
