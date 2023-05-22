@@ -58,17 +58,38 @@ public class ResourceConnectionExplorer extends Tree {
     }
 
     private static class ModuleNode extends Node<AzureModule> {
+        private final MessageBusConnection connection;
+
         public ModuleNode(@Nonnull AzureModule module) {
             super(module);
+            this.connection = module.getProject().getMessageBus().connect();
+            this.connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {
+                if (conn.getConsumer().getId().equalsIgnoreCase(module.getName())) {
+                    this.view().refreshChildren();
+                }
+            });
+        }
+
+        @Override
+        public void dispose() {
+            this.connection.disconnect();
+            super.dispose();
         }
     }
 
     private static class RootNode extends Node<Project> {
+        private final MessageBusConnection connection;
+
         public RootNode(@Nonnull Project project) {
             super(project);
-            final MessageBusConnection connection = project.getMessageBus().connect();
-            connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) () -> RootNode.this.view().refreshChildren());
-            connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> this.view().refreshChildren());
+            this.connection = project.getMessageBus().connect();
+            this.connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) () -> RootNode.this.view().refreshChildren());
+        }
+
+        @Override
+        public void dispose() {
+            this.connection.disconnect();
+            super.dispose();
         }
     }
 
