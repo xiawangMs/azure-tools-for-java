@@ -71,12 +71,14 @@ public class Environment {
         this.addConnectionToDotEnv(connection);
         Optional.of(this.getResourceManager(true)).ifPresent(m -> m.addResource(connection.getResource()));
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.addConnection(connection));
+        this.dotEnvFile.getParent().refresh(true, true);
         return this;
     }
 
     public synchronized Environment removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.removeConnection(connection));
+        this.dotEnvFile.getParent().refresh(true, true);
         return this;
     }
 
@@ -136,7 +138,7 @@ public class Environment {
                     break;
                 }
             }
-            FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())), StandardCharsets.UTF_8);
+            FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
@@ -147,7 +149,7 @@ public class Environment {
         final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
         AzureTaskManager.getInstance().write(() -> {
             try {
-                Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator(), StandardOpenOption.APPEND);
+                Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }

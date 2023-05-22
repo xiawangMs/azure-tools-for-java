@@ -108,6 +108,9 @@ public class ResourceManager {
     @ExceptionNotification
     @AzureOperation(name = "user/connector.load_connection_resources")
     void load() throws IOException, JDOMException {
+        if (this.resourcesFile.contentsToByteArray().length < 1) {
+            return;
+        }
         this.resources.clear();
         final Element resourcesEle = JDOMUtil.load(this.resourcesFile.toNioPath());
         for (final Element resourceEle : resourcesEle.getChildren()) {

@@ -136,6 +136,9 @@ public class ConnectionManager {
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_resource_connections")
     void load() throws IOException, JDOMException {
+        if (this.connectionsFile.contentsToByteArray().length < 1) {
+            return;
+        }
         this.connections.clear();
         final Element connectionsEle = JDOMUtil.load(this.connectionsFile.toNioPath());
         for (final Element connectionEle : connectionsEle.getChildren()) {
