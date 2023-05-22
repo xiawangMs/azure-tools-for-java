@@ -30,6 +30,7 @@ import org.jetbrains.concurrency.Promise;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -81,8 +82,9 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
         AzureTaskManager.getInstance().runLater(() -> {
             final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("env");
             descriptor.withTitle("Choose .env File");
-            final AzureModule project = AzureModule.from(configuration);
-            final VirtualFile file = FileChooser.chooseFile(descriptor, configuration.getProject(), project.getModuleDir());
+            final VirtualFile defaultDir = AzureModule.createIfSupport(configuration)
+                .flatMap(AzureModule::getModuleDir).orElse(null);
+            final VirtualFile file = FileChooser.chooseFile(descriptor, configuration.getProject(), defaultDir);
             if (Objects.nonNull(file)) {
                 task.setFile(file);
                 result.setResult(true);
@@ -114,14 +116,14 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
         public LoadDotEnvBeforeRunTask(RunConfiguration configuration) {
             super(ID);
             this.config = configuration;
-            this.file = AzureModule.from(configuration).getDefaultDotEnvFile();
+            this.file = AzureModule.createIfSupport(this.config).flatMap(AzureModule::getDotEnvFile).orElse(null);
         }
 
         public List<Pair<String, String>> loadEnv() {
-            if (Objects.isNull(this.file)) {
-                this.file = AzureModule.from(this.config).getDefaultDotEnvFile();
-            }
-            return AzureModule.loadEnv(this.file);
+            return Optional.ofNullable(this.file)
+                .or(() -> AzureModule.createIfSupport(this.config).flatMap(AzureModule::getDotEnvFile))
+                .map(Environment::load)
+                .orElse(Collections.emptyList());
         }
     }
 }

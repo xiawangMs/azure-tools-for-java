@@ -5,10 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.AccessLevel;
@@ -57,6 +57,11 @@ public class Connection<R, C> {
     private String envPrefix;
 
     private Map<String, String> env = new HashMap<>();
+
+    @JsonInclude
+    public String getId() {
+        return this.getEnvPrefix() + "/" + resource.getId();
+    }
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
