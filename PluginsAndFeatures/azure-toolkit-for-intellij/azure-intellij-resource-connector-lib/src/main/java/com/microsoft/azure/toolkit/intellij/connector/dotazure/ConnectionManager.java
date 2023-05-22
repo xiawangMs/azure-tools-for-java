@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,6 +42,7 @@ public class ConnectionManager {
     private static final String ELEMENT_NAME_CONNECTIONS = "connections";
     private static final String ELEMENT_NAME_CONNECTION = "connection";
     private static final String FIELD_TYPE = "type";
+    private static final String FIELD_ID = "id";
     private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
     private final VirtualFile connectionsFile;
@@ -63,7 +63,7 @@ public class ConnectionManager {
     public static ConnectionDefinition<?, ?> getDefinitionOrDefault(@Nonnull String name) {
         return getDefinitionsMap().computeIfAbsent(name, def -> {
             final String[] split = def.split(":");
-            final ResourceDefinition<?> rd = com.microsoft.azure.toolkit.intellij.connector.ResourceManager.getDefinition(split[0]);
+            final ResourceDefinition<?> rd = ResourceManager.getDefinition(split[0]);
             final ResourceDefinition<?> cd = ResourceManager.getDefinition(split[1]);
             return new ConnectionDefinition<>(rd, cd);
         });
@@ -92,13 +92,12 @@ public class ConnectionManager {
 
     @AzureOperation(name = "user/connector.add_connection")
     public synchronized void addConnection(Connection<?, ?> connection) {
-        connections.removeIf(c -> Objects.equals(c, connection)); // always replace the old with the new one.
         connections.add(connection);
     }
 
     @AzureOperation(name = "user/connector.remove_connection")
-    public synchronized void removeConnection(String resourceId, String consumerId) {
-        connections.removeIf(c -> StringUtils.equals(resourceId, c.getResource().getId()) && StringUtils.equals(consumerId, c.getConsumer().getId()));
+    public synchronized void removeConnection(Connection<?, ?> connection) {
+        connections.removeIf(c -> StringUtils.equals(connection.getId(), c.getId()));
     }
 
     public List<Connection<?, ?>> getConnections() {
@@ -118,6 +117,7 @@ public class ConnectionManager {
         final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
         for (final Connection<?, ?> connection : this.connections) {
             final Element connectionEle = new Element(ELEMENT_NAME_CONNECTION);
+            connectionEle.setAttribute(FIELD_ID, connection.getId());
             connectionEle.setAttribute(FIELD_TYPE, ConnectionManager.getName(connection.getDefinition()));
             connection.write(connectionEle);
             connectionsEle.addContent(connectionEle);
@@ -132,9 +132,13 @@ public class ConnectionManager {
         final Element connectionsEle = JDOMUtil.load(this.connectionsFile.toNioPath());
         for (final Element connectionEle : connectionsEle.getChildren()) {
             final String name = connectionEle.getAttributeValue(FIELD_TYPE);
+            final String id = connectionEle.getAttributeValue(FIELD_ID);
             final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
             try {
-                Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(this::addConnection);
+                Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(c -> {
+                    c.setId(id);
+                    this.addConnection(c);
+                });
             } catch (final Exception e) {
                 log.warn(String.format("error occurs when load a resource connection of type '%s'", name), e);
             }

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
@@ -40,6 +39,10 @@ import java.util.stream.Collectors;
 public class Connection<R, C> {
     public static final String ENV_PREFIX = "%ENV_PREFIX%";
 
+    @Setter
+    @EqualsAndHashCode.Include
+    private String id;
+
     @Nonnull
     @EqualsAndHashCode.Include
     protected final Resource<R> resource;
@@ -58,9 +61,8 @@ public class Connection<R, C> {
 
     private Map<String, String> env = new HashMap<>();
 
-    @JsonInclude
     public String getId() {
-        return this.getEnvPrefix() + "/" + resource.getId();
+        return StringUtils.isBlank(this.id) ? this.getEnvPrefix() + "/" + resource.getId() : this.id;
     }
 
     /**
