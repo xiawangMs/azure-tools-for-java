@@ -126,7 +126,7 @@ public class Environment {
             while (each.hasNext()) {
                 final String line = each.next();
                 started = started || line.equalsIgnoreCase(startMark);
-                final boolean ended = started && (StringUtils.isBlank(line.trim()) || line.trim().startsWith("# connection.id="));
+                final boolean ended = started && !line.equalsIgnoreCase(startMark) && (StringUtils.isBlank(line.trim()) || line.trim().startsWith("# connection.id="));
                 if (started && (!ended || StringUtils.isBlank(line.trim()))) {
                     each.remove();
                 }
