@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -29,7 +28,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -140,16 +138,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             final ModuleManager moduleManager = ModuleManager.getInstance(project);
             final Module m = moduleManager.findModuleByName(consumer.getName());
             if (Objects.nonNull(m)) {
-                final AzureModule module = new AzureModule(m);
-                AzureTaskManager.getInstance().write(() -> {
-                    try {
-                        module.initialize();
-                        module.createDefaultEnvironmentIfNot("default");
-                        module.addConnection(connection);
-                    } catch (IOException e) {
-                        throw new AzureToolkitRuntimeException(e);
-                    }
-                });
+                final AzureModule module = AzureModule.from(m);
+                AzureTaskManager.getInstance()
+                    .write(() -> module.initialize().getEnvironment().addConnection(connection).save());
             }
         }
     }
