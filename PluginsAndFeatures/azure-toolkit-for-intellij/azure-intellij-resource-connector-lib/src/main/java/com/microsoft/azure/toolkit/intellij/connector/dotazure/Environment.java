@@ -14,10 +14,9 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import io.github.cdimascio.dotenv.internal.DotenvParser;
 import io.github.cdimascio.dotenv.internal.DotenvReader;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,12 +24,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class Environment {
     @Nonnull
     private final VirtualFile dotEnvFile;
@@ -40,6 +40,20 @@ public class Environment {
     private ConnectionManager connectionManager;
     @Nullable
     private ResourceManager resourceManager;
+
+    public Environment(@Nonnull VirtualFile dotEnvFile, @Nonnull Module module) {
+        this.module = module;
+        this.dotEnvFile = dotEnvFile;
+        final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
+        final VirtualFile connectionsFile = dotAzureDir.findChild("connections.xml");
+        final VirtualFile resourcesFile = dotAzureDir.findChild("resources.xml");
+        if (Objects.nonNull(connectionsFile)) {
+            this.connectionManager = new ConnectionManager(connectionsFile);
+        }
+        if (Objects.nonNull(resourcesFile)) {
+            this.resourceManager = new ResourceManager(resourcesFile);
+        }
+    }
 
     public List<Pair<String, String>> load() {
         return load(this.dotEnvFile);
@@ -53,20 +67,14 @@ public class Environment {
 
     public synchronized Environment addConnection(@Nonnull Connection<?, ?> connection) {
         this.addConnectionToDotEnv(connection);
-        if (Objects.isNull(this.connectionManager) || Objects.isNull(this.resourceManager)) {
-            this.initializeResourceConnectionManagersIfNot();
-        }
-        Objects.requireNonNull(this.resourceManager).addResource(connection.getResource());
-        Objects.requireNonNull(this.connectionManager).addConnection(connection);
+        Optional.of(this.getResourceManager(true)).ifPresent(m -> m.addResource(connection.getResource()));
+        Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.addConnection(connection));
         return this;
     }
 
     public synchronized Environment removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
-        if (Objects.isNull(this.connectionManager) || Objects.isNull(this.resourceManager)) {
-            this.initializeResourceConnectionManagersIfNot();
-        }
-        Objects.requireNonNull(this.connectionManager).removeConnection(connection);
+        Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.removeConnection(connection));
         return this;
     }
 
@@ -81,20 +89,18 @@ public class Environment {
             return;
         }
         try {
-            this.resourceManager.save();
             this.connectionManager.save();
+            this.resourceManager.save();
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }
 
-    private void initializeResourceConnectionManagersIfNot() {
+    private void createResourceConnectionFilesIfNot() {
         try {
             final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
             final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, "connections.xml");
             final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, "resources.xml");
-            this.connectionManager = new ConnectionManager(connectionsFile);
-            this.resourceManager = new ResourceManager(resourcesFile);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
@@ -129,7 +135,7 @@ public class Environment {
                 }
             }
             Files.writeString(this.dotEnvFile.toNioPath(), lines.stream().collect(Collectors.joining(System.lineSeparator())), StandardOpenOption.WRITE);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }
@@ -147,6 +153,49 @@ public class Environment {
     }
 
     public List<Connection<?, ?>> getConnections() {
-        return this.connectionManager.getConnections();
+        return Optional.ofNullable(this.getConnectionManager(false)).map(ConnectionManager::getConnections)
+            .orElse(Collections.emptyList());
+    }
+
+    @Nullable
+    @Contract("true->!null")
+    public synchronized ConnectionManager getConnectionManager(boolean createIfNotExist) {
+        if (Objects.isNull(this.connectionManager)) {
+            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
+            if (createIfNotExist) {
+                try {
+                    final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, "connections.xml");
+                    this.connectionManager = new ConnectionManager(connectionsFile);
+                } catch (final IOException e) {
+                    throw new AzureToolkitRuntimeException(e);
+                }
+            } else {
+                this.connectionManager = Optional.ofNullable(dotAzureDir.findChild("connections.xml"))
+                    .map(ConnectionManager::new)
+                    .orElse(null);
+            }
+        }
+        return this.connectionManager;
+    }
+
+    @Nullable
+    @Contract("true->!null")
+    public synchronized ResourceManager getResourceManager(boolean createIfNotExist) {
+        if (Objects.isNull(this.resourceManager)) {
+            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
+            if (createIfNotExist) {
+                try {
+                    final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, "resources.xml");
+                    this.resourceManager = new ResourceManager(resourcesFile);
+                } catch (final IOException e) {
+                    throw new AzureToolkitRuntimeException(e);
+                }
+            } else {
+                this.resourceManager = Optional.ofNullable(dotAzureDir.findChild("resources.xml"))
+                    .map(ResourceManager::new)
+                    .orElse(null);
+            }
+        }
+        return this.resourceManager;
     }
 }
