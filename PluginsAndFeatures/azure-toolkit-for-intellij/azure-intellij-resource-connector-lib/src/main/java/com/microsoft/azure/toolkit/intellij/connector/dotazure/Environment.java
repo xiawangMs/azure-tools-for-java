@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import io.github.cdimascio.dotenv.internal.DotenvParser;
 import io.github.cdimascio.dotenv.internal.DotenvReader;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Contract;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -134,7 +136,7 @@ public class Environment {
                     break;
                 }
             }
-            Files.writeString(this.dotEnvFile.toNioPath(), lines.stream().collect(Collectors.joining(System.lineSeparator())), StandardOpenOption.WRITE);
+            FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())), StandardCharsets.UTF_8);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }

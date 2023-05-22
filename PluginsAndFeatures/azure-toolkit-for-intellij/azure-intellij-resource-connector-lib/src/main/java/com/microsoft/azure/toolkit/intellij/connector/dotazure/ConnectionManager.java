@@ -13,10 +13,10 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor
 public class ConnectionManager {
     private static final ExtensionPointName<ConnectionDefinition<?, ?>> exPoints =
         ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.connectorConnectionType");
@@ -46,6 +45,15 @@ public class ConnectionManager {
     private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
     private final VirtualFile connectionsFile;
+
+    public ConnectionManager(@Nonnull VirtualFile connectionsFile) {
+        this.connectionsFile = connectionsFile;
+        try {
+            this.load();
+        } catch (final IOException | JDOMException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
+    }
 
     public synchronized static Map<String, ConnectionDefinition<?, ?>> getDefinitionsMap() {
         if (MapUtils.isEmpty(definitions)) {

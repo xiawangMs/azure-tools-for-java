@@ -10,15 +10,16 @@ import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Comparator;
@@ -30,7 +31,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor
 public class ResourceManager {
     private static final ExtensionPointName<ResourceDefinition<?>> exPoints =
         ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.connectorResourceType");
@@ -40,6 +40,15 @@ public class ResourceManager {
     private static final String ELEMENT_NAME_RESOURCE = "resource";
     private final Set<Resource<?>> resources = new LinkedHashSet<>();
     private final VirtualFile resourcesFile;
+
+    public ResourceManager(@Nonnull VirtualFile resourcesFile) {
+        this.resourcesFile = resourcesFile;
+        try {
+            this.load();
+        } catch (final IOException | JDOMException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
+    }
 
     public static ResourceDefinition<?> getDefinition(String type) {
         return getDefinitionsMap().get(type);
