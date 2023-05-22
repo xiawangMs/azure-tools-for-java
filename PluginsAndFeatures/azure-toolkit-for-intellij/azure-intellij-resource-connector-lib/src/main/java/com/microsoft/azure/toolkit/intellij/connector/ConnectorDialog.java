@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -22,6 +21,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
@@ -117,13 +118,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.close(0);
             final Resource<?> resource = connection.getResource();
             final Resource<?> consumer = connection.getConsumer();
-            final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
-            final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
             if (connection.validate(this.project)) {
                 saveConnectionToDotEnv(connection, consumer);
-                resourceManager.addResource(resource);
-                resourceManager.addResource(consumer);
-                connectionManager.addConnection(connection);
                 final String message = String.format("The connection between %s and %s has been successfully created.",
                     resource.getName(), consumer.getName());
                 AzureMessager.getMessager().success(message);
