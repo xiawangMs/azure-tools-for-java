@@ -7,10 +7,12 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -68,7 +70,9 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     @AzureOperation(value = "user/connector.remove_connection.resource", params = "connection.getResource()")
     private static void removeConnection(Connection<?, ?> connection, AnActionEvent e) {
         final Project project = Objects.requireNonNull(e.getProject());
-        project.getService(ConnectionManager.class).removeConnection(connection.getResource().getId(), connection.getConsumer().getId());
+        final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
+        final AzureModule aModule = AzureModule.from(Objects.requireNonNull(module));
+        aModule.getEnvironment().removeConnection(connection).save();
         project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
     }
 
