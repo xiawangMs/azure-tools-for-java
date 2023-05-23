@@ -55,6 +55,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .visibleWhen(m -> m instanceof Connection<?, ?>)
             .withHandler((c, e) -> openDialog(c, ((AnActionEvent) e).getProject()))
             .withShortcut(am.getIDEDefaultShortcuts().edit())
+            .withAuthRequired(false)
             .register(am);
 
         new Action<>(REMOVE_CONNECTION)
