@@ -15,9 +15,10 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.*;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Deletable;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.IBlobFile;
@@ -26,7 +27,6 @@ import com.microsoft.azure.toolkit.lib.storage.share.IShareFile;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.util.Optional;
 
 public class StorageActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -61,10 +61,7 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final Action.Id<StorageFile> COPY_FILE_URL = Action.Id.of("user/storage.copy_file_url.file");
     public static final Action.Id<StorageFile> COPY_FILE_SAS_URL = Action.Id.of("user/storage.copy_file_sas_url.file");
     public static final Action.Id<StorageFile> DELETE_DIRECTORY = Action.Id.of("user/storage.delete_directory.dir");
-    public static final Action.Id<Refreshable> REFRESH = Action.Id.of("user/storage.refresh.resource");
-    public static final Action.Id<AzResource> DELETE = Action.Id.of("user/storage.delete_resource.resource");
-
-
+    
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(OPEN_AZURE_STORAGE_EXPLORER)
@@ -82,6 +79,7 @@ public class StorageActionsContributor implements IActionsContributor {
                     AzureMessager.getMessager().warning("Only Azure Storages can be opened with Azure Storage Explorer.");
                 }
             })
+            .withAuthRequired(false)
             .withShortcut(am.getIDEDefaultShortcuts().edit())
             .register(am);
 
@@ -148,7 +146,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withLabel("Open in Editor")
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile)
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(CREATE_BLOB)
@@ -156,7 +153,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof IBlobFile && ((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(CREATE_FILE)
@@ -164,7 +160,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(CREATE_DIRECTORY)
@@ -172,7 +167,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(CREATE_DIRECTORY)
@@ -180,7 +174,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof IShareFile && ((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(UPLOAD_FILES)
@@ -188,7 +181,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(UPLOAD_FILE)
@@ -196,7 +188,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(UPLOAD_FOLDER)
@@ -204,7 +195,6 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile && ((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(DOWNLOAD_FILE)
@@ -212,21 +202,18 @@ public class StorageActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.DOWNLOAD.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile && !((StorageFile) s).isDirectory())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(COPY_FILE_URL)
             .withLabel("Copy URL")
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile)
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(COPY_FILE_SAS_URL)
             .withLabel("Generate and Copy SAS Token and URL")
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof StorageFile)
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(DELETE_DIRECTORY)
@@ -240,7 +227,6 @@ public class StorageActionsContributor implements IActionsContributor {
                 }
             })
             .withShortcut(am.getIDEDefaultShortcuts().delete())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(GROUP_CREATE_ACCOUNT)
@@ -249,50 +235,12 @@ public class StorageActionsContributor implements IActionsContributor {
             .visibleWhen(s -> s instanceof ResourceGroup)
             .enableWhen(s -> s.getFormalStatus(true).isConnected())
             .register(am);
-
-        final AzureActionManager.Shortcuts shortcuts = am.getIDEDefaultShortcuts();
-        new Action<>(REFRESH)
-                .withLabel("Refresh")
-                .withIdParam(s -> Optional.ofNullable(s).map(r -> {
-                    if (r instanceof AzResource) {
-                        return ((AzResource) r).getName();
-                    } else if (r instanceof AbstractAzResourceModule) {
-                        return ((AbstractAzResourceModule<?, ?, ?>) r).getResourceTypeName();
-                    }
-                    throw new IllegalArgumentException("Unsupported type: " + r.getClass());
-                }).orElse(null))
-                .withIcon(AzureIcons.Action.REFRESH.getIconPath())
-                .withShortcut(shortcuts.refresh())
-                .visibleWhen(s -> s instanceof Refreshable)
-                .withHandler(Refreshable::refresh)
-                .setAuthRequired(false) // set auth required to false for local emulator
-                .register(am);
-
-        new Action<>(DELETE)
-                .withLabel("Delete")
-                .withIcon(AzureIcons.Action.DELETE.getIconPath())
-                .withIdParam(AzResource::getName)
-                .withShortcut(shortcuts.delete())
-                .visibleWhen(s -> (s instanceof AzResource && s instanceof Deletable))
-                .enableWhen(s -> {
-                    if (s instanceof AbstractAzResource) {
-                        final AbstractAzResource<?, ?, ?> r = (AbstractAzResource<?, ?, ?>) s;
-                        return !r.getFormalStatus(true).isDeleted() && !r.isDraftForCreating();
-                    }
-                    return true;
-                })
-                .setAuthRequired(false)
-                .withHandler((s) -> {
-                    if (AzureMessager.getMessager().confirm(String.format("Are you sure to delete %s \"%s\"", s.getResourceTypeName(), s.getName()))) {
-                        ((Deletable) s).delete();
-                    }
-                }).register(am);
     }
 
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
             ResourceCommonActionsContributor.CREATE
@@ -304,7 +252,7 @@ public class StorageActionsContributor implements IActionsContributor {
             "---",
             StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
@@ -313,18 +261,15 @@ public class StorageActionsContributor implements IActionsContributor {
             "---",
             ResourceCommonActionsContributor.CONNECT,
             "---",
-            StorageActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
 
         final ActionGroup azuriteActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.PIN,
-                "---",
                 StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
                 "---",
-                StorageActionsContributor.REFRESH,
+                ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
                 StorageActionsContributor.START_AZURITE,
                 StorageActionsContributor.STOP_AZURITE,
@@ -336,14 +281,14 @@ public class StorageActionsContributor implements IActionsContributor {
         am.registerGroup(AZURITE_ACTIONS, azuriteActionGroup);
 
         final ActionGroup moduleActionGroup = new ActionGroup(
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
         am.registerGroup(STORAGE_MODULE_ACTIONS, moduleActionGroup);
 
         final ActionGroup fileActionGroup = new ActionGroup(
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             StorageActionsContributor.CREATE_BLOB,
             StorageActionsContributor.CREATE_FILE,
@@ -354,12 +299,12 @@ public class StorageActionsContributor implements IActionsContributor {
             StorageActionsContributor.COPY_FILE_URL,
             StorageActionsContributor.COPY_FILE_SAS_URL,
             "---",
-            StorageActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(FILE_ACTIONS, fileActionGroup);
 
         final ActionGroup dirActionGroup = new ActionGroup(
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             "---",
             StorageActionsContributor.CREATE_BLOB,
             StorageActionsContributor.CREATE_FILE,
@@ -376,7 +321,7 @@ public class StorageActionsContributor implements IActionsContributor {
         am.registerGroup(DIRECTORY_ACTIONS, dirActionGroup);
 
         final ActionGroup containerActionGroup = new ActionGroup(
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",
             StorageActionsContributor.CREATE_BLOB,
@@ -386,12 +331,12 @@ public class StorageActionsContributor implements IActionsContributor {
             StorageActionsContributor.COPY_FILE_URL,
             StorageActionsContributor.COPY_FILE_SAS_URL,
             "---",
-            StorageActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(CONTAINER_ACTIONS, containerActionGroup);
 
         final ActionGroup shareActionGroup = new ActionGroup(
-            StorageActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.REFRESH,
             StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",
             StorageActionsContributor.CREATE_FILE,
@@ -402,21 +347,21 @@ public class StorageActionsContributor implements IActionsContributor {
             StorageActionsContributor.COPY_FILE_URL,
             StorageActionsContributor.COPY_FILE_SAS_URL,
             "---",
-            StorageActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(SHARE_ACTIONS, shareActionGroup);
 
         final ActionGroup queueActionGroup = new ActionGroup(
             StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",
-            StorageActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(QUEUE_ACTIONS, queueActionGroup);
 
         final ActionGroup tableActionGroup = new ActionGroup(
             StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
             "---",
-            StorageActionsContributor.DELETE
+            ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(TABLE_ACTIONS, tableActionGroup);
 

@@ -148,7 +148,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             } else if (isAbstractAzResource && "[LinkedCluster]".equals(((AbstractAzResource<?, ?, ?>) source).getSubscription().getId())) {
                 visible = true;
             } else {
-                final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired();
+                final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired(source);
                 visible = !isResourceInOtherSubs && view.isVisible() && Objects.nonNull(action.getHandler(source, e));
             }
 

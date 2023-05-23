@@ -163,7 +163,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AzResource)
             .enableWhen(s -> s.getFormalStatus(true).isRunning())
-            .setAuthRequired(false)
             .register(am);
 
         new Action<>(SHOW_PROPERTIES)
