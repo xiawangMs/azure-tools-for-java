@@ -59,7 +59,10 @@ public class AzureModule {
         return this.getModuleDir().map(moduleDir -> {
             try {
                 this.dotAzure = VfsUtil.createDirectoryIfMissing(moduleDir, ".azure");
+                final VirtualFile dotGitIgnore = dotAzure.findOrCreateChildData(this, ".gitignore");
+                dotGitIgnore.setBinaryContent(".env\nconnections.resources.xml".getBytes());
                 this.configJsonFile = dotAzure.findOrCreateChildData(this, "config.json");
+                this.dotAzure.refresh(true, false);
             } catch (final IOException e) {
                 throw new AzureToolkitRuntimeException(e);
             }
