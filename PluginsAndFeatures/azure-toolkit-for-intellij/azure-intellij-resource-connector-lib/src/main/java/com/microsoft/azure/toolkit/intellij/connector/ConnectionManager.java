@@ -29,6 +29,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated use {@link com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager} instead
+ */
+@Deprecated
 public interface ConnectionManager extends PersistentStateComponent<Element> {
     @Nonnull
     static ArrayList<ConnectionDefinition<?, ?>> getDefinitions() {
