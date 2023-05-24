@@ -72,7 +72,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         final Project project = Objects.requireNonNull(e.getProject());
         final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
         final AzureModule aModule = AzureModule.from(Objects.requireNonNull(module));
-        aModule.getEnvironment().removeConnection(connection).save();
+        aModule.getDefaultEnvironment().removeConnection(connection).save();
         project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
     }
 

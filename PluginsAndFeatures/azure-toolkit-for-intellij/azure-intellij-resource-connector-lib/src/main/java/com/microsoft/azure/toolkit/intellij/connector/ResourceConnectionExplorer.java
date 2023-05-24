@@ -52,7 +52,7 @@ public class ResourceConnectionExplorer extends Tree {
             .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).lazy(false)
                 .view(new NodeView.Static(m.getName(), "/icons/module"))
                 .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                .addChildren(module -> Optional.ofNullable(module.getEnvironment()).map(Environment::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
+                .addChildren(module -> Optional.ofNullable(module.getDefaultEnvironment()).map(Environment::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
                     .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
                     .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }

@@ -21,7 +21,7 @@ public class DotEnvRunConfigurationExtension extends RunConfigurationExtension {
             .map(t -> (DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask) t).toList();
         if (tasks.isEmpty()) {
             AzureModule.createIfSupport(config).filter(AzureModule::isInitialized)
-                .map(AzureModule::getEnvironment).stream()
+                .map(AzureModule::getDefaultEnvironment).stream()
                 .flatMap(e -> e.load().stream())
                 .forEach(p -> params.addEnv(p.getKey(), p.getValue()));
         } else {

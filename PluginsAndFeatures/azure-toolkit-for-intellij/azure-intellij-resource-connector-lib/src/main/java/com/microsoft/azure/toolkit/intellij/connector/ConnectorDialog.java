@@ -119,7 +119,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             final Resource<?> resource = connection.getResource();
             final Resource<?> consumer = connection.getConsumer();
             if (connection.validate(this.project)) {
-                saveConnectionToDotEnv(connection, consumer);
+                saveConnectionToDotAzure(connection, consumer);
                 final String message = String.format("The connection between %s and %s has been successfully created.",
                     resource.getName(), consumer.getName());
                 AzureMessager.getMessager().success(message);
@@ -129,14 +129,14 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         });
     }
 
-    private void saveConnectionToDotEnv(Connection<?, ?> connection, Resource<?> consumer) {
+    private void saveConnectionToDotAzure(Connection<?, ?> connection, Resource<?> consumer) {
         if (consumer instanceof ModuleResource) {
             final ModuleManager moduleManager = ModuleManager.getInstance(project);
             final Module m = moduleManager.findModuleByName(consumer.getName());
             if (Objects.nonNull(m)) {
                 final AzureModule module = AzureModule.from(m);
                 AzureTaskManager.getInstance()
-                    .write(() -> module.initialize().getEnvironment().addConnection(connection).save());
+                    .write(() -> module.initializeWithDefaultEnvIfNot().addConnection(connection).save());
             }
         }
     }

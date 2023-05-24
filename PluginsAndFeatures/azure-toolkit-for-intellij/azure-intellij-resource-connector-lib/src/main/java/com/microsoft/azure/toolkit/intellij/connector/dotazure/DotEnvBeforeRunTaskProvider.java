@@ -116,12 +116,12 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
         public LoadDotEnvBeforeRunTask(RunConfiguration configuration) {
             super(ID);
             this.config = configuration;
-            this.file = AzureModule.createIfSupport(this.config).flatMap(AzureModule::getDotEnvFile).orElse(null);
+            this.file = AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultEnvironment).map(Environment::getDotEnvFile).orElse(null);
         }
 
         public List<Pair<String, String>> loadEnv() {
             return Optional.ofNullable(this.file)
-                .or(() -> AzureModule.createIfSupport(this.config).flatMap(AzureModule::getDotEnvFile))
+                .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultEnvironment).map(Environment::getDotEnvFile))
                 .map(Environment::load)
                 .orElse(Collections.emptyList());
         }

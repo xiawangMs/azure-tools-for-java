@@ -42,7 +42,7 @@ public class MigrateStartupActivity implements StartupActivity {
             Optional.ofNullable(moduleManager.findModuleByName(moduleName))
                 .map(AzureModule::from).filter(m -> !m.isInitialized())
                 .ifPresent(module -> AzureTaskManager.getInstance().write(() -> {
-                    final Environment env = module.initialize().getEnvironment();
+                    final Environment env = module.initializeWithDefaultEnvIfNot();
                     connections.forEach(c -> {
                         try {
                             env.addConnection(c);

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -14,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import io.github.cdimascio.dotenv.internal.DotenvParser;
 import io.github.cdimascio.dotenv.internal.DotenvReader;
+import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,16 +34,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Environment {
+    @Getter
+    @Nonnull
+    private final String name;
+    @Getter
     @Nonnull
     private final VirtualFile dotEnvFile;
     @Nonnull
-    private final Module module;
+    private final AzureModule module;
     @Nullable
     private ConnectionManager connectionManager;
     @Nullable
     private ResourceManager resourceManager;
 
-    public Environment(@Nonnull VirtualFile dotEnvFile, @Nonnull Module module) {
+    public Environment(@Nonnull String name, @Nonnull VirtualFile dotEnvFile, @Nonnull AzureModule module) {
+        this.name = name;
         this.module = module;
         this.dotEnvFile = dotEnvFile;
         final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
@@ -71,14 +76,12 @@ public class Environment {
         this.addConnectionToDotEnv(connection);
         Optional.of(this.getResourceManager(true)).ifPresent(m -> m.addResource(connection.getResource()));
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.addConnection(connection));
-        this.dotEnvFile.getParent().refresh(true, true);
         return this;
     }
 
     public synchronized Environment removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.removeConnection(connection));
-        this.dotEnvFile.getParent().refresh(true, true);
         return this;
     }
 
@@ -95,6 +98,7 @@ public class Environment {
         try {
             this.connectionManager.save();
             this.resourceManager.save();
+            this.dotEnvFile.getParent().refresh(true, true);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
