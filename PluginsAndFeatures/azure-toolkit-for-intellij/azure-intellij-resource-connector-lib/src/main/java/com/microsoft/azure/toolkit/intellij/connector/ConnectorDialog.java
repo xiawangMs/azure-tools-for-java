@@ -29,11 +29,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.CONSUMER;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
@@ -56,6 +52,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     protected JTextField envPrefixTextField;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
+
+    private String connectionId = UUID.randomUUID().toString();
 
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
@@ -120,12 +118,12 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             final Resource<?> resource = connection.getResource();
             final Resource<?> consumer = connection.getConsumer();
             if (connection.validate(this.project)) {
-                saveConnectionToDotAzure(connection, consumer);
-                final String message = String.format("The connection between %s and %s has been successfully created.",
-                    resource.getName(), consumer.getName());
-                AzureMessager.getMessager().success(message);
-                project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
-
+                AzureTaskManager.getInstance().runInBackground("Saving connection", () -> {
+                    saveConnectionToDotAzure(connection, consumer);
+                    final String message = String.format("The connection between %s and %s has been successfully created/updated.", resource.getName(), consumer.getName());
+                    AzureMessager.getMessager().success(message);
+                    project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
+                });
             }
         });
     }
@@ -136,8 +134,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             final Module m = moduleManager.findModuleByName(consumer.getName());
             if (Objects.nonNull(m)) {
                 final AzureModule module = AzureModule.from(m);
-                AzureTaskManager.getInstance()
-                    .write(() -> module.initializeWithDefaultEnvIfNot().addConnection(connection).save());
+                final AzureTaskManager taskManager = AzureTaskManager.getInstance();
+                taskManager.runLater(() -> taskManager.write(() -> module.initializeWithDefaultEnvIfNot().createOrUpdateConnection(connection).save()));
             }
         }
     }
@@ -166,6 +164,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         }
         final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
         connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
+        connection.setId(this.connectionId);
         return connection;
     }
 
@@ -174,6 +173,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.setConsumer(connection.getConsumer());
         this.setResource(connection.getResource());
         this.envPrefixTextField.setText(connection.getEnvPrefix());
+        this.connectionId = connection.getId();
     }
 
     @Override

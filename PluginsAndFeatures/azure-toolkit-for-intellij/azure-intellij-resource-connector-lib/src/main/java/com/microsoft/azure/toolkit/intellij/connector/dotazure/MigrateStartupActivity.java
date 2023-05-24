@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MigrateStartupActivity implements StartupActivity {
@@ -45,8 +46,9 @@ public class MigrateStartupActivity implements StartupActivity {
                     final Environment env = module.initializeWithDefaultEnvIfNot();
                     connections.forEach(c -> {
                         try {
-                            env.addConnection(c);
                             manager.removeConnection(c.getResource().getId(), c.getConsumer().getId());
+                            c.setId(UUID.randomUUID().toString()); // set new id for old connection
+                            env.addConnection(c);
                         } catch (final Exception e) {
                             AzureMessager.getMessager().error(e);
                         }

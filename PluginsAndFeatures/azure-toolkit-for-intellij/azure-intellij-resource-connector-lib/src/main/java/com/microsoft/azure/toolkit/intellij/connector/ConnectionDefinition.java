@@ -154,12 +154,13 @@ public class ConnectionDefinition<R, C> {
         if (CollectionUtils.isNotEmpty(existedConnections)) {
             final Connection<?, ?> existedConnection = existedConnections.stream()
                     .filter(e -> StringUtils.equals(e.getEnvPrefix(), connection.getEnvPrefix()))
+                    .filter(e -> !StringUtils.equals(e.getId(), connection.getId()))
                     .findFirst().orElse(null);
             if (Objects.nonNull(existedConnection)) { // modified
                 final Resource<R> connected = (Resource<R>) existedConnection.getResource();
-                final String template = "%s \"%s\" has already connected to %s \"%s\". \n" +
-                        "Do you want to reconnect it to \"%s\"?";
-                final String msg = String.format(template,
+                final String template = "Connection with environment variable prefix \"%s\" is found on your PC, which connect %s \"%s\" to %s \"%s\" \n" +
+                        "Do you want to override it?";
+                final String msg = String.format(template, connection.getEnvPrefix(),
                         consumer.getDefinition().getTitle(), consumer.getName(),
                         connected.getDefinition().getTitle(), connected.getName(),
                         resource.getName());

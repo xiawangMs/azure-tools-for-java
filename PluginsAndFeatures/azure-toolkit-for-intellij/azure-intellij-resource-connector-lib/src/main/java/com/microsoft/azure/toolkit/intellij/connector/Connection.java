@@ -41,6 +41,7 @@ public class Connection<R, C> {
     public static final String ENV_PREFIX = "%ENV_PREFIX%";
 
     @Setter
+    @Getter
     @EqualsAndHashCode.Include
     private String id;
 
@@ -62,9 +63,9 @@ public class Connection<R, C> {
 
     private Map<String, String> env = new HashMap<>();
 
-    public String getId() {
-        return StringUtils.isBlank(this.id) ? this.getEnvPrefix() + "/" + resource.getId() : this.id;
-    }
+//    public String getId() {
+//        return StringUtils.isBlank(this.id) ? this.getEnvPrefix() + "/" + resource.getId() : this.id;
+//    }
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
