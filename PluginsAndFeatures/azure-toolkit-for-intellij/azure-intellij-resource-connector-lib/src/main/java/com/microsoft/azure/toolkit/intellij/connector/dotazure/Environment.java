@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +33,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Environment {
+    private static final String RESOURCES_FILE = "connections.resources.xml";
+    private static final String CONNECTIONS_FILE = "connections.xml";
     @Getter
     @Nonnull
     private final String name;
@@ -52,8 +53,8 @@ public class Environment {
         this.module = module;
         this.dotEnvFile = dotEnvFile;
         final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-        final VirtualFile connectionsFile = dotAzureDir.findChild("connections.xml");
-        final VirtualFile resourcesFile = dotAzureDir.findChild("resources.xml");
+        final VirtualFile connectionsFile = dotAzureDir.findChild(CONNECTIONS_FILE);
+        final VirtualFile resourcesFile = dotAzureDir.findChild(RESOURCES_FILE);
         if (Objects.nonNull(resourcesFile)) {
             this.resourceManager = new ResourceManager(resourcesFile, this);
         }
@@ -107,8 +108,8 @@ public class Environment {
     private void createResourceConnectionFilesIfNot() {
         try {
             final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-            final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, "connections.xml");
-            final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, "resources.xml");
+            final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, CONNECTIONS_FILE);
+            final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, RESOURCES_FILE);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
@@ -161,8 +162,7 @@ public class Environment {
     }
 
     public List<Connection<?, ?>> getConnections() {
-        return Optional.ofNullable(this.getConnectionManager(true)).map(ConnectionManager::getConnections)
-            .orElse(Collections.emptyList());
+        return this.getConnectionManager(true).getConnections();
     }
 
     @Nullable
@@ -172,13 +172,13 @@ public class Environment {
             final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
             if (createIfNotExist) {
                 try {
-                    final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, "connections.xml");
+                    final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, CONNECTIONS_FILE);
                     this.connectionManager = new ConnectionManager(connectionsFile, this);
                 } catch (final IOException e) {
                     throw new AzureToolkitRuntimeException(e);
                 }
             } else {
-                this.connectionManager = Optional.ofNullable(dotAzureDir.findChild("connections.xml"))
+                this.connectionManager = Optional.ofNullable(dotAzureDir.findChild(CONNECTIONS_FILE))
                     .map(file -> new ConnectionManager(file, this))
                     .orElse(null);
             }
@@ -193,13 +193,13 @@ public class Environment {
             final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
             if (createIfNotExist) {
                 try {
-                    final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, "resources.xml");
+                    final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, RESOURCES_FILE);
                     this.resourceManager = new ResourceManager(resourcesFile, this);
                 } catch (final IOException e) {
                     throw new AzureToolkitRuntimeException(e);
                 }
             } else {
-                this.resourceManager = Optional.ofNullable(dotAzureDir.findChild("resources.xml"))
+                this.resourceManager = Optional.ofNullable(dotAzureDir.findChild(RESOURCES_FILE))
                     .map(file -> new ResourceManager(file, this))
                     .orElse(null);
             }
