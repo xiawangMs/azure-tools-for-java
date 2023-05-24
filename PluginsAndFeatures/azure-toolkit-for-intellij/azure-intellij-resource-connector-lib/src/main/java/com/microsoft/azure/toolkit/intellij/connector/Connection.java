@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.AccessLevel;
@@ -78,8 +79,12 @@ public class Connection<R, C> {
     }
 
     public Map<String, String> getEnvironmentVariables(final Project project) {
-        return this.resource.initEnv(project).entrySet().stream()
+        final Map<String, String> result = this.resource.initEnv(project).entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()), Map.Entry::getValue));
+        if (this.getResource().getDefinition() instanceof FunctionSupported<R>) {
+            result.putAll(((FunctionSupported<R>) this.getResource().getDefinition()).getPropertiesForFunction(this.getResource().getData(), this));
+        }
+        return result;
     }
 
     /**

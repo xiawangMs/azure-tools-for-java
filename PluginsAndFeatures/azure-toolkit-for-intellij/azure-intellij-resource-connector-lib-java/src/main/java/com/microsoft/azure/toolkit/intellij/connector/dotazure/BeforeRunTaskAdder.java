@@ -9,7 +9,6 @@ import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -17,16 +16,18 @@ import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged, IWebAppRunConfiguration.ModuleChangedListener {
     @Override
     @ExceptionNotification
     public void runConfigurationAdded(@Nonnull RunnerAndConfigurationSettings settings) {
         final RunConfiguration config = settings.getConfiguration();
-        final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+        final Environment environment = AzureModule.createIfSupport(config).map(AzureModule::getEnvironment).orElse(null);
+        if (Objects.isNull(environment)) {
+            return;
+        }
+        final List<Connection<?, ?>> connections = environment.getConnections();
         final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
         if (connections.stream().anyMatch(c -> c.isApplicableFor(config)) && tasks.stream().noneMatch(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)) {
             config.getBeforeRunTasks().add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(config));
@@ -51,7 +52,11 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
                     tasks.add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(config));
                 }
             } else {
-                final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+                final List<Connection<?, ?>> connections = AzureModule.list(project).stream().map(AzureModule::getEnvironment).filter(Objects::nonNull)
+                        .map(env -> env.getConnectionManager(false))
+                        .filter(Objects::nonNull)
+                        .map(ConnectionManager::getConnections)
+                        .flatMap(List::stream).toList();
                 if (connections.stream().noneMatch(c -> c.isApplicableFor(config))) {
                     tasks.removeIf(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
                 }
@@ -62,7 +67,10 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
     @Override
     @ExceptionNotification
     public void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
-        final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config).map(AzureModule::getEnvironment)
+                .map(env -> env.getConnectionManager(false))
+                .map(ConnectionManager::getConnections)
+                .orElse(Collections.emptyList());
         final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
         Optional.ofNullable(editor).ifPresent(e -> BuildArtifactBeforeRunTaskUtils.removeTasks(e, (t) -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask));
         tasks.removeIf(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);

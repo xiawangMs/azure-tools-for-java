@@ -29,7 +29,7 @@ import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
@@ -144,11 +144,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
 
     private void applyResourceConnection(Map<String, String> appSettings) {
         if (functionRunConfiguration.isConnectionEnabled()) {
-            functionRunConfiguration.getConnections().stream()
-                    .filter(connection -> connection.getResource().getDefinition() instanceof FunctionSupported)
-                    .forEach(connection -> ((FunctionSupported) connection.getResource().getDefinition())
-                            .getPropertiesForFunction(connection.getResource().getData(), connection)
-                            .forEach((key, value) -> appSettings.put(key.toString(), value.toString())));
+            final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionRunConfiguration.getLoadDotEnvBeforeRunTask();
+            loadDotEnvBeforeRunTask.loadEnv().forEach(env -> appSettings.put(env.getKey(), env.getValue()));
         }
     }
 
@@ -242,7 +239,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             }
         });
         // Pending for function cli
-        int result = process.waitFor();
+        final int result = process.waitFor();
         if (result != 0) {
             throw new AzureToolkitRuntimeException(error[0]);
         }

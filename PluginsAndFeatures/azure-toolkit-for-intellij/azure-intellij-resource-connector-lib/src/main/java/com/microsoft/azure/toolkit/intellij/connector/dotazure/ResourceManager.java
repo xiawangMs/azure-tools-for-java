@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,8 +41,11 @@ public class ResourceManager {
     private static final String ELEMENT_NAME_RESOURCE = "resource";
     private final Set<Resource<?>> resources = new LinkedHashSet<>();
     private final VirtualFile resourcesFile;
+    @Getter
+    private final Environment environment;
 
-    public ResourceManager(@Nonnull VirtualFile resourcesFile) {
+    public ResourceManager(@Nonnull VirtualFile resourcesFile, @Nonnull final Environment environment) {
+        this.environment = environment;
         this.resourcesFile = resourcesFile;
         try {
             this.load();
@@ -115,7 +119,7 @@ public class ResourceManager {
         final Element resourcesEle = JDOMUtil.load(this.resourcesFile.toNioPath());
         for (final Element resourceEle : resourcesEle.getChildren()) {
             final String resDef = resourceEle.getAttributeValue(ATTR_DEFINITION);
-            final ResourceDefinition<?> definition = com.microsoft.azure.toolkit.intellij.connector.ResourceManager.getDefinition(resDef);
+            final ResourceDefinition<?> definition = ResourceManager.getDefinition(resDef);
             try {
                 Optional.ofNullable(definition).map(d -> definition.read(resourceEle)).ifPresent(this::addResource);
             } catch (final Exception e) {

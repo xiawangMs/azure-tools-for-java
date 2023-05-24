@@ -26,10 +26,14 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -127,8 +131,13 @@ public class ResourceConnectionExplorer extends Tree {
 
         @Override
         public boolean shouldBeAvailable(@Nonnull Project project) {
-            final ConnectionManager cm = project.getService(ConnectionManager.class);
-            return cm.getConnections().size() > 0;
+            final List<Connection<?, ?>> connections = AzureModule.list(project).stream()
+                    .map(AzureModule::getEnvironment)
+                    .filter(Objects::nonNull)
+                    .map(Environment::getConnections)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            return CollectionUtils.isNotEmpty(connections);
         }
 
         @Override

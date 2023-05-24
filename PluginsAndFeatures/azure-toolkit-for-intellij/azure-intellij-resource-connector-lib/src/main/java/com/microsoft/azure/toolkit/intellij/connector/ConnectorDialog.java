@@ -63,6 +63,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     public ConnectorDialog(Project project) {
         super(project);
         this.project = project;
+        $$$setupUI$$$();
         this.init();
     }
 
@@ -260,5 +261,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
                 return Collections.emptyList();
             }
         };
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 }

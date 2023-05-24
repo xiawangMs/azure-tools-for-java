@@ -7,8 +7,11 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -61,7 +65,24 @@ public class ConnectionDefinition<R, C> {
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    public Connection<R, C> read(Element connectionEle) {
+    public Connection<R, C> read(@Nonnull final com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager manager, Element connectionEle) {
+
+        final Element consumerEle = connectionEle.getChild("consumer");
+        final Element resourceEle = connectionEle.getChild("resource");
+        final String consumerDefName = consumerEle.getAttributeValue("type");
+        final Resource<R> resource = (Resource<R>) manager.getResourceById(resourceEle.getTextTrim());
+        final Resource<C> consumer = ModuleResource.Definition.IJ_MODULE.getName().equals(consumerDefName) ?
+                (Resource<C>) new ModuleResource(consumerEle.getTextTrim()) :
+                (Resource<C>) manager.getResourceById(consumerEle.getTextTrim());
+        if (Objects.nonNull(resource) && Objects.nonNull(consumer)) {
+            final Connection<R, C> connection = this.define(resource, consumer);
+            connection.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
+            return connection;
+        }
+        return null;
+    }
+
+    public Connection<R, C> readDeprecatedConnection(Element connectionEle) {
         final ResourceManager manager = ServiceManager.getService(ResourceManager.class);
         final Element consumerEle = connectionEle.getChild("consumer");
         final Element resourceEle = connectionEle.getChild("resource");
@@ -104,9 +125,20 @@ public class ConnectionDefinition<R, C> {
      * be created and persisted.
      */
     public boolean validate(Connection<R, C> connection, Project project) {
-        final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
+        final Resource<C> consumer = connection.getConsumer();
         final Resource<R> resource = connection.getResource();
-        final Resource<R> existedResource = (Resource<R>) resourceManager.getResourceById(resource.getId());
+        final Environment environment = Optional.of(consumer)
+                .filter(c -> c instanceof ModuleResource)
+                .map(c -> ((ModuleResource) c).getModuleName())
+                .map(ModuleManager.getInstance(project)::findModuleByName)
+                .map(AzureModule::from)
+                .map(AzureModule::getEnvironment)
+                .orElse(null);
+        if (Objects.isNull(environment)) {
+            return true;
+        }
+        final Resource<R> existedResource = Optional.ofNullable(environment.getResourceManager(false))
+                .map(rm -> (Resource<R>)rm.getResourceById(resource.getId())).orElse(null);
         if (Objects.nonNull(existedResource)) { // not new
             final R current = resource.getData();
             final R origin = existedResource.getData();
@@ -118,9 +150,7 @@ public class ConnectionDefinition<R, C> {
                 }
             }
         }
-        final ConnectionManager connectionManager = project.getService(ConnectionManager.class);
-        final Resource<C> consumer = connection.getConsumer();
-        final List<Connection<?, ?>> existedConnections = connectionManager.getConnectionsByConsumerId(consumer.getId());
+        final List<Connection<?, ?>> existedConnections = environment.getConnections();
         if (CollectionUtils.isNotEmpty(existedConnections)) {
             final Connection<?, ?> existedConnection = existedConnections.stream()
                     .filter(e -> StringUtils.equals(e.getEnvPrefix(), connection.getEnvPrefix()))
@@ -135,7 +165,7 @@ public class ConnectionDefinition<R, C> {
                         resource.getName());
                 final boolean result = AzureMessager.getMessager().confirm(msg, PROMPT_TITLE);
                 if (result) {
-                    connectionManager.removeConnection(existedConnection.getResource().getId(), consumer.getId());
+                    environment.removeConnection(existedConnection);
                 }
                 return result;
             }
