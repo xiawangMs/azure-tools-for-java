@@ -20,10 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,22 +40,27 @@ public class Connection<R, C> {
     @Setter
     @Getter
     @EqualsAndHashCode.Include
-    private String id;
+    @Nonnull
+    private final String id;
+
+    @Nonnull
+    @Setter
+    @EqualsAndHashCode.Include
+    protected Resource<R> resource;
+
+    @Nonnull
+    @Setter
+    @EqualsAndHashCode.Include
+    protected Resource<C> consumer;
 
     @Nonnull
     @EqualsAndHashCode.Include
-    protected final Resource<R> resource;
-
-    @Nonnull
-    @EqualsAndHashCode.Include
-    protected final Resource<C> consumer;
-
-    @Nonnull
-    @EqualsAndHashCode.Include
-    protected final ConnectionDefinition<R, C> definition;
+    @Setter
+    protected ConnectionDefinition<R, C> definition;
 
     @Setter
     @Getter(AccessLevel.NONE)
+    @EqualsAndHashCode.Include
     private String envPrefix;
 
     private Map<String, String> env = new HashMap<>();

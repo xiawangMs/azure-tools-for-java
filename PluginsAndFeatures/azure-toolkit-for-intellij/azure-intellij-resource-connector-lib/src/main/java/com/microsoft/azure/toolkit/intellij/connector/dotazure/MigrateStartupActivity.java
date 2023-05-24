@@ -47,7 +47,6 @@ public class MigrateStartupActivity implements StartupActivity {
                     connections.forEach(c -> {
                         try {
                             manager.removeConnection(c.getResource().getId(), c.getConsumer().getId());
-                            c.setId(UUID.randomUUID().toString()); // set new id for old connection
                             env.addConnection(c);
                         } catch (final Exception e) {
                             AzureMessager.getMessager().error(e);

@@ -36,7 +36,7 @@ public class ConnectionManager {
     private static final String ELEMENT_NAME_CONNECTIONS = "connections";
     private static final String ELEMENT_NAME_CONNECTION = "connection";
     private static final String FIELD_TYPE = "type";
-    private static final String FIELD_ID = "id";
+    public static final String FIELD_ID = "id";
     private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
     private final VirtualFile connectionsFile;
@@ -149,11 +149,9 @@ public class ConnectionManager {
         final Element connectionsEle = JDOMUtil.load(this.connectionsFile.toNioPath());
         for (final Element connectionEle : connectionsEle.getChildren()) {
             final String name = connectionEle.getAttributeValue(FIELD_TYPE);
-            final String id = connectionEle.getAttributeValue(FIELD_ID);
             final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
             try {
                 Optional.ofNullable(definition).map(d -> d.read(resourceManager, connectionEle)).ifPresent(c -> {
-                    c.setId(id);
                     this.addConnection(c);
                 });
             } catch (final Exception e) {

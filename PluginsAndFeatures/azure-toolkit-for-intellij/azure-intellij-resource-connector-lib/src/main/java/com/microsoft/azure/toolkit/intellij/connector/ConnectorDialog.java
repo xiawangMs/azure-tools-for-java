@@ -53,7 +53,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
 
-    private String connectionId = UUID.randomUUID().toString();
+    private Connection<?,?> connection;
 
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
@@ -162,9 +162,17 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (Objects.isNull(resource) || Objects.isNull(consumer)) {
             return null;
         }
-        final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
+        final ConnectionDefinition<?, ?> connectionDefinition = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef);
+        final Connection connection;
+        if (Objects.isNull(this.connection)) {
+            connection = connectionDefinition.define(resource, consumer);
+        } else {
+            connection = this.connection;
+            connection.setResource(resource);
+            connection.setConsumer(consumer);
+            connection.setDefinition(connectionDefinition);
+        }
         connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
-        connection.setId(this.connectionId);
         return connection;
     }
 
@@ -173,7 +181,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.setConsumer(connection.getConsumer());
         this.setResource(connection.getResource());
         this.envPrefixTextField.setText(connection.getEnvPrefix());
-        this.connectionId = connection.getId();
+        this.connection = connection;
     }
 
     @Override
