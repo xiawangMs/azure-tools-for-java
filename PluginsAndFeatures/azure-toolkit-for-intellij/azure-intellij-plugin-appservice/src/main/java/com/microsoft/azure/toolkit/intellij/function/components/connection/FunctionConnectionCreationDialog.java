@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
@@ -157,7 +156,6 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
             final String message = String.format("The connection between %s and %s has been successfully created.",
                     resource.getName(), consumer.getName());
             AzureMessager.getMessager().success(message);
-            project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
         }
         super.doOKAction();
     }

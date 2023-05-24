@@ -9,6 +9,7 @@ import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
 public class Environment {
     private static final String RESOURCES_FILE = "connections.resources.xml";
@@ -78,12 +81,16 @@ public class Environment {
         this.addConnectionToDotEnv(connection);
         Optional.of(this.getResourceManager(true)).ifPresent(m -> m.addResource(connection.getResource()));
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.addConnection(connection));
+        final Project project = this.module.getProject();
+        project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
         return this;
     }
 
     public synchronized Environment removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.removeConnection(connection));
+        final Project project = this.module.getProject();
+        project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
         return this;
     }
 

@@ -22,8 +22,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
-
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("user/connector.refresh_connections");
     public static final Action.Id<AzureModule> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
@@ -73,7 +71,6 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
         final AzureModule aModule = AzureModule.from(Objects.requireNonNull(module));
         aModule.getDefaultEnvironment().removeConnection(connection).save();
-        project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
     }
 
     @AzureOperation("user/connector.refresh_connections")
