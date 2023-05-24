@@ -24,6 +24,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager.FIELD_ID;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -52,8 +55,12 @@ public class ConnectionDefinition<R, C> {
      */
     @Nonnull
     public Connection<R, C> define(Resource<R> resource, Resource<C> consumer) {
+        return define(UUID.randomUUID().toString(), resource, consumer);
+    }
+
+    public Connection<R, C> define(String id, Resource<R> resource, Resource<C> consumer) {
         // todo: @Miller @hanli get connection provider by connection type, eg: Java, Csharp...
-        return getConnectionProvider().define(resource, consumer, this);
+        return getConnectionProvider().define(id, resource, consumer, this);
     }
 
     private ConnectionProvider getConnectionProvider() {
@@ -66,7 +73,7 @@ public class ConnectionDefinition<R, C> {
     @Nullable
     @SuppressWarnings("unchecked")
     public Connection<R, C> read(@Nonnull final com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager manager, Element connectionEle) {
-
+        final String id = connectionEle.getAttributeValue(FIELD_ID);
         final Element consumerEle = connectionEle.getChild("consumer");
         final Element resourceEle = connectionEle.getChild("resource");
         final String consumerDefName = consumerEle.getAttributeValue("type");
@@ -75,7 +82,7 @@ public class ConnectionDefinition<R, C> {
                 (Resource<C>) new ModuleResource(consumerEle.getTextTrim()) :
                 (Resource<C>) manager.getResourceById(consumerEle.getTextTrim());
         if (Objects.nonNull(resource) && Objects.nonNull(consumer)) {
-            final Connection<R, C> connection = this.define(resource, consumer);
+            final Connection<R, C> connection = this.define(id, resource, consumer);
             connection.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
             return connection;
         }
@@ -154,15 +161,15 @@ public class ConnectionDefinition<R, C> {
         if (CollectionUtils.isNotEmpty(existedConnections)) {
             final Connection<?, ?> existedConnection = existedConnections.stream()
                     .filter(e -> StringUtils.equals(e.getEnvPrefix(), connection.getEnvPrefix()))
+                    .filter(e -> !StringUtils.equals(e.getId(), connection.getId()))
                     .findFirst().orElse(null);
             if (Objects.nonNull(existedConnection)) { // modified
                 final Resource<R> connected = (Resource<R>) existedConnection.getResource();
-                final String template = "%s \"%s\" has already connected to %s \"%s\". \n" +
-                        "Do you want to reconnect it to \"%s\"?";
-                final String msg = String.format(template,
+                final String template = "Connection with environment variable prefix \"%s\" is found on your PC, which connect %s \"%s\" to %s \"%s\" \n" +
+                        "Do you want to override it?";
+                final String msg = String.format(template, connection.getEnvPrefix(),
                         consumer.getDefinition().getTitle(), consumer.getName(),
-                        connected.getDefinition().getTitle(), connected.getName(),
-                        resource.getName());
+                        connected.getDefinition().getTitle(), connected.getName());
                 final boolean result = AzureMessager.getMessager().confirm(msg, PROMPT_TITLE);
                 if (result) {
                     environment.removeConnection(existedConnection);

@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -86,8 +87,9 @@ public class Environment {
         return this;
     }
 
-    public synchronized Environment updateConnection(@Nonnull Connection<?, ?> connection) {
-        this.removeConnectionFromDotEnv(connection);
+    public synchronized Environment createOrUpdateConnection(@Nonnull Connection<?, ?> connection) {
+        // Remove old connection
+        this.getConnections().stream().filter(c -> c.getId().equals(connection.getId())).findFirst().ifPresent(this::removeConnection);
         this.addConnection(connection);
         return this;
     }
@@ -172,7 +174,7 @@ public class Environment {
             final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
             if (createIfNotExist) {
                 try {
-                    final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, CONNECTIONS_FILE);
+                    final VirtualFile connectionsFile = WriteAction.compute(() -> dotAzureDir.findOrCreateChildData(this, CONNECTIONS_FILE));
                     this.connectionManager = new ConnectionManager(connectionsFile, this);
                 } catch (final IOException e) {
                     throw new AzureToolkitRuntimeException(e);
@@ -193,7 +195,7 @@ public class Environment {
             final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
             if (createIfNotExist) {
                 try {
-                    final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, RESOURCES_FILE);
+                    final VirtualFile resourcesFile = WriteAction.compute(() -> dotAzureDir.findOrCreateChildData(this, RESOURCES_FILE));
                     this.resourceManager = new ResourceManager(resourcesFile, this);
                 } catch (final IOException e) {
                     throw new AzureToolkitRuntimeException(e);
