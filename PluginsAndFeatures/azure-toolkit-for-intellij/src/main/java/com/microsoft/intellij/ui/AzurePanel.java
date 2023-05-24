@@ -23,7 +23,6 @@ import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
-import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -54,7 +53,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
@@ -70,7 +68,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private JCheckBox allowTelemetryCheckBox;
     private JTextPane allowTelemetryComment;
     private JComboBox<AzureEnvironment> azureEnvironmentComboBox;
-    private JComboBox<Password.SaveType> savePasswordComboBox;
     private FunctionCoreToolsCombobox funcCoreToolsPath;
     private JLabel azureEnvDesc;
     private AzureFileInput txtStorageExplorer;
@@ -100,14 +97,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 setText(azureEnvironmentDisplayString(value));
             }
         });
-        final ComboBoxModel<Password.SaveType> saveTypeModel = new DefaultComboBoxModel<>(Password.SaveType.values());
-        savePasswordComboBox.setModel(saveTypeModel);
-        savePasswordComboBox.setRenderer(new SimpleListCellRenderer<>() {
-            @Override
-            public void customize(@Nonnull JList<? extends Password.SaveType> list, Password.SaveType value, int index, boolean selected, boolean hasFocus) {
-                setText(value.title());
-            }
-        });
 
         azureEnvDesc.setForeground(UIUtil.getContextHelpForeground());
         azureEnvDesc.setMaximumSize(new Dimension());
@@ -120,9 +109,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         displayDescriptionForAzureEnv();
 
         final AzureConfiguration config = Azure.az().config();
-        if (Objects.isNull(config.getDatabasePasswordSaveType())) {
-            config.setDatabasePasswordSaveType(Password.SaveType.UNTIL_RESTART.name());
-        }
         setData(config);
     }
 
@@ -134,7 +120,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final boolean oldEnableAuthPersistence = config.isAuthPersistenceEnabled();
         final String oldFuncCoreToolsPath = config.getFunctionCoreToolsPath();
         azureEnvironmentComboBox.setSelectedItem(oldEnv);
-        savePasswordComboBox.setSelectedItem(Optional.ofNullable(oldPasswordSaveType).map(Password.SaveType::valueOf).orElse(Password.SaveType.UNTIL_RESTART));
         if (StringUtils.isNotBlank(oldFuncCoreToolsPath)) {
             funcCoreToolsPath.setValue(oldFuncCoreToolsPath);
         }
@@ -155,9 +140,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     public AzureConfiguration getData() {
         final AzureConfiguration data = new AzureConfiguration();
         data.setCloud(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
-        data.setDatabasePasswordSaveType(Optional.ofNullable(savePasswordComboBox.getSelectedItem())
-            .map(i -> ((Password.SaveType) i).name())
-            .orElse(Password.SaveType.UNTIL_RESTART.name()));
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
         data.setAuthPersistenceEnabled(enableAuthPersistence.isSelected());
         if (Objects.nonNull(funcCoreToolsPath.getSelectedItem())) {

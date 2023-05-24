@@ -11,10 +11,8 @@ import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
-import com.microsoft.azure.toolkit.intellij.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.database.component.ServerComboBox;
 import com.microsoft.azure.toolkit.intellij.database.component.TestConnectionActionPanel;
 import com.microsoft.azure.toolkit.intellij.database.component.UsernameComboBox;
@@ -28,20 +26,14 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +50,6 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     private JPasswordField inputPasswordField;
     private JTextField urlTextField;
     private JButton testConnectionButton;
-    private PasswordSaveComboBox passwordSaveComboBox;
     private TestConnectionActionPanel testConnectionActionPanel;
     private JTextPane testResultTextPane;
 
@@ -77,16 +68,9 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     }
 
     private void init() {
-        final Dimension passwordSaveComboBoxSize = new Dimension(106, passwordSaveComboBox.getPreferredSize().height);
-        passwordSaveComboBox.setPreferredSize(passwordSaveComboBoxSize);
-        passwordSaveComboBox.setMaximumSize(passwordSaveComboBoxSize);
-        passwordSaveComboBox.setSize(passwordSaveComboBoxSize);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
-        testConnectionButton.setEnabled(false);
-        this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
-            .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
-            .orElse(Password.SaveType.UNTIL_RESTART));
+        testConnectionButton.setEnabled(true);
         // username loader
         this.usernameComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() :
             Collections.singletonList(this.databaseComboBox.getServer().getFullAdminName()));
@@ -96,7 +80,6 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
         this.serverComboBox.addItemListener(this::onServerChanged);
         this.databaseComboBox.addItemListener(this::onDatabaseChanged);
-        this.inputPasswordField.addKeyListener(this.onPasswordChanged());
         this.urlTextField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -191,28 +174,14 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
         }
     }
 
-    private KeyListener onPasswordChanged() {
-        return new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (ArrayUtils.isNotEmpty(inputPasswordField.getPassword())) {
-                    testConnectionButton.setEnabled(true);
-                }
-            }
-        };
-    }
-
     @Nullable
     public Resource<T> getValue() {
         final T database = databaseComboBox.getValue();
         if (Objects.isNull(database)) {
             return null;
         }
-        final Password password = new Password();
-        password.password(inputPasswordField.getPassword());
-        password.saveType(passwordSaveComboBox.getValue());
         final SqlDatabaseResource<T> resource = (SqlDatabaseResource<T>) this.definition.define(database);
-        resource.setPassword(password);
+        resource.setPassword(inputPasswordField.getPassword());
         resource.setUsername(usernameComboBox.getValue());
         resource.setJdbcUrl(this.jdbcUrl);
         return resource;
@@ -227,15 +196,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
             this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.name(), AzResource::getName));
         }
         Optional.ofNullable(db.getPassword())
-            .flatMap(p -> Optional.ofNullable(p.password()))
             .ifPresent(p -> this.inputPasswordField.setText(String.valueOf(p)));
-        if (Objects.nonNull(db.getPassword()) && Objects.nonNull(db.getPassword().saveType())) {
-            this.passwordSaveComboBox.setValue(db.getPassword().saveType());
-        } else {
-            this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
-                .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
-                .orElse(Password.SaveType.UNTIL_RESTART));
-        }
         Optional.ofNullable(database).map(AzResource::getName).ifPresent(dbName ->
             this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, IDatabase::getName)));
         Optional.ofNullable(db.getUsername())

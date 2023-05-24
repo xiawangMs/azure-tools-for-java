@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.intellij.connector.*;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -41,43 +40,23 @@ public abstract class SqlDatabaseResourceDefinition<T extends IDatabase> extends
     public boolean write(@Nonnull Element resourceEle, @Nonnull Resource<T> paramResource) {
         final SqlDatabaseResource<T> resource = (SqlDatabaseResource<T>) paramResource;
         final String defName = resource.getDefinition().getName();
-
-        final Password.SaveType saveType = resource.getPassword().saveType();
+        resourceEle.setAttribute(new Attribute("id", resource.getId()));
         resourceEle.addContent(new Element("url").setText(resource.getJdbcUrl().toString()));
         resourceEle.addContent(new Element("username").setText(resource.getUsername()));
-        resourceEle.addContent(new Element("passwordSave").setText(saveType.name()));
-        final char[] password = resource.getPassword().password();
-        final String storedPassword = PasswordStore.loadPassword(defName, resource.getDataId(), resource.getUsername(), saveType);
-        if (ArrayUtils.isNotEmpty(password) && !StringUtils.equals(String.valueOf(password), storedPassword)) {
-            PasswordStore.savePassword(defName, resource.getDataId(), resource.getUsername(), resource.getPassword().password(), saveType);
-        }
-
-        resourceEle.setAttribute(new Attribute("id", resource.getId()));
         resourceEle.addContent(new Element("dataId").addContent(resource.getDataId()));
-
         return true;
     }
 
     @Override
     public Resource<T> read(@Nonnull Element resourceEle) {
         final String dataId = resourceEle.getChildTextTrim("dataId");
-
+        final String url = resourceEle.getChildTextTrim("url");
+        final String username = resourceEle.getChildTextTrim("username");
         if (StringUtils.isBlank(dataId)) {
             throw new AzureToolkitRuntimeException("Missing required dataId for database in service link.");
         }
-        final SqlDatabaseResource<T> resource = new SqlDatabaseResource<>(dataId, resourceEle.getChildTextTrim("username"), this);
-
-        final String defName = this.getName();
-        resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
-
-        resource.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
-        if (resource.getPassword().saveType() == Password.SaveType.FOREVER) {
-            PasswordStore.migratePassword(resource.getId(), resource.getUsername(), defName, resource.getId(), resource.getUsername());
-        }
-        final String savedPassword = PasswordStore.loadPassword(defName, resource.getId(), resource.getUsername(), resource.getPassword().saveType());
-        if (StringUtils.isNotBlank(savedPassword)) {
-            resource.getPassword().password(savedPassword.toCharArray());
-        }
+        final SqlDatabaseResource<T> resource = new SqlDatabaseResource<>(dataId, username, this);
+        resource.setJdbcUrl(JdbcUrl.from(url));
         return resource;
     }
 
