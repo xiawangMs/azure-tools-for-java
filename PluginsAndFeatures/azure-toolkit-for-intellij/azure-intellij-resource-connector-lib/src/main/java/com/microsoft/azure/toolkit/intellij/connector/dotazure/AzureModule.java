@@ -27,11 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class AzureModule {
-    private static final Map<Module, AzureModule> modules = new HashMap<>();
-    private final Map<String, Environment> environments = new HashMap<>();
+    private static final Map<Module, AzureModule> modules = new ConcurrentHashMap<>();
+    private final Map<String, Environment> environments = new ConcurrentHashMap<>();
     @Nonnull
     private final Module module;
     @Getter
