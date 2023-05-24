@@ -158,8 +158,10 @@ public class ResourceConnectionExplorer extends Tree {
         public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
             final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowFactory.ID);
             assert toolWindow != null;
-            toolWindow.setAvailable(true);
-            AzureTaskManager.getInstance().runLater(() -> toolWindow.activate(null));
+            AzureTaskManager.getInstance().runLater(() -> {
+                toolWindow.setAvailable(true);
+                toolWindow.activate(null);
+            });
         }
     }
 }
