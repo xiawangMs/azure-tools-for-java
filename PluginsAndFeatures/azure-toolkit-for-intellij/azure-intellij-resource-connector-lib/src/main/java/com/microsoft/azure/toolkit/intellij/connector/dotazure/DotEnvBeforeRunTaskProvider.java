@@ -66,7 +66,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
     public String getDescription(LoadDotEnvBeforeRunTask task) {
         return Optional.ofNullable(task.getConfig().getProject()).map(ProjectUtil::guessProjectDir)
             .flatMap(v -> Optional.ofNullable(task.getFile()).map(f -> v.toNioPath().relativize(f.toNioPath())))
-            .map(path -> String.format("Load .env '%s'", path))
+            .map(path -> String.format("Load '%s'", path))
             .orElse("Load .env");
     }
 
