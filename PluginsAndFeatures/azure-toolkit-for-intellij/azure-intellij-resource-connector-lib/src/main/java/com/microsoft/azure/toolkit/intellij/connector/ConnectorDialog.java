@@ -17,19 +17,23 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.CONSUMER;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
@@ -113,19 +117,14 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (connection == null) {
             return;
         }
-        AzureTaskManager.getInstance().runLater(() -> {
-            this.close(0);
-            final Resource<?> resource = connection.getResource();
-            final Resource<?> consumer = connection.getConsumer();
-            if (connection.validate(this.project)) {
-                AzureTaskManager.getInstance().runInBackground("Saving connection", () -> {
-                    saveConnectionToDotAzure(connection, consumer);
-                    final String message = String.format("The connection between %s and %s has been successfully created/updated.", resource.getName(), consumer.getName());
-                    AzureMessager.getMessager().success(message);
-                    project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
-                });
-            }
-        });
+        this.close(0);
+        final Resource<?> resource = connection.getResource();
+        final Resource<?> consumer = connection.getConsumer();
+        if (connection.validate(this.project)) {
+            saveConnectionToDotAzure(connection, consumer);
+            final String message = String.format("The connection between %s and %s has been successfully created/updated.", resource.getName(), consumer.getName());
+            AzureMessager.getMessager().success(message);
+        }
     }
 
     private void saveConnectionToDotAzure(Connection<?, ?> connection, Resource<?> consumer) {
@@ -135,7 +134,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             if (Objects.nonNull(m)) {
                 final AzureModule module = AzureModule.from(m);
                 final AzureTaskManager taskManager = AzureTaskManager.getInstance();
-                taskManager.runLater(() -> taskManager.write(() -> module.initializeWithDefaultEnvIfNot().createOrUpdateConnection(connection).save()));
+                taskManager.write(() -> module.initializeWithDefaultEnvIfNot().createOrUpdateConnection(connection).save());
             }
         }
     }
