@@ -41,7 +41,7 @@ public class CreateApplicationInsightsResourceConnectionTask implements Task {
         final Module module = getModule();
         final Resource consumer = getModuleConsumer(module);
         final AzureModule azureModule = AzureModule.from(module);
-        final Environment environment = azureModule.getEnvironment();
+        final Environment environment = azureModule.getDefaultEnvironment();
         if (Objects.isNull(environment)) {
             return;
         }

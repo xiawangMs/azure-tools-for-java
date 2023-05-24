@@ -140,7 +140,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
         final Environment environment = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::getEnvironment).orElse(null);
+                .map(AzureModule::getDefaultEnvironment).orElse(null);
         if (environment == null) {
             AzureMessager.getMessager().warning("Failed to get environment of module " + module.getName());
             return;

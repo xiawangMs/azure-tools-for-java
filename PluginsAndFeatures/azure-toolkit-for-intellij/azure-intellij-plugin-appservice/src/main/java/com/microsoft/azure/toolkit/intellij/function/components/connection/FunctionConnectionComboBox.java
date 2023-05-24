@@ -98,7 +98,7 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
             return Collections.emptyList();
         }
         final List<Connection<?, ?>> connections = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::getEnvironment)
+                .map(AzureModule::getDefaultEnvironment)
                 .map(Environment::getConnections)
                 .orElse(Collections.emptyList());
         return connections.stream().map(ConnectionConfiguration::new).collect(Collectors.toList());

@@ -78,7 +78,7 @@ public class ConnectionManager {
     @Nonnull
     public static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
         final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config)
-                .map(AzureModule::getEnvironment)
+                .map(AzureModule::getDefaultEnvironment)
                 .map(e -> e.getConnectionManager(true))
                 .map(ConnectionManager::getConnections).orElse(Collections.emptyList());
         return connections.stream().filter(c -> c.isApplicableFor(config)).collect(Collectors.toList());

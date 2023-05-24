@@ -22,7 +22,7 @@ public interface IConnectionAware extends RunConfiguration {
     @Nonnull
     default List<Connection<?, ?>> getConnections() {
         return AzureModule.createIfSupport(this)
-                .map(AzureModule::getEnvironment)
+                .map(AzureModule::getDefaultEnvironment)
                 .map(Environment::getConnections)
                 .orElse(Collections.emptyList());
     }

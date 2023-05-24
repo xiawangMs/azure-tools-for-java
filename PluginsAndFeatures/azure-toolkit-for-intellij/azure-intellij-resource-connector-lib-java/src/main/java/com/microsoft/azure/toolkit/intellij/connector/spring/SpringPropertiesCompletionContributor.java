@@ -75,7 +75,7 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
             Optional.ofNullable(module).map(AzureModule::from)
-                    .map(AzureModule::getEnvironment).map(e -> e.getConnectionManager(true))
+                    .map(AzureModule::getDefaultEnvironment).map(e -> e.getConnectionManager(true))
                     .ifPresent(connectionManager -> connectionManager
                             .getConnectionsByConsumerId(module.getName()).stream()
                             .filter(c -> Objects.equals(definition, c.getResource().getDefinition())).findAny()

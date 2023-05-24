@@ -132,7 +132,7 @@ public class ResourceConnectionExplorer extends Tree {
         @Override
         public boolean shouldBeAvailable(@Nonnull Project project) {
             final List<Connection<?, ?>> connections = AzureModule.list(project).stream()
-                    .map(AzureModule::getEnvironment)
+                    .map(AzureModule::getDefaultEnvironment)
                     .filter(Objects::nonNull)
                     .map(Environment::getConnections)
                     .flatMap(List::stream)

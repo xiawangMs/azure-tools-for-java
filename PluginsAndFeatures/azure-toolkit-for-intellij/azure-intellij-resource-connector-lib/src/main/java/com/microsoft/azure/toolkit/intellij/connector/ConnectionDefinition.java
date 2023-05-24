@@ -132,7 +132,7 @@ public class ConnectionDefinition<R, C> {
                 .map(c -> ((ModuleResource) c).getModuleName())
                 .map(ModuleManager.getInstance(project)::findModuleByName)
                 .map(AzureModule::from)
-                .map(AzureModule::getEnvironment)
+                .map(AzureModule::getDefaultEnvironment)
                 .orElse(null);
         if (Objects.isNull(environment)) {
             return true;

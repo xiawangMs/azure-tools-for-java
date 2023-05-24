@@ -206,7 +206,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     // workaround to correct before run tasks in quick launch as BeforeRunTaskAdder may not work or have wrong config in task in this case
     private void prepareBeforeRunTasks(@NotNull final Module module) {
-        final Environment environment = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getEnvironment).orElse(null);
+        final Environment environment = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultEnvironment).orElse(null);
         final List<Connection<?, ?>> connections = Optional.ofNullable(environment).map(Environment::getConnections).orElse(Collections.emptyList());
         if (CollectionUtils.isEmpty(connections)) {
             return;
