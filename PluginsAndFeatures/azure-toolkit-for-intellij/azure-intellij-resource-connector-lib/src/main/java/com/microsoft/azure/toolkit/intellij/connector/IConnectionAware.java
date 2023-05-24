@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public interface IConnectionAware extends RunConfiguration {
     @Deprecated
@@ -26,7 +27,12 @@ public interface IConnectionAware extends RunConfiguration {
                 .orElse(Collections.emptyList());
     }
 
+    default DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask getLoadDotEnvBeforeRunTask() {
+        return (DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask) this.getBeforeRunTasks().stream()
+                .filter(task -> task instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask).findAny().orElse(null);
+    }
+
     default boolean isConnectionEnabled() {
-        return this.getBeforeRunTasks().stream().anyMatch(task -> task instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
+        return Objects.nonNull(getLoadDotEnvBeforeRunTask());
     }
 }

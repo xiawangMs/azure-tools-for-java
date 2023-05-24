@@ -11,8 +11,8 @@ import com.intellij.util.PathUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -90,16 +90,11 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
 
     private void applyResourceConnections(@Nonnull WebAppBase<?, ?, ?> deployTarget) {
         if (webAppConfiguration.isConnectionEnabled()) {
+            final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = webAppConfiguration.getLoadDotEnvBeforeRunTask();
+            loadDotEnvBeforeRunTask.loadEnv().forEach(env -> appSettingsForResourceConnection.put(env.getKey(), env.getValue()));
             webAppConfiguration.getConnections().stream()
-                    .filter(Objects::nonNull)
-                    .forEach(connection -> applyResourceConnection(deployTarget, connection));
-        }
-    }
-
-    private void applyResourceConnection(@Nonnull WebAppBase<?, ?, ?> deployTarget, @Nonnull Connection<?, ?> connection) {
-        Optional.ofNullable(connection.getEnvironmentVariables(this.project)).ifPresent(appSettingsForResourceConnection::putAll);
-        if (connection.getResource().getDefinition() instanceof IJavaAgentSupported) {
-            uploadJavaAgent(deployTarget, ((IJavaAgentSupported) connection.getResource().getDefinition()).getJavaAgent());
+                    .filter(connection -> connection.getResource().getDefinition() instanceof IJavaAgentSupported)
+                    .forEach(connection -> uploadJavaAgent(deployTarget, ((IJavaAgentSupported) connection.getResource().getDefinition()).getJavaAgent()));
         }
     }
 
