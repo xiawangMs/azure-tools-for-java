@@ -12,11 +12,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,12 +26,7 @@ import org.jdom.JDOMException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,8 +40,11 @@ public class ConnectionManager {
     private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
     private final VirtualFile connectionsFile;
+    @Getter
+    private final Environment environment;
 
-    public ConnectionManager(@Nonnull VirtualFile connectionsFile) {
+    public ConnectionManager(@Nonnull VirtualFile connectionsFile, @Nonnull final Environment environment) {
+        this.environment = environment;
         this.connectionsFile = connectionsFile;
         try {
             this.load();
@@ -79,7 +77,10 @@ public class ConnectionManager {
 
     @Nonnull
     public static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
-        final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config)
+                .map(AzureModule::getEnvironment)
+                .map(e -> e.getConnectionManager(true))
+                .map(ConnectionManager::getConnections).orElse(Collections.emptyList());
         return connections.stream().filter(c -> c.isApplicableFor(config)).collect(Collectors.toList());
     }
 
@@ -139,6 +140,11 @@ public class ConnectionManager {
         if (this.connectionsFile.contentsToByteArray().length < 1) {
             return;
         }
+        final Environment environment = this.getEnvironment();
+        final ResourceManager resourceManager = environment.getResourceManager(true);
+        if (Objects.isNull(resourceManager)) {
+            return;
+        }
         this.connections.clear();
         final Element connectionsEle = JDOMUtil.load(this.connectionsFile.toNioPath());
         for (final Element connectionEle : connectionsEle.getChildren()) {
@@ -146,7 +152,7 @@ public class ConnectionManager {
             final String id = connectionEle.getAttributeValue(FIELD_ID);
             final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
             try {
-                Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(c -> {
+                Optional.ofNullable(definition).map(d -> d.read(resourceManager, connectionEle)).ifPresent(c -> {
                     c.setId(id);
                     this.addConnection(c);
                 });
