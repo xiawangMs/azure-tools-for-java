@@ -38,10 +38,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.CONNECTIONS_FILE;
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.RESOURCES_FILE;
 
 public class Profile {
-    private static final String RESOURCES_FILE = "connections.resources.xml";
-    private static final String CONNECTIONS_FILE = "connections.xml";
     @Getter
     @Nonnull
     private final String name;

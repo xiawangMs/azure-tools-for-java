@@ -1,13 +1,12 @@
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
@@ -17,12 +16,13 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jdom.Element;
+import org.jdom.JDOMException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,8 +31,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class AzureModule {
+    static final String DOT_AZURE = ".azure";
+    static final String PROFILES_XML = "profiles.xml";
+    static final String DOT_GITIGNORE = ".gitignore";
+    static final String DEFAULT_PROFILE_NAME = "default";
+    static final String DOT_ENV = ".env";
+    static final String RESOURCES_FILE = "connections.resources.xml";
+    static final String CONNECTIONS_FILE = "connections.xml";
+
     private static final Map<Module, AzureModule> modules = new ConcurrentHashMap<>();
-    private final Map<String, Profile> environments = new ConcurrentHashMap<>();
+    public static final String ATTR_DEFAULT_PROFILE = "defaultProfile";
+    private final Map<String, Profile> profiles = new ConcurrentHashMap<>();
     @Nonnull
     private final Module module;
     @Getter
@@ -40,29 +49,45 @@ public class AzureModule {
     private VirtualFile dotAzure;
     @Getter
     @Nullable
-    private VirtualFile configJsonFile;
+    private VirtualFile profilesXmlFile;
     @Nullable
     private Profile defaultProfile;
 
     public AzureModule(@Nonnull final Module module) {
         this.module = module;
-        this.getModuleDir().map(d -> d.findChild(".azure")).ifPresent(dotAzure -> {
+        this.getModuleDir().map(d -> d.findChild(DOT_AZURE)).ifPresent(dotAzure -> {
             this.dotAzure = dotAzure;
-            this.configJsonFile = this.dotAzure.findChild("config.json");
+            this.profilesXmlFile = this.dotAzure.findChild(PROFILES_XML);
+            Optional.ofNullable(this.profilesXmlFile).ifPresent(this::loadProfiles);
         });
+    }
+
+    @SneakyThrows(value = {IOException.class, JDOMException.class})
+    private void loadProfiles(@Nonnull final VirtualFile profilesXmlFile) {
+        if (profilesXmlFile.contentsToByteArray().length < 1) {
+            return;
+        }
+        final Element profilesEle = JDOMUtil.load(Objects.requireNonNull(profilesXmlFile).toNioPath());
+        final VirtualFile dotAzure = Objects.requireNonNull(this.dotAzure);
+        profilesEle.getChildren().stream().map(e -> e.getAttributeValue("name"))
+            .forEach(name -> Optional.ofNullable(this.dotAzure).map(d -> d.findChild(name)).map(d -> d.findChild(DOT_ENV))
+                .map(dotEnv -> new Profile(name, dotEnv, this))
+                .ifPresent(profile -> this.profiles.put(profile.getName(), profile)));
+        this.defaultProfile = Optional.ofNullable(profilesEle.getAttributeValue(ATTR_DEFAULT_PROFILE)).map(this.profiles::get).orElse(null);
     }
 
     @Nonnull
     public AzureModule initializeIfNot() {
-        if (Objects.nonNull(this.configJsonFile)) {
+        if (Objects.nonNull(this.profilesXmlFile)) {
             return this;
         }
         return this.getModuleDir().map(moduleDir -> {
             try {
-                this.dotAzure = VfsUtil.createDirectoryIfMissing(moduleDir, ".azure");
-                final VirtualFile dotGitIgnore = dotAzure.findOrCreateChildData(this, ".gitignore");
-                dotGitIgnore.setBinaryContent(".env\nconnections.resources.xml".getBytes());
-                this.configJsonFile = dotAzure.findOrCreateChildData(this, "config.json");
+                this.dotAzure = VfsUtil.createDirectoryIfMissing(moduleDir, DOT_AZURE);
+                final VirtualFile dotGitIgnore = dotAzure.findOrCreateChildData(this, DOT_GITIGNORE);
+                dotGitIgnore.setBinaryContent((DOT_ENV + "\n" + RESOURCES_FILE).getBytes());
+                this.profilesXmlFile = dotAzure.findOrCreateChildData(this, PROFILES_XML);
+                Optional.of(this.profilesXmlFile).ifPresent(this::loadProfiles);
                 this.dotAzure.refresh(true, false);
             } catch (final IOException e) {
                 throw new AzureToolkitRuntimeException(e);
@@ -76,7 +101,7 @@ public class AzureModule {
         final AzureModule module = this.initializeIfNot();
         Profile profile = module.getDefaultProfile();
         if (Objects.isNull(profile)) {
-            profile = module.getOrCreateProfile("default");
+            profile = module.getOrCreateProfile(DEFAULT_PROFILE_NAME);
             module.setDefaultProfile(profile);
         }
         return profile;
@@ -99,71 +124,64 @@ public class AzureModule {
 
     @Nullable
     public Profile getProfile(String profileName) {
-        if (!this.isInitialized()) {
-            return null;
-        }
-        return this.environments.computeIfAbsent(profileName, name -> Optional
+        return this.profiles.computeIfAbsent(profileName, name -> Optional
             .ofNullable(this.dotAzure)
             .map(dotAzure -> dotAzure.findChild(profileName))
-            .map(envDir -> envDir.findChild(".env"))
+            .map(envDir -> envDir.findChild(DOT_ENV))
             .map(dotEnv -> new Profile(name, dotEnv, this)).orElse(null));
     }
 
     @Nonnull
     public Profile getOrCreateProfile(String profileName) {
         this.validate();
-        return this.environments.computeIfAbsent(profileName, name -> {
+        return this.profiles.computeIfAbsent(profileName, name -> {
             try {
                 final VirtualFile envDir = VfsUtil.createDirectoryIfMissing(this.dotAzure, profileName);
-                final VirtualFile dotEnv = envDir.findOrCreateChildData(this, ".env");
-                return new Profile(name, dotEnv, this);
+                final VirtualFile dotEnv = envDir.findOrCreateChildData(this, DOT_ENV);
+                final Profile profile = new Profile(name, dotEnv, this);
+                this.registerProfile(profile);
+                return profile;
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
         });
     }
 
-    @Nullable
-    @SneakyThrows(IOException.class)
-    private String getDefaultProfileName() {
-        if (!this.isInitialized()) {
-            return null;
-        }
-        final VirtualFile configFile = Objects.requireNonNull(getConfigJsonFile());
-        final String content = VfsUtil.loadText(configFile);
-        if (StringUtils.isBlank(content)) {
-            return null;
-        }
-        final HashMap<String, String> map = new ObjectMapper().readValue(content, new TypeReference<>() {
-        });
-        return map.get("defaultEnvironment");
+    @SneakyThrows(value = {IOException.class, JDOMException.class})
+    private void registerProfile(@Nonnull final Profile profile) {
+        final VirtualFile profilesXmlFile = Objects.requireNonNull(this.profilesXmlFile);
+        final Element profilesEle = profilesXmlFile.contentsToByteArray().length < 1 ?
+            new Element("profiles").setAttribute("version", "1") :
+            JDOMUtil.load(profilesXmlFile.toNioPath());
+        profilesEle.addContent(new Element("profile").setAttribute("name", profile.getName()));
+        JDOMUtil.write(profilesEle, this.profilesXmlFile.toNioPath());
     }
 
+    @Nullable
+    @SneakyThrows(value = {JDOMException.class, IOException.class})
+    private String getDefaultProfileName() {
+        if (Objects.nonNull(this.defaultProfile)) {
+            return this.defaultProfile.getName();
+        }
+        if (Objects.isNull(this.profilesXmlFile) || this.profilesXmlFile.contentsToByteArray().length < 1) {
+            return null;
+        }
+        final Element profilesEle = JDOMUtil.load(this.profilesXmlFile.toNioPath());
+        return profilesEle.getAttributeValue(ATTR_DEFAULT_PROFILE, DEFAULT_PROFILE_NAME);
+    }
+
+    @SneakyThrows(value = {JDOMException.class, IOException.class})
     public void setDefaultProfile(@Nonnull Profile profile) {
         this.validate();
-        final VirtualFile configFile = Objects.requireNonNull(getConfigJsonFile());
-        try {
-            final String content = VfsUtil.loadText(configFile);
-            final HashMap<String, Object> map = new HashMap<>();
-            final ObjectMapper mapper = new ObjectMapper();
-            if (StringUtils.isBlank(content)) {
-                map.put("version", 1);
-                map.put("defaultEnvironment", profile.getName());
-            } else {
-                final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
-                };
-                map.putAll(mapper.readValue(content, typeRef));
-                map.put("defaultEnvironment", profile.getName());
-            }
-            mapper.writeValue(configFile.getOutputStream(this), map);
-            this.defaultProfile = profile;
-        } catch (final IOException e) {
-            log.error("failed to set default environment.", e);
-        }
+        final Element profilesEle = JDOMUtil.load(Objects.requireNonNull(this.profilesXmlFile).toNioPath());
+        profilesEle.setAttribute(ATTR_DEFAULT_PROFILE, profile.getName());
+        profilesEle.setAttribute("version", "1");
+        JDOMUtil.write(profilesEle, this.profilesXmlFile.toNioPath());
+        this.defaultProfile = profile;
     }
 
     private void validate() {
-        final VirtualFile configFile = getConfigJsonFile();
+        final VirtualFile configFile = getProfilesXmlFile();
         if (Objects.isNull(configFile)) {
             throw new AzureToolkitRuntimeException("Azure module is not initialized.");
         }
@@ -182,7 +200,7 @@ public class AzureModule {
     }
 
     public boolean isInitialized() {
-        return Objects.nonNull(this.configJsonFile);
+        return Objects.nonNull(this.profilesXmlFile);
     }
 
     public static AzureModule from(@Nonnull Module module) {
