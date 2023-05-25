@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -154,7 +155,7 @@ public class Environment {
                     break;
                 }
             }
-            WriteAction.run(() -> FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8));
+            FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
@@ -166,19 +167,17 @@ public class Environment {
         final AzureTaskManager manager = AzureTaskManager.getInstance();
         manager.runInBackground(description, () -> {
             final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
-            manager.runLater(() -> {
-                try {
-                    WriteAction.run(() -> Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND));
-                    this.dotEnvFile.getParent().refresh(true, true);
-                } catch (final IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);
+                this.dotEnvFile.getParent().refresh(true, true);
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
     public List<Connection<?, ?>> getConnections() {
-        return this.getConnectionManager(true).getConnections();
+        return Optional.ofNullable(this.getConnectionManager(false)).map(ConnectionManager::getConnections).orElseGet(Collections::emptyList);
     }
 
     @Nullable

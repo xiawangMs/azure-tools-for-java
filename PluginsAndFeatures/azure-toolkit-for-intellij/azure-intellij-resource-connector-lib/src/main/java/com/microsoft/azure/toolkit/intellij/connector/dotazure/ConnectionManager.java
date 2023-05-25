@@ -48,7 +48,7 @@ public class ConnectionManager {
         this.connectionsFile = connectionsFile;
         try {
             this.load();
-        } catch (final IOException | JDOMException e) {
+        } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }
@@ -79,7 +79,7 @@ public class ConnectionManager {
     public static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
         final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config)
                 .map(AzureModule::getDefaultEnvironment)
-                .map(e -> e.getConnectionManager(true))
+                .map(e -> e.getConnectionManager(false))
                 .map(ConnectionManager::getConnections).orElse(Collections.emptyList());
         return connections.stream().filter(c -> c.isApplicableFor(config)).collect(Collectors.toList());
     }
@@ -136,12 +136,12 @@ public class ConnectionManager {
 
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_resource_connections")
-    void load() throws IOException, JDOMException {
+    void load() throws Exception {
         if (this.connectionsFile.contentsToByteArray().length < 1) {
             return;
         }
         final Environment environment = this.getEnvironment();
-        final ResourceManager resourceManager = environment.getResourceManager(true);
+        final ResourceManager resourceManager = environment.getResourceManager(false);
         if (Objects.isNull(resourceManager)) {
             return;
         }
@@ -151,9 +151,7 @@ public class ConnectionManager {
             final String name = connectionEle.getAttributeValue(FIELD_TYPE);
             final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
             try {
-                Optional.ofNullable(definition).map(d -> d.read(resourceManager, connectionEle)).ifPresent(c -> {
-                    this.addConnection(c);
-                });
+                Optional.ofNullable(definition).map(d -> d.read(resourceManager, connectionEle)).ifPresent(this::addConnection);
             } catch (final Exception e) {
                 log.warn(String.format("error occurs when load a resource connection of type '%s'", name), e);
             }

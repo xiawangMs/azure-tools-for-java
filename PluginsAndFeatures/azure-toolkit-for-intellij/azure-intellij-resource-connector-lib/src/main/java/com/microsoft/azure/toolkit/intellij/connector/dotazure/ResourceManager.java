@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
+import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -49,7 +51,7 @@ public class ResourceManager {
         this.resourcesFile = resourcesFile;
         try {
             this.load();
-        } catch (final IOException | JDOMException e) {
+        } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }
@@ -111,7 +113,7 @@ public class ResourceManager {
 
     @ExceptionNotification
     @AzureOperation(name = "user/connector.load_connection_resources")
-    void load() throws IOException, JDOMException {
+    void load() throws Exception {
         if (this.resourcesFile.contentsToByteArray().length < 1) {
             return;
         }

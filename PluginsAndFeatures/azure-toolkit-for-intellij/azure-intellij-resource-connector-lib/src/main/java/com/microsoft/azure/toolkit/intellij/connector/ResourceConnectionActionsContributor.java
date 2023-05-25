@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -21,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("user/connector.refresh_connections");
@@ -69,8 +71,10 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     private static void removeConnection(Connection<?, ?> connection, AnActionEvent e) {
         final Project project = Objects.requireNonNull(e.getProject());
         final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
-        final AzureModule aModule = AzureModule.from(Objects.requireNonNull(module));
-        aModule.getDefaultEnvironment().removeConnection(connection).save();
+        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(module).map(AzureModule::from)
+            .map(AzureModule::getDefaultEnvironment)
+            .map(env -> env.removeConnection(connection))
+            .ifPresent(Environment::save));
     }
 
     @AzureOperation("user/connector.refresh_connections")

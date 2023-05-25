@@ -53,7 +53,7 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
         }
         final ImmutablePair<String, String> keyProp = new ImmutablePair<>(propKey, propVal);
         final List<Connection<?, ?>> connections = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultEnvironment)
-                .map(env -> env.getConnectionManager(true))
+                .map(env -> env.getConnectionManager(false))
                 .map(cm -> cm.getConnectionsByConsumerId(module.getName()))
                 .orElse(Collections.emptyList());
         for (final Connection<?, ?> connection : connections) {
