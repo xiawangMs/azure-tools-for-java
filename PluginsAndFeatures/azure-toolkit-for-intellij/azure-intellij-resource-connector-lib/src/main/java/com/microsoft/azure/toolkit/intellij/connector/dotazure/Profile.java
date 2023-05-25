@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
-public class Environment {
+public class Profile {
     private static final String RESOURCES_FILE = "connections.resources.xml";
     private static final String CONNECTIONS_FILE = "connections.xml";
     @Getter
@@ -55,7 +55,7 @@ public class Environment {
     @Nullable
     private ResourceManager resourceManager;
 
-    public Environment(@Nonnull String name, @Nonnull VirtualFile dotEnvFile, @Nonnull AzureModule module) {
+    public Profile(@Nonnull String name, @Nonnull VirtualFile dotEnvFile, @Nonnull AzureModule module) {
         this.name = name;
         this.module = module;
         this.dotEnvFile = dotEnvFile;
@@ -80,7 +80,7 @@ public class Environment {
         return parser.parse().stream().map(e -> Pair.of(e.getKey(), e.getValue())).toList();
     }
 
-    public synchronized Environment addConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Profile addConnection(@Nonnull Connection<?, ?> connection) {
         this.addConnectionToDotEnv(connection);
         Optional.of(this.getResourceManager(true)).ifPresent(m -> m.addResource(connection.getResource()));
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.addConnection(connection));
@@ -89,7 +89,7 @@ public class Environment {
         return this;
     }
 
-    public synchronized Environment removeConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Profile removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
         Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.removeConnection(connection));
         final Project project = this.module.getProject();
@@ -97,7 +97,7 @@ public class Environment {
         return this;
     }
 
-    public synchronized Environment createOrUpdateConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Profile createOrUpdateConnection(@Nonnull Connection<?, ?> connection) {
         // Remove old connection
         this.getConnections().stream().filter(c -> c.getId().equals(connection.getId())).findFirst().ifPresent(this::removeConnection);
         this.addConnection(connection);
@@ -164,8 +164,7 @@ public class Environment {
     @AzureOperation("boundary/add_connection_to_dotenv")
     private void addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
         final AzureString description = OperationBundle.description("internal/dotazure.load_env.resource", connection.getResource().getDataId());
-        final AzureTaskManager manager = AzureTaskManager.getInstance();
-        manager.runInBackground(description, () -> {
+        AzureTaskManager.getInstance().runInBackground(description, () -> {
             final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
             try {
                 Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);

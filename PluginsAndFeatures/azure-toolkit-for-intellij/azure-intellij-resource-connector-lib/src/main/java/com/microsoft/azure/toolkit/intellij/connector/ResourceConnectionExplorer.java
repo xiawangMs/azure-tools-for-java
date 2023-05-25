@@ -22,7 +22,7 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -56,7 +56,7 @@ public class ResourceConnectionExplorer extends Tree {
             .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).lazy(false)
                 .view(new NodeView.Static(m.getName(), "/icons/module"))
                 .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                .addChildren(module -> Optional.ofNullable(module.getDefaultEnvironment()).map(Environment::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
+                .addChildren(module -> Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
                     .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
                     .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }
@@ -132,9 +132,9 @@ public class ResourceConnectionExplorer extends Tree {
         @Override
         public boolean shouldBeAvailable(@Nonnull Project project) {
             final List<Connection<?, ?>> connections = AzureModule.list(project).stream()
-                    .map(AzureModule::getDefaultEnvironment)
+                    .map(AzureModule::getDefaultProfile)
                     .filter(Objects::nonNull)
-                    .map(Environment::getConnections)
+                    .map(Profile::getConnections)
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
             return CollectionUtils.isNotEmpty(connections);

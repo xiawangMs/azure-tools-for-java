@@ -11,7 +11,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -134,17 +134,17 @@ public class ConnectionDefinition<R, C> {
     public boolean validate(Connection<R, C> connection, Project project) {
         final Resource<C> consumer = connection.getConsumer();
         final Resource<R> resource = connection.getResource();
-        final Environment environment = Optional.of(consumer)
+        final Profile profile = Optional.of(consumer)
                 .filter(c -> c instanceof ModuleResource)
                 .map(c -> ((ModuleResource) c).getModuleName())
                 .map(ModuleManager.getInstance(project)::findModuleByName)
                 .map(AzureModule::from)
-                .map(AzureModule::getDefaultEnvironment)
+                .map(AzureModule::getDefaultProfile)
                 .orElse(null);
-        if (Objects.isNull(environment)) {
+        if (Objects.isNull(profile)) {
             return true;
         }
-        final Resource<R> existedResource = Optional.ofNullable(environment.getResourceManager(false))
+        final Resource<R> existedResource = Optional.ofNullable(profile.getResourceManager(false))
                 .map(rm -> (Resource<R>)rm.getResourceById(resource.getId())).orElse(null);
         if (Objects.nonNull(existedResource)) { // not new
             final R current = resource.getData();
@@ -157,7 +157,7 @@ public class ConnectionDefinition<R, C> {
                 }
             }
         }
-        final List<Connection<?, ?>> existedConnections = environment.getConnections();
+        final List<Connection<?, ?>> existedConnections = profile.getConnections();
         if (CollectionUtils.isNotEmpty(existedConnections)) {
             final Connection<?, ?> existedConnection = existedConnections.stream()
                     .filter(e -> StringUtils.equals(e.getEnvPrefix(), connection.getEnvPrefix()))
@@ -172,7 +172,7 @@ public class ConnectionDefinition<R, C> {
                         connected.getDefinition().getTitle(), connected.getName());
                 final boolean result = AzureMessager.getMessager().confirm(msg, PROMPT_TITLE);
                 if (result) {
-                    environment.removeConnection(existedConnection);
+                    profile.removeConnection(existedConnection);
                 }
                 return result;
             }

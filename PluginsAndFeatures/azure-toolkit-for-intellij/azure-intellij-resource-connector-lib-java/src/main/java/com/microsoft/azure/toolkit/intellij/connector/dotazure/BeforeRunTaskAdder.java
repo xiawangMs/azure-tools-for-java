@@ -23,11 +23,11 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
     @ExceptionNotification
     public void runConfigurationAdded(@Nonnull RunnerAndConfigurationSettings settings) {
         final RunConfiguration config = settings.getConfiguration();
-        final Environment environment = AzureModule.createIfSupport(config).map(AzureModule::getDefaultEnvironment).orElse(null);
-        if (Objects.isNull(environment)) {
+        final Profile profile = AzureModule.createIfSupport(config).map(AzureModule::getDefaultProfile).orElse(null);
+        if (Objects.isNull(profile)) {
             return;
         }
-        final List<Connection<?, ?>> connections = environment.getConnections();
+        final List<Connection<?, ?>> connections = profile.getConnections();
         final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
         if (connections.stream().anyMatch(c -> c.isApplicableFor(config)) && tasks.stream().noneMatch(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)) {
             config.getBeforeRunTasks().add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(config));
@@ -52,7 +52,7 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
                     tasks.add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(config));
                 }
             } else {
-                final List<Connection<?, ?>> connections = AzureModule.list(project).stream().map(AzureModule::getDefaultEnvironment).filter(Objects::nonNull)
+                final List<Connection<?, ?>> connections = AzureModule.list(project).stream().map(AzureModule::getDefaultProfile).filter(Objects::nonNull)
                         .map(env -> env.getConnectionManager(false))
                         .filter(Objects::nonNull)
                         .map(ConnectionManager::getConnections)
@@ -67,7 +67,7 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
     @Override
     @ExceptionNotification
     public void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
-        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config).map(AzureModule::getDefaultEnvironment)
+        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config).map(AzureModule::getDefaultProfile)
                 .map(env -> env.getConnectionManager(false))
                 .map(ConnectionManager::getConnections)
                 .orElse(Collections.emptyList());

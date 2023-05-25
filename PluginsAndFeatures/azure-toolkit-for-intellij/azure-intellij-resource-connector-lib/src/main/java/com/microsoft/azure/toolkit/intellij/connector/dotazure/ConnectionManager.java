@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,10 +40,10 @@ public class ConnectionManager {
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
     private final VirtualFile connectionsFile;
     @Getter
-    private final Environment environment;
+    private final Profile profile;
 
-    public ConnectionManager(@Nonnull VirtualFile connectionsFile, @Nonnull final Environment environment) {
-        this.environment = environment;
+    public ConnectionManager(@Nonnull VirtualFile connectionsFile, @Nonnull final Profile profile) {
+        this.profile = profile;
         this.connectionsFile = connectionsFile;
         try {
             this.load();
@@ -78,7 +77,7 @@ public class ConnectionManager {
     @Nonnull
     public static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
         final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config)
-                .map(AzureModule::getDefaultEnvironment)
+                .map(AzureModule::getDefaultProfile)
                 .map(e -> e.getConnectionManager(false))
                 .map(ConnectionManager::getConnections).orElse(Collections.emptyList());
         return connections.stream().filter(c -> c.isApplicableFor(config)).collect(Collectors.toList());
@@ -140,8 +139,8 @@ public class ConnectionManager {
         if (this.connectionsFile.contentsToByteArray().length < 1) {
             return;
         }
-        final Environment environment = this.getEnvironment();
-        final ResourceManager resourceManager = environment.getResourceManager(false);
+        final Profile profile = this.getProfile();
+        final ResourceManager resourceManager = profile.getResourceManager(false);
         if (Objects.isNull(resourceManager)) {
             return;
         }

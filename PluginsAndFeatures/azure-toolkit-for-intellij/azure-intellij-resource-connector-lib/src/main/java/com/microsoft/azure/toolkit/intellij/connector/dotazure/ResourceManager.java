@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
-import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -20,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,10 +41,10 @@ public class ResourceManager {
     private final Set<Resource<?>> resources = new LinkedHashSet<>();
     private final VirtualFile resourcesFile;
     @Getter
-    private final Environment environment;
+    private final Profile profile;
 
-    public ResourceManager(@Nonnull VirtualFile resourcesFile, @Nonnull final Environment environment) {
-        this.environment = environment;
+    public ResourceManager(@Nonnull VirtualFile resourcesFile, @Nonnull final Profile profile) {
+        this.profile = profile;
         this.resourcesFile = resourcesFile;
         try {
             this.load();

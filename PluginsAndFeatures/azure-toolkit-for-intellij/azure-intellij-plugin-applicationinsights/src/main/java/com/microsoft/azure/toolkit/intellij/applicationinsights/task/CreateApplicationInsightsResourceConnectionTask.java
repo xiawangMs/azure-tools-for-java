@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
@@ -41,12 +41,12 @@ public class CreateApplicationInsightsResourceConnectionTask implements Task {
         final Module module = getModule();
         final Resource consumer = getModuleConsumer(module);
         final AzureModule azureModule = AzureModule.from(module);
-        final Environment environment = azureModule.getDefaultEnvironment();
-        if (Objects.isNull(environment)) {
+        final Profile profile = azureModule.getDefaultProfile();
+        if (Objects.isNull(profile)) {
             return;
         }
-        final ConnectionManager connectionManager = environment.getConnectionManager(true);
-        final ResourceManager resourceManager = environment.getResourceManager(true);
+        final ConnectionManager connectionManager = profile.getConnectionManager(true);
+        final ResourceManager resourceManager = profile.getResourceManager(true);
         final Connection connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
         if (connection.validate(this.project)) {

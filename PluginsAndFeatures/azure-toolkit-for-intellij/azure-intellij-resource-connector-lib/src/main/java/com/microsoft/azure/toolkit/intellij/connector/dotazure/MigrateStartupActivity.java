@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MigrateStartupActivity implements StartupActivity {
@@ -43,16 +42,16 @@ public class MigrateStartupActivity implements StartupActivity {
             Optional.ofNullable(moduleManager.findModuleByName(moduleName))
                 .map(AzureModule::from).filter(m -> !m.isInitialized())
                 .ifPresent(module -> AzureTaskManager.getInstance().write(() -> {
-                    final Environment env = module.initializeWithDefaultEnvIfNot();
+                    final Profile profile = module.initializeWithDefaultProfileIfNot();
                     connections.forEach(c -> {
                         try {
                             manager.removeConnection(c.getResource().getId(), c.getConsumer().getId());
-                            env.addConnection(c);
+                            profile.addConnection(c);
                         } catch (final Exception e) {
                             AzureMessager.getMessager().error(e);
                         }
                     });
-                    env.save();
+                    profile.save();
                 }));
         });
     }

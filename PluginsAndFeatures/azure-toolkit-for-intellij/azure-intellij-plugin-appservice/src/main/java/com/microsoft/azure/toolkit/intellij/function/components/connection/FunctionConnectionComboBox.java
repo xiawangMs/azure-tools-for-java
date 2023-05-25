@@ -21,7 +21,7 @@ import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -98,8 +98,8 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
             return Collections.emptyList();
         }
         final List<Connection<?, ?>> connections = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::getDefaultEnvironment)
-                .map(Environment::getConnections)
+                .map(AzureModule::getDefaultProfile)
+                .map(Profile::getConnections)
                 .orElse(Collections.emptyList());
         return connections.stream().map(ConnectionConfiguration::new).collect(Collectors.toList());
     }

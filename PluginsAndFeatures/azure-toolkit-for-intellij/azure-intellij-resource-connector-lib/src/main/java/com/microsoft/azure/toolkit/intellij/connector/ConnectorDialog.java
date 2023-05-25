@@ -134,7 +134,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             if (Objects.nonNull(m)) {
                 final AzureModule module = AzureModule.from(m);
                 final AzureTaskManager taskManager = AzureTaskManager.getInstance();
-                taskManager.write(() -> module.initializeWithDefaultEnvIfNot().createOrUpdateConnection(connection).save());
+                taskManager.write(() -> module.initializeWithDefaultProfileIfNot().createOrUpdateConnection(connection).save());
             }
         }
     }

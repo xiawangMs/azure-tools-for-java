@@ -21,7 +21,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -206,8 +206,8 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     // workaround to correct before run tasks in quick launch as BeforeRunTaskAdder may not work or have wrong config in task in this case
     private void prepareBeforeRunTasks(@NotNull final Module module) {
-        final Environment environment = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultEnvironment).orElse(null);
-        final List<Connection<?, ?>> connections = Optional.ofNullable(environment).map(Environment::getConnections).orElse(Collections.emptyList());
+        final Profile profile = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultProfile).orElse(null);
+        final List<Connection<?, ?>> connections = Optional.ofNullable(profile).map(Profile::getConnections).orElse(Collections.emptyList());
         if (CollectionUtils.isEmpty(connections)) {
             return;
         }

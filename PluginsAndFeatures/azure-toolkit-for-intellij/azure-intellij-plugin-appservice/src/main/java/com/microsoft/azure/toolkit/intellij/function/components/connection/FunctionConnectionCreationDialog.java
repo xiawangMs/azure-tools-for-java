@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Environment;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
@@ -138,17 +138,17 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     protected void doOKAction() {
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
-        final Environment environment = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::getDefaultEnvironment).orElse(null);
-        if (environment == null) {
-            AzureMessager.getMessager().warning("Failed to get environment of module " + module.getName());
+        final Profile profile = Optional.ofNullable(AzureModule.from(module))
+                .map(AzureModule::getDefaultProfile).orElse(null);
+        if (profile == null) {
+            AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
             return;
         }
         this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
         connection.setEnvPrefix(txtConnectionName.getValue());
-        final ConnectionManager connectionManager = environment.getConnectionManager(true);
-        final ResourceManager resourceManager = environment.getResourceManager(true);
+        final ConnectionManager connectionManager = profile.getConnectionManager(true);
+        final ResourceManager resourceManager = profile.getResourceManager(true);
         if (connection.validate(this.project)) {
             resourceManager.addResource(resource);
             resourceManager.addResource(consumer);

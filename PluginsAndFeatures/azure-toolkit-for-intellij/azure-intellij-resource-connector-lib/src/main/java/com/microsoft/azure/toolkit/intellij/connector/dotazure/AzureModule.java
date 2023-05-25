@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class AzureModule {
     private static final Map<Module, AzureModule> modules = new ConcurrentHashMap<>();
-    private final Map<String, Environment> environments = new ConcurrentHashMap<>();
+    private final Map<String, Profile> environments = new ConcurrentHashMap<>();
     @Nonnull
     private final Module module;
     @Getter
@@ -42,7 +42,7 @@ public class AzureModule {
     @Nullable
     private VirtualFile configJsonFile;
     @Nullable
-    private Environment defaultEnvironment;
+    private Profile defaultProfile;
 
     public AzureModule(@Nonnull final Module module) {
         this.module = module;
@@ -72,51 +72,51 @@ public class AzureModule {
     }
 
     @Nonnull
-    public Environment initializeWithDefaultEnvIfNot() {
+    public Profile initializeWithDefaultProfileIfNot() {
         final AzureModule module = this.initializeIfNot();
-        Environment env = module.getDefaultEnvironment();
-        if (Objects.isNull(env)) {
-            env = module.getOrCreateEnvironment("default");
-            module.setDefaultEnvironment(env);
+        Profile profile = module.getDefaultProfile();
+        if (Objects.isNull(profile)) {
+            profile = module.getOrCreateProfile("default");
+            module.setDefaultProfile(profile);
         }
-        return env;
+        return profile;
     }
 
     @Nullable
-    public Environment getDefaultEnvironment() {
-        if (Objects.isNull(this.defaultEnvironment)) {
+    public Profile getDefaultProfile() {
+        if (Objects.isNull(this.defaultProfile)) {
             if (!this.isInitialized()) {
                 return null;
             }
-            final String envName = this.getDefaultEnvironmentName();
+            final String envName = this.getDefaultProfileName();
             if (StringUtils.isBlank(envName)) {
                 return null;
             }
-            this.defaultEnvironment = this.getEnvironment(envName);
+            this.defaultProfile = this.getProfile(envName);
         }
-        return this.defaultEnvironment;
+        return this.defaultProfile;
     }
 
     @Nullable
-    public Environment getEnvironment(String envName) {
+    public Profile getProfile(String profileName) {
         if (!this.isInitialized()) {
             return null;
         }
-        return this.environments.computeIfAbsent(envName, name -> Optional
+        return this.environments.computeIfAbsent(profileName, name -> Optional
             .ofNullable(this.dotAzure)
-            .map(dotAzure -> dotAzure.findChild(envName))
+            .map(dotAzure -> dotAzure.findChild(profileName))
             .map(envDir -> envDir.findChild(".env"))
-            .map(dotEnv -> new Environment(name, dotEnv, this)).orElse(null));
+            .map(dotEnv -> new Profile(name, dotEnv, this)).orElse(null));
     }
 
     @Nonnull
-    public Environment getOrCreateEnvironment(String envName) {
+    public Profile getOrCreateProfile(String profileName) {
         this.validate();
-        return this.environments.computeIfAbsent(envName, name -> {
+        return this.environments.computeIfAbsent(profileName, name -> {
             try {
-                final VirtualFile envDir = VfsUtil.createDirectoryIfMissing(this.dotAzure, envName);
+                final VirtualFile envDir = VfsUtil.createDirectoryIfMissing(this.dotAzure, profileName);
                 final VirtualFile dotEnv = envDir.findOrCreateChildData(this, ".env");
-                return new Environment(name, dotEnv, this);
+                return new Profile(name, dotEnv, this);
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
@@ -125,7 +125,7 @@ public class AzureModule {
 
     @Nullable
     @SneakyThrows(IOException.class)
-    private String getDefaultEnvironmentName() {
+    private String getDefaultProfileName() {
         if (!this.isInitialized()) {
             return null;
         }
@@ -139,7 +139,7 @@ public class AzureModule {
         return map.get("defaultEnvironment");
     }
 
-    public void setDefaultEnvironment(@Nonnull Environment environment) {
+    public void setDefaultProfile(@Nonnull Profile profile) {
         this.validate();
         final VirtualFile configFile = Objects.requireNonNull(getConfigJsonFile());
         try {
@@ -148,15 +148,15 @@ public class AzureModule {
             final ObjectMapper mapper = new ObjectMapper();
             if (StringUtils.isBlank(content)) {
                 map.put("version", 1);
-                map.put("defaultEnvironment", environment.getName());
+                map.put("defaultEnvironment", profile.getName());
             } else {
                 final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
                 };
                 map.putAll(mapper.readValue(content, typeRef));
-                map.put("defaultEnvironment", environment.getName());
+                map.put("defaultEnvironment", profile.getName());
             }
             mapper.writeValue(configFile.getOutputStream(this), map);
-            this.defaultEnvironment = environment;
+            this.defaultProfile = profile;
         } catch (final IOException e) {
             log.error("failed to set default environment.", e);
         }
