@@ -121,13 +121,13 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
         @Override
         public boolean write(@Nonnull Element ele, @Nonnull Resource<T> resource) {
             ele.setAttribute(new Attribute("id", resource.getId()));
-            ele.addContent(new Element("dataId").addContent(resource.getDataId()));
+            ele.addContent(new Element("resourceId").addContent(resource.getDataId()));
             return true;
         }
 
         @Override
         public Resource<T> read(@Nonnull Element ele) {
-            final String id = ele.getChildTextTrim("dataId");
+            final String id = Optional.ofNullable(ele.getChildTextTrim("resourceId")).orElse(ele.getChildTextTrim("dataId"));
             return Optional.ofNullable(id).map(this::define).orElse(null);
         }
 
