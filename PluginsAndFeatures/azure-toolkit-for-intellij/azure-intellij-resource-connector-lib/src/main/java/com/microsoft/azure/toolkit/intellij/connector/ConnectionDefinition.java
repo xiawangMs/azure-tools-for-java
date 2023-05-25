@@ -166,7 +166,7 @@ public class ConnectionDefinition<R, C> {
             if (Objects.nonNull(existedConnection)) { // modified
                 final Resource<R> connected = (Resource<R>) existedConnection.getResource();
                 final String template = "Connection with environment variable prefix \"%s\" is found on your PC, which connect %s \"%s\" to %s \"%s\" \n" +
-                        "Do you want to override it?";
+                        "Do you want to overwrite it?";
                 final String msg = String.format(template, connection.getEnvPrefix(),
                         consumer.getDefinition().getTitle(), consumer.getName(),
                         connected.getDefinition().getTitle(), connected.getName());

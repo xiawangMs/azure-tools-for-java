@@ -10,8 +10,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import io.github.cdimascio.dotenv.internal.DotenvParser;
 import io.github.cdimascio.dotenv.internal.DotenvReader;
@@ -152,7 +154,7 @@ public class Environment {
                     break;
                 }
             }
-            FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8);
+            WriteAction.run(() -> FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8));
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
@@ -160,13 +162,18 @@ public class Environment {
 
     @AzureOperation("boundary/add_connection_to_dotenv")
     private void addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
-        final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
-        AzureTaskManager.getInstance().write(() -> {
-            try {
-                Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
+        final AzureString description = OperationBundle.description("internal/dotazure.load_env.resource", connection.getResource().getDataId());
+        final AzureTaskManager manager = AzureTaskManager.getInstance();
+        manager.runInBackground(description, () -> {
+            final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
+            manager.runLater(() -> {
+                try {
+                    WriteAction.run(() -> Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND));
+                    this.dotEnvFile.getParent().refresh(true, true);
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         });
     }
 
