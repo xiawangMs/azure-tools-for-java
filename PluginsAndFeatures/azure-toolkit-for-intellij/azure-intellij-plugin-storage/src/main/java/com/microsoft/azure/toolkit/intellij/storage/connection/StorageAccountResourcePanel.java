@@ -5,12 +5,18 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.connection;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.ui.HyperlinkLabel;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -23,16 +29,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<StorageAccount>> {
+    public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Storage account.</html>";
     protected SubscriptionComboBox subscriptionComboBox;
     protected AzureComboBox<StorageAccount> accountComboBox;
     @Getter
@@ -40,6 +44,11 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
     private JPanel pnlAzure;
     private JRadioButton btnAzure;
     private JRadioButton btnLocal;
+    private JLabel lblSubScription;
+    private JLabel lblEnvironment;
+    private JLabel lblAccount;
+    private HyperlinkLabel lblSignIn;
+//    private AzureEventBus.EventListener signInOutListener;
 
     public StorageAccountResourcePanel() {
         this.init();
@@ -63,12 +72,19 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
                 this.accountComboBox.clear();
             }
         });
+
+        lblSubScription.setLabelFor(subscriptionComboBox);
+        lblEnvironment.setLabelFor(btnAzure);
+        lblAccount.setLabelFor(accountComboBox);
     }
 
     private void onSelectEnvironment() {
         pnlAzure.setVisible(btnAzure.isSelected());
         accountComboBox.setRequired(btnAzure.isSelected());
-        accountComboBox.validateValueAsync();
+        lblSignIn.setVisible((!Azure.az(AzureAccount.class).isLoggedIn()) && btnAzure.isSelected());
+        if (Objects.nonNull(accountComboBox.getValidationInfo())) {
+            accountComboBox.validateValueAsync();
+        }
     }
 
     @Override
@@ -134,5 +150,19 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
                 super.refreshItems();
             }
         };
+
+        this.lblSignIn = new HyperlinkLabel();
+        lblSignIn.setForeground(UIUtil.getContextHelpForeground());
+        lblSignIn.setHtmlText(NOT_SIGNIN_TIPS);
+        lblSignIn.setIcon(AllIcons.General.Information);
+        lblSignIn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblSignIn.addHyperlinkListener(e -> signInAndReloadItems(subscriptionComboBox, lblSignIn));
+    }
+
+    private void signInAndReloadItems(SubscriptionComboBox combox, HyperlinkLabel notSignInTips) {
+        AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
+            notSignInTips.setVisible(false);
+            combox.reloadItems();
+        });
     }
 }

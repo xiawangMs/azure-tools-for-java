@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.function.components.connection;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.HyperlinkAdapter;
-import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -37,7 +36,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.util.List;
 import java.util.Objects;
@@ -59,7 +57,6 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     private JPanel pnlMode;
     private JPanel descriptionContainer;
     private JTextPane descriptionPane;
-    private JLabel descriptionIcon;
     private Subscription subscription;
 
     private final Project project;
@@ -70,10 +67,15 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     private AzureFormJPanel<? extends Resource<?>> resourcePanel;
 
     public FunctionConnectionCreationDialog(final Project project, final Module module, final String resourceType) {
+        this(project, module, resourceType, null);
+    }
+
+    public FunctionConnectionCreationDialog(final Project project, final Module module, final String resourceType, final String helpId) {
         super(project);
         this.project = project;
         this.module = module;
         this.definition = FunctionDefinitionManager.getFunctionDefinitionByResourceType(resourceType);
+        this.helpId = helpId;
         $$$setupUI$$$();
         init();
     }
@@ -194,6 +196,10 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         }
     }
 
+    public void setOKActionText(@Nonnull final String text) {
+        super.setOKButtonText(text);
+    }
+
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
     }
@@ -209,6 +215,5 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     public void setDescription(@Nonnull final String description, @Nullable Icon icon) {
         descriptionContainer.setVisible(true);
         descriptionPane.setText(description);
-        descriptionIcon.setIcon(icon);
     }
 }

@@ -28,6 +28,7 @@ import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
+import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
@@ -97,7 +98,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = {BindingEnum.HttpOutput, BindingEnum.HttpTrigger};
     private static final List<String> AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS = Arrays.asList("httptrigger", "kafkatrigger", "rabbitmqtrigger",
             "orchestrationTrigger", "activityTrigger", "entityTrigger");
-    private static final String MISSING_AZURE_WEB_JOBS_STORAGE_WARNING = "<html>`AzureWebJobsStorage` is missing, which is required for your project. Please refer this <a href=\"https://learn.microsoft.com/en-us/azure/azure-functions/functions-app-settings#azurewebjobsstorage\">document</a> for details</html>";
+    private static final String CONNECTION_TITLE = "AzureWebJobsStorage is missing";
+    private static final String CONNECTION_DESCRIPTION = "Please set the resource connection for AzureWebJobsStorage.";
     private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process installProcess;
@@ -352,10 +354,11 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         if (StringUtils.isEmpty(webJobStorage) && isWebJobStorageRequired(functionBindingList)) {
             // show resource connection dialog for web job storage
             AzureTaskManager.getInstance().runAndWait(() -> {
-                final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage");
-                dialog.setTitle("Set Resource Connection for `AzureWebJobsStorage`");
+                final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage", AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE);
+                dialog.setTitle(CONNECTION_TITLE);
                 dialog.setFixedConnectionName(AZURE_WEB_JOB_STORAGE_KEY);
-                dialog.setDescription(MISSING_AZURE_WEB_JOBS_STORAGE_WARNING, AllIcons.General.Warning);
+                dialog.setDescription(CONNECTION_DESCRIPTION, null);
+                dialog.setOKActionText("Connect");
                 if (dialog.showAndGet()) {
                     // update app settings
                     final Connection<?, ?> connection = dialog.getConnection();
