@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.intellij.function.components.connection.Funct
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteService;
+import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -363,11 +364,10 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                     // update app settings
                     final Connection<?, ?> connection = dialog.getConnection();
                     if (Objects.nonNull(connection)) {
-                        functionRunConfiguration.addConnection(connection);
-                        applyResourceConnection(appSettings);
-                        if (connection.getResource().getData() instanceof AzuriteStorageAccount && !AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT.getFormalStatus().isRunning()) {
-                            // start azurite if azurite connection is added
-                            AzuriteService.getInstance().startAzurite(project);
+                        appSettings.putAll(connection.getEnvironmentVariables(project));
+                        // start azurite if azurite connection is added
+                        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
+                            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
                         }
                     }
                 }

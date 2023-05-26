@@ -88,7 +88,7 @@ public class AzuriteTaskProvider extends BeforeRunTaskProvider<AzuriteTaskProvid
             return "Run Azurite";
         }
 
-        private static void addStopAzuriteListener(@Nonnull final RunConfiguration runConfiguration) {
+        public static void addStopAzuriteListener(@Nonnull final RunConfiguration runConfiguration) {
             final Project project = runConfiguration.getProject();
             final MessageBusConnection messageBusConnection = project.getMessageBus().connect();
             messageBusConnection.subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
