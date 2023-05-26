@@ -11,18 +11,23 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
@@ -30,6 +35,7 @@ import org.jetbrains.concurrency.Promise;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -109,7 +115,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
 
     @Getter
     @Setter
-    public static class LoadDotEnvBeforeRunTask extends BeforeRunTask<LoadDotEnvBeforeRunTask> {
+    public static class LoadDotEnvBeforeRunTask extends BeforeRunTask<LoadDotEnvBeforeRunTask> implements PersistentStateComponent<LoadDotEnvBeforeRunTask.State> {
         private final RunConfiguration config;
         @Nullable
         private VirtualFile file;
@@ -126,6 +132,27 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
                 .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
                 .map(Profile::load)
                 .orElse(Collections.emptyList());
+        }
+
+        @Override
+        public @Nullable LoadDotEnvBeforeRunTask.State getState() {
+            return Optional.ofNullable(this.file).map(f -> f.toNioPath().toString()).map(State::new).orElse(null);
+        }
+
+        @Override
+        public void loadState(@Nonnull LoadDotEnvBeforeRunTask.State state) {
+            this.file = Optional.ofNullable(state.getEnvFile())
+                .filter(StringUtils::isNotBlank).map(Path::of)
+                .map(p -> VfsUtil.findFile(p, true))
+                .orElse(null);
+        }
+
+        @Getter
+        @Setter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        static class State {
+            private String envFile;
         }
     }
 }
