@@ -14,15 +14,15 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessHandlerFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.execution.util.ExecUtil;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.Version;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
@@ -30,33 +30,39 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class AzuriteService {
+    public static final String INTELLIJ_GLOBAL_STORAGE = "IntelliJ Global Storage";
+    public static final String CURRENT_PROJECT = "Current Project";
 
     public static final String AZURITE_DISPLAY_NAME = "Azurite";
-    public static final String INSTALL_AZURITE_LINK = "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm";
+    public static final String INSTALL_AZURITE_LINK = "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm#install-azurite";
     public static final String NODE_VERSION_ERROR_MESSAGE = "Failed to get node version, or node version is too old (lower than 8) to run azurite, please visit https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite for installation guidances.";
     public static final String AZURITE_INSTALL_COMMAND = "npm install -g azurite";
     public static final String AZURITE_HAS_BEEN_TERMINATED = "Azurite has been terminated";
+    public static final String DEFAULT_WORKSPACE = System.getProperty("user.home");
+    public static final String AZURITE = "azurite";
+    public static final String AZURITE_CMD = "azurite.cmd";
     private ProcessHandler processHandler;
 
     public static AzuriteService getInstance() {
@@ -73,7 +79,7 @@ public class AzuriteService {
         }
         try {
             final ConsoleView consoleView = getOrCreateConsoleView(project);
-            final GeneralCommandLine commandLine = new GeneralCommandLine(getAzuriteCommand());
+            final GeneralCommandLine commandLine = getExecutionCommand(project);
             commandLine.withEnvironment(System.getenv());
             this.processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine);
             this.processHandler.addProcessListener(new ProcessAdapter() {
@@ -87,25 +93,26 @@ public class AzuriteService {
                 @Override
                 public void processTerminated(@NotNull ProcessEvent event) {
                     consoleView.print(AZURITE_HAS_BEEN_TERMINATED, ConsoleViewContentType.SYSTEM_OUTPUT);
-                    AzureMessager.getMessager().info(AZURITE_HAS_BEEN_TERMINATED);
                     AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT.refresh();
+                    AzureMessager.getMessager().warning(AZURITE_HAS_BEEN_TERMINATED);
                 }
             });
             consoleView.attachToProcess(processHandler);
             this.processHandler.startNotify();
         } catch (final ExecutionException e) {
-            AzureMessager.getMessager().error("Failed to run azurite, " + ExceptionUtils.getRootCauseMessage(e), getAzuriteFailureActions(project));
+            AzureMessager.getMessager().error("Failed to run azurite, " + ExceptionUtils.getRootCauseMessage(e), (Object[]) getAzuriteFailureActions(project));
             return false;
         }
         return true;
     }
 
     private Action<?>[] getAzuriteFailureActions(@Nonnull final Project project) {
-        final Action<String> openBrowserAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL)
-                .bind(INSTALL_AZURITE_LINK).withLabel("Learn More");
         final Action<?> installAzuriteAction = AzureActionManager.getInstance().getAction(IntellijStorageActionsContributor.INSTALL_AZURITE)
                 .bind(project);
-        return isNodeMeetAzuriteRequirement() ? new Action[]{installAzuriteAction, openBrowserAction} : new Action[]{openBrowserAction};
+        final Action<Object> settingAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
+        final Action<String> learnAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL)
+                .bind(INSTALL_AZURITE_LINK).withLabel("Learn More");
+        return isNodeMeetAzuriteRequirement() ? new Action[]{installAzuriteAction, settingAction, learnAction} : new Action[]{settingAction, learnAction};
     }
 
     public static void installAzurite(@Nonnull final Project project) {
@@ -118,9 +125,7 @@ public class AzuriteService {
     private static boolean isNodeMeetAzuriteRequirement() {
         try {
             final GeneralCommandLine commandLine = new GeneralCommandLine("node", "-v");
-            final Process process = commandLine.createProcess();
-            process.waitFor(10, TimeUnit.SECONDS);
-            final String nodeVersion = IOUtils.toString(process.getInputStream());
+            final String nodeVersion = ExecUtil.execAndGetOutput(commandLine).getStdout();
             return Version.parseVersion(StringUtils.removeStartIgnoreCase(nodeVersion, "v")).compareTo(8) >= 0;
         } catch (final Exception e) {
             return false;
@@ -167,11 +172,38 @@ public class AzuriteService {
         return console;
     }
 
-    private static String[] getAzuriteCommand() {
-        final String fileLocation = System.getProperty("user.home");
-        final List<String> azurite = CommandUtils.resolveCommandPath("azurite");
-        final String command = azurite.stream().filter(StringUtils::isNoneBlank).filter(file -> StringUtils.isNoneBlank(FilenameUtils.getExtension(file))).findFirst().orElse("azurite.cmd");
-        return SystemInfo.isWindows ? new String[]{command, "-l", fileLocation} : new String[]{"azurite", "-l", fileLocation};
+    private static GeneralCommandLine getExecutionCommand(@Nonnull final Project project) {
+        final GeneralCommandLine result = new GeneralCommandLine();
+        result.withExePath(getAzuritePath());
+        result.withParameters("--location", getAzuriteWorkspace(project));
+        if (Azure.az().config().getEnableLeaseMode()) {
+            result.withParameters("--loose");
+        }
+        final String fileLocation = StringUtils.firstNonBlank(Azure.az().config().getAzuriteWorkspace(), DEFAULT_WORKSPACE);
+        return result;
+    }
+
+    private static String getAzuriteWorkspace(@Nonnull final Project project) {
+        final String fileLocation = StringUtils.firstNonBlank(Azure.az().config().getAzuriteWorkspace(), INTELLIJ_GLOBAL_STORAGE);
+        return switch (fileLocation) {
+            case INTELLIJ_GLOBAL_STORAGE -> Path.of(CommonConst.PLUGIN_PATH, AZURITE).toString();
+            case CURRENT_PROJECT -> {
+                final VirtualFile virtualFile = Optional.ofNullable(ProjectUtil.guessProjectDir(project)).orElseGet(project::getBaseDir);
+                yield Path.of(virtualFile.getPath(), AZURITE).toString();
+            }
+            default -> fileLocation;
+        };
+    }
+
+    private static String getAzuritePath() {
+        final String azuritePath = Azure.az().config().getAzuritePath();
+        if (StringUtils.isNotBlank(azuritePath) && FileUtil.exists(azuritePath)) {
+            return azuritePath;
+        }
+        final List<String> azurite = CommandUtils.resolveCommandPath(AZURITE);
+        return azurite.stream().filter(StringUtils::isNoneBlank)
+                .filter(file -> !(SystemInfo.isWindows && StringUtils.isBlank(FilenameUtils.getExtension(file)))) // for windows, azurite did not work as PATH_EXT is not supported with Java Process
+                .findFirst().orElse(SystemInfo.isWindows ? AZURITE_CMD : AZURITE);
     }
 
     public void stopAzurite() {

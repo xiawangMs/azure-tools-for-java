@@ -25,6 +25,7 @@ public class AzureConfigInitializer {
     public static final String COSMOS = "cosmos";
     public static final String BICEP = "bicep";
     public static final String MONITOR = "monitor";
+    public static final String AZURITE = "azurite";
     public static final String EVENT_HUBS = "event_hubs";
     public static final String OTHER = "other";
 
@@ -40,6 +41,9 @@ public class AzureConfigInitializer {
     public static final String ENABLE_AUTH_PERSISTENCE = "enable_auth_persistence";
     public static final String MONITOR_TABLE_ROWS = "monitor_table_rows";
     public static final String CONSUMER_GROUP_NAME = "consumer_group_name";
+    public static final String AZURITE_PATH = "azurite_path";
+    public static final String AZURITE_WORKSPACE = "azurite_workspace";
+    public static final String ENABLE_LEASE_MODE = "enable_lease_mode";
 
     public static void initialize(String defaultMachineId, String pluginName, String pluginVersion) {
         String machineId = AzureStoreManager.getInstance().getMachineStore().getProperty(TELEMETRY,
@@ -97,6 +101,19 @@ public class AzureConfigInitializer {
             config.setEventHubsConsumerGroup(consumerGroupName);
         }
 
+        final String azuritePath = ideStore.getProperty(AZURITE, AZURITE_PATH, "");
+        if (StringUtils.isNotBlank(azuritePath)) {
+            config.setAzuritePath(azuritePath);
+        }
+
+        final String azuriteWorkspace = ideStore.getProperty(AZURITE, AZURITE_WORKSPACE, "");
+        if (StringUtils.isNotBlank(azuriteWorkspace)) {
+            config.setAzuriteWorkspace(azuriteWorkspace);
+        }
+
+        final Boolean enableLeaseMode = Boolean.valueOf(ideStore.getProperty(AZURITE, ENABLE_LEASE_MODE, "false"));
+        config.setEnableLeaseMode(enableLeaseMode);
+
         ideStore.getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, "");
 
         final String userAgent = String.format("%s, v%s, machineid:%s", pluginName, pluginVersion,
@@ -126,5 +143,8 @@ public class AzureConfigInitializer {
         // don't save pluginVersion, it is saved in AzurePlugin class
         ideStore.setProperty(BICEP, DOTNET_RUNTIME_PATH, config.getDotnetRuntimePath());
         ideStore.setProperty(EVENT_HUBS, CONSUMER_GROUP_NAME, config.getEventHubsConsumerGroup());
+        ideStore.setProperty(AZURITE, AZURITE_PATH, config.getAzuritePath());
+        ideStore.setProperty(AZURITE, AZURITE_WORKSPACE, config.getAzuriteWorkspace());
+        ideStore.setProperty(AZURITE, ENABLE_LEASE_MODE, String.valueOf(config.getEnableLeaseMode()));
     }
 }
