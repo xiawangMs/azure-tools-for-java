@@ -13,7 +13,7 @@ public class DotEnvRunConfigurationExtension extends RunConfigurationExtension {
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/dotazure.load_env.config", params = {"config.getName()"})
+    @AzureOperation(name = "platform/connector.inject_env.config", params = {"config.getName()"})
     public <T extends RunConfigurationBase<?>> void updateJavaParameters(@Nonnull T config, @Nonnull JavaParameters params, RunnerSettings s) {
         config.getBeforeRunTasks().stream()
             .filter(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)

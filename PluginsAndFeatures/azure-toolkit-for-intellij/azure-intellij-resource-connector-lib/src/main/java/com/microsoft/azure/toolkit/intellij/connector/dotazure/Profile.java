@@ -119,7 +119,7 @@ public class Profile {
         }
     }
 
-    @AzureOperation("internal/connector.generate_env_variables")
+    @AzureOperation(value = "internal/connector.generate_env_variables.resource", params = "connection.getResource().getName()")
     private static List<String> generateEnvLines(@Nonnull final Project project, @Nonnull final Connection<?, ?> connection) {
         final ArrayList<String> lines = new ArrayList<>();
         lines.add("# connection.id=" + connection.getId());
@@ -129,7 +129,7 @@ public class Profile {
         return lines;
     }
 
-    @AzureOperation("boundary/remove_connection_from_dotenv")
+    @AzureOperation(value = "boundary/remove_connection_from_dotenv.resource", params = "connection.getResource().getName()")
     private void removeConnectionFromDotEnv(@Nonnull Connection<?, ?> connection) {
         if (Objects.isNull(this.dotEnvFile)) {
             return;
@@ -157,7 +157,7 @@ public class Profile {
     }
 
     @SneakyThrows(IOException.class)
-    @AzureOperation("boundary/add_connection_to_dotenv")
+    @AzureOperation(value = "boundary/add_connection_to_dotenv.resource", params = "connection.getResource().getName()")
     private void addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
         WriteAction.run(()-> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
         Objects.requireNonNull(this.dotEnvFile, ".env file can not be created.");

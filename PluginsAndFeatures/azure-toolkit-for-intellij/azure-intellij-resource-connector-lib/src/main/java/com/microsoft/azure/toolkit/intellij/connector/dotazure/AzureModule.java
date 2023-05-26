@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -145,6 +146,7 @@ public class AzureModule {
         });
     }
 
+    @AzureOperation(name = "boundary/connector.create_profile_for_module.module", params = {"this.module.getName()"})
     @SneakyThrows(value = {IOException.class, JDOMException.class})
     private void registerProfile(@Nonnull final Profile profile) {
         final VirtualFile profilesXmlFile = Objects.requireNonNull(this.profilesXmlFile);

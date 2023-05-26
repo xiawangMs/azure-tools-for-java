@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 
@@ -127,6 +128,10 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         }
     }
 
+    @AzureOperation(
+        name = "user/connector.create_or_update_connection.consumer|resource",
+        params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
+    )
     private void saveConnectionToDotAzure(Connection<?, ?> connection, Resource<?> consumer) {
         if (consumer instanceof ModuleResource) {
             final ModuleManager moduleManager = ModuleManager.getInstance(project);

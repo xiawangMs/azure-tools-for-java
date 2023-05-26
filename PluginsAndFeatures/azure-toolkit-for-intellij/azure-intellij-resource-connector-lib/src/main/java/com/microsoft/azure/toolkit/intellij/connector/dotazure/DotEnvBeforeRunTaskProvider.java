@@ -62,7 +62,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "platform/dotazure.get_task_description")
+    @AzureOperation(name = "platform/connector.get_before_task_description")
     public String getDescription(LoadDotEnvBeforeRunTask task) {
         return Optional.ofNullable(task.getConfig().getProject()).map(ProjectUtil::guessProjectDir)
             .flatMap(v -> Optional.ofNullable(task.getFile()).map(f -> v.toNioPath().relativize(f.toNioPath())))
@@ -77,6 +77,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
     }
 
     @Override
+    @AzureOperation(name = "user/connector.config_before_task")
     public Promise<Boolean> configureTask(@Nonnull DataContext context, @Nonnull RunConfiguration configuration, @Nonnull LoadDotEnvBeforeRunTask task) {
         final AsyncPromise<Boolean> result = new AsyncPromise<>();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -119,6 +120,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
             this.file = AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile).orElse(null);
         }
 
+        @AzureOperation("platform/connector.load_env_beforeruntask")
         public List<Pair<String, String>> loadEnv() {
             return Optional.ofNullable(this.file)
                 .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
