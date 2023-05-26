@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainer;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
@@ -27,9 +28,8 @@ import org.apache.commons.io.FilenameUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -56,11 +56,19 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
     public Node<?> createNode(@Nonnull Object data, @Nullable Node<?> parent, @Nonnull Manager manager) {
         if (data instanceof AzureStorageAccount) {
             final AzureStorageAccount service = ((AzureStorageAccount) data);
-            final Function<AzureStorageAccount, List<StorageAccount>> accounts = asc -> asc.list().stream().flatMap(m -> m.storageAccounts().list().stream())
-                .collect(Collectors.toList());
             return new Node<>(service).view(new AzureServiceLabelView<>(service, NAME, ICON))
                 .actions(StorageActionsContributor.SERVICE_ACTIONS)
-                .addChildren(accounts, (account, storageNode) -> this.createNode(account, storageNode, manager));
+                .addChildren(ignore -> service.accounts(true), (account, storageNode) -> this.createNode(account, storageNode, manager));
+        } else if (data instanceof AzuriteStorageAccount) {
+            final AzuriteStorageAccount account = (AzuriteStorageAccount) data;
+            return new Node<>(account).view(new AzureResourceLabelView<>(account))
+                .actions(StorageActionsContributor.AZURITE_ACTIONS)
+                .addChildren(s -> s.getSubModules().stream().filter(Objects::nonNull).collect(Collectors.toList()), (module, p) -> new Node<>(module)
+                    .view(new AzureModuleLabelView<>(module, module.getResourceTypeName() + "s"))
+                    .actions(StorageActionsContributor.STORAGE_MODULE_ACTIONS)
+                    .addChildren(AbstractAzResourceModule::list, (d, mn) -> this.createNode(d, mn, manager))
+                    .hasMoreChildren(AbstractAzResourceModule::hasMoreResources)
+                    .loadMoreChildren(AbstractAzResourceModule::loadMoreResources));
         } else if (data instanceof StorageAccount) {
             final StorageAccount account = (StorageAccount) data;
             return new Node<>(account).view(new AzureResourceLabelView<>(account))

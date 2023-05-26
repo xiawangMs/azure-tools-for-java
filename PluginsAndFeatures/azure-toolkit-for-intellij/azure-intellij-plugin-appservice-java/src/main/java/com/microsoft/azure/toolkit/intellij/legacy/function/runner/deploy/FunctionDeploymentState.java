@@ -39,6 +39,8 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition.LOCAL_STORAGE_CONNECTION_STRING;
+
 
 public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBase<?, ?, ?>> {
 
@@ -99,7 +101,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         if (functionDeployConfiguration.isConnectionEnabled()) {
             final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionDeployConfiguration.getLoadDotEnvBeforeRunTask();
             final Map<String, String> appSettings = functionDeployConfiguration.getConfig().getAppSettings();
-            loadDotEnvBeforeRunTask.loadEnv().forEach(env -> appSettings.put(env.getKey(), env.getValue()));
+            loadDotEnvBeforeRunTask.loadEnv().stream()
+                    .filter(pair -> StringUtils.equalsIgnoreCase(pair.getKey(), "AzureWebJobsStorage") &&
+                            StringUtils.equalsIgnoreCase(pair.getValue(), LOCAL_STORAGE_CONNECTION_STRING)) // remove connection string for azurite
+                    .forEach(env -> appSettings.put(env.getKey(), env.getValue()));
         }
     }
 

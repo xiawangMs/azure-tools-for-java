@@ -28,12 +28,17 @@ import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
+import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteService;
+import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -46,6 +51,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
+import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -93,8 +99,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = {BindingEnum.HttpOutput, BindingEnum.HttpTrigger};
     private static final List<String> AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS = Arrays.asList("httptrigger", "kafkatrigger", "rabbitmqtrigger",
             "orchestrationTrigger", "activityTrigger", "entityTrigger");
-    private static final String MISSING_AZURE_WEB_JOBS_STORAGE_WARNING = "Missing value for AzureWebJobsStorage in local.settings.json. " +
-            "This is required for all triggers other than httptrigger, kafkatrigger, rabbitmqtrigger, orchestrationTrigger, activityTrigger, entityTrigger.";
+    private static final String CONNECTION_TITLE = "AzureWebJobsStorage is missing";
+    private static final String CONNECTION_DESCRIPTION = "Please set the resource connection for AzureWebJobsStorage.";
     private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process installProcess;
@@ -349,15 +355,20 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         if (StringUtils.isEmpty(webJobStorage) && isWebJobStorageRequired(functionBindingList)) {
             // show resource connection dialog for web job storage
             AzureTaskManager.getInstance().runAndWait(() -> {
-                final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage");
+                final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage", AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE);
+                dialog.setTitle(CONNECTION_TITLE);
                 dialog.setFixedConnectionName(AZURE_WEB_JOB_STORAGE_KEY);
-                dialog.setDescription(MISSING_AZURE_WEB_JOBS_STORAGE_WARNING, AllIcons.General.Warning);
+                dialog.setDescription(CONNECTION_DESCRIPTION, null);
+                dialog.setOKActionText("Connect");
                 if (dialog.showAndGet()) {
                     // update app settings
                     final Connection<?, ?> connection = dialog.getConnection();
                     if (Objects.nonNull(connection)) {
-                        functionRunConfiguration.addConnection(connection);
-                        applyResourceConnection(appSettings);
+                        appSettings.putAll(connection.getEnvironmentVariables(project));
+                        // start azurite if azurite connection is added
+                        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
+                            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
+                        }
                     }
                 }
             });
@@ -368,7 +379,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private boolean isWebJobStorageRequired(@Nonnull List<BindingEnum> bindings) {
         return bindings.stream().map(BindingEnum::getType)
                 .filter(type -> StringUtils.endsWithIgnoreCase(type, "Trigger"))
-                .anyMatch(type -> !AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS.contains(type));
+                .anyMatch(type -> !AZURE_WEB_JOBS_STORAGE_NOT_REQUIRED_TRIGGERS.stream().anyMatch(trigger -> StringUtils.equalsIgnoreCase(type, trigger)));
     }
 
     private boolean isDebugMode() {

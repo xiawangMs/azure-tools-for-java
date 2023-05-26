@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -39,12 +40,16 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
     @Nonnull
     private final AzureServiceResource.Definition<T> definition;
     private T data;
+    @Getter
+    @Setter
+    private String connectionId;
 
     public AzureServiceResource(@Nonnull T data, @Nonnull AzureServiceResource.Definition<T> definition) {
         this(data.getId(), definition);
         this.data = data;
     }
 
+    @Deprecated
     public AzureServiceResource(@Nonnull String id, @Nonnull AzureServiceResource.Definition<T> definition) {
         this.id = ResourceId.fromString(id);
         this.definition = definition;
@@ -112,6 +117,7 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
             return new AzureServiceResource<>(resource, this);
         }
 
+        @Deprecated
         public Resource<T> define(String dataId) {
             return new AzureServiceResource<>(dataId, this);
         }
