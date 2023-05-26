@@ -35,11 +35,6 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
     }
 
     @Override
-    public void runConfigurationChanged(@Nonnull RunnerAndConfigurationSettings settings) {
-        this.artifactMayChanged(settings.getConfiguration(), null);
-    }
-
-    @Override
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.update_connection_task")
     public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
