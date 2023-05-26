@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 
 public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnectionComboBox.ConnectionConfiguration> implements AzureForm<FunctionConnectionComboBox.ConnectionConfiguration> {
 
+    public static final String CONNECTION_CREATED_MESSAGE = "The connection between %s and %s has been successfully created.";
     private JLabel lblConnectionName;
     private JLabel lblConnectionString;
     private AzureTextInput txtConnectionName;
@@ -164,23 +165,17 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
         final Profile profile = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::getDefaultProfile).orElse(null);
+                .map(AzureModule::initializeWithDefaultProfileIfNot).orElse(null);
         if (profile == null) {
             AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
             return;
         }
         this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
-        connection.setEnvPrefix(txtConnectionName.getValue());
-        final ConnectionManager connectionManager = profile.getConnectionManager(true);
-        final ResourceManager resourceManager = profile.getResourceManager(true);
-        if (connection.validate(this.project)) {
-            resourceManager.addResource(resource);
-            resourceManager.addResource(consumer);
-            connectionManager.addConnection(connection);
-            final String message = String.format("The connection between %s and %s has been successfully created.",
-                    resource.getName(), consumer.getName());
-            AzureMessager.getMessager().success(message);
+        this.connection.setEnvPrefix(txtConnectionName.getValue());
+        if (this.connection.validate(this.project)) {
+            profile.addConnection(this.connection);
+            AzureMessager.getMessager().success(String.format(CONNECTION_CREATED_MESSAGE, resource.getName(), consumer.getName()));
         }
         super.doOKAction();
     }
