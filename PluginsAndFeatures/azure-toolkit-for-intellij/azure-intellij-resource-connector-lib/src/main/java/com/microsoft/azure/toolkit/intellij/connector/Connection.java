@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.AccessLevel;
@@ -20,10 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,23 +37,37 @@ import java.util.stream.Collectors;
 public class Connection<R, C> {
     public static final String ENV_PREFIX = "%ENV_PREFIX%";
 
-    @Nonnull
+    @Setter
+    @Getter
     @EqualsAndHashCode.Include
-    protected final Resource<R> resource;
+    @Nonnull
+    private final String id;
+
+    @Nonnull
+    @Setter
+    @EqualsAndHashCode.Include
+    protected Resource<R> resource;
+
+    @Nonnull
+    @Setter
+    @EqualsAndHashCode.Include
+    protected Resource<C> consumer;
 
     @Nonnull
     @EqualsAndHashCode.Include
-    protected final Resource<C> consumer;
-
-    @Nonnull
-    @EqualsAndHashCode.Include
-    protected final ConnectionDefinition<R, C> definition;
+    @Setter
+    protected ConnectionDefinition<R, C> definition;
 
     @Setter
     @Getter(AccessLevel.NONE)
+    @EqualsAndHashCode.Include
     private String envPrefix;
 
     private Map<String, String> env = new HashMap<>();
+
+//    public String getId() {
+//        return StringUtils.isBlank(this.id) ? this.getEnvPrefix() + "/" + resource.getId() : this.id;
+//    }
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
@@ -71,8 +82,12 @@ public class Connection<R, C> {
     }
 
     public Map<String, String> getEnvironmentVariables(final Project project) {
-        return this.resource.initEnv(project).entrySet().stream()
+        final Map<String, String> result = this.resource.initEnv(project).entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()), Map.Entry::getValue));
+        if (this.getResource().getDefinition() instanceof FunctionSupported<R>) {
+            result.putAll(((FunctionSupported<R>) this.getResource().getDefinition()).getPropertiesForFunction(this.getResource().getData(), this));
+        }
+        return result;
     }
 
     /**

@@ -15,7 +15,6 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
@@ -23,9 +22,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -147,18 +146,20 @@ public class Tree extends SimpleTree implements DataProvider {
         @Override
         @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()")
         public synchronized void refreshChildren(boolean... incremental) {
-            if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
-                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
-                    this.removeLoadMoreNode();
-                } else {
-                    this.removeAllChildren();
+            AzureTaskManager.getInstance().runLater(() -> { // queue up/wait until pending UI update finishes.
+                if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
+                    final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                    if (incremental.length > 0 && incremental[0] && Objects.nonNull(model)) {
+                        this.removeLoadMoreNode();
+                    } else {
+                        this.removeAllChildren();
+                    }
+                    this.add(new LoadingNode());
+                    this.refreshChildrenView();
+                    this.loaded = null;
+                    this.loadChildren(incremental);
                 }
-                this.add(new LoadingNode());
-                this.refreshChildrenView();
-                this.loaded = null;
-                this.loadChildren(incremental);
-            }
+            });
         }
 
         protected synchronized void loadChildren(boolean... incremental) {

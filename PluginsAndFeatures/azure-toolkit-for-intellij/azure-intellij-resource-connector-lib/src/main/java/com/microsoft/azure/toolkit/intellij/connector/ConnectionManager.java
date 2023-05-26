@@ -29,6 +29,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated use {@link com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager} instead
+ */
+@Deprecated
 public interface ConnectionManager extends PersistentStateComponent<Element> {
     @Nonnull
     static ArrayList<ConnectionDefinition<?, ?>> getDefinitions() {
@@ -143,7 +147,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
                 final String name = connectionEle.getAttributeValue(FIELD_TYPE);
                 final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
                 try {
-                    Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(this::addConnection);
+                    Optional.ofNullable(definition).map(d -> d.readDeprecatedConnection(connectionEle)).ifPresent(this::addConnection);
                 } catch (final Exception e) {
                     log.warn(String.format("error occurs when load a resource connection of type '%s'", name), e);
                 }

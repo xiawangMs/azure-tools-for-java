@@ -12,7 +12,7 @@ import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
-import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -97,11 +97,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
 
     private void applyResourceConnection() {
         if (functionDeployConfiguration.isConnectionEnabled()) {
-            functionDeployConfiguration.getConnections().stream()
-                    .filter(connection -> connection.getResource().getDefinition() instanceof FunctionSupported)
-                    .forEach(connection -> ((FunctionSupported) connection.getResource().getDefinition())
-                            .getPropertiesForFunction(connection.getResource().getData(), connection)
-                            .forEach((key, value) -> functionDeployConfiguration.getConfig().getAppSettings().put(key.toString(), value.toString())));
+            final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionDeployConfiguration.getLoadDotEnvBeforeRunTask();
+            final Map<String, String> appSettings = functionDeployConfiguration.getConfig().getAppSettings();
+            loadDotEnvBeforeRunTask.loadEnv().forEach(env -> appSettings.put(env.getKey(), env.getValue()));
         }
     }
 

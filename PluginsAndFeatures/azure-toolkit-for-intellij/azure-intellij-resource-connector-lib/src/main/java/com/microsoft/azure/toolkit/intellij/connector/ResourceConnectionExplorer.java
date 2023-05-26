@@ -11,8 +11,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -23,13 +21,19 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -47,29 +51,49 @@ public class ResourceConnectionExplorer extends Tree {
     }
 
     private Node<Project> buildRoot() {
-        final ConnectionManager cm = this.project.getService(ConnectionManager.class);
         return new RootNode(project).lazy(false)
             .view(new NodeView.Static("Resource Connections", AzureIcons.Common.AZURE.getIconPath()))
-            .addChildren(project -> Arrays.asList(ModuleManager.getInstance(project).getModules().clone()), (m, n) -> new ModuleNode(m).lazy(false)
+            .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).lazy(false)
                 .view(new NodeView.Static(m.getName(), "/icons/module"))
                 .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                .addChildren(module -> cm.getConnectionsByConsumerId(module.getName()), (c, mn) -> new Node<>(c).lazy(false)
+                .addChildren(module -> Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
                     .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
                     .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }
 
-    private static class ModuleNode extends Node<Module> {
-        public ModuleNode(@Nonnull Module module) {
+    private static class ModuleNode extends Node<AzureModule> {
+        private final MessageBusConnection connection;
+
+        public ModuleNode(@Nonnull AzureModule module) {
             super(module);
+            this.connection = module.getProject().getMessageBus().connect();
+            this.connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {
+                if (conn.getConsumer().getId().equalsIgnoreCase(module.getName())) {
+                    this.view().refreshChildren();
+                }
+            });
+        }
+
+        @Override
+        public void dispose() {
+            this.connection.disconnect();
+            super.dispose();
         }
     }
 
     private static class RootNode extends Node<Project> {
+        private final MessageBusConnection connection;
+
         public RootNode(@Nonnull Project project) {
             super(project);
-            final MessageBusConnection connection = project.getMessageBus().connect();
-            connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) () -> RootNode.this.view().refreshChildren());
-            connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> this.view().refreshChildren());
+            this.connection = project.getMessageBus().connect();
+            this.connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) () -> RootNode.this.view().refreshChildren());
+        }
+
+        @Override
+        public void dispose() {
+            this.connection.disconnect();
+            super.dispose();
         }
     }
 
@@ -106,9 +130,14 @@ public class ResourceConnectionExplorer extends Tree {
         public static final String ID = "Resource Connections";
 
         @Override
-        public boolean shouldBeAvailable(@NotNull Project project) {
-            final ConnectionManager cm = project.getService(ConnectionManager.class);
-            return cm.getConnections().size() > 0;
+        public boolean shouldBeAvailable(@Nonnull Project project) {
+            final List<Connection<?, ?>> connections = AzureModule.list(project).stream()
+                    .map(AzureModule::getDefaultProfile)
+                    .filter(Objects::nonNull)
+                    .map(Profile::getConnections)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            return CollectionUtils.isNotEmpty(connections);
         }
 
         @Override
@@ -116,7 +145,7 @@ public class ResourceConnectionExplorer extends Tree {
         @AzureOperation(name = "platform/connector.initialize_explorer")
         public void createToolWindowContent(final Project project, final com.intellij.openapi.wm.ToolWindow toolWindow) {
             final ToolWindow myToolWindow = new ToolWindow(project);
-            final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+            final ContentFactory contentFactory = ContentFactory.getInstance();
             final Content content = contentFactory.createContent(myToolWindow, "", false);
             toolWindow.getContentManager().addContent(content);
         }
@@ -129,8 +158,10 @@ public class ResourceConnectionExplorer extends Tree {
         public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
             final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowFactory.ID);
             assert toolWindow != null;
-            toolWindow.setAvailable(true);
-            AzureTaskManager.getInstance().runLater(() -> toolWindow.activate(null));
+            AzureTaskManager.getInstance().runLater(() -> {
+                toolWindow.setAvailable(true);
+                toolWindow.activate(null);
+            });
         }
     }
 }

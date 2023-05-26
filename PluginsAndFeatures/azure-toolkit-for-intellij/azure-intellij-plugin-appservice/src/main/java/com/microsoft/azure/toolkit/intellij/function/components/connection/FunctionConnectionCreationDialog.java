@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.function.components.connection;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -14,11 +13,12 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.intellij.function.connection.ConnectionTarget;
@@ -138,11 +138,17 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     protected void doOKAction() {
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
+        final Profile profile = Optional.ofNullable(AzureModule.from(module))
+                .map(AzureModule::getDefaultProfile).orElse(null);
+        if (profile == null) {
+            AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
+            return;
+        }
         this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
         connection.setEnvPrefix(txtConnectionName.getValue());
-        final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
-        final ResourceManager resourceManager = ApplicationManager.getApplication().getService(ResourceManager.class);
+        final ConnectionManager connectionManager = profile.getConnectionManager(true);
+        final ResourceManager resourceManager = profile.getResourceManager(true);
         if (connection.validate(this.project)) {
             resourceManager.addResource(resource);
             resourceManager.addResource(consumer);
@@ -150,7 +156,6 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
             final String message = String.format("The connection between %s and %s has been successfully created.",
                     resource.getName(), consumer.getName());
             AzureMessager.getMessager().success(message);
-            project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
         }
         super.doOKAction();
     }
