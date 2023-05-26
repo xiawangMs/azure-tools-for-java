@@ -165,7 +165,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final String sku = service.getSku();
         final boolean enterprise = service.isEnterpriseTier();
         final boolean consumption = service.isConsumptionTier();
-        final boolean basic = !enterprise && !consumption;
+        final boolean standard = service.isStandardTier();
+        final boolean basic = !enterprise && !consumption && !standard;
         this.useJava8.setVisible(!enterprise);
         this.useJava11.setVisible(!enterprise);
         this.useJava17.setVisible(!enterprise);
@@ -212,7 +213,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
         deploymentConfig.setCpu(numCpu.getItem());
         deploymentConfig.setMemoryInGB(numMemory.getItem());
-        deploymentConfig.setInstanceCount(numInstance.getValue());
+        deploymentConfig.setCapacity(numInstance.getValue());
         deploymentConfig.setJvmOptions(Optional.ofNullable(this.txtJvmOptions.getText()).map(String::trim).orElse(""));
         deploymentConfig.setEnvironment(Optional.ofNullable(envTable.getEnvironmentVariables()).orElse(new HashMap<>()));
         appConfig.setDeployment(deploymentConfig);
@@ -235,7 +236,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
 
         Optional.ofNullable(deployment.getCpu()).ifPresent(c -> this.numCpu.setItem(c));
         Optional.ofNullable(deployment.getMemoryInGB()).ifPresent(c -> this.numMemory.setItem(c));
-        this.numInstance.setValue(Optional.ofNullable(deployment.getInstanceCount()).orElse(0));
+        this.numInstance.setValue(Optional.ofNullable(deployment.getCapacity()).orElse(0));
     }
 
     @Nonnull
