@@ -43,13 +43,13 @@ public abstract class SqlDatabaseResourceDefinition<T extends IDatabase> extends
         resourceEle.setAttribute(new Attribute("id", resource.getId()));
         resourceEle.addContent(new Element("url").setText(resource.getJdbcUrl().toString()));
         resourceEle.addContent(new Element("username").setText(resource.getUsername()));
-        resourceEle.addContent(new Element("dataId").addContent(resource.getDataId()));
+        resourceEle.addContent(new Element("resourceId").addContent(resource.getDataId()));
         return true;
     }
 
     @Override
     public Resource<T> read(@Nonnull Element resourceEle) {
-        final String dataId = resourceEle.getChildTextTrim("dataId");
+        final String dataId = Optional.ofNullable(resourceEle.getChildTextTrim("resourceId")).orElse(resourceEle.getChildTextTrim("dataId"));
         final String url = resourceEle.getChildTextTrim("url");
         final String username = resourceEle.getChildTextTrim("username");
         if (StringUtils.isBlank(dataId)) {
