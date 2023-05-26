@@ -26,9 +26,12 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.RESOURCES_FILE;
 
 @Slf4j
 public class ResourceManager {
@@ -39,13 +42,14 @@ public class ResourceManager {
     private static final String ELEMENT_NAME_RESOURCES = "resources";
     private static final String ELEMENT_NAME_RESOURCE = "resource";
     private final Set<Resource<?>> resources = new LinkedHashSet<>();
+    @Nullable
     private final VirtualFile resourcesFile;
     @Getter
     private final Profile profile;
 
-    public ResourceManager(@Nonnull VirtualFile resourcesFile, @Nonnull final Profile profile) {
+    public ResourceManager(@Nonnull final Profile profile) {
         this.profile = profile;
-        this.resourcesFile = resourcesFile;
+        this.resourcesFile = this.profile.getProfileDir().findChild(RESOURCES_FILE);
         try {
             this.load();
         } catch (final Exception e) {
@@ -105,13 +109,14 @@ public class ResourceManager {
                 log.warn(String.format("error occurs when persist resource of type '%s'", resource.getDefinition().getName()), e);
             }
         });
-        JDOMUtil.write(resourcesEle, this.resourcesFile.toNioPath());
+        final VirtualFile resourcesFile = this.profile.getProfileDir().findOrCreateChildData(this, RESOURCES_FILE);
+        JDOMUtil.write(resourcesEle, resourcesFile.toNioPath());
     }
 
     @ExceptionNotification
     @AzureOperation(name = "user/connector.load_connection_resources")
     void load() throws Exception {
-        if (this.resourcesFile.contentsToByteArray().length < 1) {
+        if (Objects.isNull(this.resourcesFile) || this.resourcesFile.contentsToByteArray().length < 1) {
             return;
         }
         this.resources.clear();

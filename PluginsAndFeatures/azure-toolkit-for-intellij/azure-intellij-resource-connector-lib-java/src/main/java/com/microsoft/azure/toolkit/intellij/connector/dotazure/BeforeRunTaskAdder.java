@@ -48,8 +48,7 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
                 }
             } else {
                 final List<Connection<?, ?>> connections = AzureModule.list(project).stream().map(AzureModule::getDefaultProfile).filter(Objects::nonNull)
-                        .map(env -> env.getConnectionManager(false))
-                        .filter(Objects::nonNull)
+                        .map(Profile::getConnectionManager)
                         .map(ConnectionManager::getConnections)
                         .flatMap(List::stream).toList();
                 if (connections.stream().noneMatch(c -> c.isApplicableFor(config))) {
@@ -63,7 +62,7 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
     @ExceptionNotification
     public void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
         final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config).map(AzureModule::getDefaultProfile)
-                .map(env -> env.getConnectionManager(false))
+                .map(Profile::getConnectionManager)
                 .map(ConnectionManager::getConnections)
                 .orElse(Collections.emptyList());
         final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();

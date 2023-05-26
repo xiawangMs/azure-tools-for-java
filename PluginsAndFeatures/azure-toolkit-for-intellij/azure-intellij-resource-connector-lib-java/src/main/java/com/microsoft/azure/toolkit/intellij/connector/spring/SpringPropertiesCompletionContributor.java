@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -74,7 +75,7 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
             Optional.ofNullable(module).map(AzureModule::from)
-                    .map(AzureModule::getDefaultProfile).map(e -> e.getConnectionManager(true))
+                    .map(AzureModule::getDefaultProfile).map(Profile::getConnectionManager)
                     .ifPresent(connectionManager -> connectionManager
                             .getConnectionsByConsumerId(module.getName()).stream()
                             .filter(c -> Objects.equals(definition, c.getResource().getDefinition())).findAny()

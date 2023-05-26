@@ -144,8 +144,7 @@ public class ConnectionDefinition<R, C> {
         if (Objects.isNull(profile)) {
             return true;
         }
-        final Resource<R> existedResource = Optional.ofNullable(profile.getResourceManager(false))
-                .map(rm -> (Resource<R>)rm.getResourceById(resource.getId())).orElse(null);
+        final Resource<R> existedResource = (Resource<R>) profile.getResourceManager().getResourceById(resource.getId());
         if (Objects.nonNull(existedResource)) { // not new
             final R current = resource.getData();
             final R origin = existedResource.getData();

@@ -45,8 +45,8 @@ public class CreateApplicationInsightsResourceConnectionTask implements Task {
         if (Objects.isNull(profile)) {
             return;
         }
-        final ConnectionManager connectionManager = profile.getConnectionManager(true);
-        final ResourceManager resourceManager = profile.getResourceManager(true);
+        final ConnectionManager connectionManager = profile.getConnectionManager();
+        final ResourceManager resourceManager = profile.getResourceManager();
         final Connection connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
         if (connection.validate(this.project)) {

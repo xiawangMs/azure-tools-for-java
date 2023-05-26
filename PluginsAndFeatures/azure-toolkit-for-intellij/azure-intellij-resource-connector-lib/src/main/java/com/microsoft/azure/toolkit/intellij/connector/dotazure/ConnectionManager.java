@@ -25,8 +25,17 @@ import org.jdom.Element;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.CONNECTIONS_FILE;
 
 @Slf4j
 public class ConnectionManager {
@@ -38,13 +47,14 @@ public class ConnectionManager {
     public static final String FIELD_ID = "id";
     private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
+    @Nullable
     private final VirtualFile connectionsFile;
     @Getter
     private final Profile profile;
 
-    public ConnectionManager(@Nonnull VirtualFile connectionsFile, @Nonnull final Profile profile) {
+    public ConnectionManager(@Nonnull final Profile profile) {
         this.profile = profile;
-        this.connectionsFile = connectionsFile;
+        this.connectionsFile = this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
         try {
             this.load();
         } catch (final Exception e) {
@@ -77,8 +87,8 @@ public class ConnectionManager {
     @Nonnull
     public static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
         final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config)
-                .map(AzureModule::getDefaultProfile)
-                .map(e -> e.getConnectionManager(false))
+            .map(AzureModule::getDefaultProfile)
+            .map(Profile::getConnectionManager)
                 .map(ConnectionManager::getConnections).orElse(Collections.emptyList());
         return connections.stream().filter(c -> c.isApplicableFor(config)).collect(Collectors.toList());
     }
@@ -130,22 +140,20 @@ public class ConnectionManager {
             connection.write(connectionEle);
             connectionsEle.addContent(connectionEle);
         }
-        JDOMUtil.write(connectionsEle, this.connectionsFile.toNioPath());
+        final VirtualFile connectionFiles = this.profile.getProfileDir().findOrCreateChildData(this, CONNECTIONS_FILE);
+        JDOMUtil.write(connectionsEle, connectionFiles.toNioPath());
     }
 
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_resource_connections")
     void load() throws Exception {
-        if (this.connectionsFile.contentsToByteArray().length < 1) {
+        if (Objects.isNull(this.connectionsFile) || this.connectionsFile.contentsToByteArray().length < 1) {
             return;
         }
-        final Profile profile = this.getProfile();
-        final ResourceManager resourceManager = profile.getResourceManager(false);
-        if (Objects.isNull(resourceManager)) {
-            return;
-        }
-        this.connections.clear();
         final Element connectionsEle = JDOMUtil.load(this.connectionsFile.toNioPath());
+        final Profile profile = this.getProfile();
+        final ResourceManager resourceManager = profile.getResourceManager();
+        this.connections.clear();
         for (final Element connectionEle : connectionsEle.getChildren()) {
             final String name = connectionEle.getAttributeValue(FIELD_TYPE);
             final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);

@@ -18,10 +18,10 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import io.github.cdimascio.dotenv.internal.DotenvParser;
 import io.github.cdimascio.dotenv.internal.DotenvReader;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,8 +38,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
-import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.CONNECTIONS_FILE;
-import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.RESOURCES_FILE;
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.*;
 
 public class Profile {
     @Getter
@@ -47,31 +46,34 @@ public class Profile {
     private final String name;
     @Getter
     @Nonnull
-    private final VirtualFile dotEnvFile;
+    private final VirtualFile profileDir;
     @Nonnull
     private final AzureModule module;
+    @Getter
+    @Nullable
+    private VirtualFile dotEnvFile;
     @Nullable
     private ConnectionManager connectionManager;
     @Nullable
     private ResourceManager resourceManager;
 
-    public Profile(@Nonnull String name, @Nonnull VirtualFile dotEnvFile, @Nonnull AzureModule module) {
+    public Profile(@Nonnull String name, @Nonnull VirtualFile profileDir, @Nonnull AzureModule module) {
         this.name = name;
         this.module = module;
-        this.dotEnvFile = dotEnvFile;
-        final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-        final VirtualFile connectionsFile = dotAzureDir.findChild(CONNECTIONS_FILE);
-        final VirtualFile resourcesFile = dotAzureDir.findChild(RESOURCES_FILE);
+        this.profileDir = profileDir;
+        this.dotEnvFile = this.profileDir.findChild(DOT_ENV);
+        final VirtualFile connectionsFile = this.profileDir.findChild(CONNECTIONS_FILE);
+        final VirtualFile resourcesFile = this.profileDir.findChild(RESOURCES_FILE);
         if (Objects.nonNull(resourcesFile)) {
-            this.resourceManager = new ResourceManager(resourcesFile, this);
+            this.resourceManager = new ResourceManager(this);
         }
         if (Objects.nonNull(connectionsFile)) {
-            this.connectionManager = new ConnectionManager(connectionsFile, this);
+            this.connectionManager = new ConnectionManager(this);
         }
     }
 
     public List<Pair<String, String>> load() {
-        return load(this.dotEnvFile);
+        return Optional.ofNullable(this.dotEnvFile).map(Profile::load).orElseGet(Collections::emptyList);
     }
 
     public static List<Pair<String, String>> load(@Nonnull VirtualFile dotEnv) {
@@ -82,8 +84,8 @@ public class Profile {
 
     public synchronized Profile addConnection(@Nonnull Connection<?, ?> connection) {
         this.addConnectionToDotEnv(connection);
-        Optional.of(this.getResourceManager(true)).ifPresent(m -> m.addResource(connection.getResource()));
-        Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.addConnection(connection));
+        this.getResourceManager().addResource(connection.getResource());
+        this.getConnectionManager().addConnection(connection);
         final Project project = this.module.getProject();
         project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
         return this;
@@ -91,7 +93,7 @@ public class Profile {
 
     public synchronized Profile removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
-        Optional.of(this.getConnectionManager(true)).ifPresent(m -> m.removeConnection(connection));
+        this.getConnectionManager().removeConnection(connection);
         final Project project = this.module.getProject();
         project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
         return this;
@@ -111,17 +113,7 @@ public class Profile {
         try {
             this.connectionManager.save();
             this.resourceManager.save();
-            this.dotEnvFile.getParent().refresh(true, true);
-        } catch (final IOException e) {
-            throw new AzureToolkitRuntimeException(e);
-        }
-    }
-
-    private void createResourceConnectionFilesIfNot() {
-        try {
-            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-            final VirtualFile connectionsFile = dotAzureDir.findOrCreateChildData(this, CONNECTIONS_FILE);
-            final VirtualFile resourcesFile = dotAzureDir.findOrCreateChildData(this, RESOURCES_FILE);
+            this.profileDir.refresh(true, true);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
         }
@@ -139,6 +131,9 @@ public class Profile {
 
     @AzureOperation("boundary/remove_connection_from_dotenv")
     private void removeConnectionFromDotEnv(@Nonnull Connection<?, ?> connection) {
+        if (Objects.isNull(this.dotEnvFile)) {
+            return;
+        }
         try {
             final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
             final String startMark = "# connection.id=" + connection.getId();
@@ -161,14 +156,17 @@ public class Profile {
         }
     }
 
+    @SneakyThrows(IOException.class)
     @AzureOperation("boundary/add_connection_to_dotenv")
     private void addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
+        WriteAction.run(()-> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
+        Objects.requireNonNull(this.dotEnvFile, ".env file can not be created.");
         final AzureString description = OperationBundle.description("internal/dotazure.load_env.resource", connection.getResource().getDataId());
         AzureTaskManager.getInstance().runInBackground(description, () -> {
             final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
             try {
                 Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);
-                this.dotEnvFile.getParent().refresh(true, true);
+                this.profileDir.refresh(true, true);
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
@@ -176,47 +174,21 @@ public class Profile {
     }
 
     public List<Connection<?, ?>> getConnections() {
-        return Optional.ofNullable(this.getConnectionManager(false)).map(ConnectionManager::getConnections).orElseGet(Collections::emptyList);
+        return this.getConnectionManager().getConnections();
     }
 
-    @Nullable
-    @Contract("true->!null")
-    public synchronized ConnectionManager getConnectionManager(boolean createIfNotExist) {
+    @Nonnull
+    public synchronized ConnectionManager getConnectionManager() {
         if (Objects.isNull(this.connectionManager)) {
-            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-            if (createIfNotExist) {
-                try {
-                    final VirtualFile connectionsFile = WriteAction.compute(() -> dotAzureDir.findOrCreateChildData(this, CONNECTIONS_FILE));
-                    this.connectionManager = new ConnectionManager(connectionsFile, this);
-                } catch (final IOException e) {
-                    throw new AzureToolkitRuntimeException(e);
-                }
-            } else {
-                this.connectionManager = Optional.ofNullable(dotAzureDir.findChild(CONNECTIONS_FILE))
-                    .map(file -> new ConnectionManager(file, this))
-                    .orElse(null);
-            }
+            this.connectionManager = new ConnectionManager(this);
         }
         return this.connectionManager;
     }
 
-    @Nullable
-    @Contract("true->!null")
-    public synchronized ResourceManager getResourceManager(boolean createIfNotExist) {
+    @Nonnull
+    public synchronized ResourceManager getResourceManager() {
         if (Objects.isNull(this.resourceManager)) {
-            final VirtualFile dotAzureDir = this.dotEnvFile.getParent();
-            if (createIfNotExist) {
-                try {
-                    final VirtualFile resourcesFile = WriteAction.compute(() -> dotAzureDir.findOrCreateChildData(this, RESOURCES_FILE));
-                    this.resourceManager = new ResourceManager(resourcesFile, this);
-                } catch (final IOException e) {
-                    throw new AzureToolkitRuntimeException(e);
-                }
-            } else {
-                this.resourceManager = Optional.ofNullable(dotAzureDir.findChild(RESOURCES_FILE))
-                    .map(file -> new ResourceManager(file, this))
-                    .orElse(null);
-            }
+            this.resourceManager = new ResourceManager(this);
         }
         return this.resourceManager;
     }

@@ -70,8 +70,8 @@ public class AzureModule {
         final Element profilesEle = JDOMUtil.load(Objects.requireNonNull(profilesXmlFile).toNioPath());
         final VirtualFile dotAzure = Objects.requireNonNull(this.dotAzure);
         profilesEle.getChildren().stream().map(e -> e.getAttributeValue("name"))
-            .forEach(name -> Optional.ofNullable(this.dotAzure).map(d -> d.findChild(name)).map(d -> d.findChild(DOT_ENV))
-                .map(dotEnv -> new Profile(name, dotEnv, this))
+            .forEach(name -> Optional.ofNullable(this.dotAzure).map(d -> d.findChild(name))
+                .map(profileDir -> new Profile(name, profileDir, this))
                 .ifPresent(profile -> this.profiles.put(profile.getName(), profile)));
         this.defaultProfile = Optional.ofNullable(profilesEle.getAttributeValue(ATTR_DEFAULT_PROFILE)).map(this.profiles::get).orElse(null);
     }
@@ -127,8 +127,7 @@ public class AzureModule {
         return this.profiles.computeIfAbsent(profileName, name -> Optional
             .ofNullable(this.dotAzure)
             .map(dotAzure -> dotAzure.findChild(profileName))
-            .map(envDir -> envDir.findChild(DOT_ENV))
-            .map(dotEnv -> new Profile(name, dotEnv, this)).orElse(null));
+            .map(profileDir -> new Profile(name, profileDir, this)).orElse(null));
     }
 
     @Nonnull
@@ -136,9 +135,8 @@ public class AzureModule {
         this.validate();
         return this.profiles.computeIfAbsent(profileName, name -> {
             try {
-                final VirtualFile envDir = VfsUtil.createDirectoryIfMissing(this.dotAzure, profileName);
-                final VirtualFile dotEnv = envDir.findOrCreateChildData(this, DOT_ENV);
-                final Profile profile = new Profile(name, dotEnv, this);
+                final VirtualFile profileDir = VfsUtil.createDirectoryIfMissing(this.dotAzure, profileName);
+                final Profile profile = new Profile(name, profileDir, this);
                 this.registerProfile(profile);
                 return profile;
             } catch (final IOException e) {
