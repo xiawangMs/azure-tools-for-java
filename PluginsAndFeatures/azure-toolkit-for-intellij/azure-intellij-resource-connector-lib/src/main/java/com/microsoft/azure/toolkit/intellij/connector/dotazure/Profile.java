@@ -129,39 +129,39 @@ public class Profile {
         return lines;
     }
 
-    @AzureOperation(value = "boundary/remove_connection_from_dotenv.resource", params = "connection.getResource().getName()")
+    @SneakyThrows(IOException.class)
+    @AzureOperation(value = "boundary/connector.remove_connection_from_dotenv.resource", params = "connection.getResource().getName()")
     private void removeConnectionFromDotEnv(@Nonnull Connection<?, ?> connection) {
-        if (Objects.isNull(this.dotEnvFile)) {
-            return;
+        if (Objects.isNull(this.dotEnvFile) || !this.dotEnvFile.isValid()) {
+            throw new AzureToolkitRuntimeException(String.format("'.azure/%s/.env' doesn't exist.", this.name));
         }
-        try {
-            final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
-            final String startMark = "# connection.id=" + connection.getId();
-            boolean started = false;
-            final Iterator<String> each = lines.iterator();
-            while (each.hasNext()) {
-                final String line = each.next();
-                started = started || line.equalsIgnoreCase(startMark);
-                final boolean ended = started && !line.equalsIgnoreCase(startMark) && (StringUtils.isBlank(line.trim()) || line.trim().startsWith("# connection.id="));
-                if (started && (!ended || StringUtils.isBlank(line.trim()))) {
-                    each.remove();
-                }
-                if (ended) {
-                    break;
-                }
+        final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
+        final String startMark = "# connection.id=" + connection.getId();
+        boolean started = false;
+        final Iterator<String> each = lines.iterator();
+        while (each.hasNext()) {
+            final String line = each.next();
+            started = started || line.equalsIgnoreCase(startMark);
+            final boolean ended = started && !line.equalsIgnoreCase(startMark) && (StringUtils.isBlank(line.trim()) || line.trim().startsWith("# connection.id="));
+            if (started && (!ended || StringUtils.isBlank(line.trim()))) {
+                each.remove();
             }
-            FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8);
-        } catch (final IOException e) {
-            throw new AzureToolkitRuntimeException(e);
+            if (ended) {
+                break;
+            }
         }
+        FileUtils.write(this.dotEnvFile.toNioPath().toFile(), lines.stream().collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator(), StandardCharsets.UTF_8);
     }
 
     @SneakyThrows(IOException.class)
-    @AzureOperation(value = "boundary/add_connection_to_dotenv.resource", params = "connection.getResource().getName()")
+    @AzureOperation(value = "boundary/connector.add_connection_to_dotenv.resource", params = "connection.getResource().getName()")
     private void addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
-        WriteAction.run(()-> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
-        Objects.requireNonNull(this.dotEnvFile, ".env file can not be created.");
-        final AzureString description = OperationBundle.description("internal/dotazure.load_env.resource", connection.getResource().getDataId());
+        if (!this.profileDir.isValid()) {
+            throw new AzureToolkitRuntimeException(String.format("'.azure/%s' doesn't exist.", this.name));
+        }
+        WriteAction.run(() -> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
+        Objects.requireNonNull(this.dotEnvFile, String.format("'.azure/%s/.env' can not be created.", this.name));
+        final AzureString description = OperationBundle.description("boundary/connector.load_env.resource", connection.getResource().getDataId());
         AzureTaskManager.getInstance().runInBackground(description, () -> {
             final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
             try {
