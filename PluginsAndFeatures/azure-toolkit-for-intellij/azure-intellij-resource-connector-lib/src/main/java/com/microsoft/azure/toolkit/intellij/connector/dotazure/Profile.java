@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -86,6 +87,8 @@ public class Profile {
         this.addConnectionToDotEnv(connection);
         this.getResourceManager().addResource(connection.getResource());
         this.getConnectionManager().addConnection(connection);
+        final String message = String.format("The connection between %s and %s has been successfully created/updated.", connection.getResource().getName(), connection.getConsumer().getName());
+        AzureMessager.getMessager().success(message);
         final Project project = this.module.getProject();
         project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
         return this;

@@ -123,8 +123,6 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         final Resource<?> consumer = connection.getConsumer();
         if (connection.validate(this.project)) {
             saveConnectionToDotAzure(connection, consumer);
-            final String message = String.format("The connection between %s and %s has been successfully created/updated.", resource.getName(), consumer.getName());
-            AzureMessager.getMessager().success(message);
         }
     }
 
