@@ -35,6 +35,9 @@ public class MigrateStartupActivity implements StartupActivity {
 
     @AzureOperation(name = "platform/connector.migrate_from_deprecated")
     private static void migrate(@Nonnull Project project) {
+        if (project.isDisposed()) {
+            return;
+        }
         final ModuleManager moduleManager = ModuleManager.getInstance(project);
         final ConnectionManager manager = project.getService(ConnectionManager.class);
         final Map<String, List<Connection<?, ?>>> moduleConnections = manager
