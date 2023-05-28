@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -59,6 +60,7 @@ public class AzuriteTaskAdder implements RunManagerListener, ConnectionTopics.Co
     }
 
     public static boolean isAzuriteResourceConnection(@Nonnull final Connection<?, ?> connection) {
-        return connection.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition && connection.getResource().getData() instanceof AzuriteStorageAccount;
+        return connection.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition &&
+                StringUtils.equalsIgnoreCase(connection.getResource().getDataId(), AzuriteStorageAccount.AZURITE_RESOURCE_ID);
     }
 }
