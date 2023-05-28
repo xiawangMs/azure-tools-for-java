@@ -103,21 +103,21 @@ public class StorageActionsContributor implements IActionsContributor {
                     copyContentToClipboard(r.getConnectionString());
                     AzureMessager.getMessager().info("Connection string copied");
                 })
-                .setAuthRequired(false)
+                .withAuthRequired(false)
                 .register(am);
 
         new Action<>(START_AZURITE)
                 .withLabel("Start Azurite")
                 .visibleWhen(s -> s instanceof AzuriteStorageAccount)
                 .enableWhen(s -> !s.getFormalStatus(true).isRunning())
-                .setAuthRequired(false)
+                .withAuthRequired(false)
                 .register(am);
 
         new Action<>(STOP_AZURITE)
                 .withLabel("Stop Azurite")
                 .visibleWhen(s -> s instanceof AzuriteStorageAccount)
                 .enableWhen(s -> s.getFormalStatus(true).isRunning())
-                .setAuthRequired(false)
+                .withAuthRequired(false)
                 .register(am);
 
         new Action<>(COPY_PRIMARY_KEY)
@@ -139,7 +139,7 @@ public class StorageActionsContributor implements IActionsContributor {
                     copyContentToClipboard(resource.getKey());
                     AzureMessager.getMessager().info("Primary key copied");
                 })
-                .setAuthRequired(false)
+                .withAuthRequired(false)
                 .register(am);
 
         new Action<>(OPEN_FILE)
