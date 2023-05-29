@@ -44,7 +44,7 @@ allprojects {
     ext {
         azureToolkitLibsVersion = "0.33.0"
         azureToolkitIdeLibsVersion = "0.33.0"
-        azureToolkitUtilsVersion = "3.77.0"
+        azureToolkitUtilsVersion = "3.78.0-SNAPSHOT"
     }
 
     dependencyManagement {
