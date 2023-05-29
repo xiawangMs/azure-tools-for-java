@@ -42,9 +42,9 @@ allprojects {
     }
 
     ext {
-        azureToolkitLibsVersion = "0.33.0-SNAPSHOT"
-        azureToolkitIdeLibsVersion = "0.33.0-SNAPSHOT"
-        azureToolkitUtilsVersion = "3.77.0-SNAPSHOT"
+        azureToolkitLibsVersion = "0.33.0"
+        azureToolkitIdeLibsVersion = "0.33.0"
+        azureToolkitUtilsVersion = "3.77.0"
     }
 
     dependencyManagement {
