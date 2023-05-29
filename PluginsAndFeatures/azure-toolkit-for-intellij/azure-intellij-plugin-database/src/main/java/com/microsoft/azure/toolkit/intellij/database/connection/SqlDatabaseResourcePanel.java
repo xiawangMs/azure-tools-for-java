@@ -70,7 +70,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     private void init() {
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
-        testConnectionButton.setEnabled(true);
+        testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
         // username loader
         this.usernameComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() :
             Collections.singletonList(this.databaseComboBox.getServer().getFullAdminName()));
@@ -91,6 +91,9 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     }
 
     private void onTestConnectionButtonClicked(ActionEvent e) {
+        if (Objects.isNull(this.jdbcUrl)) {
+            return;
+        }
         testConnectionButton.setEnabled(false);
         testConnectionButton.setIcon(new AnimatedIcon.Default());
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
@@ -150,6 +153,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
             this.jdbcUrl = Optional.ofNullable((IDatabase) e.getItem()).map(IDatabase::getJdbcUrl).orElse(null);
             this.urlTextField.setText(Optional.ofNullable(this.jdbcUrl).map(JdbcUrl::toString).orElse(""));
             this.urlTextField.setCaretPosition(0);
+            this.testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
         }
     }
 
@@ -159,6 +163,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
             this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(),
                 IDatabaseServer::getFullyQualifiedDomainName));
             this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getDatabase(), IDatabase::getName));
+            this.testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
         } catch (final Exception exception) {
             // TODO: messager.warning(...)
         }
