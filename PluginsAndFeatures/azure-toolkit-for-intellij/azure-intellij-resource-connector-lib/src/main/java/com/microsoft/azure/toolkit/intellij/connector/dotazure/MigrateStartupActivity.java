@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
@@ -32,7 +33,11 @@ public class MigrateStartupActivity implements StartupActivity {
         }
     }
 
+    @AzureOperation(name = "platform/connector.migrate_from_deprecated")
     private static void migrate(@Nonnull Project project) {
+        if (project.isDisposed()) {
+            return;
+        }
         final ModuleManager moduleManager = ModuleManager.getInstance(project);
         final ConnectionManager manager = project.getService(ConnectionManager.class);
         final Map<String, List<Connection<?, ?>>> moduleConnections = manager

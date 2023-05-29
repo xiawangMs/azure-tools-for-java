@@ -81,6 +81,7 @@ public class ResourceManager {
             .collect(Collectors.toList());
     }
 
+    @AzureOperation("internal/connector.add_resource")
     public synchronized void addResource(Resource<?> resource) {
         resources.remove(resource);
         resources.add(resource);
@@ -95,7 +96,7 @@ public class ResourceManager {
     }
 
     @ExceptionNotification
-    @AzureOperation(name = "platform/connector.persist_connection_resources")
+    @AzureOperation("boundary/connector.save_resources")
     void save() throws IOException {
         final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
         this.resources.forEach(resource -> {
@@ -114,7 +115,7 @@ public class ResourceManager {
     }
 
     @ExceptionNotification
-    @AzureOperation(name = "user/connector.load_connection_resources")
+    @AzureOperation(name = "boundary/connector.load_resources")
     void load() throws Exception {
         if (Objects.isNull(this.resourcesFile) || this.resourcesFile.contentsToByteArray().length < 1) {
             return;

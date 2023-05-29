@@ -108,12 +108,12 @@ public class ConnectionManager {
         return String.format("%s:%s", rd.getName(), cd.getName());
     }
 
-    @AzureOperation(name = "user/connector.add_connection")
+    @AzureOperation(name = "internal/connector.add_connection")
     public synchronized void addConnection(Connection<?, ?> connection) {
         connections.add(connection);
     }
 
-    @AzureOperation(name = "user/connector.remove_connection")
+    @AzureOperation(name = "internal/connector.remove_connection")
     public synchronized void removeConnection(Connection<?, ?> connection) {
         connections.removeIf(c -> StringUtils.equals(connection.getId(), c.getId()));
     }
@@ -131,6 +131,7 @@ public class ConnectionManager {
     }
 
     @ExceptionNotification
+    @AzureOperation(name = "boundary/connector.save_connections")
     void save() throws IOException {
         final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
         for (final Connection<?, ?> connection : this.connections) {
@@ -145,7 +146,7 @@ public class ConnectionManager {
     }
 
     @ExceptionNotification
-    @AzureOperation(name = "boundary/connector.load_resource_connections")
+    @AzureOperation(name = "boundary/connector.load_connections")
     void load() throws Exception {
         if (Objects.isNull(this.connectionsFile) || this.connectionsFile.contentsToByteArray().length < 1) {
             return;

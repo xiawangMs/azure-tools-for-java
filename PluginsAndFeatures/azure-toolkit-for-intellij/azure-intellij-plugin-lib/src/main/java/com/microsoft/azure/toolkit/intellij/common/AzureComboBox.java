@@ -279,7 +279,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
 
     @Override
     public boolean isEnabled() {
-        return !this.loading && (this.enabled || super.isEnabled());
+        return !this.loading && this.enabled;
     }
 
     protected String getItemText(Object item) {
