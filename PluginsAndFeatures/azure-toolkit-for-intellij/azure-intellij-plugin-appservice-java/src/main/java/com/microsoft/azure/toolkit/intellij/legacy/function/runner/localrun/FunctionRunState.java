@@ -351,7 +351,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         final String webJobStorage = appSettings.get(AZURE_WEB_JOB_STORAGE_KEY);
         if (StringUtils.isEmpty(webJobStorage) && isWebJobStorageRequired(functionBindingList)) {
             // show resource connection dialog for web job storage
-            AzureTaskManager.getInstance().runAndWait(() -> addUpMissingConnections(appSettings, AZURE_WEB_JOB_STORAGE_KEY, "Storage",
+            AzureTaskManager.getInstance().runAndWait(() -> addMissingConnection(appSettings, AZURE_WEB_JOB_STORAGE_KEY, "Storage",
                     CONNECTION_DESCRIPTION, CONNECTION_TITLE, AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE));
         }
         // todo: @hanli, check whether there are connections refered in function binding list but not defined in app settings
@@ -361,7 +361,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             name = "internal/function.add_missing_connection.name",
             params = {"connectionName"}
     )
-    private void addUpMissingConnections(@Nonnull final Map<String, String> appSettings, @Nonnull final String connectionName, @Nonnull final String resourceType
+    private void addMissingConnection(@Nonnull final Map<String, String> appSettings, @Nonnull final String connectionName, @Nonnull final String resourceType
             , @Nonnull final String description, @Nonnull final String title, @Nullable final String connectionHelpTopic) {
         final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), resourceType, connectionHelpTopic);
         dialog.setTitle(title);
@@ -370,7 +370,10 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         dialog.setOKActionText("Connect");
         if (dialog.showAndGet()) {
             // update app settings
-            saveConnection(dialog.getConnection(), appSettings);
+            final Connection<?, ?> connection = dialog.getConnection();
+            if (Objects.nonNull(connection)) {
+                saveConnection(connection, appSettings);
+            }
         }
     }
 
@@ -379,12 +382,10 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
     )
     private void saveConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final Map<String, String> appSettings) {
-        if (Objects.nonNull(connection)) {
-            appSettings.putAll(connection.getEnvironmentVariables(project));
-            // start azurite if azurite connection is added
-            if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
-                AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
-            }
+        appSettings.putAll(connection.getEnvironmentVariables(project));
+        // start azurite if azurite connection is added
+        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
+            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
         }
     }
 
