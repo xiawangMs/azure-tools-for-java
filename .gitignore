@@ -109,4 +109,5 @@ fabric.properties
 pom.xml.versionsBackup
 
 # Bicep Language Server
-PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/binaries/bicep/bicep-langserver
+**/bicep-langserver/**
+**/azure-intellij-plugin-bicep/downloaded.zip

@@ -13,11 +13,12 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -32,19 +33,23 @@ import java.util.Optional;
  * it's usually An Azure resource or an intellij module
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class AzureServiceResource<T extends AzResourceBase> implements Resource<T> {
+public class AzureServiceResource<T extends AzResource> implements Resource<T> {
     @Nonnull
     private final ResourceId id;
     @Getter
     @Nonnull
     private final AzureServiceResource.Definition<T> definition;
     private T data;
+    @Getter
+    @Setter
+    private String connectionId;
 
     public AzureServiceResource(@Nonnull T data, @Nonnull AzureServiceResource.Definition<T> definition) {
         this(data.getId(), definition);
         this.data = data;
     }
 
+    @Deprecated
     public AzureServiceResource(@Nonnull String id, @Nonnull AzureServiceResource.Definition<T> definition) {
         this.id = ResourceId.fromString(id);
         this.definition = definition;
@@ -101,7 +106,7 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
     @Getter
     @RequiredArgsConstructor
     @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-    public abstract static class Definition<T extends AzResourceBase> implements ResourceDefinition<T> {
+    public abstract static class Definition<T extends AzResource> implements ResourceDefinition<T> {
         @EqualsAndHashCode.Include
         private final String name;
         private final String title;
@@ -112,6 +117,7 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
             return new AzureServiceResource<>(resource, this);
         }
 
+        @Deprecated
         public Resource<T> define(String dataId) {
             return new AzureServiceResource<>(dataId, this);
         }
@@ -121,13 +127,13 @@ public class AzureServiceResource<T extends AzResourceBase> implements Resource<
         @Override
         public boolean write(@Nonnull Element ele, @Nonnull Resource<T> resource) {
             ele.setAttribute(new Attribute("id", resource.getId()));
-            ele.addContent(new Element("dataId").addContent(resource.getDataId()));
+            ele.addContent(new Element("resourceId").addContent(resource.getDataId()));
             return true;
         }
 
         @Override
         public Resource<T> read(@Nonnull Element ele) {
-            final String id = ele.getChildTextTrim("dataId");
+            final String id = Optional.ofNullable(ele.getChildTextTrim("resourceId")).orElse(ele.getChildTextTrim("dataId"));
             return Optional.ofNullable(id).map(this::define).orElse(null);
         }
 

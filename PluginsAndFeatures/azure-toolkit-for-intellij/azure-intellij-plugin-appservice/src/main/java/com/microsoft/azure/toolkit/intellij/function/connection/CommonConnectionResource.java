@@ -99,7 +99,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
         public boolean write(@Nonnull Element element, @Nonnull Resource<ConnectionTarget> resource) {
             final ConnectionTarget target = resource.getData();
             element.setAttribute(new Attribute("id", resource.getId()));
-            element.addContent(new Element("dataId").addContent(resource.getDataId()));
+            element.addContent(new Element("resourceId").addContent(resource.getDataId()));
             element.addContent(new Element("name").addContent(target.getName()));
             IntelliJSecureStore.getInstance().savePassword(Definition.class.getName(), resource.getDataId(), null, target.getConnectionString());
             return true;
@@ -107,7 +107,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
 
         @Override
         public Resource<ConnectionTarget> read(@Nonnull Element element) {
-            final String id = element.getChildTextTrim("dataId");
+            final String id = Optional.ofNullable(element.getChildTextTrim("resourceId")).orElse(element.getChildTextTrim("dataId"));
             final String name = element.getChildTextTrim("name");
             final String triggerType = element.getChildTextTrim("triggerType");
             final String connectionString = IntelliJSecureStore.getInstance().loadPassword(Definition.class.getName(), id, null);

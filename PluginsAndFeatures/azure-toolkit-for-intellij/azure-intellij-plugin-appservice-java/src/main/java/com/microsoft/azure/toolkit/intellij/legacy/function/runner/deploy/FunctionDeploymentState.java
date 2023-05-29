@@ -10,8 +10,9 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
-import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
@@ -28,8 +29,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionCo
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +38,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition.LOCAL_STORAGE_CONNECTION_STRING;
 
 
 public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBase<?, ?, ?>> {
@@ -97,14 +98,14 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
     }
 
     private void applyResourceConnection() {
-        if (CollectionUtils.isEmpty(functionDeployConfiguration.getConnections())) {
-            return;
+        if (functionDeployConfiguration.isConnectionEnabled()) {
+            final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionDeployConfiguration.getLoadDotEnvBeforeRunTask();
+            final Map<String, String> appSettings = functionDeployConfiguration.getConfig().getAppSettings();
+            loadDotEnvBeforeRunTask.loadEnv().stream()
+                    .filter(pair -> StringUtils.equalsIgnoreCase(pair.getKey(), "AzureWebJobsStorage") &&
+                            StringUtils.equalsIgnoreCase(pair.getValue(), LOCAL_STORAGE_CONNECTION_STRING)) // remove connection string for azurite
+                    .forEach(env -> appSettings.put(env.getKey(), env.getValue()));
         }
-        functionDeployConfiguration.getConnections().stream()
-                .filter(connection -> connection.getResource().getDefinition() instanceof FunctionSupported)
-                .forEach(connection -> ((FunctionSupported) connection.getResource().getDefinition())
-                        .getPropertiesForFunction(connection.getResource().getData(), connection)
-                        .forEach((key, value) -> functionDeployConfiguration.getConfig().getAppSettings().put(key.toString(), value.toString())));
     }
 
     @AzureOperation(name = "boundary/function.prepare_staging_folder.folder|app", params = {"stagingFolder.getName()", "this.deployModel.getFunctionAppConfig().getName()"})

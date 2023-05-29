@@ -5,7 +5,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.77.0-SNAPSHOT</version>
+        <version>3.77.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
@@ -135,22 +135,6 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-mgmt-resources</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-mgmt-compute</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-mgmt-network</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-mgmt-storage</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
             <exclusions>
                 <exclusion>
@@ -166,7 +150,6 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
-            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -193,6 +176,10 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-compute-lib</artifactId>
         </dependency>
     </dependencies>
 </project>

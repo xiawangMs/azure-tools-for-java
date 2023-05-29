@@ -7,10 +7,13 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -19,12 +22,11 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-
-import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
+import java.util.Optional;
 
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("user/connector.refresh_connections");
-    public static final Action.Id<Module> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
+    public static final Action.Id<AzureModule> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
     public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("user/connector.edit_connection");
     public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("user/connector.remove_connection");
     public static final String MODULE_ACTIONS = "actions.connector.module";
@@ -37,14 +39,16 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withIcon(AzureIcons.Action.REFRESH.getIconPath())
             .withHandler((project, e) -> refreshConnections((AnActionEvent) e))
             .withShortcut(am.getIDEDefaultShortcuts().refresh())
+            .withAuthRequired(false)
             .register(am);
 
         new Action<>(ADD_CONNECTION)
             .withLabel("Add")
             .withIcon(AzureIcons.Action.ADD.getIconPath())
-            .visibleWhen(m -> m instanceof Module)
+            .visibleWhen(m -> m instanceof AzureModule)
             .withHandler((m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject()))
             .withShortcut(am.getIDEDefaultShortcuts().add())
+            .withAuthRequired(false)
             .register(am);
 
         new Action<>(EDIT_CONNECTION)
@@ -53,6 +57,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .visibleWhen(m -> m instanceof Connection<?, ?>)
             .withHandler((c, e) -> openDialog(c, ((AnActionEvent) e).getProject()))
             .withShortcut(am.getIDEDefaultShortcuts().edit())
+            .withAuthRequired(false)
             .register(am);
 
         new Action<>(REMOVE_CONNECTION)
@@ -68,8 +73,11 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     @AzureOperation(value = "user/connector.remove_connection.resource", params = "connection.getResource()")
     private static void removeConnection(Connection<?, ?> connection, AnActionEvent e) {
         final Project project = Objects.requireNonNull(e.getProject());
-        project.getService(ConnectionManager.class).removeConnection(connection.getResource().getId(), connection.getConsumer().getId());
-        project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
+        final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
+        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(module).map(AzureModule::from)
+            .map(AzureModule::getDefaultProfile)
+            .map(env -> env.removeConnection(connection))
+            .ifPresent(Profile::save));
     }
 
     @AzureOperation("user/connector.refresh_connections")

@@ -5,7 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBLabel;
@@ -15,9 +16,13 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 
@@ -53,12 +58,15 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
 
+    private Connection<?,?> connection;
+
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
 
     public ConnectorDialog(Project project) {
         super(project);
         this.project = project;
+        $$$setupUI$$$();
         this.init();
     }
 
@@ -110,23 +118,28 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (connection == null) {
             return;
         }
-        AzureTaskManager.getInstance().runLater(() -> {
-            this.close(0);
-            final Resource<?> resource = connection.getResource();
-            final Resource<?> consumer = connection.getConsumer();
-            final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
-            final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            if (connection.validate(this.project)) {
-                resourceManager.addResource(resource);
-                resourceManager.addResource(consumer);
-                connectionManager.addConnection(connection);
-                final String message = String.format("The connection between %s and %s has been successfully created.",
-                    resource.getName(), consumer.getName());
-                AzureMessager.getMessager().success(message);
-                project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
+        this.close(0);
+        final Resource<?> resource = connection.getResource();
+        final Resource<?> consumer = connection.getConsumer();
+        if (connection.validate(this.project)) {
+            saveConnectionToDotAzure(connection, consumer);
+        }
+    }
 
+    @AzureOperation(
+        name = "user/connector.create_or_update_connection.consumer|resource",
+        params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
+    )
+    private void saveConnectionToDotAzure(Connection<?, ?> connection, Resource<?> consumer) {
+        if (consumer instanceof ModuleResource) {
+            final ModuleManager moduleManager = ModuleManager.getInstance(project);
+            final Module m = moduleManager.findModuleByName(consumer.getName());
+            if (Objects.nonNull(m)) {
+                final AzureModule module = AzureModule.from(m);
+                final AzureTaskManager taskManager = AzureTaskManager.getInstance();
+                taskManager.write(() -> module.initializeWithDefaultProfileIfNot().createOrUpdateConnection(connection).save());
             }
-        });
+        }
     }
 
     @Override
@@ -151,7 +164,16 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (Objects.isNull(resource) || Objects.isNull(consumer)) {
             return null;
         }
-        final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
+        final ConnectionDefinition<?, ?> connectionDefinition = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef);
+        final Connection connection;
+        if (Objects.isNull(this.connection)) {
+            connection = connectionDefinition.define(resource, consumer);
+        } else {
+            connection = this.connection;
+            connection.setResource(resource);
+            connection.setConsumer(consumer);
+            connection.setDefinition(connectionDefinition);
+        }
         connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         return connection;
     }
@@ -161,6 +183,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.setConsumer(connection.getConsumer());
         this.setResource(connection.getResource());
         this.envPrefixTextField.setText(connection.getEnvPrefix());
+        this.connection = connection;
     }
 
     @Override
@@ -248,5 +271,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
                 return Collections.emptyList();
             }
         };
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 }

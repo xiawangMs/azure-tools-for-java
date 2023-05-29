@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
@@ -28,6 +29,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated use {@link com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager} instead
+ */
+@Deprecated
 public interface ConnectionManager extends PersistentStateComponent<Element> {
     @Nonnull
     static ArrayList<ConnectionDefinition<?, ?>> getDefinitions() {
@@ -42,6 +47,12 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             final ResourceDefinition<?> cd = ResourceManager.getDefinition(split[1]);
             return new ConnectionDefinition<>(rd, cd);
         });
+    }
+
+    @Nonnull
+    static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
+        final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+        return connections.stream().filter(c -> c.isApplicableFor(config)).collect(Collectors.toList());
     }
 
     @Nonnull
@@ -136,7 +147,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
                 final String name = connectionEle.getAttributeValue(FIELD_TYPE);
                 final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
                 try {
-                    Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(this::addConnection);
+                    Optional.ofNullable(definition).map(d -> d.readDeprecatedConnection(connectionEle)).ifPresent(this::addConnection);
                 } catch (final Exception e) {
                     log.warn(String.format("error occurs when load a resource connection of type '%s'", name), e);
                 }
