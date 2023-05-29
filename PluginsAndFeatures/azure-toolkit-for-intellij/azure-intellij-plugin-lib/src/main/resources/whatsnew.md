@@ -1,6 +1,14 @@
 <!-- Version: 3.76.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.77.0
+### Fixed
+- Fix : Failed to upload Spark application artifacts in IntelliJ 2023.1.
+- Fix : Local run and remote run failed, only repro in IntelliJ 2022.3.
+- Fix : Show Failed to proceed after clicking on storage account node.
+- Fix : Apache Spark on Azure Synapse\Apache Spark on Cosmos\SQL Server Big Data Cluster cannot be listed.
+- Fix : Load cluster show errors.
+
 ## 3.76.0
 ### Added
 - Basic resource management support for service connections
