@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.77.0](#3770)
   - [3.76.0](#3760)
   - [3.75.0](#3750)
   - [3.74.0](#3740)
@@ -95,6 +96,14 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.77.0
+### Fixed
+- Fix : Failed to upload Spark application artifacts in IntelliJ 2023.1.
+- Fix : Local run and remote run failed, only repro in IntelliJ 2022.3.
+- Fix : Show Failed to proceed after clicking on storage account node.
+- Fix : Apache Spark on Azure Synapse\Apache Spark on Cosmos\SQL Server Big Data Cluster cannot be listed.
+- Fix : Load cluster show errors.
 
 ## 3.76.0
 ### Added
