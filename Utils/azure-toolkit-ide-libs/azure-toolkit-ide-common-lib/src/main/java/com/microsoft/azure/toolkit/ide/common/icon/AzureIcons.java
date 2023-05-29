@@ -165,6 +165,7 @@ public final class AzureIcons {
 
     public static final class StorageAccount {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/default.svg").build();
+        public static final AzureIcon AZURITE = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/azurite/default.svg").build();
         public static final AzureIcon CONTAINERS = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/containers/default.svg").build();
         public static final AzureIcon SHARES = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/shares/default.svg").build();
         public static final AzureIcon QUEUES = AzureIcon.builder().iconPath("/icons/Microsoft.Storage/storageAccounts/queues/default.svg").build();

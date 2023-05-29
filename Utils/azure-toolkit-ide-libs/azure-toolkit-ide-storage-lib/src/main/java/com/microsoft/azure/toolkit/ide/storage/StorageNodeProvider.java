@@ -7,13 +7,11 @@ package com.microsoft.azure.toolkit.ide.storage;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.*;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
@@ -28,10 +26,12 @@ import org.apache.commons.io.FilenameUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class StorageNodeProvider implements IExplorerNodeProvider {
@@ -61,7 +61,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
                 .addChildren(ignore -> service.accounts(true), (account, storageNode) -> this.createNode(account, storageNode, manager));
         } else if (data instanceof AzuriteStorageAccount) {
             final AzuriteStorageAccount account = (AzuriteStorageAccount) data;
-            return new Node<>(account).view(new AzureResourceLabelView<>(account))
+            return new Node<>(account).view(new AzureResourceLabelView<AzuriteStorageAccount>(account, AzuriteStorageAccount::getStatus, StorageNodeProvider::getAzuriteIcon))
                 .actions(StorageActionsContributor.AZURITE_ACTIONS)
                 .addChildren(s -> s.getSubModules().stream().filter(Objects::nonNull).collect(Collectors.toList()), (module, p) -> new Node<>(module)
                     .view(new AzureModuleLabelView<>(module, module.getResourceTypeName() + "s"))
@@ -134,6 +134,11 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
             return node;
         }
         return null;
+    }
+
+    private static AzureIcon getAzuriteIcon(@Nonnull final AzuriteStorageAccount storageAccount) {
+        final AzureIcon.Modifier modifier = AzureResourceIconProvider.getStatusModifier(storageAccount);
+        return AzureIcon.builder().iconPath(AzureIcons.StorageAccount.AZURITE.getIconPath()).modifierList(Arrays.asList(modifier)).build();
     }
 
     private static AzureIcon getFileIcon(StorageFile file) {
