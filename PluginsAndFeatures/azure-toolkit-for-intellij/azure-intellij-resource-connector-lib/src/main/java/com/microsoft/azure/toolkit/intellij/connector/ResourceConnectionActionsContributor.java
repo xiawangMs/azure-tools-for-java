@@ -39,6 +39,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withIcon(AzureIcons.Action.REFRESH.getIconPath())
             .withHandler((project, e) -> refreshConnections((AnActionEvent) e))
             .withShortcut(am.getIDEDefaultShortcuts().refresh())
+            .withAuthRequired(false)
             .register(am);
 
         new Action<>(ADD_CONNECTION)
@@ -47,6 +48,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .visibleWhen(m -> m instanceof AzureModule)
             .withHandler((m) -> openDialog(null, new ModuleResource(m.getName()), m.getProject()))
             .withShortcut(am.getIDEDefaultShortcuts().add())
+            .withAuthRequired(false)
             .register(am);
 
         new Action<>(EDIT_CONNECTION)

@@ -82,7 +82,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         new Action<>(INSTALL_AZURITE)
                 .withLabel("Install Azurite")
-                .setAuthRequired(false)
+                .withAuthRequired(false)
                 .withHandler((p, e) -> AzuriteService.getInstance().installAzurite(p))
                 .register(am);
     }

@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Emulatable;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -143,12 +144,12 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final boolean visible;
             final boolean isAbstractAzResource = source instanceof AbstractAzResource;
 
-            if (isAbstractAzResource && ((AbstractAzResource<?, ?, ?>) source).isEmulatorResource()) {
+            if (source instanceof Emulatable && ((Emulatable) source).isEmulatorResource()) {
                 visible = view.isVisible();
             } else if (isAbstractAzResource && "[LinkedCluster]".equals(((AbstractAzResource<?, ?, ?>) source).getSubscription().getId())) {
                 visible = true;
             } else {
-                final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected() && this.action.isAuthRequired(source);
+                final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected();
                 visible = !isResourceInOtherSubs && view.isVisible() && Objects.nonNull(action.getHandler(source, e));
             }
 
