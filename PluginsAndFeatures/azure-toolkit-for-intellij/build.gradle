@@ -312,6 +312,7 @@ task downloadBicepLanguageServer(type: Copy) {
 }
 
 buildPlugin {
+    dependsOn(prepareBicepBinariesForSandbox)
     archiveVersion = getPatchedVersion()
     from("$projectDir/NOTICE")
     // buildPlugin zips result of `prepareSandbox`, so no need to copy again?
