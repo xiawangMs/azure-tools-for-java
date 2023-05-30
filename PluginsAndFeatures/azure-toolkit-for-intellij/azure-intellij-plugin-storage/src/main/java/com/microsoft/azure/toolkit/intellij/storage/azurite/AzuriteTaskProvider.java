@@ -4,7 +4,10 @@
  */
 package com.microsoft.azure.toolkit.intellij.storage.azurite;
 
-import com.intellij.execution.*;
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.BeforeRunTaskProvider;
+import com.intellij.execution.ExecutionListener;
+import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -12,10 +15,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.messages.MessageBusConnection;
-import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.exception.ExceptionUtils;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
@@ -31,16 +30,14 @@ import java.util.Optional;
 
 public class AzuriteTaskProvider extends BeforeRunTaskProvider<AzuriteTaskProvider.AzuriteBeforeRunTask> {
     private static final Key<AzuriteBeforeRunTask> ID = Key.create("AzuriteTaskProviderId");
-    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE); // todo: replace with icon for azurite
+
     @Getter
     public Key<AzuriteBeforeRunTask> id = ID;
-    @Getter
-    public Icon icon = ICON;
 
     @Override
     public @Nullable
     Icon getTaskIcon(AzuriteBeforeRunTask task) {
-        return ICON;
+        return AzuriteService.ICON;
     }
 
     @Nullable

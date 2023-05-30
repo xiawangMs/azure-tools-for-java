@@ -29,6 +29,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -170,6 +171,14 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
             AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
             return;
         }
+        saveConnection(resource, consumer, profile);
+    }
+
+    @AzureOperation(
+            name = "user/function.create_connection.consumer|resource",
+            params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
+    )
+    private void saveConnection(final Resource resource, final Resource consumer, final Profile profile) {
         this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
         this.connection.setEnvPrefix(txtConnectionName.getValue());
@@ -207,7 +216,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         lblConnectionName.setVisible(false);
     }
 
-    public void setDescription(@Nonnull final String description, @Nullable Icon icon) {
+    public void setDescription(@Nonnull final String description) {
         descriptionContainer.setVisible(true);
         descriptionPane.setText(description);
     }
