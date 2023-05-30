@@ -10,6 +10,7 @@ import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
@@ -23,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
@@ -31,8 +33,6 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,6 +42,7 @@ import java.util.Optional;
 
 public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJPanel<Resource<T>> {
     private final SqlDatabaseResourceDefinition<T> definition;
+    private final TailingDebouncer debouncer;
     private JPanel contentPanel;
     private SubscriptionComboBox subscriptionComboBox;
     private ServerComboBox<IDatabaseServer<T>> serverComboBox;
@@ -59,6 +60,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
         super();
         this.definition = definition;
         init();
+        this.debouncer = new TailingDebouncer(this::onUrlEdited, 500);
         initListeners();
     }
 
@@ -70,7 +72,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     private void init() {
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
-        testConnectionButton.setEnabled(true);
+        testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
         // username loader
         this.usernameComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() :
             Collections.singletonList(this.databaseComboBox.getServer().getFullAdminName()));
@@ -80,17 +82,15 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
         this.serverComboBox.addItemListener(this::onServerChanged);
         this.databaseComboBox.addItemListener(this::onDatabaseChanged);
-        this.urlTextField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                onUrlEdited();
-            }
-        });
+        this.urlTextField.getDocument().addDocumentListener((TextDocumentListenerAdapter) this.debouncer::debounce);
         this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
         this.testConnectionActionPanel.getCopyButton().addActionListener(this::onCopyButtonClicked);
     }
 
     private void onTestConnectionButtonClicked(ActionEvent e) {
+        if (Objects.isNull(this.jdbcUrl)) {
+            return;
+        }
         testConnectionButton.setEnabled(false);
         testConnectionButton.setIcon(new AnimatedIcon.Default());
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
@@ -155,13 +155,14 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
 
     private void onUrlEdited() {
         try {
-            this.jdbcUrl = JdbcUrl.from(this.urlTextField.getText());
+            this.jdbcUrl = JdbcUrl.from(this.urlTextField.getText().trim());
             this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(),
                 IDatabaseServer::getFullyQualifiedDomainName));
             this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getDatabase(), IDatabase::getName));
         } catch (final Exception exception) {
-            // TODO: messager.warning(...)
+            this.jdbcUrl = null;
         }
+        this.testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
     }
 
     private void onCopyButtonClicked(ActionEvent e) {

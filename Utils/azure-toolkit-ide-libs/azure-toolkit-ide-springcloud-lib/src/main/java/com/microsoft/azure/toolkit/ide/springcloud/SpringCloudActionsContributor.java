@@ -81,13 +81,19 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(ENABLE_REMOTE_DEBUGGING)
-            .visibleWhen(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus(true).isRunning() && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(deployment -> !deployment.isRemoteDebuggingEnabled()).orElse(false))
+            .visibleWhen(s -> s instanceof SpringCloudApp &&
+                !((SpringCloudApp) s).getParent().isConsumptionTier() &&
+                ((SpringCloudApp) s).getFormalStatus(true).isRunning() &&
+                Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(deployment -> !deployment.isRemoteDebuggingEnabled()).orElse(false))
             .withLabel("Enable Remote Debugging")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
 
         new Action<>(DISABLE_REMOTE_DEBUGGING)
-            .visibleWhen(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus(true).isRunning() && Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false))
+            .visibleWhen(s -> s instanceof SpringCloudApp &&
+                !((SpringCloudApp) s).getParent().isConsumptionTier() &&
+                ((SpringCloudApp) s).getFormalStatus(true).isRunning() &&
+                Optional.ofNullable(((SpringCloudApp) s).getActiveDeployment()).map(SpringCloudDeployment::isRemoteDebuggingEnabled).orElse(false))
             .withLabel("Disable Remote Debugging")
             .withIdParam(AbstractAzResource::getName)
             .register(am);
