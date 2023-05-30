@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -165,28 +166,20 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     protected void doOKAction() {
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
-        final Profile profile = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::initializeWithDefaultProfileIfNot).orElse(null);
-        if (profile == null) {
-            AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
-            return;
+        this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(), consumer.getDefinition()).define(resource, consumer);
+        this.connection.setEnvPrefix(txtConnectionName.getValue());
+        if (this.connection.validate(this.project)) {
+            AzureTaskManager.getInstance().write(() -> saveConnection(connection));
         }
-        saveConnection(resource, consumer, profile);
+        super.doOKAction();
     }
 
     @AzureOperation(
             name = "user/function.create_connection.consumer|resource",
             params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
     )
-    private void saveConnection(final Resource resource, final Resource consumer, final Profile profile) {
-        this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
-                consumer.getDefinition()).define(resource, consumer);
-        this.connection.setEnvPrefix(txtConnectionName.getValue());
-        if (this.connection.validate(this.project)) {
-            profile.addConnection(this.connection);
-            AzureMessager.getMessager().success(String.format(CONNECTION_CREATED_MESSAGE, resource.getName(), consumer.getName()));
-        }
-        super.doOKAction();
+    private void saveConnection(final Connection<?, ?> connection) {
+        AzureTaskManager.getInstance().write(() -> AzureModule.from(module).initializeWithDefaultProfileIfNot().addConnection(connection).save());
     }
 
     private Resource<?> getResource() {
