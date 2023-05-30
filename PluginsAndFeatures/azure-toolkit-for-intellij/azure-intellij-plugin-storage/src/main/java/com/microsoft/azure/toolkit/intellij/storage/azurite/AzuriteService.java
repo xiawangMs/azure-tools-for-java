@@ -14,6 +14,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessHandlerFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.execution.ui.actions.CloseAction;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
@@ -30,12 +31,16 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
@@ -45,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -54,7 +60,6 @@ import java.util.Optional;
 public class AzuriteService {
     public static final String INTELLIJ_GLOBAL_STORAGE = "IntelliJ Global Storage";
     public static final String CURRENT_PROJECT = "Current Project";
-
     public static final String AZURITE_DISPLAY_NAME = "Azurite";
     public static final String INSTALL_AZURITE_LINK = "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm#install-azurite";
     public static final String NODE_VERSION_ERROR_MESSAGE = "Failed to get node version, or node version is too old (lower than 8) to run azurite, please visit https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite for installation guidances.";
@@ -63,6 +68,9 @@ public class AzuriteService {
     public static final String DEFAULT_WORKSPACE = System.getProperty("user.home");
     public static final String AZURITE = "azurite";
     public static final String AZURITE_CMD = "azurite.cmd";
+    public static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.StorageAccount.AZURITE);
+    public static final int MIN_NODE_MAJOR_VERSION = 8;
+
     private ProcessHandler processHandler;
 
     public static AzuriteService getInstance() {
@@ -126,7 +134,8 @@ public class AzuriteService {
         try {
             final GeneralCommandLine commandLine = new GeneralCommandLine("node", "-v");
             final String nodeVersion = ExecUtil.execAndGetOutput(commandLine).getStdout();
-            return Version.parseVersion(StringUtils.removeStartIgnoreCase(nodeVersion, "v")).compareTo(8) >= 0;
+            return Optional.ofNullable(Version.parseVersion(StringUtils.removeStartIgnoreCase(nodeVersion, "v")))
+                    .map(version -> version.compareTo(MIN_NODE_MAJOR_VERSION) >= 0).orElse(false);
         } catch (final Exception e) {
             return false;
         }
@@ -155,6 +164,8 @@ public class AzuriteService {
                 .filter(content -> StringUtils.equalsIgnoreCase(content.getDisplayName(), displayName))
                 .findFirst().orElseGet(() -> {
                     final Content content = ContentFactory.getInstance().createContent(console.getComponent(), displayName, false);
+                    content.setIcon(ICON);
+                    content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
                     toolWindow.getContentManager().addContent(content);
                     return content;
                 });

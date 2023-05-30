@@ -18,7 +18,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -37,8 +36,6 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.Function
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteService;
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -354,26 +351,42 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         final String webJobStorage = appSettings.get(AZURE_WEB_JOB_STORAGE_KEY);
         if (StringUtils.isEmpty(webJobStorage) && isWebJobStorageRequired(functionBindingList)) {
             // show resource connection dialog for web job storage
-            AzureTaskManager.getInstance().runAndWait(() -> {
-                final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage", AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE);
-                dialog.setTitle(CONNECTION_TITLE);
-                dialog.setFixedConnectionName(AZURE_WEB_JOB_STORAGE_KEY);
-                dialog.setDescription(CONNECTION_DESCRIPTION, null);
-                dialog.setOKActionText("Connect");
-                if (dialog.showAndGet()) {
-                    // update app settings
-                    final Connection<?, ?> connection = dialog.getConnection();
-                    if (Objects.nonNull(connection)) {
-                        appSettings.putAll(connection.getEnvironmentVariables(project));
-                        // start azurite if azurite connection is added
-                        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
-                            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
-                        }
-                    }
-                }
-            });
+            AzureTaskManager.getInstance().runAndWait(() -> addMissingConnection(appSettings, AZURE_WEB_JOB_STORAGE_KEY, "Storage",
+                    CONNECTION_DESCRIPTION, CONNECTION_TITLE, AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE));
         }
         // todo: @hanli, check whether there are connections refered in function binding list but not defined in app settings
+    }
+
+    @AzureOperation(
+            name = "internal/function.add_missing_connection.name",
+            params = {"connectionName"}
+    )
+    private void addMissingConnection(@Nonnull final Map<String, String> appSettings, @Nonnull final String connectionName, @Nonnull final String resourceType
+            , @Nonnull final String description, @Nonnull final String title, @Nullable final String connectionHelpTopic) {
+        final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), resourceType, connectionHelpTopic);
+        dialog.setTitle(title);
+        dialog.setFixedConnectionName(connectionName);
+        dialog.setDescription(description);
+        dialog.setOKActionText("Connect");
+        if (dialog.showAndGet()) {
+            // update app settings
+            final Connection<?, ?> connection = dialog.getConnection();
+            if (Objects.nonNull(connection)) {
+                saveConnection(connection, appSettings);
+            }
+        }
+    }
+
+    @AzureOperation(
+            name = "user/function.add_missing_connection.consumer|resource",
+            params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
+    )
+    private void saveConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final Map<String, String> appSettings) {
+        appSettings.putAll(connection.getEnvironmentVariables(project));
+        // start azurite if azurite connection is added
+        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
+            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
+        }
     }
 
     private boolean isWebJobStorageRequired(@Nonnull List<BindingEnum> bindings) {
