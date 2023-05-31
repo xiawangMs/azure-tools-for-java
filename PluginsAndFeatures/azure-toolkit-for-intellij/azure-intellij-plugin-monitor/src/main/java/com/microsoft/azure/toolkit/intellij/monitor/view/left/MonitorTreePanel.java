@@ -14,7 +14,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.RelativeFont;
 import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.SimpleTree;
@@ -37,7 +39,7 @@ import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
 import java.util.*;
 
-public class MonitorTreePanel extends JPanel {
+public class MonitorTreePanel extends JPanel implements Disposable {
     private JPanel contentPanel;
     private Tree tree;
     private DefaultTreeModel treeModel;
@@ -51,11 +53,12 @@ public class MonitorTreePanel extends JPanel {
     private final AzureEventBus.EventListener eventListener;
     private final Project project;
 
-    public MonitorTreePanel(Project project) {
+    public MonitorTreePanel(Project project, Disposable parentDisposable) {
         super();
         this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.eventListener = new AzureEventBus.EventListener(e -> this.addQueryNode((QueryData) e.getSource()));
+        Disposer.register(parentDisposable, this);
         AzureEventBus.on("azure.monitor.add_query_node", this.eventListener);
     }
 
