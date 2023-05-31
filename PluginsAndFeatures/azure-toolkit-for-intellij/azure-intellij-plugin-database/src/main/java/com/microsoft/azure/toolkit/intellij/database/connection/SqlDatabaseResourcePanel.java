@@ -72,6 +72,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     private void init() {
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
+        testResultTextPane.setVisible(false);
         testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
         // username loader
         this.usernameComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() :
@@ -102,6 +103,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
             // show result info
             testConnectionActionPanel.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
+            testResultTextPane.setVisible(true);
             final Icon icon = connectResult.isConnected() ? AllIcons.General.InspectionsOK : AllIcons.General.BalloonError;
             testConnectionActionPanel.getIconLabel().setIcon(icon);
             testConnectionButton.setIcon(null);
