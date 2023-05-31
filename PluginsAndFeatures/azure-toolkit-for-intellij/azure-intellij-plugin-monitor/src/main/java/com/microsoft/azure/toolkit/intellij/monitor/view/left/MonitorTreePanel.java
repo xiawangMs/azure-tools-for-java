@@ -95,12 +95,12 @@ public class MonitorTreePanel extends JPanel implements Disposable {
         if (isTableTab) {
             return;
         }
-        final DefaultMutableTreeNode customQueryRootNode = getOrCreateCustomQueriesTabNode();
-        final DefaultMutableTreeNode overrideNode = TreeUtil.findNode(customQueryRootNode, n ->
-                n.getUserObject() instanceof QueryData && Objects.equals(((QueryData) n.getUserObject()).displayName, data.displayName));
         customQueries.stream().filter(q -> Objects.equals(q.displayName, data.displayName)).findAny()
                 .ifPresentOrElse(q -> q.setQueryString(data.queryString), () -> customQueries.add(data));
         AzureTaskManager.getInstance().runLater(() -> {
+            final DefaultMutableTreeNode customQueryRootNode = getOrCreateCustomQueriesTabNode();
+            final DefaultMutableTreeNode overrideNode = TreeUtil.findNode(customQueryRootNode, n ->
+                n.getUserObject() instanceof QueryData && Objects.equals(((QueryData) n.getUserObject()).displayName, data.displayName));
             AzureMonitorManager.getInstance().changeContentView(project, AzureMonitorManager.QUERIES_TAB_NAME);
             final DefaultMutableTreeNode selectedNode;
             if (Objects.nonNull(overrideNode)) {
@@ -114,10 +114,10 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             TreeUtil.selectNode(this.tree, selectedNode);
         });
         AzureTaskManager.getInstance().runInBackground("save query", () -> {
+            final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             final List<String> customQueryList = new ArrayList<>();
             this.customQueries.forEach(q -> {
                 try {
-                    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
                     customQueryList.add(ow.writeValueAsString(q));
                 } catch (final JsonProcessingException ignored) {
                 }
@@ -229,7 +229,7 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             return node;
         }
         final DefaultMutableTreeNode tabNode = new DefaultMutableTreeNode(CUSTOM_QUERIES_TAB);
-        ((DefaultMutableTreeNode) this.treeModel.getRoot()).add(tabNode);
+        this.treeModel.insertNodeInto(tabNode, (DefaultMutableTreeNode) this.treeModel.getRoot(), 0);
         return tabNode;
     }
 
