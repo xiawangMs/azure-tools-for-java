@@ -45,7 +45,7 @@ public class ACRRegistryComboBox extends AzureComboBox<ContainerRegistry> {
         if (entity.isDraftForCreating()) {
             return "(New) " + entity.getName();
         }
-        return entity.getName();
+        return entity.isAdminUserEnabled() ? entity.getName() : String.format("%s (Admin User Disabled)", entity.getName());
     }
 
     public void setSubscription(Subscription subscription) {
