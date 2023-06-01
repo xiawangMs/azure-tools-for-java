@@ -99,7 +99,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(ATTACH_DEBUGGER_APP)
-            .visibleWhen(s -> s instanceof SpringCloudApp)
+            .visibleWhen(s -> s instanceof SpringCloudApp && !((SpringCloudApp) s).getParent().isConsumptionTier())
             .enableWhen(s -> s.getFormalStatus(true).isRunning())
             .withLabel("Attach Debugger")
             .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())
@@ -107,7 +107,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(ATTACH_DEBUGGER)
-            .visibleWhen(s -> s instanceof SpringCloudAppInstance)
+            .visibleWhen(s -> s instanceof SpringCloudAppInstance && !((SpringCloudAppInstance) s).getParent().getParent().getParent().isConsumptionTier())
             .enableWhen(s -> s.getParent().getParent().getFormalStatus(true).isRunning())
             .withLabel("Attach Debugger")
             .withIcon(AzureIcons.Action.ATTACH_DEBUGGER.getIconPath())

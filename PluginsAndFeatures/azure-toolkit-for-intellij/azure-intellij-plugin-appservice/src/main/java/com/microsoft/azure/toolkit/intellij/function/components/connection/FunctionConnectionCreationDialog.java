@@ -19,15 +19,12 @@ import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.intellij.function.connection.ConnectionTarget;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -103,10 +100,12 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         });
         final Font font = UIManager.getFont("Label.font");
         final Color foregroundColor = UIManager.getColor("Label.foreground");
+        final Color backgroundColor = UIManager.getColor("Label.backgroundColor");
         descriptionPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         if (font != null && foregroundColor != null) {
             descriptionPane.setFont(font);
             descriptionPane.setForeground(foregroundColor);
+            descriptionPane.setBackground(backgroundColor);
         }
         if (Objects.nonNull(definition)) {
             initResourceSelectionPanel();
