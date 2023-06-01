@@ -30,6 +30,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
+import com.intellij.util.EnvironmentUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor;
@@ -88,7 +89,7 @@ public class AzuriteService {
         try {
             final ConsoleView consoleView = getOrCreateConsoleView(project);
             final GeneralCommandLine commandLine = getExecutionCommand(project);
-            commandLine.withEnvironment(System.getenv());
+            commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE);
             this.processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine);
             this.processHandler.addProcessListener(new ProcessAdapter() {
                 @Override
