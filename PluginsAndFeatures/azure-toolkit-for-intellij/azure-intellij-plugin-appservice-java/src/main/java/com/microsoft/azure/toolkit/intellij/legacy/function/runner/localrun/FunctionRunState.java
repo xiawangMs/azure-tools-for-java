@@ -58,10 +58,13 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -388,8 +391,13 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     )
     private void saveConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final Map<String, String> appSettings) {
         appSettings.putAll(connection.getEnvironmentVariables(project));
+        if (!(connection.getResource().getData() instanceof AzuriteStorageAccount)) {
+            return;
+        }
         // start azurite if azurite connection is added
-        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
+        final Boolean startAzurite = AzureTaskManager.getInstance().runAndWaitAsObservable(new AzureTask<>("Start Azurite", () ->
+                AzuriteService.getInstance().startAzurite(project))).toBlocking().first();
+        if (BooleanUtils.isTrue(startAzurite)) {
             AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
         }
     }
