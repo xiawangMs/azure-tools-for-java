@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.auth;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -69,6 +70,11 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
 
     protected String getOperationName(AnActionEvent event) {
         return TelemetryConstants.SIGNIN;
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override

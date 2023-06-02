@@ -208,9 +208,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     private void prepareBeforeRunTasks(@NotNull final Module module) {
         final Profile profile = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultProfile).orElse(null);
         final List<Connection<?, ?>> connections = Optional.ofNullable(profile).map(Profile::getConnections).orElse(Collections.emptyList());
-        if (CollectionUtils.isEmpty(connections)) {
-            return;
-        }
         final List<BeforeRunTask<?>> tasks = this.getBeforeRunTasks();
         final List<DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask> rcTasks = tasks.stream().filter(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)
                 .map(t -> (DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)t)

@@ -145,7 +145,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             final boolean isAbstractAzResource = source instanceof AbstractAzResource;
 
             if (source instanceof Emulatable && ((Emulatable) source).isEmulatorResource()) {
-                visible = view.isVisible();
+                visible = view.isVisible() && Objects.nonNull(action.getHandler(source, e));
             } else if (isAbstractAzResource && "[LinkedCluster]".equals(((AbstractAzResource<?, ?, ?>) source).getSubscription().getId())) {
                 visible = true;
             } else {

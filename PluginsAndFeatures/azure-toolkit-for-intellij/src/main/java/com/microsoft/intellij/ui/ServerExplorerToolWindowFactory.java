@@ -9,6 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -514,6 +515,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         public void update(@NotNull AnActionEvent e) {
             final boolean isSignIn = IdeAzureAccount.getInstance().isLoggedIn();
             e.getPresentation().setEnabled(isSignIn);
+        }
+
+        @Override
+        public ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
         }
     }
 }
