@@ -1,13 +1,39 @@
-<!-- Version: 3.76.0 -->
+<!-- Version: 3.77.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.77.0
+### Added
+- Azure Spring Apps: basic Standard Consumption plan(preview) support.
+- Azure Storage Account: local Storage Account Emulator (Azurite) support.
+
+  <img alt="Azurite" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202305/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202305.azurite.gif" width="1000"/>
+
+### Changed
+- Azure Spring Apps: performance of creating/updating resources is improved.
+- Azure Functions: users are asked to select an Cloud/Emulated Storage Account in case of missing `AzureWebJobsStorage` at local run instead of fail directly.
+- Resource Connection: data related to resource connections are moved from project dir to module dir and the schema is also changed.
+
+### Fixed
+- [#7564](https://github.com/microsoft/azure-tools-for-java/issues/7564): Uncaught Exception java.lang.NullPointerException: Cannot invoke "com.microsoft.azure.toolkit.ide.common.store.IIdeStore.getProperty(String, String)" because "store" is null.
+- [#7561](https://github.com/microsoft/azure-tools-for-java/issues/7561): Uncaught Exception com.intellij.diagnostic.PluginException: 644 ms to call on EDT DeployFunctionAppAction#update@MainMenu (com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction).
+- [#7421](https://github.com/microsoft/azure-tools-for-java/issues/7421): Uncaught Exception com.intellij.diagnostic.PluginException: 303 ms to call on EDT ServerExplorerToolWindowFactory$RefreshAllAction#update@ToolwindowTitle (com.microsoft.intellij.ui.ServerExplorerToolWindowFactory$RefreshAllAction).
+- [#7411](https://github.com/microsoft/azure-tools-for-java/issues/7411): Uncaught Exception com.intellij.diagnostic.PluginException: 338 ms to call on EDT RunFunctionAction#update@GoToAction (com.microsoft.azure.toolkit.intellij.legacy.function.action.RunFunctionAction).
+- [#7185](https://github.com/microsoft/azure-tools-for-java/issues/7185): Uncaught Exception com.intellij.diagnostic.PluginException: 446 ms to call on EDT AzureSignInAction#update@ToolwindowTitle (com.microsoft.intellij.actions.AzureSignInAction).
+- [#7143](https://github.com/microsoft/azure-tools-for-java/issues/7143): Uncaught Exception com.intellij.diagnostic.PluginException: 403 ms to call on EDT ShowGettingStartAction#update@GoToAction (com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction).
+- Fix : Toolkit could not authenticate with Azure CLI when it was run from the dock in Mac OS.
+- Fix : Failed to upload Spark application artifacts in IntelliJ 2023.1.
+- Fix : Local run and remote run failed, only repro in IntelliJ 2022.3.
+- Fix : Show Failed to proceed after clicking on storage account node.
+- Fix : Apache Spark on Azure Synapse\Apache Spark on Cosmos\SQL Server Big Data Cluster cannot be listed.
+- Fix : Load cluster show errors.
 
 ## 3.76.0
 ### Added
 - Basic resource management support for service connections
 - New one click action to deploy Dockerfile (build image first) to Azure Container App
-  <img alt="Azure Container Apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.aca.gif" width="500"/>
+  <img alt="Azure Container Apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.aca.gif" width="1000"/>
 - Finer granular resource management(registry/repository/images/...) for Azure Container Registry    
-  <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="500"/>
+  <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="1000"/>
 - Monitoring support for Azure Container Apps (azure monitor integration & log streaming)
 
 ### Changed
@@ -134,7 +160,7 @@
 - Added support for data management of `Azure Storage Account` in Azure Explorer.<br>
 <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.storageaccount.png" alt="screenshot of 'storage account'" width="400"/>
 - Added support for data management of `Azure Cosmos DB account` in Azure Explorer.<br>
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.cosmosdb.png" alt="screenshot of 'cosmos db account'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.cosmosdb.png" alt="screenshot of 'cosmos db account'" width="1000"/>
 - Added support for filtering app settings of `Azure Web App/ Function App` in properties view and run configuration dialog.<br>
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.filterappsettings.png" alt="screenshot of 'app settings configuration'" width="600"/>
 
@@ -224,9 +250,9 @@
 - New Azure service support: Azure Kubernetes service.
   - direct resource management in Azure Explorer.
   - connection to other K8s plugins.    
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202207/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202207.k8s.gif" alt="screenshot of 'k8s'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202207/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202207.k8s.gif" alt="screenshot of 'k8s'" width="1000"/>
 - Support for running or debugging local projects directly on Azure Virtual Machine by leveraging [`Run Targets`](https://www.jetbrains.com/help/idea/run-targets.html).     
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202207/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202207.runtarget.png" alt="screenshot of 'run target'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202207/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202207.runtarget.png" alt="screenshot of 'run target'" width="1000"/>
 
 ### Changed
 - Most Tool Windows will hide by default and show only when they are triggered by related actions.
@@ -242,10 +268,10 @@
 ## 3.66.0
 ### Added
 - New "Getting Started with Azure" experience.    
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.gettingstarted.gif" alt="screenshot of 'getting started'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.gettingstarted.gif" alt="screenshot of 'getting started'" width="1000"/>
 - Support for IntelliJ IDEA 2022.2(EAP).
 - SNAPSHOT and BETA versions of this plugin are available in [`Dev` channel](https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij/versions/dev).    
-  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.devchannel.png" alt="screenshot of 'dev channel'" width="500"/>
+  <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202206/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202206.devchannel.png" alt="screenshot of 'dev channel'" width="1000"/>
 
 ### Fixed
 - Error "java.lang.IllegalStateException" occurs if there are resources having same name but different resource groups.
@@ -258,7 +284,7 @@
 ## 3.65.0
 ### Added
 - New "Provide feedback" experience.    
-  <img src="https://user-images.githubusercontent.com/69189193/171312904-f52d6991-af50-4b81-a4d9-b4186a510e14.png" alt="screenshot of 'provide feedback'" width="500"/>    
+  <img src="https://user-images.githubusercontent.com/69189193/171312904-f52d6991-af50-4b81-a4d9-b4186a510e14.png" alt="screenshot of 'provide feedback'" width="1000"/>    
 - New Azure service support: Azure Application Insights
   - direct resource management in Azure Explorer.
   - resource connection from both local projects and Azure computing services.

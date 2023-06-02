@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.77.0](#3770)
   - [3.76.0](#3760)
   - [3.75.0](#3750)
   - [3.74.0](#3740)
@@ -95,6 +96,30 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.77.0
+### Added
+- Azure Spring Apps: basic Standard Consumption plan(preview) support.
+- Azure Storage Account: local Storage Account Emulator (Azurite) support.
+
+### Changed
+- Azure Spring Apps: performance of creating/updating resources is improved.
+- Azure Functions: users are asked to select an Cloud/Emulated Storage Account in case of missing `AzureWebJobsStorage` at local run instead of fail directly.
+- Resource Connection: data related to resource connections are moved from project dir to module dir and the schema is also changed.
+
+### Fixed
+- [#7564](https://github.com/microsoft/azure-tools-for-java/issues/7564): Uncaught Exception java.lang.NullPointerException: Cannot invoke "com.microsoft.azure.toolkit.ide.common.store.IIdeStore.getProperty(String, String)" because "store" is null.
+- [#7561](https://github.com/microsoft/azure-tools-for-java/issues/7561): Uncaught Exception com.intellij.diagnostic.PluginException: 644 ms to call on EDT DeployFunctionAppAction#update@MainMenu (com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction).
+- [#7421](https://github.com/microsoft/azure-tools-for-java/issues/7421): Uncaught Exception com.intellij.diagnostic.PluginException: 303 ms to call on EDT ServerExplorerToolWindowFactory$RefreshAllAction#update@ToolwindowTitle (com.microsoft.intellij.ui.ServerExplorerToolWindowFactory$RefreshAllAction).
+- [#7411](https://github.com/microsoft/azure-tools-for-java/issues/7411): Uncaught Exception com.intellij.diagnostic.PluginException: 338 ms to call on EDT RunFunctionAction#update@GoToAction (com.microsoft.azure.toolkit.intellij.legacy.function.action.RunFunctionAction).
+- [#7185](https://github.com/microsoft/azure-tools-for-java/issues/7185): Uncaught Exception com.intellij.diagnostic.PluginException: 446 ms to call on EDT AzureSignInAction#update@ToolwindowTitle (com.microsoft.intellij.actions.AzureSignInAction).
+- [#7143](https://github.com/microsoft/azure-tools-for-java/issues/7143): Uncaught Exception com.intellij.diagnostic.PluginException: 403 ms to call on EDT ShowGettingStartAction#update@GoToAction (com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction).
+- Fix : Toolkit could not authenticate with Azure CLI when it was run from the dock in Mac OS.
+- Fix : Failed to upload Spark application artifacts in IntelliJ 2023.1.
+- Fix : Local run and remote run failed, only repro in IntelliJ 2022.3.
+- Fix : Show Failed to proceed after clicking on storage account node.
+- Fix : Apache Spark on Azure Synapse\Apache Spark on Cosmos\SQL Server Big Data Cluster cannot be listed.
+- Fix : Load cluster show errors.
 
 ## 3.76.0
 ### Added

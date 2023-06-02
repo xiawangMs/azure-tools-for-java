@@ -43,10 +43,11 @@ public class MigrateStartupActivity implements StartupActivity {
         final Map<String, List<Connection<?, ?>>> moduleConnections = manager
             .getConnections().stream()
             .collect(Collectors.groupingBy(c -> c.getConsumer().getName()));
+        final AzureTaskManager tm = AzureTaskManager.getInstance();
         moduleConnections.forEach((moduleName, connections) -> {
             Optional.ofNullable(moduleManager.findModuleByName(moduleName))
                 .map(AzureModule::from).filter(m -> !m.isInitialized())
-                .ifPresent(module -> AzureTaskManager.getInstance().write(() -> {
+                .ifPresent(module -> tm.runLater(() -> tm.write(() -> {
                     final Profile profile = module.initializeWithDefaultProfileIfNot();
                     connections.forEach(c -> {
                         try {
@@ -57,7 +58,7 @@ public class MigrateStartupActivity implements StartupActivity {
                         }
                     });
                     profile.save();
-                }));
+                })));
         });
     }
 }

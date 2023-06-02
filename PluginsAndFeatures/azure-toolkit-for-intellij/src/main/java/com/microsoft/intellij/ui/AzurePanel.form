@@ -293,13 +293,12 @@
         </constraints>
         <properties/>
       </component>
-      <component id="b1cd6" class="javax.swing.JLabel">
+      <component id="b1cd6" class="javax.swing.JLabel" binding="lblRows">
         <constraints>
           <grid row="18" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <horizontalTextPosition value="2"/>
-          <icon value="general/contextHelp.png"/>
           <text value="Number of rows:"/>
           <toolTipText value="Specify the number of rows returned by per query"/>
         </properties>

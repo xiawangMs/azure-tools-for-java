@@ -27,39 +27,32 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3 id="3-76-0">3.76.0</h3>
+      <h3 id="3-77-0">3.77.0</h3>
       <h4 id="added">Added</h4>
       <ul>
-        <li>Basic resource management support for service connections</li>
-        <li>New one click action to deploy Dockerfile (build image first) to Azure Container App</li>
-        <li>Finer granular resource management(registry/repository/images/...) for Azure Container Registry</li>
-        <li>Monitoring support for Azure Container Apps (azure monitor integration &amp; log streaming)</li>
+        <li>Azure Spring Apps: basic Standard Consumption plan(preview) support.</li>
+        <li>Azure Storage Account: local Storage Account Emulator (Azurite) support.</li>
       </ul>
       <h4 id="changed">Changed</h4>
       <ul>
-          <li>Docker development experience enhancement<ul>
-                  <li>Migrate docker client to docker java to unblock docker experience in MacOS </li>
-                  <li>UX enhancement for docker host run/deploy experience</li>
-              </ul>
-          </li>
-          <li>UX enhancement for Azure Monitor<ul>
-                  <li>Finer time control (hour, minute, seconds...) for montior queries</li>
-                  <li>Add customer filters persistence support</li>
-              </ul>
-          </li>
+        <li>Azure Spring Apps: performance of creating/updating resources is improved.</li>
+        <li>Azure Functions: users are asked to select an Cloud/Emulated Storage Account in case of missing <code>AzureWebJobsStorage</code> at local run instead of fail directly.</li>
+        <li>Resource Connection: data related to resource connections are moved from project dir to module dir and the schema is also changed.</li>
       </ul>
       <h4 id="fixed">Fixed</h4>
       <ul>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7387">#7387</a>: Cannot invoke
-              &quot;com.intellij.openapi.editor.Editor.getDocument()&quot; because &quot;editor&quot; is null</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7020">#7020</a>: Uncaught Exception
-              java.util.ConcurrentModificationException</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7444">#7444</a>: Uncaught Exception
-              com.microsoft.azure.toolkit.lib.common.operation.OperationException: initialize Azure explorer</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7432">#7432</a>: Cannot invoke
-              &quot;com.intellij.psi.PsiDirectory.getVirtualFile()&quot; because &quot;dir&quot; is null</li>
-          <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7479">#7479</a>: Uncaught Exception
-              java.lang.Throwable: Assertion failed</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7564">#7564</a>: Uncaught Exception java.lang.NullPointerException: Cannot invoke &quot;com.microsoft.azure.toolkit.ide.common.store.IIdeStore.getProperty(String, String)&quot; because &quot;store&quot; is null.</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7561">#7561</a>: Uncaught Exception com.intellij.diagnostic.PluginException: 644 ms to call on EDT DeployFunctionAppAction#update@MainMenu (com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction).</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7421">#7421</a>: Uncaught Exception com.intellij.diagnostic.PluginException: 303 ms to call on EDT ServerExplorerToolWindowFactory$RefreshAllAction#update@ToolwindowTitle (com.microsoft.intellij.ui.ServerExplorerToolWindowFactory$RefreshAllAction).</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7411">#7411</a>: Uncaught Exception com.intellij.diagnostic.PluginException: 338 ms to call on EDT RunFunctionAction#update@GoToAction (com.microsoft.azure.toolkit.intellij.legacy.function.action.RunFunctionAction).</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7185">#7185</a>: Uncaught Exception com.intellij.diagnostic.PluginException: 446 ms to call on EDT AzureSignInAction#update@ToolwindowTitle (com.microsoft.intellij.actions.AzureSignInAction).</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7143">#7143</a>: Uncaught Exception com.intellij.diagnostic.PluginException: 403 ms to call on EDT ShowGettingStartAction#update@GoToAction (com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction).</li>
+        <li>Fix : Toolkit could not authenticate with Azure CLI when it was run from the dock in Mac OS.</li>
+        <li>Fix : Failed to upload Spark application artifacts in IntelliJ 2023.1.</li>
+        <li>Fix : Local run and remote run failed, only repro in IntelliJ 2022.3.</li>
+        <li>Fix : Show Failed to proceed after clicking on storage account node.</li>
+        <li>Fix : Apache Spark on Azure Synapse\Apache Spark on Cosmos\SQL Server Big Data Cluster cannot be listed.</li>
+        <li>Fix : Load cluster show errors.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

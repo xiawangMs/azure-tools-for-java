@@ -104,8 +104,7 @@ public class RateManager {
         OperationContext.current().setTelemetryProperty("causeOperation", causeOperation.getId());
         OperationContext.current().setTelemetryProperty("causeOperationId", causeOperation.getExecutionId());
         score.set(score.get() / 2);
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        store.setProperty(SERVICE, TOTAL_SCORE, "" + score.get());
+        Optional.ofNullable(AzureStoreManager.getInstance()).map(AzureStoreManager::getIdeStore).ifPresent(s -> s.setProperty(SERVICE, TOTAL_SCORE, "" + score.get()));
     }
 
     public static class WhenToPopup implements StartupActivity, OperationListener {
@@ -115,6 +114,9 @@ public class RateManager {
             final char c = StringUtils.isBlank(hashMac) ? '0' : hashMac.toLowerCase().charAt(0);
             final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
             final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+            if (Objects.isNull(store)) {
+                return;
+            }
             final String nextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER);
             if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
                 final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
