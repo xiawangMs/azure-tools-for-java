@@ -19,16 +19,15 @@ import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.intellij.function.connection.ConnectionTarget;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -101,10 +100,12 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         });
         final Font font = UIManager.getFont("Label.font");
         final Color foregroundColor = UIManager.getColor("Label.foreground");
+        final Color backgroundColor = UIManager.getColor("Label.backgroundColor");
         descriptionPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         if (font != null && foregroundColor != null) {
             descriptionPane.setFont(font);
             descriptionPane.setForeground(foregroundColor);
+            descriptionPane.setBackground(backgroundColor);
         }
         if (Objects.nonNull(definition)) {
             initResourceSelectionPanel();
@@ -164,20 +165,20 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     protected void doOKAction() {
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
-        final Profile profile = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::initializeWithDefaultProfileIfNot).orElse(null);
-        if (profile == null) {
-            AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
-            return;
-        }
-        this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
-                consumer.getDefinition()).define(resource, consumer);
+        this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(), consumer.getDefinition()).define(resource, consumer);
         this.connection.setEnvPrefix(txtConnectionName.getValue());
         if (this.connection.validate(this.project)) {
-            profile.addConnection(this.connection);
-            AzureMessager.getMessager().success(String.format(CONNECTION_CREATED_MESSAGE, resource.getName(), consumer.getName()));
+            AzureTaskManager.getInstance().write(() -> saveConnection(connection));
         }
         super.doOKAction();
+    }
+
+    @AzureOperation(
+            name = "user/function.create_connection.consumer|resource",
+            params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
+    )
+    private void saveConnection(final Connection<?, ?> connection) {
+        AzureTaskManager.getInstance().write(() -> AzureModule.from(module).initializeWithDefaultProfileIfNot().addConnection(connection).save());
     }
 
     private Resource<?> getResource() {
@@ -207,7 +208,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         lblConnectionName.setVisible(false);
     }
 
-    public void setDescription(@Nonnull final String description, @Nullable Icon icon) {
+    public void setDescription(@Nonnull final String description) {
         descriptionContainer.setVisible(true);
         descriptionPane.setText(description);
     }

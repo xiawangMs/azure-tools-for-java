@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun;
 
+import com.google.common.base.Supplier;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ExecutorRegistry;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -18,7 +19,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -33,12 +34,11 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteService;
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -58,9 +58,13 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
+import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,6 +74,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -314,12 +319,14 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                     FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, module, methods);
             final List<BindingEnum> functionBindingList = FunctionUtils.getFunctionBindingList(configMap);
             operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(functionBindingList, ","));
-            final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
-            // Do not copy local settings if user have already set it in configuration
-            final boolean useLocalSettings = MapUtils.isEmpty(appSettings);
+            final Map<String, String> configurationAppSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(functionRunConfiguration.getAppSettingsKey());
+            final boolean useLocalSettings = MapUtils.isEmpty(configurationAppSettings);
             final Path localSettingsJson = Optional.ofNullable(functionRunConfiguration.getLocalSettingsJsonPath())
                     .filter(StringUtils::isNotEmpty).map(Paths::get)
                     .orElseGet(() -> Paths.get(FunctionUtils.getDefaultLocalSettingsJsonPath(module)));
+            final Map<String, String> appSettings = useLocalSettings ?
+                    FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(localSettingsJson.toFile()) : configurationAppSettings;
+            // Do not copy local settings if user have already set it in configuration
             applyResourceConnection(appSettings);
             validateAppSettings(appSettings, functionBindingList);
             FunctionUtils.copyLocalSettingsToStagingFolder(folder, localSettingsJson, appSettings, useLocalSettings);
@@ -350,30 +357,49 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         }
     }
 
+    // todo: @hanli, check whether there are connections refered in function binding list but not defined in app settings
     private void validateAppSettings(@Nonnull final Map<String, String> appSettings, @Nonnull final List<BindingEnum> functionBindingList) {
+
         final String webJobStorage = appSettings.get(AZURE_WEB_JOB_STORAGE_KEY);
         if (StringUtils.isEmpty(webJobStorage) && isWebJobStorageRequired(functionBindingList)) {
-            // show resource connection dialog for web job storage
-            AzureTaskManager.getInstance().runAndWait(() -> {
-                final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), "Storage", AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE);
-                dialog.setTitle(CONNECTION_TITLE);
-                dialog.setFixedConnectionName(AZURE_WEB_JOB_STORAGE_KEY);
-                dialog.setDescription(CONNECTION_DESCRIPTION, null);
-                dialog.setOKActionText("Connect");
-                if (dialog.showAndGet()) {
-                    // update app settings
-                    final Connection<?, ?> connection = dialog.getConnection();
-                    if (Objects.nonNull(connection)) {
-                        appSettings.putAll(connection.getEnvironmentVariables(project));
-                        // start azurite if azurite connection is added
-                        if (connection.getResource().getData() instanceof AzuriteStorageAccount && AzuriteService.getInstance().startAzurite(project)) {
-                            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
-                        }
-                    }
-                }
-            });
+            final Callable<Connection<?, ?>> connectionSupplier = () -> createMissingConnection(appSettings, AZURE_WEB_JOB_STORAGE_KEY, "Storage",
+                    CONNECTION_DESCRIPTION, CONNECTION_TITLE, AzureWebHelpProvider.HELP_AZURE_WEB_JOBS_STORAGE);
+            final Connection<?, ?> connection = AzureTaskManager.getInstance()
+                    .runAndWaitAsObservable(new AzureTask<>("Add Missing Connection", connectionSupplier)).toBlocking().first();
+            Optional.ofNullable(connection).ifPresent(c -> saveConnection(c, appSettings));
         }
-        // todo: @hanli, check whether there are connections refered in function binding list but not defined in app settings
+    }
+
+    @AzureOperation(
+            name = "internal/function.add_missing_connection.name",
+            params = {"connectionName"}
+    )
+    @Nullable
+    private Connection<?, ?> createMissingConnection(@Nonnull final Map<String, String> appSettings, @Nonnull final String connectionName, @Nonnull final String resourceType
+            , @Nonnull final String description, @Nonnull final String title, @Nullable final String connectionHelpTopic) {
+        final FunctionConnectionCreationDialog dialog = new FunctionConnectionCreationDialog(project, functionRunConfiguration.getModule(), resourceType, connectionHelpTopic);
+        dialog.setTitle(title);
+        dialog.setFixedConnectionName(connectionName);
+        dialog.setDescription(description);
+        dialog.setOKActionText("Connect");
+        return dialog.showAndGet() ? dialog.getConnection() : null;
+    }
+
+    @AzureOperation(
+            name = "user/function.add_missing_connection.consumer|resource",
+            params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
+    )
+    private void saveConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final Map<String, String> appSettings) {
+        appSettings.putAll(connection.getEnvironmentVariables(project));
+        if (!(connection.getResource().getData() instanceof AzuriteStorageAccount)) {
+            return;
+        }
+        // start azurite if azurite connection is added
+        final Boolean startAzurite = AzureTaskManager.getInstance().runAndWaitAsObservable(new AzureTask<>("Start Azurite", () ->
+                AzuriteService.getInstance().startAzurite(project))).toBlocking().first();
+        if (BooleanUtils.isTrue(startAzurite)) {
+            AzuriteTaskProvider.AzuriteBeforeRunTask.addStopAzuriteListener(this.functionRunConfiguration);
+        }
     }
 
     private boolean isWebJobStorageRequired(@Nonnull List<BindingEnum> bindings) {

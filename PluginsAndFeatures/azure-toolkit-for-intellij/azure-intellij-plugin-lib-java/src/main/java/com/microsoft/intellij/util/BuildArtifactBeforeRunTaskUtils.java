@@ -62,7 +62,7 @@ public class BuildArtifactBeforeRunTaskUtils {
         removeTasks(editor, tasks);
     }
 
-    private static void updateConnectorBeforeRunTask(@Nonnull RunConfiguration config, @Nonnull ConfigurationSettingsEditorWrapper editor) {
+    public static void updateConnectorBeforeRunTask(@Nonnull RunConfiguration config, @Nonnull ConfigurationSettingsEditorWrapper editor) {
         config.getProject().getMessageBus()
             .syncPublisher(IWebAppRunConfiguration.MODULE_CHANGED)
             .artifactMayChanged(config, editor);
