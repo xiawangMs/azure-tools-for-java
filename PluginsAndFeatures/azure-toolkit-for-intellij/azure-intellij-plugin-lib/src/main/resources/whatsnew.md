@@ -6,6 +6,8 @@
 - Azure Spring Apps: basic Standard Consumption plan(preview) support.
 - Azure Storage Account: local Storage Account Emulator (Azurite) support.
 
+  <img alt="Azurite" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202305/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202305.azurite.gif" width="500"/>
+
 ### Changed
 - Azure Spring Apps: performance of creating/updating resources is improved.
 - Azure Functions: users are asked to select an Cloud/Emulated Storage Account in case of missing `AzureWebJobsStorage` at local run instead of fail directly.
@@ -18,6 +20,7 @@
 - [#7411](https://github.com/microsoft/azure-tools-for-java/issues/7411): Uncaught Exception com.intellij.diagnostic.PluginException: 338 ms to call on EDT RunFunctionAction#update@GoToAction (com.microsoft.azure.toolkit.intellij.legacy.function.action.RunFunctionAction).
 - [#7185](https://github.com/microsoft/azure-tools-for-java/issues/7185): Uncaught Exception com.intellij.diagnostic.PluginException: 446 ms to call on EDT AzureSignInAction#update@ToolwindowTitle (com.microsoft.intellij.actions.AzureSignInAction).
 - [#7143](https://github.com/microsoft/azure-tools-for-java/issues/7143): Uncaught Exception com.intellij.diagnostic.PluginException: 403 ms to call on EDT ShowGettingStartAction#update@GoToAction (com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction).
+- Fix : Toolkit could not authenticate with Azure CLI when it was run from the dock in Mac OS.
 - Fix : Failed to upload Spark application artifacts in IntelliJ 2023.1.
 - Fix : Local run and remote run failed, only repro in IntelliJ 2022.3.
 - Fix : Show Failed to proceed after clicking on storage account node.
