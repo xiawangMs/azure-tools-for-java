@@ -13,5 +13,7 @@
                   topic="com.intellij.execution.RunManagerListener" />
         <listener class="com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskAdder"
                   topic="com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics$ConnectionChanged" />
+        <listener class="com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskAdder"
+                  topic="com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration$ModuleChangedListener" />
     </projectListeners>
 </idea-plugin>
