@@ -43,7 +43,7 @@
         <hdinsight.toolkit-ide-lib.version>0.1.0</hdinsight.toolkit-ide-lib.version>
         <jetty.version>9.4.51.v20230217</jetty.version>
         <woodstox.version>6.4.0</woodstox.version>
-        <hadoop.version>3.3.0</hadoop.version>
+        <hadoop.version>3.3.3</hadoop.version>
     </properties>
     <modules>
         <module>azure-toolkit-ide-libs</module>
@@ -260,7 +260,16 @@
                         <groupId>com.fasterxml.woodstox</groupId>
                         <artifactId>woodstox-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler</artifactId>
+                    </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>4.1.69.Final</version>
             </dependency>
             <dependency><!--CVE-2022-40153-->
                 <groupId>com.fasterxml.woodstox</groupId>
