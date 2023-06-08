@@ -1,7 +1,10 @@
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
+import com.intellij.ide.projectView.NodeSortOrder;
+import com.intellij.ide.projectView.NodeSortSettings;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectView;
+import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
@@ -35,11 +38,11 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
-public class AzureFacetRootNode extends AbstractTreeNode<AzureModule> implements IAzureFacetNode {
+public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements IAzureFacetNode {
     private final ViewSettings viewSettings;
 
     public AzureFacetRootNode(final AzureModule module, ViewSettings settings) {
-        super(module.getProject(), module);
+        super(module.getProject(), module, settings);
         this.viewSettings = settings;
         final AzureEventBus.EventListener listener = new AzureEventBus.EventListener(this::onEvent);
         final MessageBusConnection connection = module.getProject().getMessageBus().connect();
@@ -98,5 +101,16 @@ public class AzureFacetRootNode extends AbstractTreeNode<AzureModule> implements
     @Override
     public IActionGroup getActionGroup() {
         return AzureActionManager.getInstance().getGroup(ResourceConnectionActionsContributor.EXPLORER_MODULE_ROOT_ACTIONS);
+    }
+
+    @Override
+    @SuppressWarnings("UnstableApiUsage")
+    public NodeSortOrder getSortOrder(NodeSortSettings settings) {
+        return NodeSortOrder.FOLDER;
+    }
+
+    @Override
+    public boolean contains(VirtualFile file) {
+        return false;
     }
 }
