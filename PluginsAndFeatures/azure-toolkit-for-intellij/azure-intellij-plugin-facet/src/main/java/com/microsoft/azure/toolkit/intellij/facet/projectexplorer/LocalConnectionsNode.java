@@ -13,12 +13,13 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
+import com.microsoft.azure.toolkit.lib.auth.AzureToolkitAuthenticationException;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,9 +60,12 @@ public class LocalConnectionsNode extends AbstractTreeNode<AzureModule> implemen
                 .toList();
         } catch (final Exception e) {
             e.printStackTrace();
-            final String message = ExceptionUtils.getRootCauseMessage(e);
             final ArrayList<AbstractTreeNode<?>> list = new ArrayList<>();
-            list.add(new WarningNode(this.myProject, message));
+            if (e instanceof AzureToolkitAuthenticationException) {
+                list.add(new ActionNode<>(this.myProject, Action.AUTHENTICATE));
+            } else {
+                list.add(new ExceptionNode(this.myProject, e));
+            }
             return list;
         }
     }

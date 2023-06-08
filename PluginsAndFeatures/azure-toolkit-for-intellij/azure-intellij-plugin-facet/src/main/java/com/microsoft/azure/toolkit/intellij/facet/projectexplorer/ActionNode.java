@@ -19,18 +19,28 @@ import javax.swing.*;
 import java.util.Collection;
 import java.util.Collections;
 
-public class ActionNode<T> extends AbstractTreeNode<T> implements IAzureFacetNode {
+public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzureFacetNode {
+    @Nullable
+    private final T source;
 
-    private final Action<T> action;
-
-    protected ActionNode(@Nonnull Project project, T value, Action<T> action) {
-        super(project, value);
-        this.action = action;
+    protected ActionNode(@Nonnull Project project, Action<T> action) {
+        super(project, action);
+        this.source = null;
     }
 
-    protected ActionNode(@Nonnull Project project, T value, Action.Id<T> actionId) {
-        super(project, value);
-        this.action = IntellijAzureActionManager.getInstance().getAction(actionId);
+    protected ActionNode(@Nonnull Project project, Action.Id<T> actionId) {
+        super(project, IntellijAzureActionManager.getInstance().getAction(actionId));
+        this.source = null;
+    }
+
+    protected ActionNode(@Nonnull Project project, Action<T> action, @Nullable T source) {
+        super(project, action);
+        this.source = source;
+    }
+
+    protected ActionNode(@Nonnull Project project, Action.Id<T> actionId, @Nullable T source) {
+        super(project, IntellijAzureActionManager.getInstance().getAction(actionId));
+        this.source = source;
     }
 
     @Override
@@ -40,7 +50,7 @@ public class ActionNode<T> extends AbstractTreeNode<T> implements IAzureFacetNod
 
     @Override
     protected void update(@Nonnull PresentationData presentation) {
-        final IView.Label view = action.getView(this.getValue());
+        final IView.Label view = this.getValue().getView(this.source);
         presentation.setPresentableText("Click to " + StringUtils.uncapitalize(view.getLabel()));
         presentation.setTooltip(view.getDescription());
         presentation.setForcedTextForeground(UIManager.getColor("Hyperlink.linkColor"));
@@ -48,11 +58,11 @@ public class ActionNode<T> extends AbstractTreeNode<T> implements IAzureFacetNod
 
     @Override
     public void onClicked(Object event) {
-        this.action.handle(getValue(), event);
+        this.getValue().handle(this.source, event);
     }
 
     @Override
     public @Nullable Object getData(@Nonnull String dataId) {
-        return StringUtils.equalsIgnoreCase(dataId, "ACTION_SOURCE") ? this.getValue() : null;
+        return StringUtils.equalsIgnoreCase(dataId, "ACTION_SOURCE") ? this.source : null;
     }
 }
