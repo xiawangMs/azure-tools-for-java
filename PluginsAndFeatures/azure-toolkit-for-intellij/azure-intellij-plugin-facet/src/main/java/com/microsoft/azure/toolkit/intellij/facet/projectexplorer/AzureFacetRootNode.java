@@ -77,7 +77,9 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
                 .map(dir -> PsiManagerEx.getInstanceEx(getProject()).findDirectory(dir))
                 .map(dir -> new PsiDirectoryNode(getProject(), dir, viewSettings)).ifPresent(result::add);
         }
-        result.add(CollectionUtils.isEmpty(connections) ? new AddResourceConnectorNode(module) : new LocalConnectionsNode(module));
+        result.add(CollectionUtils.isEmpty(connections) ?
+            new ActionNode<>(module.getProject(), module, ResourceConnectionActionsContributor.CONNECT_TO_MODULE) :
+            new LocalConnectionsNode(module));
         return result;
     }
 
