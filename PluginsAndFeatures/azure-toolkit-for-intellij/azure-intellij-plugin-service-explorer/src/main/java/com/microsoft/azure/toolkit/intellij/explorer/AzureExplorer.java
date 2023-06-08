@@ -16,9 +16,9 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceLabelView;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -37,7 +37,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
-    private static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
+    public static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
     public static final String AZURE_ICON = AzureIcons.Common.AZURE.getIconPath();
 
     private AzureExplorer() {
@@ -97,7 +97,7 @@ public class AzureExplorer extends Tree {
         }
     }
 
-    private static class AzureExplorerNodeProviderManager implements IExplorerNodeProvider.Manager {
+    public static class AzureExplorerNodeProviderManager implements IExplorerNodeProvider.Manager {
         private static final ExtensionPointName<IExplorerNodeProvider> providers =
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.explorerNodeProvider");
 
