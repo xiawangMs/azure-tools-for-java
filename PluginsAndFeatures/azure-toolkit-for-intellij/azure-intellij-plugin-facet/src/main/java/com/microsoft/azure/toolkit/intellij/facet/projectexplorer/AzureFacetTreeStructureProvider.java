@@ -44,10 +44,10 @@ import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 
-public final class AzureTreeStructureProvider implements TreeStructureProvider {
+public final class AzureFacetTreeStructureProvider implements TreeStructureProvider {
     private final Project myProject;
 
-    public AzureTreeStructureProvider(Project project) {
+    public AzureFacetTreeStructureProvider(Project project) {
         myProject = project;
         final AbstractProjectViewPane currentProjectViewPane = ProjectView.getInstance(project).getCurrentProjectViewPane();
         final JTree tree = currentProjectViewPane.getTree();
