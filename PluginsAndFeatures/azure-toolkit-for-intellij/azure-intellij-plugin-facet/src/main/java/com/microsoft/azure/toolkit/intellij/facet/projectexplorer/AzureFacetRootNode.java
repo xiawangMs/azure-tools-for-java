@@ -88,7 +88,6 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
         final AzureModule value = getValue();
         final boolean connected = CollectionUtils.isNotEmpty(Optional.ofNullable(value.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()));
         presentation.addText("Azure" + StringUtils.SPACE, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        presentation.addText(connected ? "Connected Azure resources" : "No Azure resources connected yet", SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES);
         presentation.setTooltip("Manage connected Azure resources here.");
         presentation.setIcon(connected ? IntelliJAzureIcons.getIcon("/icons/Common/AzureResourceConnector.svg") : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
     }
