@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
+import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
+    @Getter
     public static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
     public static final String AZURE_ICON = AzureIcons.Common.AZURE.getIconPath();
 

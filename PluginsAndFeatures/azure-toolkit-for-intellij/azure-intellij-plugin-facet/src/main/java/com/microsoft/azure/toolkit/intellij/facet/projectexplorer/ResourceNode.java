@@ -7,12 +7,16 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
-public class ResourceNode extends AbstractTreeNode<Node<?>> {
+public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode {
     public ResourceNode(@Nonnull Project project, final Node<?> node) {
         super(project, node);
         final NodeView view = node.view();
@@ -38,5 +42,30 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> {
         presentation.addText(view.getLabel(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
         presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIcon()));
         Optional.ofNullable(view.getDescription()).ifPresent(d -> presentation.addText(" " + d, SimpleTextAttributes.GRAYED_ATTRIBUTES));
+    }
+
+    @Override
+    @Nullable
+    public Object getData(@Nonnull String dataId) {
+        if (StringUtils.equalsIgnoreCase(dataId, Action.SOURCE)) {
+            return Optional.ofNullable(getValue()).map(Node::data).orElse(null);
+        }
+        return null;
+    }
+
+    @Override
+    public void onDoubleClicked(Object event) {
+        Optional.ofNullable(this.getValue()).ifPresent(n -> n.triggerDoubleClickAction(event));
+    }
+
+    @Override
+    public void onClicked(Object event) {
+        Optional.ofNullable(this.getValue()).ifPresent(n -> n.triggerClickAction(event));
+    }
+
+    @Override
+    @Nullable
+    public IActionGroup getActionGroup() {
+        return Optional.ofNullable(getValue()).map(Node::actions).orElse(null);
     }
 }
