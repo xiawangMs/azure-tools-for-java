@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -37,7 +38,15 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     @Nonnull
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
         final Node<?> node = this.getValue();
-        return node.getChildren().stream().map(n -> new ResourceNode(this.getProject(), n)).toList();
+        final ArrayList<AbstractTreeNode<?>> children = new ArrayList<>(node.getChildren().stream().map(n -> new ResourceNode(this.getProject(), n)).toList());
+        if (node.hasMoreChildren()) {
+            final Action<Object> loadMoreAction = new Action<>(Action.Id.of("user/common.load_more"))
+                .withHandler(i -> node.loadMoreChildren())
+                .withLabel("load more")
+                .withAuthRequired(true);
+            children.add(new ActionNode<>(this.myProject, loadMoreAction));
+        }
+        return children;
     }
 
     @Override
