@@ -6,9 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
 import com.intellij.ide.projectView.PresentationData;
+import com.intellij.ide.projectView.ProjectView;
+import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.tree.AsyncTreeModel;
+import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -18,20 +22,19 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
-public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode {
+public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode, NodeView.Refresher {
     public ResourceNode(@Nonnull Project project, final Node<?> node) {
         super(project, node);
         final NodeView view = node.view();
-        view.setRefresher(new NodeView.Refresher() {
-            @Override
-            public void refreshView() {
-                ResourceNode.this.update();
-            }
-        });
+        view.setRefresher(this);
     }
 
     @Override
@@ -81,5 +84,25 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     @Nullable
     public IActionGroup getActionGroup() {
         return Optional.ofNullable(getValue()).map(Node::actions).orElse(null);
+    }
+
+    @Override
+    public void refreshView() {
+        refresh(false);
+    }
+
+    @Override
+    public void refreshChildren(boolean... incremental) {
+        refresh(true);
+    }
+
+    private void refresh(boolean updateStructure) {
+        final AbstractProjectViewPane pane = ProjectView.getInstance(getProject()).getCurrentProjectViewPane();
+        final AsyncTreeModel model = (AsyncTreeModel) pane.getTree().getModel();
+        final DefaultMutableTreeNode node = TreeUtil.findNodeWithObject((DefaultMutableTreeNode) model.getRoot(), ResourceNode.this);
+        if (Objects.nonNull(node)) {
+            final TreePath path = TreeUtil.getPath((TreeNode) model.getRoot(), node);
+            pane.updateFrom(path, false, updateStructure);
+        }
     }
 }
