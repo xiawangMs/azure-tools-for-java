@@ -102,4 +102,9 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
     public boolean contains(VirtualFile file) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "Azure";
+    }
 }

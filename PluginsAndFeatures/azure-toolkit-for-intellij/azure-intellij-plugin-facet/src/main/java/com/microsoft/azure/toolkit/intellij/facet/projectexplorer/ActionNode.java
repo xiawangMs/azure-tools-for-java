@@ -65,4 +65,9 @@ public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzure
     public @Nullable Object getData(@Nonnull String dataId) {
         return StringUtils.equalsIgnoreCase(dataId, "ACTION_SOURCE") ? this.source : null;
     }
+
+    @Override
+    public String toString() {
+        return this.getValue().toString();
+    }
 }

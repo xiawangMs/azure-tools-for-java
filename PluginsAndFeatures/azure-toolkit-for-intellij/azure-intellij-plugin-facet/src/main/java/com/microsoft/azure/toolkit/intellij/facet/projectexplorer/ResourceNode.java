@@ -87,4 +87,9 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     public void refreshChildren(boolean... incremental) {
         rerender(true);
     }
+
+    @Override
+    public String toString() {
+        return this.getValue().view().getLabel();
+    }
 }

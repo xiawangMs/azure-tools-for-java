@@ -76,4 +76,9 @@ public class LocalConnectionsNode extends AbstractTreeNode<AzureModule> implemen
     public IActionGroup getActionGroup() {
         return AzureActionManager.getInstance().getGroup(ResourceConnectionActionsContributor.EXPLORER_MODULE_LOCAL_CONNECTIONS_ACTIONS);
     }
+
+    @Override
+    public String toString() {
+        return "Resource Connections";
+    }
 }

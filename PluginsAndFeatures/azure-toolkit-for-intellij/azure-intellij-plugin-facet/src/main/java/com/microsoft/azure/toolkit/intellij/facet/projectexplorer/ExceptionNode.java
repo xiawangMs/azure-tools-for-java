@@ -46,5 +46,10 @@ public class ExceptionNode extends AbstractTreeNode<Exception> {
         final String message = ExceptionUtils.getRootCauseMessage(this.getValue());
         presentation.addText(message, SimpleTextAttributes.GRAY_SMALL_ATTRIBUTES);
     }
+
+    @Override
+    public String toString() {
+        return this.getValue().getMessage();
+    }
 }
 
