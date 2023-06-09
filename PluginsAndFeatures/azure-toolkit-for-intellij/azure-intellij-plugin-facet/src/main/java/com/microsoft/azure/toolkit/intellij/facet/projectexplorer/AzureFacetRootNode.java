@@ -8,10 +8,8 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 import com.intellij.ide.projectView.NodeSortOrder;
 import com.intellij.ide.projectView.NodeSortSettings;
 import com.intellij.ide.projectView.PresentationData;
-import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ViewSettings;
-import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -27,7 +25,6 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -49,26 +45,13 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
     public AzureFacetRootNode(final AzureModule module, ViewSettings settings) {
         super(module.getProject(), module, settings);
         this.viewSettings = settings;
-        final AzureEventBus.EventListener listener = new AzureEventBus.EventListener(this::onEvent);
+        AzureEventBus.once("account.logged_in.account", (a, b) -> this.rerender(true));
         final MessageBusConnection connection = module.getProject().getMessageBus().connect();
         connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {
             if (conn.getConsumer().getId().equalsIgnoreCase(module.getName())) {
-                refresh();
+                rerender(true);
             }
         });
-        AzureEventBus.on("connector.refreshed.module_root", listener);
-    }
-
-    private void onEvent(AzureEvent azureEvent) {
-        final Object payload = azureEvent.getSource();
-        if (payload instanceof AzureModule && Objects.equals(payload, getValue())) {
-            refresh();
-        }
-    }
-
-    private void refresh() {
-        final AbstractProjectViewPane currentProjectViewPane = ProjectView.getInstance(getProject()).getCurrentProjectViewPane();
-        currentProjectViewPane.updateFromRoot(true);
     }
 
     @Override
