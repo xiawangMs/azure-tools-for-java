@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
+import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
@@ -42,6 +43,15 @@ public class EnvironmentVariablesNode extends AbstractTreeNode<Connection<?, ?>>
     protected void update(@Nonnull final PresentationData presentation) {
         presentation.setPresentableText("Environment Variables");
         presentation.setIcon(AllIcons.Actions.Properties);
+    }
+
+    /**
+     * get weight of the node.
+     * weight is used for sorting, refer to {@link com.intellij.ide.util.treeView.AlphaComparator#compare(NodeDescriptor, NodeDescriptor)}
+     */
+    @Override
+    public int getWeight() {
+        return DEFAULT_WEIGHT + 1;
     }
 
     @Override
