@@ -176,6 +176,30 @@ public class Profile {
         });
     }
 
+    @Nonnull
+    @SneakyThrows(IOException.class)
+    @AzureOperation(value = "boundary/connector.get_generated_env_from_dotenv.resource", params = "connection.getResource().getName()")
+    public List<Pair<String, String>> getGeneratedEnvironmentVariables(@Nonnull Connection<?, ?> connection) {
+        if (Objects.isNull(this.dotEnvFile) || !this.dotEnvFile.isValid()) {
+            throw new AzureToolkitRuntimeException(String.format("'.azure/%s/.env' doesn't exist.", this.name));
+        }
+        final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
+        final String startMark = "# connection.id=" + connection.getId();
+        boolean started = false;
+        final List<String> generated = new ArrayList<>();
+        for (final String line : lines) {
+            started = started || line.equalsIgnoreCase(startMark);
+            final boolean ended = started && !line.equalsIgnoreCase(startMark) && (StringUtils.isBlank(line.trim()) || line.trim().startsWith("# connection.id="));
+            if (started && !ended && !line.equalsIgnoreCase(startMark) && StringUtils.isNotBlank(line)) {
+                generated.add(line);
+            }
+            if (ended) {
+                break;
+            }
+        }
+        return generated.stream().map(g -> g.split("=", 2)).map(a -> Pair.of(a[0], a[1])).toList();
+    }
+
     public List<Connection<?, ?>> getConnections() {
         return this.getConnectionManager().getConnections();
     }

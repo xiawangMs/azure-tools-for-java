@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
@@ -15,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.*;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -51,9 +51,8 @@ public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzure
     @Override
     protected void update(@Nonnull PresentationData presentation) {
         final IView.Label view = this.getValue().getView(this.source);
-        presentation.setPresentableText("Click to " + StringUtils.uncapitalize(view.getLabel()));
+        presentation.addText("Click to " + StringUtils.uncapitalize(view.getLabel()), SimpleTextAttributes.LINK_ATTRIBUTES);
         presentation.setTooltip(view.getDescription());
-        presentation.setForcedTextForeground(UIManager.getColor("Hyperlink.linkColor"));
     }
 
     @Override

@@ -40,11 +40,9 @@ import java.util.Optional;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
 public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements IAzureFacetNode {
-    private final ViewSettings viewSettings;
 
     public AzureFacetRootNode(final AzureModule module, ViewSettings settings) {
         super(module.getProject(), module, settings);
-        this.viewSettings = settings;
         AzureEventBus.once("account.logged_in.account", (a, b) -> this.rerender(true));
         final MessageBusConnection connection = module.getProject().getMessageBus().connect();
         connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {
@@ -67,7 +65,7 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
         }
         result.add(CollectionUtils.isEmpty(connections) ?
             new ActionNode<>(module.getProject(), ResourceConnectionActionsContributor.CONNECT_TO_MODULE, module) :
-            new LocalConnectionsNode(module));
+            new ConnectionsNode(module));
         return result;
     }
 

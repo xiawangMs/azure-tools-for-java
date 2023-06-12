@@ -8,55 +8,33 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
-import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
-import com.microsoft.azure.toolkit.lib.auth.AzureToolkitAuthenticationException;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
-public class LocalConnectionsNode extends AbstractTreeNode<AzureModule> implements IAzureFacetNode {
+public class ConnectionsNode extends AbstractTreeNode<AzureModule> implements IAzureFacetNode {
 
-    public LocalConnectionsNode(@Nonnull final AzureModule module) {
+    public ConnectionsNode(@Nonnull final AzureModule module) {
         super(module.getProject(), module);
     }
 
     @Override
     @Nonnull
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
-        try {
-            final AzureModule module = Objects.requireNonNull(this.getValue());
-            return Optional.of(module).stream()
-                .map(AzureModule::getDefaultProfile).filter(Objects::nonNull)
-                .flatMap(p -> p.getConnections().stream())
-                .map(Connection::getResource)
-                .map(Resource::getData)
-                .filter(Objects::nonNull)
-                .map(d -> AzureExplorer.manager.createNode(d, null, IExplorerNodeProvider.ViewType.APP_CENTRIC))
-                .map(r -> new ResourceNode(module.getProject(), r))
-                .toList();
-        } catch (final Exception e) {
-            e.printStackTrace();
-            final ArrayList<AbstractTreeNode<?>> list = new ArrayList<>();
-            if (e instanceof AzureToolkitAuthenticationException) {
-                list.add(new ActionNode<>(this.myProject, Action.AUTHENTICATE));
-            } else {
-                list.add(new ExceptionNode(this.myProject, e));
-            }
-            return list;
-        }
+        final AzureModule module = Objects.requireNonNull(this.getValue());
+        return Optional.of(module).stream()
+            .map(AzureModule::getDefaultProfile).filter(Objects::nonNull)
+            .flatMap(p -> p.getConnections().stream())
+            .map(r -> new ConnectionNode(module.getProject(), module, r))
+            .toList();
     }
 
     @Override
