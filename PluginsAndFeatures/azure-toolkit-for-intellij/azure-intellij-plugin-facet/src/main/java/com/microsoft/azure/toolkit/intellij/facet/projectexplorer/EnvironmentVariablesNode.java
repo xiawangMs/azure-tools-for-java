@@ -11,7 +11,10 @@ import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -58,6 +61,12 @@ public class EnvironmentVariablesNode extends AbstractTreeNode<Connection<?, ?>>
     @Nullable
     public Object getData(@Nonnull String dataId) {
         return StringUtils.equalsIgnoreCase(dataId, "ACTION_SOURCE") ? this.getValue() : null;
+    }
+
+    @Nullable
+    @Override
+    public IActionGroup getActionGroup() {
+        return new ActionGroup(ResourceConnectionActionsContributor.COPY_ENV_VARS);
     }
 
     @Override

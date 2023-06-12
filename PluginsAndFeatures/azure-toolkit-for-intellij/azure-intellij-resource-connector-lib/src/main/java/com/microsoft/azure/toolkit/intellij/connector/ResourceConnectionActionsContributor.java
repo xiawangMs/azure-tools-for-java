@@ -17,13 +17,18 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("user/connector.refresh_connections");
@@ -34,6 +39,11 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     public static final Action.Id<AzureModule> CONNECT_TO_MODULE = Action.Id.of("user/connector.connect_to_module");
     public static final Action.Id<AzureModule> REFRESH_MODULE = Action.Id.of("user/connector.refresh_module");
     public static final Action.Id<AzureModule> REFRESH_MODULE_CONNECTIONS = Action.Id.of("user/connector.refresh_module_connections");
+
+    public static final Action.Id<Pair<String, String>> COPY_ENV_PAIR = Action.Id.of("user/connector.copy_env_pair");
+    public static final Action.Id<Pair<String, String>> COPY_ENV_KEY = Action.Id.of("user/connector.copy_env_key");
+    public static final Action.Id<Connection<?, ?>> COPY_ENV_VARS = Action.Id.of("user/connector.copy_env_variables");
+
     public static final String MODULE_ACTIONS = "actions.connector.module";
     public static final String CONNECTION_ACTIONS = "actions.connector.connection";
     public static final String EXPLORER_MODULE_ROOT_ACTIONS = "actions.connector.explorer_module_root";
@@ -97,6 +107,38 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .visibleWhen(m -> m instanceof Connection<?, ?>)
             .withHandler((c, e) -> ResourceConnectionActionsContributor.removeConnection(c, (AnActionEvent) e))
             .withShortcut(am.getIDEDefaultShortcuts().delete())
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(COPY_ENV_KEY)
+            .withIcon(AzureIcons.Action.COPY.getIconPath())
+            .withLabel("Copy Key")
+            .withHandler(s -> {
+                am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(s.getKey());
+                AzureMessager.getMessager().success(AzureString.format("Environment variable key is copied into clipboard."));
+            })
+            .withAuthRequired(false)
+            .register(am);
+        new Action<>(COPY_ENV_PAIR)
+            .withIcon(AzureIcons.Action.COPY.getIconPath())
+            .withLabel("Copy")
+            .withHandler(pair -> {
+                am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(String.format("%s=%s", pair.getKey(), pair.getValue()));
+                AzureMessager.getMessager().success(AzureString.format("Environment variable key/value pair is copied into clipboard."));
+            })
+            .withShortcut(am.getIDEDefaultShortcuts().copy())
+            .withAuthRequired(false)
+            .register(am);
+        new Action<>(COPY_ENV_VARS)
+            .withIcon(AzureIcons.Action.COPY.getIconPath())
+            .withLabel("Copy All")
+            .withHandler(c -> {
+                final List<Pair<String, String>> variables = c.getGeneratedEnvironmentVariables();
+                final String str = variables.stream().map(v -> String.format("%s=%s", v.getKey(), v.getValue())).collect(Collectors.joining(System.lineSeparator()));
+                am.getAction(ResourceCommonActionsContributor.COPY_STRING).handle(str);
+                AzureMessager.getMessager().success(AzureString.format("Environment variables are copied into clipboard."));
+            })
+            .withShortcut(am.getIDEDefaultShortcuts().copy())
             .withAuthRequired(false)
             .register(am);
     }

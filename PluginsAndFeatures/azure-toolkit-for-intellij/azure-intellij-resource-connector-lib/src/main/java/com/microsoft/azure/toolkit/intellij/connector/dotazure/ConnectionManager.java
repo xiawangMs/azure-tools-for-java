@@ -110,6 +110,7 @@ public class ConnectionManager {
 
     @AzureOperation(name = "internal/connector.add_connection")
     public synchronized void addConnection(Connection<?, ?> connection) {
+        connection.setProfile(this.profile);
         connections.add(connection);
     }
 

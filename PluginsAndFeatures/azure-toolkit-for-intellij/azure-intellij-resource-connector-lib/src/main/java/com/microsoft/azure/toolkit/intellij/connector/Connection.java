@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -17,10 +18,17 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +72,8 @@ public class Connection<R, C> {
     private String envPrefix;
 
     private Map<String, String> env = new HashMap<>();
+    @Getter
+    private Profile profile;
 
 //    public String getId() {
 //        return StringUtils.isBlank(this.id) ? this.getEnvPrefix() + "/" + resource.getId() : this.id;
@@ -126,5 +136,13 @@ public class Connection<R, C> {
 
     public boolean validate(Project project) {
         return this.getDefinition().validate(this, project);
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
+
+    public List<Pair<String, String>> getGeneratedEnvironmentVariables() {
+        return Optional.ofNullable(this.profile).map(p -> p.getGeneratedEnvironmentVariables(this)).orElse(Collections.emptyList());
     }
 }
