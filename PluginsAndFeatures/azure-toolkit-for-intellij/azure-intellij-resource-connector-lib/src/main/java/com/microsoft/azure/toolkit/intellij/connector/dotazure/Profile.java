@@ -23,6 +23,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import rx.Observable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -84,13 +85,14 @@ public class Profile {
     }
 
     public synchronized Profile addConnection(@Nonnull Connection<?, ?> connection) {
-        this.addConnectionToDotEnv(connection);
         this.getResourceManager().addResource(connection.getResource());
         this.getConnectionManager().addConnection(connection);
-        final String message = String.format("The connection between %s and %s has been successfully created/updated.", connection.getResource().getName(), connection.getConsumer().getName());
-        AzureMessager.getMessager().success(message);
-        final Project project = this.module.getProject();
-        project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
+        this.addConnectionToDotEnv(connection).subscribe(v -> {
+            final String message = String.format("The connection between %s and %s has been successfully created/updated.", connection.getResource().getName(), connection.getConsumer().getName());
+            AzureMessager.getMessager().success(message);
+            final Project project = this.module.getProject();
+            project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
+        });
         return this;
     }
 
@@ -158,14 +160,14 @@ public class Profile {
 
     @SneakyThrows(IOException.class)
     @AzureOperation(value = "boundary/connector.add_connection_to_dotenv.resource", params = "connection.getResource().getName()")
-    private void addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
+    private Observable<Void> addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
         if (!this.profileDir.isValid()) {
             throw new AzureToolkitRuntimeException(String.format("'.azure/%s' doesn't exist.", this.name));
         }
         WriteAction.run(() -> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
         Objects.requireNonNull(this.dotEnvFile, String.format("'.azure/%s/.env' can not be created.", this.name));
         final AzureString description = OperationBundle.description("boundary/connector.load_env.resource", connection.getResource().getDataId());
-        AzureTaskManager.getInstance().runInBackground(description, () -> {
+        return AzureTaskManager.getInstance().runInBackgroundAsObservable(description, () -> {
             final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
             try {
                 Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);
