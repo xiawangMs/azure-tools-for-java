@@ -10,10 +10,8 @@ import com.intellij.ide.projectView.NodeSortSettings;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ViewSettings;
-import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.impl.PsiManagerEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -57,12 +55,12 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
         final ArrayList<AbstractTreeNode<?>> result = new ArrayList<>();
         final AzureModule module = this.getValue();
         final List<Connection<?, ?>> connections = Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList());
-        if (CollectionUtils.isNotEmpty(connections)) { // add back .azure file node
-            final VirtualFile virtualFile = Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
-            Optional.ofNullable(virtualFile)
-                .map(dir -> PsiManagerEx.getInstanceEx(getProject()).findDirectory(dir))
-                .map(dir -> new PsiDirectoryNode(getProject(), dir, viewSettings)).ifPresent(result::add);
-        }
+//        if (CollectionUtils.isNotEmpty(connections)) { // add back .azure file node
+//            final VirtualFile virtualFile = Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
+//            Optional.ofNullable(virtualFile)
+//                .map(dir -> PsiManagerEx.getInstanceEx(getProject()).findDirectory(dir))
+//                .map(dir -> new PsiDirectoryNode(getProject(), dir, viewSettings)).ifPresent(result::add);
+//        }
         result.add(CollectionUtils.isEmpty(connections) ?
             new ActionNode<>(module.getProject(), ResourceConnectionActionsContributor.CONNECT_TO_MODULE, module) :
             new ConnectionsNode(module));
