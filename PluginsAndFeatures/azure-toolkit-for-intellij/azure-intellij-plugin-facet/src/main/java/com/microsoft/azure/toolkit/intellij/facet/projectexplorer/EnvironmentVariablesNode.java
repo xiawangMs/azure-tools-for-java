@@ -44,8 +44,9 @@ public class EnvironmentVariablesNode extends AbstractTreeNode<Connection<?, ?>>
 
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
-        presentation.setPresentableText("Environment Variables");
         presentation.setIcon(AllIcons.Actions.Properties);
+        presentation.setPresentableText("Environment Variables");
+        presentation.setTooltip("Generated environment variables by connected resource.");
     }
 
     /**

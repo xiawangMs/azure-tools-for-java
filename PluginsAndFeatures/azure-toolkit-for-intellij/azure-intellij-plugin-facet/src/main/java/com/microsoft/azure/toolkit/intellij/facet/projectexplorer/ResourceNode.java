@@ -48,8 +48,9 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     protected void update(@Nonnull final PresentationData presentation) {
         final Node<?> node = this.getValue();
         final NodeView view = node.view();
-        presentation.addText(view.getLabel(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
         presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIcon()));
+        presentation.addText(view.getLabel(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+        presentation.setTooltip(view.getTips());
         Optional.ofNullable(view.getDescription()).ifPresent(d -> presentation.addText(" " + d, SimpleTextAttributes.GRAYED_ATTRIBUTES));
     }
 

@@ -39,8 +39,9 @@ public class ConnectionsNode extends AbstractTreeNode<AzureModule> implements IA
 
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
-        presentation.setPresentableText("Resource Connections");
         presentation.setIcon(AllIcons.Nodes.HomeFolder);
+        presentation.setPresentableText("Resource Connections");
+        presentation.setTooltip("The dependent/connected resources.");
     }
 
     @Override
