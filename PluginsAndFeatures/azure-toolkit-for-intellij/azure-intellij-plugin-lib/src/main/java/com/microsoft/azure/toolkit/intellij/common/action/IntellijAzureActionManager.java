@@ -24,6 +24,7 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.pom.Navigatable;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
@@ -70,11 +71,6 @@ public class IntellijAzureActionManager extends AzureActionManager {
         if (Objects.isNull(manager.getAction(action.getId()))) {
             final AnActionWrapper<D> wrapper = new AnActionWrapper<>(action);
             manager.registerAction(action.getId(), wrapper);
-//            AnAction action1 = manager.getAction("ProjectViewPopupMenu");
-//            if(action1 instanceof DefaultActionGroup){
-//                DefaultActionGroup group = (DefaultActionGroup) action1;
-//                group.add(wrapper);
-//            }
         }
     }
 
@@ -105,6 +101,11 @@ public class IntellijAzureActionManager extends AzureActionManager {
     @Override
     public IActionGroup getGroup(String id) {
         return (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
+    }
+
+    public static String getAzureActionPlace(@Nonnull final String place) {
+        return StringUtils.equalsAnyIgnoreCase(place, ActionPlaces.PROJECT_VIEW_POPUP, ActionPlaces.PROJECT_VIEW_TOOLBAR)
+                ? ResourceCommonActionsContributor.PROJECT_VIEW : place;
     }
 
     @Getter
@@ -140,13 +141,13 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
         private T getSource(@Nonnull AnActionEvent e) {
             return Optional.ofNullable((T) e.getDataContext().getData(Action.SOURCE))
-                           .orElseGet(() -> {
-                               final Navigatable[] data = e.getData(CommonDataKeys.NAVIGATABLE_ARRAY);
-                               if (data == null || data.length != 1) {
-                                   return null;
-                               }
-                               return data[0] instanceof DataProvider ? (T) ((DataProvider) data[0]).getData(Action.SOURCE) : null;
-                           });
+                .orElseGet(() -> {
+                    final Navigatable[] data = e.getData(CommonDataKeys.NAVIGATABLE_ARRAY);
+                    if (data == null || data.length != 1) {
+                        return null;
+                    }
+                    return data[0] instanceof DataProvider ? (T) ((DataProvider) data[0]).getData(Action.SOURCE) : null;
+                });
         }
 
         @Override
@@ -158,9 +159,9 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Override
         public void update(@Nonnull AnActionEvent e) {
             final T source = getSource(e);
+            final String place = getAzureActionPlace(e.getPlace());
             final Presentation presentation = e.getPresentation();
-            final IView.Label view = this.action.getView(source);
-
+            final IView.Label view = this.action.getView(source, place);
             final boolean visible;
             final boolean isAbstractAzResource = source instanceof AbstractAzResource;
 
@@ -266,7 +267,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         public void registerCustomShortcutSetForActions(JComponent component, @Nullable Disposable disposable) {
             for (final AnAction origin : this.getChildActionsOrStubs()) {
                 final AnAction real = origin instanceof com.intellij.openapi.actionSystem.AnActionWrapper ?
-                                      ((com.intellij.openapi.actionSystem.AnActionWrapper) origin).getDelegate() : origin;
+                    ((com.intellij.openapi.actionSystem.AnActionWrapper) origin).getDelegate() : origin;
                 if (real instanceof AnActionWrapper) {
                     final ShortcutSet shortcuts = ((AnActionWrapper<?>) real).getShortcuts();
                     if (Objects.nonNull(shortcuts)) {

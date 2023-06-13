@@ -27,6 +27,7 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ClientProperty;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
@@ -109,7 +110,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode) {
                 final IAzureFacetNode node = (IAzureFacetNode) currentTreeNode;
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
-                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "explorer.connector", context);
+                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ResourceCommonActionsContributor.AZURE_EXPLORER + ".connection", context);
                 if (e.getClickCount() == 1) {
                     node.onClicked(event);
                 } else if (e.getClickCount() == 2) {
@@ -161,14 +162,6 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
                 this.backupActions.forEach(popupMenu::add);
             }
             this.currentNode = null;
-//            final IActionGroup group = IntellijAzureActionManager.getInstance().getGroup(groupId);
-//            // clean up seperator added by toolkits
-//            while (ArrayUtils.contains(popupMenu.getChildActionsOrStubs(), seperator)) {
-//                popupMenu.remove(seperator);
-//            }
-//            group.getActions().stream().filter(action -> action instanceof Action.Id)
-//                    .map(id -> ((Action.Id<?>) id).getId())
-//                    .forEach(id -> Optional.ofNullable(manager.getAction(id)).ifPresent(popupMenu::remove));
         }
 
         private void updatePopupMenuActions(final IAzureFacetNode node) {

@@ -22,6 +22,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -82,7 +83,7 @@ public class TreeUtils {
             }
             if (n instanceof Tree.TreeNode) {
                 final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                final String place = ResourceCommonActionsContributor.AZURE_EXPLORER +  "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                 final IActionGroup actions = node.inner.actions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
