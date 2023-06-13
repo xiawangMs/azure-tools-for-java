@@ -5,13 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -19,9 +22,12 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
@@ -29,6 +35,7 @@ import lombok.Getter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +47,7 @@ import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
 
 public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements AzureForm<Connection<?, ?>> {
+    public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure resource.</html>";
     private final Project project;
     private JPanel contentPane;
     @SuppressWarnings("rawtypes")
@@ -55,6 +63,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private TitledSeparator resourceTitle;
     private TitledSeparator consumerTitle;
     protected JTextField envPrefixTextField;
+    private HyperlinkLabel lblSignIn;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
 
@@ -73,6 +82,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     @Override
     protected void init() {
         super.init();
+        this.lblSignIn.setVisible(!Azure.az(AzureAccount.class).isLoggedIn());
         this.setOkActionListener(this::saveConnection);
         this.consumerTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         this.resourceTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
@@ -271,6 +281,13 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
                 return Collections.emptyList();
             }
         };
+
+        this.lblSignIn = new HyperlinkLabel();
+        this.lblSignIn.setForeground(UIUtil.getContextHelpForeground());
+        this.lblSignIn.setHtmlText(NOT_SIGNIN_TIPS);
+        this.lblSignIn.setIcon(AllIcons.General.Information);
+        this.lblSignIn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        this.lblSignIn.addHyperlinkListener(e -> AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> this.lblSignIn.setVisible(!Azure.az(AzureAccount.class).isLoggedIn())));
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
