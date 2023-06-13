@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -22,7 +23,6 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ShortcutSet;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
-import com.intellij.pom.Navigatable;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -103,9 +103,9 @@ public class IntellijAzureActionManager extends AzureActionManager {
         return (ActionGroupWrapper) ActionManager.getInstance().getAction(id);
     }
 
-    public static String getAzureActionPlace(@Nonnull final String place) {
+    public static String convertToAzureActionPlace(@Nonnull final String place) {
         return StringUtils.equalsAnyIgnoreCase(place, ActionPlaces.PROJECT_VIEW_POPUP, ActionPlaces.PROJECT_VIEW_TOOLBAR)
-                ? ResourceCommonActionsContributor.PROJECT_VIEW : place;
+            ? ResourceCommonActionsContributor.PROJECT_VIEW : place;
     }
 
     @Getter
@@ -139,15 +139,15 @@ public class IntellijAzureActionManager extends AzureActionManager {
             }
         }
 
+        @Nullable
+        @SuppressWarnings("unchecked")
         private T getSource(@Nonnull AnActionEvent e) {
             return Optional.ofNullable((T) e.getDataContext().getData(Action.SOURCE))
-                .orElseGet(() -> {
-                    final Navigatable[] data = e.getData(CommonDataKeys.NAVIGATABLE_ARRAY);
-                    if (data == null || data.length != 1) {
-                        return null;
-                    }
-                    return data[0] instanceof DataProvider ? (T) ((DataProvider) data[0]).getData(Action.SOURCE) : null;
-                });
+                .or(() -> Optional.ofNullable(e.getData(CommonDataKeys.NAVIGATABLE_ARRAY))
+                    .filter(d -> d.length == 1 && d[0] instanceof DataProvider)
+                    .map(d -> (DataProvider) d[0])
+                    .map(d -> (T) d.getData(Action.SOURCE)))
+                .orElse(null);
         }
 
         @Override
@@ -159,7 +159,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Override
         public void update(@Nonnull AnActionEvent e) {
             final T source = getSource(e);
-            final String place = getAzureActionPlace(e.getPlace());
+            final String place = convertToAzureActionPlace(e.getPlace());
             final Presentation presentation = e.getPresentation();
             final IView.Label view = this.action.getView(source, place);
             final boolean visible;
