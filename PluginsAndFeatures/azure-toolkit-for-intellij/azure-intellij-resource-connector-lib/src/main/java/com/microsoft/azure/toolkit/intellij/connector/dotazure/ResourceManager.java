@@ -96,7 +96,8 @@ public class ResourceManager {
     @AzureOperation("boundary/connector.save_resources")
     void save() throws IOException {
         final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
-        this.resources.forEach(resource -> {
+        // todo: whether to save invalid resources?
+        this.resources.stream().filter(Resource::isValidResource).forEach(resource -> {
             final Element resourceEle = new Element(ELEMENT_NAME_RESOURCE);
             try {
                 if (resource.writeTo(resourceEle)) {

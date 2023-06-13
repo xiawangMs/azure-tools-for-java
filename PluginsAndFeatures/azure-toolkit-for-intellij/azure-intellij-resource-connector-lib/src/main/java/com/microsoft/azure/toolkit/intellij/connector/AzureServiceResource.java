@@ -103,6 +103,11 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
         return String.format("%s[%s]", this.getDefinition().title, this.getName());
     }
 
+    @Override
+    public boolean isValidResource() {
+        return Optional.ofNullable(getData()).map(AzResource::exists).orElse(false);
+    }
+
     @Getter
     @RequiredArgsConstructor
     @EqualsAndHashCode(onlyExplicitlyIncluded = true)
