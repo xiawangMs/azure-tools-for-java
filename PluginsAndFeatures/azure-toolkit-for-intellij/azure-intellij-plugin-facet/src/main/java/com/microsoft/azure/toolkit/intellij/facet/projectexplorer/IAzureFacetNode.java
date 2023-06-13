@@ -34,7 +34,11 @@ public interface IAzureFacetNode extends DataProvider {
     }
 
     default void rerender(boolean updateStructure) {
-        final AbstractProjectViewPane pane = ProjectView.getInstance(getProject()).getCurrentProjectViewPane();
+        final Project project = getProject();
+        if (project.isDisposed()) {
+            return;
+        }
+        final AbstractProjectViewPane pane = ProjectView.getInstance(project).getCurrentProjectViewPane();
         final AsyncTreeModel model = (AsyncTreeModel) pane.getTree().getModel();
         final DefaultMutableTreeNode node = TreeUtil.findNodeWithObject((DefaultMutableTreeNode) model.getRoot(), this);
         if (Objects.nonNull(node)) {
