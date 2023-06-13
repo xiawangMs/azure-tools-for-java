@@ -19,6 +19,7 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -27,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.concurrency.AsyncPromise;
@@ -128,6 +130,10 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
 
         @AzureOperation("platform/connector.load_env_beforeruntask")
         public List<Pair<String, String>> loadEnv() {
+            final Profile profile = AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).orElse(null);
+            if (CollectionUtils.isNotEmpty(profile.getInvalidConnections())) {
+                AzureTaskManager.getInstance().runAndWait(profile::fixInvalidResourceConnection);
+            }
             return Optional.ofNullable(this.file)
                 .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
                 .map(Profile::load)

@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -217,5 +218,19 @@ public class Profile {
 
     public List<String> getTargetAppIds() {
         return this.deploymentTargetManager.getTargets();
+    }
+
+    public List<Connection<?, ?>> getInvalidConnections() {
+        final Project project = this.module.getProject();
+        return this.getConnections().stream().filter(c -> !c.validate(project)).collect(Collectors.toList());
+    }
+
+    public void fixInvalidResourceConnection() {
+        final Project project = this.module.getProject();
+        final List<Connection<?, ?>> invalidConnections = getInvalidConnections();
+        for (Connection<?, ?> connection : invalidConnections) {
+            ResourceConnectionActionsContributor.fixResourceConnection(connection, project);
+        }
+        WriteAction.run(() -> this.save());
     }
 }

@@ -31,17 +31,15 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.CONSUMER;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
@@ -64,6 +62,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private TitledSeparator consumerTitle;
     protected JTextField envPrefixTextField;
     private HyperlinkLabel lblSignIn;
+    private JPanel descriptionContainer;
+    private JTextPane descriptionPane;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
 
@@ -86,6 +86,16 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.setOkActionListener(this::saveConnection);
         this.consumerTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         this.resourceTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
+        final Font font = UIManager.getFont("Label.font");
+        final Color foregroundColor = UIManager.getColor("Label.foreground");
+        final Color backgroundColor = UIManager.getColor("Label.backgroundColor");
+        this.descriptionPane.putClientProperty("JEditorPane.honorDisplayProperties", Boolean.TRUE);
+        if (font != null && foregroundColor != null) {
+            this.descriptionPane.setFont(font);
+            this.descriptionPane.setForeground(foregroundColor);
+            this.descriptionPane.setBackground(backgroundColor);
+        }
+
         final var resourceDefinitions = ResourceManager.getDefinitions(RESOURCE);
         final var consumerDefinitions = ResourceManager.getDefinitions(CONSUMER);
         if (resourceDefinitions.size() == 1) {
@@ -129,10 +139,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             return;
         }
         this.close(0);
-        final Resource<?> resource = connection.getResource();
-        final Resource<?> consumer = connection.getConsumer();
         if (connection.validate(this.project)) {
-            saveConnectionToDotAzure(connection, consumer);
+            saveConnectionToDotAzure(connection);
         }
     }
 
@@ -140,7 +148,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         name = "user/connector.create_or_update_connection.consumer|resource",
         params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
     )
-    private void saveConnectionToDotAzure(Connection<?, ?> connection, Resource<?> consumer) {
+    private void saveConnectionToDotAzure(Connection<?, ?> connection) {
+        final Resource<?> consumer = connection.getConsumer();
         if (consumer instanceof ModuleResource) {
             final ModuleManager moduleManager = ModuleManager.getInstance(project);
             final Module m = moduleManager.findModuleByName(consumer.getName());
@@ -256,8 +265,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
     private void fixResourceType(ResourceDefinition<?> definition) {
         this.resourceTitle.setText(definition.getTitle());
-        this.resourceTypeLabel.setVisible(false);
-        this.resourceTypeSelector.setVisible(false);
+        this.resourceTypeSelector.setEnabled(false);
+        this.resourceTypeSelector.setEditable(false);
     }
 
     private void fixConsumerType(ResourceDefinition<?> definition) {
@@ -290,6 +299,27 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.lblSignIn.addHyperlinkListener(e -> AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> this.lblSignIn.setVisible(!Azure.az(AzureAccount.class).isLoggedIn())));
     }
 
+    public void setDescription(@Nonnull final String description) {
+        descriptionContainer.setVisible(true);
+        descriptionPane.setText(description);
+    }
+
+    public void setFixedConnectionDefinition(ConnectionDefinition<?,?> definition) {
+        this.fixResourceType(definition.getResourceDefinition());
+        this.fixConsumerType(definition.getConsumerDefinition());
+    }
+
+    public void setFixedEnvPrefix(@Nonnull final String envPrefix) {
+        envPrefixTextField.setText(envPrefix);
+        envPrefixTextField.setEnabled(false);
+        envPrefixTextField.setEditable(false);
+    }
+
+    private void signInAndReloadItems(@Nonnull final HyperlinkLabel notSignInTips) {
+        AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
+            notSignInTips.setVisible(false);
+        });
+    }
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     void $$$setupUI$$$() {
     }
