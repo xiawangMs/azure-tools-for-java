@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -63,7 +64,10 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     @Override
     @Nonnull
     public Collection<AbstractTreeNode<?>> modify(@Nonnull AbstractTreeNode<?> parent, @Nonnull Collection<AbstractTreeNode<?>> children, ViewSettings settings) {
-        final AzureModule azureModule = getIfAzureModule(parent);
+        final AzureModule azureModule = Optional.ofNullable(toModule(parent))
+            .map(AzureModule::from)
+            .filter(m -> m.isInitialized() || m.hasAzureDependencies())
+            .orElse(null);
         if (Objects.nonNull(azureModule)) {
             addListener(parent.getProject());
             final AbstractTreeNode<?> dotAzureDir = children.stream()
@@ -80,16 +84,16 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         return children;
     }
 
+    /**
+     * convert to {@code Module} is the {@param node} is a module dir.
+     */
     @Nullable
-    private AzureModule getIfAzureModule(final AbstractTreeNode<?> parent) {
-        if (parent instanceof PsiDirectoryNode) {
-            final VirtualFile file = ((PsiDirectoryNode) parent).getValue().getVirtualFile();
+    private Module toModule(final AbstractTreeNode<?> node) {
+        if (node instanceof PsiDirectoryNode) {
+            final VirtualFile file = ((PsiDirectoryNode) node).getValue().getVirtualFile();
             final Module module = ModuleUtil.findModuleForFile(file, myProject);
             if (Objects.nonNull(module) && Objects.equals(ProjectUtil.guessModuleDir(module), file)) {
-                final AzureModule azureModule = AzureModule.from(module);
-                if (azureModule.isInitialized()) {
-                    return azureModule;
-                }
+                return module;
             }
         }
         return null;

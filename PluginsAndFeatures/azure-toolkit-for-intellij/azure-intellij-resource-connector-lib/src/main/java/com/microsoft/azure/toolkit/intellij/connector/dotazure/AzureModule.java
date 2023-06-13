@@ -6,6 +6,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -23,15 +24,20 @@ import org.jdom.JDOMException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class AzureModule {
+    private static final Pattern PATTERN = Pattern.compile("(Gradle|Maven): (.+):(.+):(.+)");
+
     static final String DOT_AZURE = ".azure";
     static final String PROFILES_XML = "profiles.xml";
     static final String DOT_GITIGNORE = ".gitignore";
@@ -202,6 +208,19 @@ public class AzureModule {
 
     public boolean isInitialized() {
         return Objects.nonNull(this.profilesXmlFile);
+    }
+
+    public boolean hasAzureDependencies() {
+        final List<String> libs = new ArrayList<>();
+        OrderEnumerator.orderEntries(this.module).librariesOnly().forEachLibrary(l -> libs.add(l.getName()));
+        return libs.stream().filter(StringUtils::isNotBlank)
+            .map(PATTERN::matcher).filter(Matcher::matches)
+            .anyMatch(m -> {
+                final String artifactId = m.group(2).trim() + ":" + m.group(3).trim();
+                return StringUtils.equals(artifactId, "com.azure:azure-core") ||
+                    StringUtils.equals(artifactId, "com.microsoft.azure:azure-client-runtime") ||
+                    StringUtils.equals(artifactId, "com.microsoft.azure.functions:azure-functions-java-library");
+            });
     }
 
     public static AzureModule from(@Nonnull Module module) {
