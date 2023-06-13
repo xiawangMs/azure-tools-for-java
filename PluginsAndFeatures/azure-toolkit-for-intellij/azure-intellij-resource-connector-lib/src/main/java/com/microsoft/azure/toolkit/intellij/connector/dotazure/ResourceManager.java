@@ -42,14 +42,11 @@ public class ResourceManager {
     private static final String ELEMENT_NAME_RESOURCES = "resources";
     private static final String ELEMENT_NAME_RESOURCE = "resource";
     private final Set<Resource<?>> resources = new LinkedHashSet<>();
-    @Nullable
-    private final VirtualFile resourcesFile;
     @Getter
     private final Profile profile;
 
     public ResourceManager(@Nonnull final Profile profile) {
         this.profile = profile;
-        this.resourcesFile = this.profile.getProfileDir().findChild(RESOURCES_FILE);
         try {
             this.load();
         } catch (final Exception e) {
@@ -117,11 +114,12 @@ public class ResourceManager {
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_resources")
     void load() throws Exception {
-        if (Objects.isNull(this.resourcesFile) || this.resourcesFile.contentsToByteArray().length < 1) {
+        final VirtualFile resourcesFile = this.profile.getProfileDir().findChild(RESOURCES_FILE);
+        if (Objects.isNull(resourcesFile) || resourcesFile.contentsToByteArray().length < 1) {
             return;
         }
         this.resources.clear();
-        final Element resourcesEle = JDOMUtil.load(this.resourcesFile.toNioPath());
+        final Element resourcesEle = JDOMUtil.load(resourcesFile.toNioPath());
         for (final Element resourceEle : resourcesEle.getChildren()) {
             final String resDef = resourceEle.getAttributeValue(ATTR_DEFINITION);
             final ResourceDefinition<?> definition = ResourceManager.getDefinition(resDef);

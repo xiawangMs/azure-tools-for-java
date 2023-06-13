@@ -47,14 +47,11 @@ public class ConnectionManager {
     public static final String FIELD_ID = "id";
     private static Map<String, ConnectionDefinition<?, ?>> definitions = null;
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
-    @Nullable
-    private final VirtualFile connectionsFile;
     @Getter
     private final Profile profile;
 
     public ConnectionManager(@Nonnull final Profile profile) {
         this.profile = profile;
-        this.connectionsFile = this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
         try {
             this.load();
         } catch (final Exception e) {
@@ -149,10 +146,11 @@ public class ConnectionManager {
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_connections")
     void load() throws Exception {
-        if (Objects.isNull(this.connectionsFile) || this.connectionsFile.contentsToByteArray().length < 1) {
+        final VirtualFile connectionsFile = this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
+        if (Objects.isNull(connectionsFile) || connectionsFile.contentsToByteArray().length < 1) {
             return;
         }
-        final Element connectionsEle = JDOMUtil.load(this.connectionsFile.toNioPath());
+        final Element connectionsEle = JDOMUtil.load(connectionsFile.toNioPath());
         final Profile profile = this.getProfile();
         final ResourceManager resourceManager = profile.getResourceManager();
         this.connections.clear();

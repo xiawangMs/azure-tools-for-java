@@ -40,38 +40,30 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
-import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.*;
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.DOT_ENV;
 
+@Getter
 public class Profile {
-    @Getter
     @Nonnull
     private final String name;
-    @Getter
     @Nonnull
     private final VirtualFile profileDir;
     @Nonnull
     private final AzureModule module;
-    @Getter
+    @Nonnull
+    private final ConnectionManager connectionManager;
+    @Nonnull
+    private final ResourceManager resourceManager;
     @Nullable
     private VirtualFile dotEnvFile;
-    @Nullable
-    private ConnectionManager connectionManager;
-    @Nullable
-    private ResourceManager resourceManager;
 
     public Profile(@Nonnull String name, @Nonnull VirtualFile profileDir, @Nonnull AzureModule module) {
         this.name = name;
         this.module = module;
         this.profileDir = profileDir;
+        this.resourceManager = new ResourceManager(this);
+        this.connectionManager = new ConnectionManager(this);
         this.dotEnvFile = this.profileDir.findChild(DOT_ENV);
-        final VirtualFile connectionsFile = this.profileDir.findChild(CONNECTIONS_FILE);
-        final VirtualFile resourcesFile = this.profileDir.findChild(RESOURCES_FILE);
-        if (Objects.nonNull(resourcesFile)) {
-            this.resourceManager = new ResourceManager(this);
-        }
-        if (Objects.nonNull(connectionsFile)) {
-            this.connectionManager = new ConnectionManager(this);
-        }
     }
 
     public List<Pair<String, String>> load() {
@@ -112,9 +104,6 @@ public class Profile {
     }
 
     public void save() {
-        if (Objects.isNull(this.connectionManager) || Objects.isNull(this.resourceManager)) {
-            return;
-        }
         try {
             this.connectionManager.save();
             this.resourceManager.save();
@@ -204,21 +193,5 @@ public class Profile {
 
     public List<Connection<?, ?>> getConnections() {
         return this.getConnectionManager().getConnections();
-    }
-
-    @Nonnull
-    public synchronized ConnectionManager getConnectionManager() {
-        if (Objects.isNull(this.connectionManager)) {
-            this.connectionManager = new ConnectionManager(this);
-        }
-        return this.connectionManager;
-    }
-
-    @Nonnull
-    public synchronized ResourceManager getResourceManager() {
-        if (Objects.isNull(this.resourceManager)) {
-            this.resourceManager = new ResourceManager(this);
-        }
-        return this.resourceManager;
     }
 }
