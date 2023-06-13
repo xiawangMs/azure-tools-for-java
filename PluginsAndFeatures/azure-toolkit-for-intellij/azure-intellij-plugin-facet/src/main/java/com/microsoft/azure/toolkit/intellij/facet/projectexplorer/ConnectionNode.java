@@ -61,7 +61,8 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         } catch (final Exception e) {
             e.printStackTrace();
             if (e instanceof AzureToolkitAuthenticationException) {
-                return new ActionNode<>(this.myProject, Action.AUTHENTICATE);
+                final Action<Object> signin = AzureActionManager.getInstance().getAction(Action.AUTHENTICATE).bind(connection).withLabel("Sign in to manage connected resource");
+                return new ActionNode<>(this.myProject, signin);
             } else {
                 return new ExceptionNode(this.myProject, e);
             }

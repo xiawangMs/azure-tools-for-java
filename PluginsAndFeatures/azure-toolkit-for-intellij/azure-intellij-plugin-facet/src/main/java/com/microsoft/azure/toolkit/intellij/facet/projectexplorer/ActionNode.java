@@ -51,7 +51,7 @@ public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzure
     @Override
     protected void update(@Nonnull PresentationData presentation) {
         final IView.Label view = this.getValue().getView(this.source);
-        presentation.addText("Click to " + StringUtils.uncapitalize(view.getLabel()), SimpleTextAttributes.LINK_ATTRIBUTES);
+        presentation.addText(StringUtils.capitalize(view.getLabel()), SimpleTextAttributes.LINK_ATTRIBUTES);
         presentation.setTooltip(view.getDescription());
     }
 
