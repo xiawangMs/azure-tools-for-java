@@ -10,9 +10,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
+import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -54,6 +56,8 @@ public class Profile {
     private final ConnectionManager connectionManager;
     @Nonnull
     private final ResourceManager resourceManager;
+    @Nonnull
+    private final DeploymentTargetManager deploymentTargetManager;
     @Nullable
     private VirtualFile dotEnvFile;
 
@@ -63,6 +67,7 @@ public class Profile {
         this.profileDir = profileDir;
         this.resourceManager = new ResourceManager(this);
         this.connectionManager = new ConnectionManager(this);
+        this.deploymentTargetManager = new DeploymentTargetManager(this);
         this.dotEnvFile = this.profileDir.findChild(DOT_ENV);
     }
 
@@ -76,9 +81,23 @@ public class Profile {
         return parser.parse().stream().map(e -> Pair.of(e.getKey(), e.getValue())).toList();
     }
 
+    public synchronized Profile addApp(@Nonnull final AbstractAzResource<?, ?, ?> app) {
+        this.getDeploymentTargetManager().addTarget(app.getId());
+        final Project project = this.module.getProject();
+        project.getMessageBus().syncPublisher(DeploymentTargetTopics.TARGET_APP_CHANGED).appChanged(this.module, app, DeploymentTargetTopics.Action.ADD);
+        return this;
+    }
+
+    public synchronized Profile removeApp(@Nonnull final AbstractAzResource<?, ?, ?> app) {
+        this.getDeploymentTargetManager().removeTarget(app.getId());
+        final Project project = this.module.getProject();
+        project.getMessageBus().syncPublisher(DeploymentTargetTopics.TARGET_APP_CHANGED).appChanged(this.module, app, DeploymentTargetTopics.Action.REMOVE);
+        return this;
+    }
+
     public synchronized Profile addConnection(@Nonnull Connection<?, ?> connection) {
-        this.getResourceManager().addResource(connection.getResource());
-        this.getConnectionManager().addConnection(connection);
+        this.resourceManager.addResource(connection.getResource());
+        this.connectionManager.addConnection(connection);
         this.addConnectionToDotEnv(connection).subscribe(v -> {
             final String message = String.format("The connection between %s and %s has been successfully created/updated.", connection.getResource().getName(), connection.getConsumer().getName());
             AzureMessager.getMessager().success(message);
@@ -90,7 +109,7 @@ public class Profile {
 
     public synchronized Profile removeConnection(@Nonnull Connection<?, ?> connection) {
         this.removeConnectionFromDotEnv(connection);
-        this.getConnectionManager().removeConnection(connection);
+        this.connectionManager.removeConnection(connection);
         final Project project = this.module.getProject();
         project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.REMOVE);
         return this;
@@ -107,6 +126,7 @@ public class Profile {
         try {
             this.connectionManager.save();
             this.resourceManager.save();
+            this.deploymentTargetManager.save();
             this.profileDir.refresh(true, true);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException(e);
@@ -192,6 +212,10 @@ public class Profile {
     }
 
     public List<Connection<?, ?>> getConnections() {
-        return this.getConnectionManager().getConnections();
+        return this.connectionManager.getConnections();
+    }
+
+    public List<String> getTargetAppIds() {
+        return this.deploymentTargetManager.getTargets();
     }
 }

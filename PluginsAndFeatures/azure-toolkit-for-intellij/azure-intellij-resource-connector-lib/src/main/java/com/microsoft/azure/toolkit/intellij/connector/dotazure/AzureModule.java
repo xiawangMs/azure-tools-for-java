@@ -4,6 +4,7 @@ import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.roots.OrderEnumerator;
@@ -43,6 +44,7 @@ public class AzureModule {
     static final String DOT_GITIGNORE = ".gitignore";
     static final String DEFAULT_PROFILE_NAME = "default";
     static final String DOT_ENV = ".env";
+    static final String TARGETS_FILE = "deployment.targets.xml";
     static final String RESOURCES_FILE = "connections.resources.xml";
     static final String CONNECTIONS_FILE = "connections.xml";
 
@@ -93,7 +95,7 @@ public class AzureModule {
             try {
                 this.dotAzure = VfsUtil.createDirectoryIfMissing(moduleDir, DOT_AZURE);
                 final VirtualFile dotGitIgnore = dotAzure.findOrCreateChildData(this, DOT_GITIGNORE);
-                dotGitIgnore.setBinaryContent((DOT_ENV + "\n" + RESOURCES_FILE).getBytes());
+                dotGitIgnore.setBinaryContent((DOT_ENV + "\n" + RESOURCES_FILE + "\n" + TARGETS_FILE).getBytes());
                 this.profilesXmlFile = dotAzure.findOrCreateChildData(this, PROFILES_XML);
                 Optional.of(this.profilesXmlFile).ifPresent(this::loadProfiles);
                 this.dotAzure.refresh(true, false);
@@ -223,8 +225,15 @@ public class AzureModule {
             });
     }
 
+    @Nonnull
     public static AzureModule from(@Nonnull Module module) {
         return modules.computeIfAbsent(module, t -> new AzureModule(module));
+    }
+
+    @Nullable
+    public static AzureModule from(@Nonnull VirtualFile file, @Nonnull Project project) {
+        final Module module = ModuleUtil.findModuleForFile(file, project);
+        return Objects.isNull(module) ? null : AzureModule.from(module);
     }
 
     public static List<AzureModule> list(@Nonnull Project project) {
