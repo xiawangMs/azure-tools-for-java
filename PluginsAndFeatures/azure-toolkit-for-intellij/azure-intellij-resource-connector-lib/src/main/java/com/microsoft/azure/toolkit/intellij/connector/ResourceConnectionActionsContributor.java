@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -25,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -104,7 +106,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .register(am);
 
         new Action<>(FIX_CONNECTION)
-                .withLabel("Fix Connection")
+                .withLabel("Edit Connection")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
                 .visibleWhen(m -> m instanceof Connection<?, ?>)
                 .withHandler((c, e) -> fixResourceConnection(c, ((AnActionEvent) e).getProject()))
@@ -155,7 +157,17 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
 
     public static void fixResourceConnection(Connection<?, ?> c, Project project) {
         AzureTaskManager.getInstance().runAndWait(() -> {
-            final String title = String.format("Fix resource connection %s", c.getEnvPrefix());
+            if (c.getConsumer() instanceof ModuleResource) {
+                final String moduleName = ((ModuleResource) c.getConsumer()).getModuleName();
+                final Module module = ModuleManager.getInstance(project).findModuleByName(moduleName);
+                try {
+                    // must init dotenv file first or there will be exception during update connection
+                    // todo: discuss whether we need to update the resource connection update/delete logic
+                    WriteAction.compute(() -> AzureModule.from(module).initializeWithDefaultProfileIfNot().getOrInitDotAzureFile());
+                } catch (IOException e) {
+                    AzureMessager.getMessager().error("Failed to initialize Azure Toolkit configuration file.", e);
+                }
+            }
             final String invalidResourceName = c.getResource().isValidResource() ? null : c.getResource().getDefinition().getTitle();
             final String invalidConsumerName = c.getConsumer().isValidResource() ? null : c.getConsumer().getDefinition().getTitle();
             final String invalidProperties = Stream.of(invalidResourceName, invalidConsumerName)
@@ -163,7 +175,6 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                     .collect(Collectors.joining(", "));
             final String promptMessage = String.format("Please set correct %s for connection %s", invalidProperties, c.getEnvPrefix());
             final ConnectorDialog dialog = new ConnectorDialog(project);
-            dialog.setTitle(title);
             dialog.setDescription(promptMessage);
             dialog.setFixedEnvPrefix(c.getEnvPrefix());
             dialog.setFixedConnectionDefinition(c.getDefinition());

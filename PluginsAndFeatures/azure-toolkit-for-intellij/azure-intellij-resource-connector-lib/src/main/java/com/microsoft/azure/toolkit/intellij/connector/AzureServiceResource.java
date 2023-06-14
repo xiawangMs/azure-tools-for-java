@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -105,6 +106,9 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
 
     @Override
     public boolean isValidResource() {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+            return true;
+        }
         return Optional.ofNullable(getData()).map(AzResource::exists).orElse(false);
     }
 

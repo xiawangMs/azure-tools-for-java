@@ -123,6 +123,10 @@ public class Profile {
         return this;
     }
 
+    public VirtualFile getOrInitDotAzureFile() throws IOException {
+        return WriteAction.compute(() -> this.profileDir.findOrCreateChildData(this, DOT_ENV));
+    }
+
     public void save() {
         try {
             this.connectionManager.save();
@@ -174,7 +178,7 @@ public class Profile {
         if (!this.profileDir.isValid()) {
             throw new AzureToolkitRuntimeException(String.format("'.azure/%s' doesn't exist.", this.name));
         }
-        WriteAction.run(() -> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
+        this.dotEnvFile = getOrInitDotAzureFile();
         Objects.requireNonNull(this.dotEnvFile, String.format("'.azure/%s/.env' can not be created.", this.name));
         final AzureString description = OperationBundle.description("boundary/connector.load_env.resource", connection.getResource().getDataId());
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(description, () -> {

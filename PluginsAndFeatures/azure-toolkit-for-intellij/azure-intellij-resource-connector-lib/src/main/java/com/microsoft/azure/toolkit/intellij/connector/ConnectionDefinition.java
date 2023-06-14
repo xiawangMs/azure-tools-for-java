@@ -155,8 +155,8 @@ public class ConnectionDefinition<R, C> {
         }
         final Resource<R> existedResource = (Resource<R>) profile.getResourceManager().getResourceById(resource.getId());
         if (Objects.nonNull(existedResource)) { // not new
-            final R current = resource.getData();
-            final R origin = existedResource.getData();
+            final String current = resource.getDataId();
+            final String origin = existedResource.getDataId();
             if (Objects.equals(origin, current) && existedResource.isModified(resource)) { // modified
                 final String template = "%s \"%s\" with different configuration is found on your PC. \nDo you want to override it?";
                 final String msg = String.format(template, resource.getDefinition().getTitle(), resource.getName());

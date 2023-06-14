@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -45,6 +47,9 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     @Nonnull
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
         final Connection<?, ?> connection = this.getValue();
+        if (!connection.validate(getProject())) {
+            return Arrays.asList(new ActionNode<>(this.myProject, ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
+        }
         final ArrayList<AbstractTreeNode<?>> children = new ArrayList<>();
         final AbstractTreeNode<?> resourceNode = getResourceNode(connection);
         final Profile profile = Objects.requireNonNull(module.getDefaultProfile());
@@ -76,9 +81,15 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         final Connection<?, ?> connection = this.getValue();
         final Resource<?> resource = connection.getResource();
         final ResourceId resourceId = ResourceId.fromString(resource.getDataId());
-        presentation.setIcon(IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceIconPath(resourceId)));
+        final boolean isValidate = connection.validate(getProject());
+        presentation.setIcon(isValidate ? IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceIconPath(resourceId)) : AllIcons.General.Warning);
         presentation.addText(connection.getEnvPrefix() + "_*", SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        presentation.addText(" " + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        if (isValidate) {
+            presentation.addText(" " + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        } else {
+            final String message = connection.getResource().isValidResource() ? "Invalid Consumer" : "Invalid Resource";
+            presentation.addText(String.format(" (%s)", message), SimpleTextAttributes.ERROR_ATTRIBUTES);
+        }
         // presentation.setIcon(AllIcons.CodeWithMe.CwmInvite);
         // presentation.setIcon(AllIcons.Debugger.ThreadStates.Socket);
     }
