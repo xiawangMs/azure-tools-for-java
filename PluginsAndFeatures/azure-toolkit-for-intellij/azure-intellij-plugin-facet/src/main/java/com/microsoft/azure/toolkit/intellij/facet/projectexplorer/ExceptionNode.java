@@ -16,10 +16,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
-public class ExceptionNode extends AbstractTreeNode<Exception> {
+public class ExceptionNode extends AbstractTreeNode<Throwable> {
 
-    public ExceptionNode(@Nonnull Project project, final Exception e) {
+    public ExceptionNode(@Nonnull Project project, final Throwable e) {
         super(project, e);
     }
 
@@ -27,9 +28,9 @@ public class ExceptionNode extends AbstractTreeNode<Exception> {
     @SuppressWarnings("unchecked")
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
         final ArrayList<AbstractTreeNode<?>> actionNodes = new ArrayList<>();
-        final Exception e = this.getValue();
+        final Throwable e = this.getValue();
         if (e instanceof AzureToolkitRuntimeException) {
-            final Object[] actions = ((AzureToolkitRuntimeException) e).getActions();
+            final Object[] actions = Optional.ofNullable(((AzureToolkitRuntimeException) e).getActions()).orElseGet(() -> new Object[0]);
             for (final Object action : actions) {
                 if (action instanceof Action.Id) {
                     actionNodes.add(new ActionNode<>(this.getProject(), (Action.Id<Object>) action));

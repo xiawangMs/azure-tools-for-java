@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,7 +46,7 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
         final Connection<?, ?> connection = this.getValue();
         final ArrayList<AbstractTreeNode<?>> children = new ArrayList<>();
-        final AbstractTreeNode<?> resourceNode = getResourceNode(connection, children);
+        final AbstractTreeNode<?> resourceNode = getResourceNode(connection);
         final Profile profile = Objects.requireNonNull(module.getDefaultProfile());
         final EnvironmentVariablesNode environmentVariablesNode = new EnvironmentVariablesNode(this.getProject(), profile, connection);
         children.add(resourceNode);
@@ -53,13 +54,14 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         return children;
     }
 
-    private AbstractTreeNode<?> getResourceNode(Connection<?, ?> connection, ArrayList<AbstractTreeNode<?>> children) {
+    private AbstractTreeNode<?> getResourceNode(Connection<?, ?> connection) {
         try {
             final Object resource = connection.getResource().getData();
             final Node<?> node = AzureExplorer.manager.createNode(resource, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
-            return new ResourceNode(this.module.getProject(), node);
-        } catch (final Exception e) {
+            return new ResourceNode(this.getProject(), node);
+        } catch (Throwable e) {
             e.printStackTrace();
+            e = ExceptionUtils.getRootCause(e);
             if (e instanceof AzureToolkitAuthenticationException) {
                 final Action<Object> signin = AzureActionManager.getInstance().getAction(Action.AUTHENTICATE).bind(connection).withLabel("Sign in to manage connected resource");
                 return new ActionNode<>(this.myProject, signin);
