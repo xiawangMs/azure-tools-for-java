@@ -81,10 +81,10 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         final Connection<?, ?> connection = this.getValue();
         final Resource<?> resource = connection.getResource();
         final ResourceId resourceId = ResourceId.fromString(resource.getDataId());
-        final boolean isValidate = connection.validate(getProject());
-        presentation.setIcon(isValidate ? IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceIconPath(resourceId)) : AllIcons.General.Warning);
+        final boolean isValid = connection.validate(getProject());
+        presentation.setIcon(isValid ? IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceIconPath(resourceId)) : AllIcons.General.Warning);
         presentation.addText(connection.getEnvPrefix() + "_*", SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        if (isValidate) {
+        if (isValid) {
             presentation.addText(" " + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
         } else {
             final String message = connection.getResource().isValidResource() ? "Invalid Consumer" : "Invalid Resource";
