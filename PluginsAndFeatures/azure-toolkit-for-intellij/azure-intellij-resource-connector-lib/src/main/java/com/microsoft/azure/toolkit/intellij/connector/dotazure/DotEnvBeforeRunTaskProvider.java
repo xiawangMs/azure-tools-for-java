@@ -15,10 +15,13 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -128,6 +131,16 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
 
         @AzureOperation("platform/connector.load_env_beforeruntask")
         public List<Pair<String, String>> loadEnv() {
+            final AzureModule azureModule = AzureModule.createIfSupport(this.config).orElse(null);
+            final Project project = Optional.ofNullable(azureModule).map(AzureModule::getProject).orElse(null);
+            final List<Connection<?, ?>> invalidConnections = Optional.ofNullable(azureModule).map(AzureModule::getDefaultProfile)
+                    .map(Profile::getConnections)
+                    .stream().flatMap(List::stream)
+                    .filter(c -> !c.validate(project)).toList();
+            for (final Connection<?, ?> connection : invalidConnections) {
+                ResourceConnectionActionsContributor.fixResourceConnection(connection, project);
+            }
+            // todo: wait for all connection has been saved to .env
             return Optional.ofNullable(this.file)
                 .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
                 .map(Profile::load)

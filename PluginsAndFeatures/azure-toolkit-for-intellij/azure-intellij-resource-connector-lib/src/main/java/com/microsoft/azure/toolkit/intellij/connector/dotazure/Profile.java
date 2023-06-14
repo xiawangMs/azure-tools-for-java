@@ -33,12 +33,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -147,7 +142,8 @@ public class Profile {
     @AzureOperation(value = "boundary/connector.remove_connection_from_dotenv.resource", params = "connection.getResource().getName()")
     private void removeConnectionFromDotEnv(@Nonnull Connection<?, ?> connection) {
         if (Objects.isNull(this.dotEnvFile) || !this.dotEnvFile.isValid()) {
-            throw new AzureToolkitRuntimeException(String.format("'.azure/%s/.env' doesn't exist.", this.name));
+            // users may not have env file when they clone project from repo, so just return here
+            return;
         }
         final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
         final String startMark = "# connection.id=" + connection.getId();

@@ -29,12 +29,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("user/connector.refresh_connections");
     public static final Action.Id<AzureModule> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
     public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("user/connector.edit_connection");
     public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("user/connector.remove_connection");
+    public static final Action.Id<Connection<?, ?>> FIX_CONNECTION = Action.Id.of("user/connector.fix_connection");
 
     public static final Action.Id<AzureModule> CONNECT_TO_MODULE = Action.Id.of("user/connector.connect_to_module");
     public static final Action.Id<AzureModule> REFRESH_MODULE = Action.Id.of("user/connector.refresh_module");
@@ -101,6 +103,14 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withAuthRequired(false)
             .register(am);
 
+        new Action<>(FIX_CONNECTION)
+                .withLabel("Edit Connection")
+                .withIcon(AzureIcons.Action.EDIT.getIconPath())
+                .visibleWhen(m -> m instanceof Connection<?, ?>)
+                .withHandler((c, e) -> fixResourceConnection(c, ((AnActionEvent) e).getProject()))
+                .withAuthRequired(false)
+                .register(am);
+
         new Action<>(REMOVE_CONNECTION)
             .withLabel("Remove")
             .withIcon(AzureIcons.Action.REMOVE.getIconPath())
@@ -143,14 +153,28 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .register(am);
     }
 
-    private void refreshModuleConnections(AzureModule module) {
-//        AzureEventBus.emit("");
-        AzureEventBus.emit("connector.refreshed.module_connections", module);
+    public static void fixResourceConnection(Connection<?, ?> c, Project project) {
+        AzureTaskManager.getInstance().runAndWait(() -> {
+            final String invalidResourceName = c.getResource().isValidResource() ? null : c.getResource().getDefinition().getTitle();
+            final String invalidConsumerName = c.getConsumer().isValidResource() ? null : c.getConsumer().getDefinition().getTitle();
+            final String invalidProperties = Stream.of(invalidResourceName, invalidConsumerName)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(", "));
+            final String promptMessage = String.format("Please set correct %s for connection %s", invalidProperties, c.getEnvPrefix());
+            final ConnectorDialog dialog = new ConnectorDialog(project);
+            dialog.setDescription(promptMessage);
+            dialog.setFixedEnvPrefix(c.getEnvPrefix());
+            dialog.setFixedConnectionDefinition(c.getDefinition());
+            dialog.setValue(c);
+            dialog.show();
+        });
+    }
 
+    private void refreshModuleConnections(AzureModule module) {
+        AzureEventBus.emit("connector.refreshed.module_connections", module);
     }
 
     private void refreshModule(AzureModule module) {
-//        AzureEventBus.emit("");
         AzureEventBus.emit("connector.refreshed.module_root", module);
     }
 

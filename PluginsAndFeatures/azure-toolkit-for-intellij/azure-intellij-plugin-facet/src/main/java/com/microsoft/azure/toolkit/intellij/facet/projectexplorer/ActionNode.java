@@ -11,13 +11,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzureFacetNode {
     @Nullable
@@ -58,6 +61,27 @@ public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzure
     @Override
     public void onClicked(Object event) {
         this.getValue().handle(this.source, event);
+    }
+
+    @Nullable
+    @Override
+    public IActionGroup getActionGroup() {
+        return new IActionGroup() {
+            @Override
+            public IView.Label getView() {
+                return null;
+            }
+
+            @Override
+            public List<Object> getActions() {
+                return Arrays.asList(ActionNode.this.getValue());
+            }
+
+            @Override
+            public void addAction(Object action) {
+                // do nothing here
+            }
+        };
     }
 
     @Override
