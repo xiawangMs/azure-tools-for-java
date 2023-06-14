@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
+import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
+import static com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics.TARGET_APP_CHANGED;
 
 public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements IAzureFacetNode {
 
@@ -48,6 +50,11 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
                 rerender(true);
             }
         });
+        connection.subscribe(TARGET_APP_CHANGED, (DeploymentTargetTopics.TargetAppChanged) (m, app, action) -> {
+            if (m.getName().equalsIgnoreCase(module.getName())) {
+                rerender(true);
+            }
+        });
     }
 
     @Override
@@ -55,15 +62,17 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
         final ArrayList<AbstractTreeNode<?>> result = new ArrayList<>();
         final AzureModule module = this.getValue();
         final List<Connection<?, ?>> connections = Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList());
+        final List<String> appIds = Optional.ofNullable(module.getDefaultProfile()).map(Profile::getTargetAppIds).orElse(Collections.emptyList());
 //        if (CollectionUtils.isNotEmpty(connections)) { // add back .azure file node
 //            final VirtualFile virtualFile = Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
 //            Optional.ofNullable(virtualFile)
 //                .map(dir -> PsiManagerEx.getInstanceEx(getProject()).findDirectory(dir))
 //                .map(dir -> new PsiDirectoryNode(getProject(), dir, viewSettings)).ifPresent(result::add);
 //        }
-        result.add(CollectionUtils.isEmpty(connections) ?
-            new ActionNode<>(module.getProject(), ResourceConnectionActionsContributor.CONNECT_TO_MODULE, module) :
-            new ConnectionsNode(module));
+        if (!appIds.isEmpty()) {
+            result.add(new DeploymentTargetsNode(module));
+        }
+        result.add(new ConnectionsNode(module));
         return result;
     }
 
