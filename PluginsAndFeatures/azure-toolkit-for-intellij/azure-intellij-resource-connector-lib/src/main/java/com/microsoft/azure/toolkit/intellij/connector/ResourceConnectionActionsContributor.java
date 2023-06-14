@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -26,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -157,17 +155,6 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
 
     public static void fixResourceConnection(Connection<?, ?> c, Project project) {
         AzureTaskManager.getInstance().runAndWait(() -> {
-            if (c.getConsumer() instanceof ModuleResource) {
-                final String moduleName = ((ModuleResource) c.getConsumer()).getModuleName();
-                final Module module = ModuleManager.getInstance(project).findModuleByName(moduleName);
-                try {
-                    // must init dotenv file first or there will be exception during update connection
-                    // todo: discuss whether we need to update the resource connection update/delete logic
-                    WriteAction.compute(() -> AzureModule.from(module).initializeWithDefaultProfileIfNot().getOrInitDotAzureFile());
-                } catch (IOException e) {
-                    AzureMessager.getMessager().error("Failed to initialize Azure Toolkit configuration file.", e);
-                }
-            }
             final String invalidResourceName = c.getResource().isValidResource() ? null : c.getResource().getDefinition().getTitle();
             final String invalidConsumerName = c.getConsumer().isValidResource() ? null : c.getConsumer().getDefinition().getTitle();
             final String invalidProperties = Stream.of(invalidResourceName, invalidConsumerName)

@@ -34,12 +34,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -123,10 +118,6 @@ public class Profile {
         return this;
     }
 
-    public VirtualFile getOrInitDotAzureFile() throws IOException {
-        return WriteAction.compute(() -> this.profileDir.findOrCreateChildData(this, DOT_ENV));
-    }
-
     public void save() {
         try {
             this.connectionManager.save();
@@ -152,7 +143,8 @@ public class Profile {
     @AzureOperation(value = "boundary/connector.remove_connection_from_dotenv.resource", params = "connection.getResource().getName()")
     private void removeConnectionFromDotEnv(@Nonnull Connection<?, ?> connection) {
         if (Objects.isNull(this.dotEnvFile) || !this.dotEnvFile.isValid()) {
-            throw new AzureToolkitRuntimeException(String.format("'.azure/%s/.env' doesn't exist.", this.name));
+            // users may not have env file when they clone project from repo, so just return here
+            return;
         }
         final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
         final String startMark = "# connection.id=" + connection.getId();
@@ -178,7 +170,7 @@ public class Profile {
         if (!this.profileDir.isValid()) {
             throw new AzureToolkitRuntimeException(String.format("'.azure/%s' doesn't exist.", this.name));
         }
-        this.dotEnvFile = getOrInitDotAzureFile();
+        WriteAction.run(() -> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
         Objects.requireNonNull(this.dotEnvFile, String.format("'.azure/%s/.env' can not be created.", this.name));
         final AzureString description = OperationBundle.description("boundary/connector.load_env.resource", connection.getResource().getDataId());
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(description, () -> {
