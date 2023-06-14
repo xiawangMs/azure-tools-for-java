@@ -12,14 +12,7 @@ import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Constraints;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.EmptyAction;
-import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
@@ -28,8 +21,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ClientProperty;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
@@ -41,12 +36,7 @@ import javax.swing.tree.TreePath;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -153,9 +143,10 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         }
 
         private AbstractTreeNode<?> getCurrentTreeNode(MouseEvent e) {
-            final int rowForLocation = tree.getRowForLocation(e.getX(), e.getY());
-            final TreePath pathForRow = tree.getPathForRow(rowForLocation);
-            return TreeUtil.getAbstractTreeNode(pathForRow);
+            final TreePath path = tree.getClosestPathForLocation(e.getX(), e.getY());
+//            final int rowForLocation = tree.getRowForLocation(e.getX(), e.getY());
+//            final TreePath pathForRow = tree.getPathForRow(rowForLocation);
+            return TreeUtil.getAbstractTreeNode(path);
         }
 
         private void resetPopupMenuActions() {
@@ -174,13 +165,10 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             if (this.currentNode == null && CollectionUtils.isEmpty(backupActions)) {
                 this.backupActions = Arrays.stream(popupMenu.getChildren(null)).collect(Collectors.toList());
             }
-            final IActionGroup actionGroup = node.getActionGroup();
-            if (Objects.nonNull(actionGroup)) {
-                popupMenu.removeAll(); // clean up default actions
-                actionGroup.getActions().stream()
-                    .map(action -> action instanceof Action.Id ? manager.getAction(((Action.Id<?>) action).getId()) : SEPARATOR)
-                    .forEach(action -> popupMenu.add(action, Constraints.LAST));
-            }
+            final List<Object> actions = Optional.ofNullable(node.getActionGroup()).map(IActionGroup::getActions).orElse(Collections.emptyList());
+            final IntellijAzureActionManager.ActionGroupWrapper wrapper = new IntellijAzureActionManager.ActionGroupWrapper(new ActionGroup(actions));
+            popupMenu.removeAll();
+            Arrays.stream(wrapper.getChildren(null)).forEach(popupMenu::add);
         }
     }
 
