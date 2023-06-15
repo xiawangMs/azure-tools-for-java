@@ -7,62 +7,40 @@ package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class AzureModuleLabelView<T extends AzResourceModule<?>> implements NodeView {
-    @Nonnull
-    @Getter
-    private final T module;
-    @Getter
-    private final String label;
-    @Getter
-    private final String iconPath;
+public class AzModuleNode<T extends AbstractAzResourceModule<?, ?, ?>> extends Node<T> {
     private final AzureEventBus.EventListener listener;
-    @Getter
-    private String description;
-    @Nullable
-    @Setter
-    @Getter
-    private Refresher refresher;
 
-    public AzureModuleLabelView(@Nonnull T module) {
-        this(module, module.getName());
-    }
-
-    public AzureModuleLabelView(@Nonnull T module, String label) {
-        this(module, label, String.format("/icons/%s/module.svg", module.getFullResourceType()));
-    }
-
-    public AzureModuleLabelView(@Nonnull T module, String label, String iconPath) {
-        this.module = module;
-        this.label = label;
-        this.iconPath = iconPath;
+    public AzModuleNode(@Nonnull T module) {
+        super(module);
+        final String name = module.getResourceTypeName();
+        this.withIcon(String.format("/icons/%s/default.svg", module.getFullResourceType()))
+            .withLabel(name.endsWith("s") ? name : name + "s")
+            .withMoreChildren(AbstractAzResourceModule::hasMoreResources, AbstractAzResourceModule::loadMoreResources);
         this.listener = new AzureEventBus.EventListener(this::onEvent);
         AzureEventBus.on("module.refreshed.module", listener);
         AzureEventBus.on("module.children_changed.module", listener);
-        this.refreshView();
     }
 
     public void dispose() {
         AzureEventBus.off("module.refreshed.module", listener);
         AzureEventBus.off("module.children_changed.module", listener);
-        this.refresher = null;
+        this.setViewChangedListener(null);
+        this.setChildrenChangedListener(null);
     }
 
     public void onEvent(AzureEvent event) {
         final String type = event.getType();
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsIgnoreCase(type, "module.children_changed.module");
-        if (source instanceof AzResourceModule && source.equals(this.module)) {
-            final AzureTaskManager tm = AzureTaskManager.getInstance();
-            tm.runLater(() -> this.refreshChildren(childrenChanged));
+        if (source instanceof AzResourceModule && source.equals(this.getData())) {
+            this.onChildrenChanged(childrenChanged);
         }
     }
 }
