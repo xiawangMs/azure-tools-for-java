@@ -296,10 +296,6 @@ public class Node<D> {
         Optional.ofNullable(this.childrenChangedListener).ifPresent(r -> r.onChildrenChanged(incremental));
     }
 
-    public boolean hasClickAction() {
-        return !this.clickHandlers.isEmpty();
-    }
-
     public boolean hasChildren() {
         return !this.childrenBuilders.isEmpty();
     }
