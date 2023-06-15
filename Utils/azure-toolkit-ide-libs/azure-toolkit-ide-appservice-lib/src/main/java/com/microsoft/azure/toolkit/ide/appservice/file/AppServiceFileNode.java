@@ -56,20 +56,25 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
     @Override
     public List<Node<?>> getChildren() {
-        final AppServiceFile file = this.getData();
-        if (file.getType() != AppServiceFile.Type.DIRECTORY) {
+        try {
+            final AppServiceFile file = this.getData();
+            if (file.getType() != AppServiceFile.Type.DIRECTORY) {
+                return Collections.emptyList();
+            }
+            if (!appService.getFormalStatus().isRunning()) {
+                AzureMessager.getMessager().warning(AzureString.format("Can not list files for app service with status %s", appService.getStatus()));
+                return Collections.emptyList();
+            }
+            return appService.getFilesInDirectory(file.getPath()).stream()
+                .sorted((first, second) -> first.getType() == second.getType() ?
+                    StringUtils.compare(first.getName(), second.getName()) :
+                    first.getType() == AppServiceFile.Type.DIRECTORY ? -1 : 1)
+                .map(AppServiceFileNode::new)
+                .collect(Collectors.toList());
+        } catch (final Exception e) {
+            AzureMessager.getMessager().error(e);
             return Collections.emptyList();
         }
-        if (!appService.getFormalStatus().isRunning()) {
-            AzureMessager.getMessager().warning(AzureString.format("Can not list files for app service with status %s", appService.getStatus()));
-            return Collections.emptyList();
-        }
-        return appService.getFilesInDirectory(file.getPath()).stream()
-            .sorted((first, second) -> first.getType() == second.getType() ?
-                StringUtils.compare(first.getName(), second.getName()) :
-                first.getType() == AppServiceFile.Type.DIRECTORY ? -1 : 1)
-            .map(AppServiceFileNode::new)
-            .collect(Collectors.toList());
     }
 
     private void onEvent(AzureEvent event) {
