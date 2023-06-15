@@ -13,7 +13,6 @@ import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -82,7 +81,7 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-    public static class TreeNode<T> extends DefaultMutableTreeNode implements NodeView.Refresher {
+    public static class TreeNode<T> extends DefaultMutableTreeNode implements Node.ChildrenChangedListener, Node.ViewChangedListener {
         @Nonnull
         @EqualsAndHashCode.Include
         protected final Node<T> inner;
@@ -90,17 +89,17 @@ public class Tree extends SimpleTree implements DataProvider {
         Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
 
         public TreeNode(@Nonnull Node<T> n, JTree tree) {
-            super(n.data(), n.hasChildren());
+            super(n.getData(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
             if (this.getAllowsChildren()) {
                 this.add(new LoadingNode());
             }
-            if (!this.inner.lazy()) {
+            if (!this.inner.isLazy()) {
                 this.loadChildren();
             }
-            final NodeView view = this.inner.view();
-            view.setRefresher(this);
+            this.inner.setViewChangedListener(this);
+            this.inner.setChildrenChangedListener(this);
         }
 
         @Override
@@ -111,21 +110,21 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         public T getData() {
-            return this.inner.data();
+            return this.inner.getData();
         }
 
         public String getLabel() {
-            return this.inner.view().getLabel();
+            return this.inner.buildLabel();
         }
 
         public List<IView.Label> getInlineActionViews() {
-            return this.inner.inlineActionList().stream().map(action -> action.getView(this.inner.data()))
-                    .filter(IView.Label::isEnabled)
-                    .collect(Collectors.toList());
+            return this.inner.getInlineActions().stream().map(action -> action.getView(this.inner.getData()))
+                .filter(IView.Label::isEnabled)
+                .collect(Collectors.toList());
         }
 
         @Override
-        public void refreshView() {
+        public void onViewChanged() {
             synchronized (this.tree) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
                 if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
@@ -145,7 +144,7 @@ public class Tree extends SimpleTree implements DataProvider {
 
         @Override
         @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()")
-        public synchronized void refreshChildren(boolean... incremental) {
+        public synchronized void onChildrenChanged(boolean... incremental) {
             AzureTaskManager.getInstance().runLater(() -> { // queue up/wait until pending UI update finishes.
                 if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                     final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
@@ -191,15 +190,15 @@ public class Tree extends SimpleTree implements DataProvider {
                 .filter(n -> n instanceof DefaultMutableTreeNode).map(n -> ((DefaultMutableTreeNode) n))
                 .collect(Collectors.toMap(DefaultMutableTreeNode::getUserObject, n -> n));
 
-            final Set<Object> newChildrenData = children.stream().map(Node::data).collect(Collectors.toSet());
+            final Set<Object> newChildrenData = children.stream().map(Node::getData).collect(Collectors.toSet());
             final Set<Object> oldChildrenData = oldChildren.keySet();
             Sets.difference(oldChildrenData, newChildrenData).forEach(o -> oldChildren.get(o).removeFromParent());
 
             TreePath toSelect = null;
-            if (this.inner.newItemOrder() == Node.Order.LIST_ORDER) {
+            if (this.inner.getNewItemOrder() == Node.Order.LIST_ORDER) {
                 for (int i = 0; i < children.size(); i++) {
                     final Node<?> node = children.get(i);
-                    if (!oldChildrenData.contains(node.data())) {
+                    if (!oldChildrenData.contains(node.getData())) {
                         final TreeNode<?> treeNode = new TreeNode<>(node, this.tree);
                         this.insert(treeNode, i);
                         toSelect = new TreePath(treeNode.getPath());
@@ -209,7 +208,7 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
             } else {
                 final List<Node<?>> newChildren = children.stream()
-                    .filter(c -> !oldChildrenData.contains(c.data())).toList();
+                    .filter(c -> !oldChildrenData.contains(c.getData())).toList();
                 newChildren.forEach(node -> this.insert(new TreeNode<>(node, this.tree), getChildCount()));
             }
 

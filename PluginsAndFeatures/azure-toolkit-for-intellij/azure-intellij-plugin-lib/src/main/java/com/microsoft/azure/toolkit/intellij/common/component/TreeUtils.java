@@ -23,7 +23,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
@@ -83,8 +83,8 @@ public class TreeUtils {
             }
             if (n instanceof Tree.TreeNode) {
                 final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                final String place = ResourceCommonActionsContributor.AZURE_EXPLORER +  "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
-                final IActionGroup actions = node.inner.actions();
+                final String place = ResourceCommonActionsContributor.AZURE_EXPLORER + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                final IActionGroup actions = node.inner.getActions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
                     selectionDisposable = Disposer.newDisposable();
@@ -136,7 +136,7 @@ public class TreeUtils {
                     final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
                     final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-                        final IActionGroup actions = node.inner.actions();
+                        final IActionGroup actions = node.inner.getActions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
                             final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
@@ -148,11 +148,11 @@ public class TreeUtils {
                     } else if (node.inner.hasClickAction()) {
                         final DataContext context = DataManager.getInstance().getDataContext(tree);
                         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        node.inner.triggerClickAction(event);
+                        node.inner.click(event);
                     } else if (e.getClickCount() == 2) {
                         final DataContext context = DataManager.getInstance().getDataContext(tree);
                         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        node.inner.triggerDoubleClickAction(event);
+                        node.inner.doubleClick(event);
                     }
                 } else if (n instanceof Tree.LoadMoreNode && SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
                     ((Tree.LoadMoreNode) n).load();
@@ -227,7 +227,7 @@ public class TreeUtils {
     }
 
     public static void renderMyTreeNode(JTree tree, @Nonnull Tree.TreeNode<?> node, boolean selected, @Nonnull SimpleColoredComponent renderer) {
-        final NodeView view = node.inner.view();
+        final Node.View view = node.inner.getView();
         if (BooleanUtils.isFalse(node.loaded)) {
             renderer.setIcon(AnimatedIcon.Default.INSTANCE);
         } else {

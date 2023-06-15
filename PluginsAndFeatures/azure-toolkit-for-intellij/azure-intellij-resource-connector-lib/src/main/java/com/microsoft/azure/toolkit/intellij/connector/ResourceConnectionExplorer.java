@@ -18,7 +18,6 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
@@ -51,14 +50,17 @@ public class ResourceConnectionExplorer extends Tree {
     }
 
     private Node<Project> buildRoot() {
-        return new RootNode(project).lazy(false)
-            .view(new NodeView.Static("Resource Connections", AzureIcons.Common.AZURE.getIconPath()))
-            .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).lazy(false)
-                .view(new NodeView.Static(m.getName(), "/icons/module"))
-                .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                .addChildren(module -> Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).lazy(true)
-                    .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
-                    .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
+        return new RootNode(project).withChildrenLoadLazily(false)
+            .withIcon(AzureIcons.Common.AZURE.getIconPath())
+            .withLabel("Resource Connections")
+            .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).withChildrenLoadLazily(false)
+                .withIcon("/icons/module")
+                .withLabel(m.getName())
+                .withActions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
+                .addChildren(module -> Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).withChildrenLoadLazily(true)
+                    .withIcon(Objects.requireNonNull(c.getResource().getDefinition().getIcon()))
+                    .withLabel(c.getResource().getName())
+                    .withActions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }
 
     private static class ModuleNode extends Node<AzureModule> {
@@ -69,7 +71,7 @@ public class ResourceConnectionExplorer extends Tree {
             this.connection = module.getProject().getMessageBus().connect();
             this.connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {
                 if (conn.getConsumer().getId().equalsIgnoreCase(module.getName())) {
-                    this.view().refreshChildren();
+                    this.onChildrenChanged();
                 }
             });
         }
@@ -87,7 +89,7 @@ public class ResourceConnectionExplorer extends Tree {
         public RootNode(@Nonnull Project project) {
             super(project);
             this.connection = project.getMessageBus().connect();
-            this.connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) () -> RootNode.this.view().refreshChildren());
+            this.connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) RootNode.this::onChildrenChanged);
         }
 
         @Override
