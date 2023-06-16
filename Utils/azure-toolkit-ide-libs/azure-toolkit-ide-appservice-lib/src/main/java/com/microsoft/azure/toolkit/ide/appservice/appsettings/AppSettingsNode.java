@@ -11,28 +11,24 @@ import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class AppSettingsNode extends Node<Map<String, String>> {
-    @Nonnull
-    @Getter
-    private final AppServiceAppBase<?, ?, ?> app;
+public class AppSettingsNode extends Node<AppServiceAppBase<?, ?, ?>> {
     private final AzureEventBus.EventListener listener;
 
     public AppSettingsNode(@Nonnull AppServiceAppBase<?, ?, ?> app) {
-        super(Optional.ofNullable(app.getAppSettings()).orElse(Collections.emptyMap()));
-        this.app = app;
+        super(app);
         this.listener = new AzureEventBus.EventListener(this::onEvent);
         this.withIcon(AzureIcons.AppService.APP_SETTINGS)
             .withLabel("App Settings")
             .withTips("Variables passed as environment variables to the application code")
-            .addChildren(settings -> settings.entrySet().stream().map(AppSettingNode::new).collect(Collectors.toList()));
+            .addChildren(
+                a -> Optional.ofNullable(a.getAppSettings()).map(Map::entrySet).map(s -> s.stream().toList()).orElse(Collections.emptyList()),
+                (s, p) -> new AppSettingNode(s));
 
         AzureEventBus.on("resource.refreshed.resource", listener);
         AzureEventBus.on("resource.status_changed.resource", listener);
