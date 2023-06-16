@@ -109,12 +109,8 @@ public class Tree extends SimpleTree implements DataProvider {
             return super.getParent();
         }
 
-        public T getData() {
-            return this.inner.getValue();
-        }
-
         public String getLabel() {
-            return this.inner.buildLabel();
+            return this.inner.getLabel();
         }
 
         public List<IView.Label> getInlineActionViews() {
@@ -215,9 +211,6 @@ public class Tree extends SimpleTree implements DataProvider {
             this.removeLoadingNode();
             this.addLoadMoreNode();
             this.refreshChildrenView();
-//            Optional.ofNullable(toSelect)
-//                .filter(s -> ((DefaultMutableTreeNode) s.getPathComponent(1)).getUserObject() instanceof AzureResources) //  is node in app-centric view.
-//                .ifPresent(p -> TreeUtil.selectPath(this.tree, p, false));
             this.loaded = true;
         }
 

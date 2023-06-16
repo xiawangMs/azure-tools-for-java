@@ -349,18 +349,18 @@ public class TreeUtils {
                 final Tree.TreeNode<?> source = (Tree.TreeNode<?>) sourceNode;
                 final List<AbstractAzResource<?, ?, ?>> resourcesToShow = getResourcesToFocus(tree);
                 final List<AbstractAzResource<?, ?, ?>> targetResources = resourcesToShow.stream()
-                        .filter(resource -> isParentResource(source.getData(), resource)).toList();
+                    .filter(resource -> isParentResource(source.getUserObject(), resource)).toList();
                 for (final AbstractAzResource<?, ?, ?> targetResource : targetResources) {
-                    final Tree.TreeNode<?> treeNode = Objects.equals(source.getData(), targetResource) ? source :
-                            StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)
-                                    .filter(node -> node instanceof Tree.TreeNode<?>)
-                                    .map(node -> (Tree.TreeNode<?>) node)
-                                    .filter(node -> ((Tree.TreeNode<?>) node).getData() != null && isParentResource(((Tree.TreeNode<?>) node).getData(), targetResource))
-                                    .findFirst().orElse(null);
+                    final Tree.TreeNode<?> treeNode = Objects.equals(source.getUserObject(), targetResource) ? source :
+                        StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)
+                            .filter(node -> node instanceof Tree.TreeNode<?>)
+                            .map(node -> (Tree.TreeNode<?>) node)
+                            .filter(node -> node.getUserObject() != null && isParentResource(node.getUserObject(), targetResource))
+                            .findFirst().orElse(null);
                     if (Objects.isNull(treeNode)) {
                         // remove resource from list if its parent was not found
                         resourcesToShow.remove(targetResource);
-                    } else if (Objects.equals(treeNode.getData(), targetResource)) {
+                    } else if (Objects.equals(treeNode.getUserObject(), targetResource)) {
                         // remove resource from list if it was founded
                         resourcesToShow.remove(targetResource);
                         focusResource(tree, targetResource);
