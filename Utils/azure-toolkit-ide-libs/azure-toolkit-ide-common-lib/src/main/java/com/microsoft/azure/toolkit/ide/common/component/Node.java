@@ -43,13 +43,14 @@ public class Node<D> {
     @EqualsAndHashCode.Include
     private final D value;
     @Nullable
-    private Function<D, AzureIcon> iconProvider;
+    private Function<D, AzureIcon> iconBuilder;
     @Nullable
-    private Function<D, String> labelProvider;
+    private Function<D, String> labelBuilder;
+    @Getter
     @Nullable
-    private Function<D, String> descProvider;
+    private Function<D, String> descBuilder;
     @Nullable
-    private Function<D, String> tipsProvider;
+    private Function<D, String> tipsBuilder;
     @Nonnull
     private Predicate<D> enableWhen = o -> true;
     @Nonnull
@@ -80,64 +81,55 @@ public class Node<D> {
     protected ChildrenChangedListener childrenChangedListener;
     @Getter
     private boolean lazy = true;
-    @Getter
-    private Type type = Type.NORMAL;
-    @Getter
-    private Order newItemOrder = Order.LIST_ORDER;
     private final Map<String, Object> data = new HashMap<>();
 
     public Node(@Nonnull D value) {
         this.value = value;
     }
 
-    public Node<D> withType(@Nonnull final Type type) {
-        this.type = type;
-        return this;
-    }
-
     public Node<D> withIcon(@Nonnull final String iconPath) {
-        this.iconProvider = (any) -> AzureIcon.builder().iconPath(iconPath).build();
+        this.iconBuilder = (any) -> AzureIcon.builder().iconPath(iconPath).build();
         return this;
     }
 
     public Node<D> withIcon(@Nonnull final AzureIcon icon) {
-        this.iconProvider = (any) -> icon;
+        this.iconBuilder = (any) -> icon;
         return this;
     }
 
     public Node<D> withIcon(@Nonnull final Function<D, AzureIcon> iconProvider) {
-        this.iconProvider = iconProvider;
+        this.iconBuilder = iconProvider;
         return this;
     }
 
     public Node<D> withLabel(@Nonnull final String label) {
-        this.labelProvider = (any) -> label;
+        this.labelBuilder = (any) -> label;
         return this;
     }
 
     public Node<D> withLabel(@Nonnull final Function<D, String> labelProvider) {
-        this.labelProvider = labelProvider;
+        this.labelBuilder = labelProvider;
         return this;
     }
 
     public Node<D> withDescription(@Nonnull final String desc) {
-        this.descProvider = (any) -> desc;
+        this.descBuilder = (any) -> desc;
         return this;
     }
 
     public Node<D> withDescription(@Nonnull final Function<D, String> descProvider) {
-        this.descProvider = descProvider;
+        this.descBuilder = descProvider;
         return this;
     }
 
 
     public Node<D> withTips(@Nonnull final String tips) {
-        this.tipsProvider = (any) -> tips;
+        this.tipsBuilder = (any) -> tips;
         return this;
     }
 
     public Node<D> withTips(@Nonnull final Function<D, String> tipsProvider) {
-        this.tipsProvider = tipsProvider;
+        this.tipsBuilder = tipsProvider;
         return this;
     }
 
@@ -267,20 +259,25 @@ public class Node<D> {
     }
 
     public AzureIcon buildIcon() {
-        return Optional.ofNullable(this.iconProvider).map(p -> p.apply(this.value)).orElse(null);
+        return Optional.ofNullable(this.iconBuilder).map(p -> p.apply(this.value)).orElse(null);
+    }
+
+    @EqualsAndHashCode.Include
+    public String getLabel() {
+        return this.buildLabel();
     }
 
     @Nonnull
     public String buildLabel() {
-        return Optional.ofNullable(this.labelProvider).map(p -> p.apply(this.value)).orElse(this.value.toString());
+        return Optional.ofNullable(this.labelBuilder).map(p -> p.apply(this.value)).orElse(this.value.toString());
     }
 
     public String buildDescription() {
-        return Optional.ofNullable(this.descProvider).map(p -> p.apply(this.value)).orElse(null);
+        return Optional.ofNullable(this.descBuilder).map(p -> p.apply(this.value)).orElse(null);
     }
 
     public String buildTips() {
-        return Optional.ofNullable(this.tipsProvider).map(p -> p.apply(this.value)).orElse(null);
+        return Optional.ofNullable(this.tipsBuilder).map(p -> p.apply(this.value)).orElse(null);
     }
 
     public boolean checkEnabled() {
@@ -316,6 +313,11 @@ public class Node<D> {
         return (U) this.data.get(key);
     }
 
+    public <U> U getOrDefault(String key, U defaultValue) {
+        // noinspection unchecked
+        return (U) this.data.getOrDefault(key, defaultValue);
+    }
+
     public void set(String key, Object value) {
         this.data.put(key, value);
     }
@@ -333,11 +335,6 @@ public class Node<D> {
         return this;
     }
 
-    public Node<D> newItemsOrder(@Nonnull final Order order) {
-        this.newItemOrder = order;
-        return this;
-    }
-
     public void dispose() {
         this.setChildrenChangedListener(null);
         this.setViewChangedListener(null);
@@ -352,11 +349,6 @@ public class Node<D> {
             final List<C> childrenData = this.getChildrenData.apply(n.value);
             return childrenData.stream().filter(Objects::nonNull).map(d -> buildChildNode.apply(d, n));
         }
-    }
-
-    public enum Order {
-        LIST_ORDER,
-        INSERT_ORDER
     }
 
     @Getter
@@ -394,9 +386,5 @@ public class Node<D> {
     @FunctionalInterface
     public static interface ChildrenChangedListener {
         void onChildrenChanged(boolean... incremental);
-    }
-
-    public static enum Type {
-        NORMAL, ACTION
     }
 }

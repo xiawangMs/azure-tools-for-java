@@ -104,8 +104,7 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
                 .addInlineAction(ResourceCommonActionsContributor.PIN)
                 .withActions(CosmosActionsContributor.MONGO_COLLECTION_ACTIONS)
                 .addChildren(collection -> collection.getDocumentModule().list(), (document, collectionNode) -> this.createNode(document, collectionNode, manager))
-                .withMoreChildren(collection -> collection.getDocumentModule().hasMoreResources(), collection -> collection.getDocumentModule().loadMoreResources())
-                .newItemsOrder(Node.Order.INSERT_ORDER);
+                .withMoreChildren(collection -> collection.getDocumentModule().hasMoreResources(), collection -> collection.getDocumentModule().loadMoreResources());
         } else if (data instanceof SqlDatabase) {
             return new AzResourceNode<>((SqlDatabase) data)
                 .addInlineAction(ResourceCommonActionsContributor.PIN)
@@ -117,8 +116,7 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
                 .addInlineAction(ResourceCommonActionsContributor.PIN)
                 .withActions(CosmosActionsContributor.SQL_CONTAINER_ACTIONS)
                 .addChildren(container -> container.getDocumentModule().list(), (document, containerNode) -> this.createNode(document, containerNode, manager))
-                .withMoreChildren(container -> container.getDocumentModule().hasMoreResources(), container -> container.getDocumentModule().loadMoreResources())
-                .newItemsOrder(Node.Order.INSERT_ORDER);
+                .withMoreChildren(container -> container.getDocumentModule().hasMoreResources(), container -> container.getDocumentModule().loadMoreResources());
         } else if (data instanceof CassandraKeyspace) {
             return new AzResourceNode<>((CassandraKeyspace) data)
                 .addInlineAction(ResourceCommonActionsContributor.PIN)
