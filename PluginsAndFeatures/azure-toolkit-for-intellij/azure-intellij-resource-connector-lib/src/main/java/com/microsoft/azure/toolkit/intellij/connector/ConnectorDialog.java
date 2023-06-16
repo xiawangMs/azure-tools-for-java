@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -31,7 +32,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import lombok.Setter;
+import rx.Observable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,6 +69,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private ResourceDefinition<?> consumerDefinition;
 
     private Connection<?,?> connection;
+    @Getter
+
+    private Observable<?> observable;
 
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
@@ -156,7 +160,11 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             if (Objects.nonNull(m)) {
                 final AzureModule module = AzureModule.from(m);
                 final AzureTaskManager taskManager = AzureTaskManager.getInstance();
-                taskManager.write(() -> module.initializeWithDefaultProfileIfNot().createOrUpdateConnection(connection).save());
+                taskManager.write(() -> {
+                    final Profile profile = module.initializeWithDefaultProfileIfNot();
+                    this.observable = profile.createOrUpdateConnection(connection);
+                    this.observable.subscribe(ignore -> profile.save());
+                });
             }
         }
     }

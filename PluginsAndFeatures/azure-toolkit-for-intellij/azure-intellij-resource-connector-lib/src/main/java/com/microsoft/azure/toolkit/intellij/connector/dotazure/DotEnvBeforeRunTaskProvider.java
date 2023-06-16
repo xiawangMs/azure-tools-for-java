@@ -20,7 +20,6 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -34,6 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
+import rx.Completable;
+import rx.Observable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @see "org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider"
@@ -133,18 +135,20 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
         public List<Pair<String, String>> loadEnv() {
             final AzureModule azureModule = AzureModule.createIfSupport(this.config).orElse(null);
             final Project project = Optional.ofNullable(azureModule).map(AzureModule::getProject).orElse(null);
-            final List<Connection<?, ?>> invalidConnections = Optional.ofNullable(azureModule).map(AzureModule::getDefaultProfile)
+            final List<Completable> completables = Optional.ofNullable(azureModule).map(AzureModule::getDefaultProfile)
                     .map(Profile::getConnections)
                     .stream().flatMap(List::stream)
-                    .filter(c -> !c.validate(project)).toList();
-            for (final Connection<?, ?> connection : invalidConnections) {
-                ResourceConnectionActionsContributor.fixResourceConnection(connection, project);
-            }
-            // todo: wait for all connection has been saved to .env
+                    .filter(c -> !c.validate(project))
+                    .map(c -> ResourceConnectionActionsContributor.fixResourceConnection(c, project))
+                    .filter(Objects::nonNull)
+                    .map(Observable::toCompletable)
+                    .collect(Collectors.toList());
+            // wait for all connection has been saved to .env)
+            Completable.merge(completables).await();
             return Optional.ofNullable(this.file)
-                .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
-                .map(Profile::load)
-                .orElse(Collections.emptyList());
+                    .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
+                    .map(Profile::load)
+                    .orElse(Collections.emptyList());
         }
 
         @Override
