@@ -73,6 +73,7 @@ public class AzResourceNode<T extends AzResource> extends Node<T> {
     }
 
     public void dispose() {
+        super.dispose();
         AzureEventBus.off("resource.refreshed.resource", listener);
         AzureEventBus.off("resource.status_changed.resource", listener);
         AzureEventBus.off("resource.children_changed.resource", listener);

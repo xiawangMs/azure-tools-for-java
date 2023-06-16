@@ -30,11 +30,10 @@ public class AzServiceNode<T extends AbstractAzService<?, ?>> extends Node<T> {
     }
 
     public void dispose() {
+        super.dispose();
         AzureEventBus.off("module.refreshed.module", listener);
         AzureEventBus.off("module.children_changed.module", listener);
         AzureEventBus.off("service.children_changed.service", listener);
-        this.setViewChangedListener(null);
-        this.setChildrenChangedListener(null);
     }
 
     protected void onEvent(AzureEvent event) {

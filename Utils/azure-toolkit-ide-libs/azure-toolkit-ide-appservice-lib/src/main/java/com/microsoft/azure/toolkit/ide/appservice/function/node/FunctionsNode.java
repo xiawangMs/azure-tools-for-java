@@ -52,8 +52,7 @@ public class FunctionsNode extends Node<FunctionApp> {
 
     @Override
     public void dispose() {
+        super.dispose();
         AzureEventBus.off("resource.refreshed.resource", listener);
-        this.setChildrenChangedListener(null);
-        this.setViewChangedListener(null);
     }
 }

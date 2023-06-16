@@ -28,10 +28,9 @@ public class AzModuleNode<T extends AbstractAzResourceModule<?, ?, ?>> extends N
     }
 
     public void dispose() {
+        super.dispose();
         AzureEventBus.off("module.refreshed.module", listener);
         AzureEventBus.off("module.children_changed.module", listener);
-        this.setViewChangedListener(null);
-        this.setChildrenChangedListener(null);
     }
 
     public void onEvent(AzureEvent event) {

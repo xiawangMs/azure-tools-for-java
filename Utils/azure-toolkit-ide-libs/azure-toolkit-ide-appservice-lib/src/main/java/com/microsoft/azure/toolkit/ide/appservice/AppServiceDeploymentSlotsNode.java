@@ -28,10 +28,9 @@ public class AppServiceDeploymentSlotsNode extends Node<AppServiceAppBase<?, ?, 
 
     @Override
     public void dispose() {
+        super.dispose();
         AzureEventBus.off("resource.refreshed.resource", listener);
         AzureEventBus.off("appservice.slot.refresh", listener);
-        this.setChildrenChangedListener(null);
-        this.setViewChangedListener(null);
     }
 
     public void onEvent(AzureEvent event) {
