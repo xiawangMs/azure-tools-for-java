@@ -30,6 +30,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -182,30 +183,22 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         private synchronized void updateChildren(List<Node<?>> children) {
-            final Map<Object, DefaultMutableTreeNode> oldChildren = IntStream.range(0, this.getChildCount() - 1).mapToObj(this::getChildAt)
-                .filter(n -> n instanceof DefaultMutableTreeNode).map(n -> ((DefaultMutableTreeNode) n))
-                .collect(Collectors.toMap(DefaultMutableTreeNode::getUserObject, n -> n));
+            final Map<Node<?>, TreeNode<?>> oldChildren = IntStream.range(0, this.getChildCount() - 1).mapToObj(this::getChildAt)
+                .filter(n -> n instanceof TreeNode<?>).map(n -> ((TreeNode<?>) n))
+                .collect(Collectors.toMap(n -> n.inner, n -> n));
 
-            final Set<Object> newChildrenData = children.stream().map(Node::getValue).collect(Collectors.toSet());
-            final Set<Object> oldChildrenData = oldChildren.keySet();
-            Sets.difference(oldChildrenData, newChildrenData).forEach(o -> oldChildren.get(o).removeFromParent());
+            final Set<Node<?>> newChildrenNodes = new HashSet<>(children);
+            final Set<Node<?>> oldChildrenNodes = oldChildren.keySet();
+            Sets.difference(oldChildrenNodes, newChildrenNodes).forEach(o -> oldChildren.get(o).removeFromParent());
 
-            TreePath toSelect = null;
-            if (this.inner.getNewItemOrder() == Node.Order.LIST_ORDER) {
-                for (int i = 0; i < children.size(); i++) {
-                    final Node<?> node = children.get(i);
-                    if (!oldChildrenData.contains(node.getValue())) {
-                        final TreeNode<?> treeNode = new TreeNode<>(node, this.tree);
-                        this.insert(treeNode, i);
-                        toSelect = new TreePath(treeNode.getPath());
-                    } else { // discarded nodes should be disposed manually to unregister listeners.
-                        node.dispose();
-                    }
+            for (int i = 0; i < children.size(); i++) {
+                final Node<?> node = children.get(i);
+                if (!oldChildrenNodes.contains(node)) {
+                    final TreeNode<?> treeNode = new TreeNode<>(node, this.tree);
+                    this.insert(treeNode, i);
+                } else { // discarded nodes should be disposed manually to unregister listeners.
+                    node.dispose();
                 }
-            } else {
-                final List<Node<?>> newChildren = children.stream()
-                    .filter(c -> !oldChildrenData.contains(c.getValue())).toList();
-                newChildren.forEach(node -> this.insert(new TreeNode<>(node, this.tree), getChildCount()));
             }
 
             this.removeLoadingNode();
