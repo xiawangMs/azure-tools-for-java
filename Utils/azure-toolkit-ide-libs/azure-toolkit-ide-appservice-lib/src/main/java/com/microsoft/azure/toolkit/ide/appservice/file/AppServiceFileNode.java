@@ -50,14 +50,14 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
     @Override
     public boolean hasChildren() {
-        final AppServiceFile file = this.getData();
+        final AppServiceFile file = this.getValue();
         return file.getType() == AppServiceFile.Type.DIRECTORY;
     }
 
     @Override
     public List<Node<?>> getChildren() {
         try {
-            final AppServiceFile file = this.getData();
+            final AppServiceFile file = this.getValue();
             if (file.getType() != AppServiceFile.Type.DIRECTORY) {
                 return Collections.emptyList();
             }
@@ -78,7 +78,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
     }
 
     private void onEvent(AzureEvent event) {
-        final AppServiceFile file = this.getData();
+        final AppServiceFile file = this.getValue();
         final String type = event.getType();
         final Object source = event.getSource();
         if ((source instanceof AppServiceFile && StringUtils.equalsIgnoreCase(((AppServiceFile) source).getFullName(), file.getFullName()))) {
@@ -88,12 +88,12 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
     @Override
     public String buildLabel() {
-        return getData().getName();
+        return getValue().getName();
     }
 
     @Override
     public AzureIcon buildIcon() {
-        final AppServiceFile file = this.getData();
+        final AppServiceFile file = this.getValue();
         final String fileIconName = file.getType() == AppServiceFile.Type.DIRECTORY ?
             StringUtils.equalsAnyIgnoreCase(file.getPath(), SITE_WWWROOT, LOG_FILES) ? "root" : "folder" :
             FilenameUtils.getExtension(file.getName());
@@ -102,7 +102,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
     @Override
     public String buildDescription() {
-        final AppServiceFile file = this.getData();
+        final AppServiceFile file = this.getValue();
         if (StringUtils.equalsAnyIgnoreCase(file.getPath(), SITE_WWWROOT, LOG_FILES)) {
             return String.format("Type: %s", file.getMime());
         }

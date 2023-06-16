@@ -89,7 +89,7 @@ public class Tree extends SimpleTree implements DataProvider {
         Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
 
         public TreeNode(@Nonnull Node<T> n, JTree tree) {
-            super(n.getData(), n.hasChildren());
+            super(n.getValue(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
             if (this.getAllowsChildren()) {
@@ -110,7 +110,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         public T getData() {
-            return this.inner.getData();
+            return this.inner.getValue();
         }
 
         public String getLabel() {
@@ -118,7 +118,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         public List<IView.Label> getInlineActionViews() {
-            return this.inner.getInlineActions().stream().map(action -> action.getView(this.inner.getData()))
+            return this.inner.getInlineActions().stream().map(action -> action.getView(this.inner.getValue()))
                 .filter(IView.Label::isEnabled)
                 .collect(Collectors.toList());
         }
@@ -190,7 +190,7 @@ public class Tree extends SimpleTree implements DataProvider {
                 .filter(n -> n instanceof DefaultMutableTreeNode).map(n -> ((DefaultMutableTreeNode) n))
                 .collect(Collectors.toMap(DefaultMutableTreeNode::getUserObject, n -> n));
 
-            final Set<Object> newChildrenData = children.stream().map(Node::getData).collect(Collectors.toSet());
+            final Set<Object> newChildrenData = children.stream().map(Node::getValue).collect(Collectors.toSet());
             final Set<Object> oldChildrenData = oldChildren.keySet();
             Sets.difference(oldChildrenData, newChildrenData).forEach(o -> oldChildren.get(o).removeFromParent());
 
@@ -198,7 +198,7 @@ public class Tree extends SimpleTree implements DataProvider {
             if (this.inner.getNewItemOrder() == Node.Order.LIST_ORDER) {
                 for (int i = 0; i < children.size(); i++) {
                     final Node<?> node = children.get(i);
-                    if (!oldChildrenData.contains(node.getData())) {
+                    if (!oldChildrenData.contains(node.getValue())) {
                         final TreeNode<?> treeNode = new TreeNode<>(node, this.tree);
                         this.insert(treeNode, i);
                         toSelect = new TreePath(treeNode.getPath());
@@ -208,7 +208,7 @@ public class Tree extends SimpleTree implements DataProvider {
                 }
             } else {
                 final List<Node<?>> newChildren = children.stream()
-                    .filter(c -> !oldChildrenData.contains(c.getData())).toList();
+                    .filter(c -> !oldChildrenData.contains(c.getValue())).toList();
                 newChildren.forEach(node -> this.insert(new TreeNode<>(node, this.tree), getChildCount()));
             }
 

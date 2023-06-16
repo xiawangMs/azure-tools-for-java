@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -39,7 +38,7 @@ public class AzModuleNode<T extends AbstractAzResourceModule<?, ?, ?>> extends N
         final String type = event.getType();
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsIgnoreCase(type, "module.children_changed.module");
-        if (source instanceof AzResourceModule && source.equals(this.getData())) {
+        if (source instanceof AzResourceModule && source.equals(this.getValue())) {
             this.onChildrenChanged(childrenChanged);
         }
     }

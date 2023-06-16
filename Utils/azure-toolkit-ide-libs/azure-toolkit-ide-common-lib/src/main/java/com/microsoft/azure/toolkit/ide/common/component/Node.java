@@ -23,7 +23,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -39,7 +41,7 @@ public class Node<D> {
     @Nonnull
     @Getter
     @EqualsAndHashCode.Include
-    private final D data;
+    private final D value;
     @Nullable
     private Function<D, AzureIcon> iconProvider;
     @Nullable
@@ -82,9 +84,10 @@ public class Node<D> {
     private Type type = Type.NORMAL;
     @Getter
     private Order newItemOrder = Order.LIST_ORDER;
+    private final Map<String, Object> data = new HashMap<>();
 
-    public Node(@Nonnull D data) {
-        this.data = data;
+    public Node(@Nonnull D value) {
+        this.value = value;
     }
 
     public Node<D> withType(@Nonnull final Type type) {
@@ -179,7 +182,7 @@ public class Node<D> {
 
     public void click(final Object event) {
         if (!this.clickHandlers.isEmpty()) {
-            this.clickHandlers.forEach(h -> h.accept(this.data, event));
+            this.clickHandlers.forEach(h -> h.accept(this.value, event));
         }
     }
 
@@ -200,7 +203,7 @@ public class Node<D> {
 
     public void doubleClick(final Object event) {
         if (!this.doubleClickHandlers.isEmpty()) {
-            this.doubleClickHandlers.forEach(h -> h.accept(this.data, event));
+            this.doubleClickHandlers.forEach(h -> h.accept(this.value, event));
         }
     }
 
@@ -264,28 +267,28 @@ public class Node<D> {
     }
 
     public AzureIcon buildIcon() {
-        return Optional.ofNullable(this.iconProvider).map(p -> p.apply(this.data)).orElse(null);
+        return Optional.ofNullable(this.iconProvider).map(p -> p.apply(this.value)).orElse(null);
     }
 
     @Nonnull
     public String buildLabel() {
-        return Optional.ofNullable(this.labelProvider).map(p -> p.apply(this.data)).orElse(this.data.toString());
+        return Optional.ofNullable(this.labelProvider).map(p -> p.apply(this.value)).orElse(this.value.toString());
     }
 
     public String buildDescription() {
-        return Optional.ofNullable(this.descProvider).map(p -> p.apply(this.data)).orElse(null);
+        return Optional.ofNullable(this.descProvider).map(p -> p.apply(this.value)).orElse(null);
     }
 
     public String buildTips() {
-        return Optional.ofNullable(this.tipsProvider).map(p -> p.apply(this.data)).orElse(null);
+        return Optional.ofNullable(this.tipsProvider).map(p -> p.apply(this.value)).orElse(null);
     }
 
     public boolean checkEnabled() {
-        return this.enableWhen.test(this.data);
+        return this.enableWhen.test(this.value);
     }
 
     public boolean checkVisible() {
-        return this.visibleWhen.test(this.data);
+        return this.visibleWhen.test(this.value);
     }
 
     protected void onViewChanged() {
@@ -301,18 +304,27 @@ public class Node<D> {
     }
 
     public boolean hasMoreChildren() {
-        return this.hasMoreChildren.test(this.getData());
+        return this.hasMoreChildren.test(this.value);
     }
 
     public void loadMoreChildren() {
-        this.moreChildrenLoader.accept(this.getData());
+        this.moreChildrenLoader.accept(this.value);
+    }
+
+    public <U> U get(String key) {
+        //noinspection unchecked
+        return (U) this.data.get(key);
+    }
+
+    public void set(String key, Object value) {
+        this.data.put(key, value);
     }
 
     public void triggerInlineAction(final Object event, int index) {
         final List<Action<? super D>> enabledActions = this.inlineActions.stream()
-            .filter(action -> action.getView(this.data).isEnabled()).toList();
+            .filter(action -> action.getView(this.value).isEnabled()).toList();
         if (index >= 0 && index < enabledActions.size()) {
-            Optional.ofNullable(enabledActions.get(index)).ifPresent(a -> a.handle(this.data, event));
+            Optional.ofNullable(enabledActions.get(index)).ifPresent(a -> a.handle(this.value, event));
         }
     }
 
@@ -337,7 +349,7 @@ public class Node<D> {
         private final BiFunction<C, Node<D>, Node<?>> buildChildNode;
 
         private Stream<Node<?>> build(Node<D> n) {
-            final List<C> childrenData = this.getChildrenData.apply(n.data);
+            final List<C> childrenData = this.getChildrenData.apply(n.value);
             return childrenData.stream().filter(Objects::nonNull).map(d -> buildChildNode.apply(d, n));
         }
     }

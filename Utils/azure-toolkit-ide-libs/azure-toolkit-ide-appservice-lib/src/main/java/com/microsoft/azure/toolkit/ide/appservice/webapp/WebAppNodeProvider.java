@@ -75,7 +75,7 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
                 .addChildren(WebApp::getSubModules, (module, webAppNode) -> createNode(module, webAppNode, manager))
                 .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files
                 .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager))
-                .addChild(app -> new AppSettingsNode(app.getData()));
+                .addChild(app -> new AppSettingsNode(app.getValue()));
         } else if (data instanceof WebAppDeploymentSlotModule) {
             return new AzModuleNode<>((WebAppDeploymentSlotModule) data)
                 .withIcon(AzureIcons.WebApp.DEPLOYMENT_SLOT)

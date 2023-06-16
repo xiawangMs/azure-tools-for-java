@@ -73,7 +73,7 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
                 .addChild(FunctionApp::getDeploymentModule, (module, functionAppNode) -> createNode(module, functionAppNode, manager))
                 .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files
                 .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager))
-                .addChild(app -> new AppSettingsNode(app.getData()));
+                .addChild(app -> new AppSettingsNode(app.getValue()));
         } else if (data instanceof FunctionAppDeploymentSlotModule) {
             return new AzModuleNode<>((FunctionAppDeploymentSlotModule) data)
                 .withIcon(AzureIcons.WebApp.DEPLOYMENT_SLOT)

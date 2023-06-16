@@ -57,8 +57,8 @@ public class ResourceGroupNodeProvider implements IExplorerNodeProvider {
                 .addChildren(group -> group.genericResources().list().stream().map(GenericResource::toConcreteResource)
                     .map(r -> manager.createNode(r, parent, ViewType.APP_CENTRIC))
                     .sorted(Comparator.comparing(r -> r instanceof GenericResourceNode)
-                        .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).getData()).getFullResourceType())
-                        .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).getData()).getName()))
+                        .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).getValue()).getFullResourceType())
+                        .thenComparing(r -> ((AbstractAzResource<?, ?, ?>) ((Node<?>) r).getValue()).getName()))
                     .collect(Collectors.toList()));
         }
         return null;

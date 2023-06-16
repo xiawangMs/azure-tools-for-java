@@ -18,14 +18,14 @@ public class ServiceLinkerNode extends Node<ServiceLinker> {
 
     @Override
     public String buildLabel() {
-        final ServiceLinker linker = this.getData();
+        final ServiceLinker linker = this.getValue();
         final ResourceId resourceId = ResourceId.fromString(linker.getTargetServiceId());
         return Optional.ofNullable(resourceId.name()).orElse(linker.getName());
     }
 
     @Override
     public AzureIcon buildIcon() {
-        final ResourceId resourceId = ResourceId.fromString(this.getData().getTargetServiceId());
+        final ResourceId resourceId = ResourceId.fromString(this.getValue().getTargetServiceId());
         return AzureIcon.builder().iconPath(String.format("/icons/%s/default.svg", resourceId.fullResourceType())).build();
     }
 }

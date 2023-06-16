@@ -157,7 +157,7 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
         @Override
         protected void onEvent(AzureEvent event) {
             final Object source = event.getSource();
-            if (source instanceof AzService && source.equals(this.getData())) {
+            if (source instanceof AzService && source.equals(this.getValue())) {
                 this.onChildrenChanged();
             }
         }

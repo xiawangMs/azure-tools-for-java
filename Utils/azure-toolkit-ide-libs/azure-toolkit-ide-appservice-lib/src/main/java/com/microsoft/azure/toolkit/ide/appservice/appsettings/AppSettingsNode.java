@@ -40,7 +40,7 @@ public class AppSettingsNode extends Node<Map<String, String>> {
 
     public void onEvent(AzureEvent event) {
         final Object source = event.getSource();
-        if (source instanceof AzResource && ((AzResource) source).getId().equals(this.app.getId())) {
+        if (source instanceof AzResource && ((AzResource) source).getId().equals(this.getValue().getId())) {
             this.onChildrenChanged();
         }
     }

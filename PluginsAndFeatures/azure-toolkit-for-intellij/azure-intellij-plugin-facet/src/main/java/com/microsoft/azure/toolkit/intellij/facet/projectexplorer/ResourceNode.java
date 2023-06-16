@@ -57,7 +57,7 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     @Nullable
     public Object getData(@Nonnull String dataId) {
         if (StringUtils.equalsIgnoreCase(dataId, Action.SOURCE)) {
-            return Optional.ofNullable(getValue()).map(Node::getData).orElse(null);
+            return Optional.ofNullable(getValue()).map(Node::getValue).orElse(null);
         }
         return null;
     }

@@ -42,7 +42,7 @@ public class AzResourceNode<T extends AzResource> extends Node<T> {
     }
 
     public void onEvent(AzureEvent event) {
-        final T data = this.getData();
+        final T data = this.getValue();
         final String type = event.getType();
         final Object source = event.getSource();
         if (source instanceof AzResource &&
@@ -82,7 +82,7 @@ public class AzResourceNode<T extends AzResource> extends Node<T> {
 
     @Override
     public String buildDescription() {
-        final boolean deleted = this.getData().getFormalStatus().isDeleted();
+        final boolean deleted = this.getValue().getFormalStatus().isDeleted();
         return deleted ? AzResource.Status.DELETED : super.buildDescription();
     }
 }

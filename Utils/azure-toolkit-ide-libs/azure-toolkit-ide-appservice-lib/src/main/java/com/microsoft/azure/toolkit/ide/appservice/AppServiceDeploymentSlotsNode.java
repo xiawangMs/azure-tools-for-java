@@ -36,7 +36,7 @@ public class AppServiceDeploymentSlotsNode extends Node<AppServiceAppBase<?, ?, 
 
     public void onEvent(AzureEvent event) {
         final Object source = event.getSource();
-        if (source instanceof AzResource && ((AzResource) source).getId().equals(this.getData().getId())) {
+        if (source instanceof AzResource && ((AzResource) source).getId().equals(this.getValue().getId())) {
             this.onChildrenChanged();
         }
     }
