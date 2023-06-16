@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -257,6 +258,8 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             .addChildren(Favorites::list, (o, parent) -> {
                 final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
                 if (node instanceof AzResourceNode) {
+                    @SuppressWarnings("unchecked")
+                    final Function<Object, String> descProvider = (Function<Object, String>) node.getDescBuilder();
                     ((AzResourceNode<?>) node).withTips(r -> {
                             if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                                 return "";
@@ -272,7 +275,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                             if (!r.getSubscription().isSelected()) {
                                 return String.format("(%s)", r.getSubscription().getName());
                             }
-                            return node.buildDescription();
+                            return Optional.ofNullable(descProvider).map(p -> p.apply(node.getValue())).orElse(null);
                         });
                 }
                 return node;
