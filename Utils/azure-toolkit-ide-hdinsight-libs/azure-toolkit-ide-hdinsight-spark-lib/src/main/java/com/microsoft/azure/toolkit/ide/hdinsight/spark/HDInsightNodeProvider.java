@@ -84,7 +84,7 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof StorageAccountNode) {
             return new AzResourceNode<>((StorageAccountNode) data)
                 .withIcon(AzureIcon.builder().iconPath("/icons/StorageAccount_16.png").build())
-                .withLabel(r -> r.getRemote(true).name().split("\\.")[0])
+                .withLabel(r -> r.getRemote().name().split("\\.")[0])
                 .withActions(HDInsightActionsContributor.HDINSIGHT_STORAGE_ACTIONS);
         } else {
             return null;

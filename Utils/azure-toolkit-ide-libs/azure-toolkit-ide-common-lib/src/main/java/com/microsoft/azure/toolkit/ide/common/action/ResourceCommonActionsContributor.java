@@ -111,7 +111,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .enableWhen(s -> {
                 if (s instanceof AbstractAzResource) {
                     final AbstractAzResource<?, ?, ?> r = (AbstractAzResource<?, ?, ?>) s;
-                    return !r.getFormalStatus(true).isDeleted() && !r.isDraftForCreating();
+                    return !r.getFormalStatus().isDeleted() && !r.isDraftForCreating();
                 }
                 return true;
             })
@@ -164,7 +164,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Connector.CONNECT.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen((s, place) -> StringUtils.startsWithIgnoreCase(place, AZURE_EXPLORER) && s instanceof AzResource)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withAuthRequired(false)
             .register(am);
 
@@ -173,7 +173,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.PROPERTIES.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AzResource)
-            .enableWhen(s -> s.getFormalStatus(true).isConnected())
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withShortcut(shortcuts.edit())
             .register(am);
 
@@ -183,7 +183,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withIdParam(AzResource::getName)
             .withShortcut("control alt O")
             .visibleWhen(s -> s instanceof AzResource)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .withShortcut(shortcuts.deploy())
             .register(am);
 
