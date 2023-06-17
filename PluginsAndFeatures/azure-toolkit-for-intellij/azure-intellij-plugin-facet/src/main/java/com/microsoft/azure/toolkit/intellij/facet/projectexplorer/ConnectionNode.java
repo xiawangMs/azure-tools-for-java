@@ -31,8 +31,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 
 public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implements IAzureFacetNode {
@@ -48,7 +48,7 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
         final Connection<?, ?> connection = this.getValue();
         if (!connection.validate(getProject())) {
-            return Arrays.asList(new ActionNode<>(this.myProject, ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
+            return Collections.singletonList(new ActionNode<>(this.myProject, ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
         }
         final ArrayList<AbstractTreeNode<?>> children = new ArrayList<>();
         final AbstractTreeNode<?> resourceNode = getResourceNode(connection);
@@ -83,10 +83,12 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         final ResourceId resourceId = ResourceId.fromString(resource.getDataId());
         final boolean isValid = connection.validate(getProject());
         presentation.setIcon(isValid ? IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceIconPath(resourceId)) : AllIcons.General.Warning);
-        presentation.addText(connection.getEnvPrefix() + "_*", SimpleTextAttributes.REGULAR_ATTRIBUTES);
+        presentation.addText(resource.getDefinition().getTitle(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
         if (isValid) {
-            presentation.addText(" " + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            presentation.addText(" :" + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
         } else {
+            presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
             final String message = connection.getResource().isValidResource() ? "Invalid Consumer" : "Invalid Resource";
             presentation.addText(String.format(" (%s)", message), SimpleTextAttributes.ERROR_ATTRIBUTES);
         }
