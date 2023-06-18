@@ -15,7 +15,6 @@ import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
-import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
@@ -42,7 +41,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourcesServiceSubscription;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -103,8 +101,8 @@ public class TreeUtils {
                 final Object component = event.getPath().getLastPathComponent();
                 if (component instanceof Tree.TreeNode) {
                     final Tree.TreeNode<?> treeNode = (Tree.TreeNode<?>) component;
-                    if (treeNode.getAllowsChildren()) {
-                        treeNode.loadChildren();
+                    if (treeNode.getAllowsChildren() && treeNode.loaded == null) {
+                        treeNode.inner.refreshChildrenLater();
                     }
                 }
             }
@@ -228,11 +226,7 @@ public class TreeUtils {
 
     public static void renderMyTreeNode(JTree tree, @Nonnull Tree.TreeNode<?> node, boolean selected, @Nonnull SimpleColoredComponent renderer) {
         final Node.View view = node.inner.getView();
-        if (BooleanUtils.isFalse(node.loaded)) {
-            renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-        } else {
-            renderer.setIcon(Optional.ofNullable(view.getIcon()).map(IntelliJAzureIcons::getIcon).orElse(IntelliJAzureIcons.getIcon(AzureIcons.Resources.GENERIC_RESOURCE)));
-        }
+        renderer.setIcon(Optional.ofNullable(view.getIcon()).map(IntelliJAzureIcons::getIcon).orElse(IntelliJAzureIcons.getIcon(AzureIcons.Resources.GENERIC_RESOURCE)));
         final Object highlighted = tree.getClientProperty(HIGHLIGHTED_RESOURCE_KEY);
         //noinspection unchecked
         final boolean toHighlightThisNode = Optional.ofNullable(highlighted).map(h -> ((Pair<Object, Long>) h))

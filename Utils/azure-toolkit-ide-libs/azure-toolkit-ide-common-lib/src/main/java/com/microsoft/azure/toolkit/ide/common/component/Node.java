@@ -6,10 +6,13 @@
 package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,7 +20,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +42,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Node<D> {
     @Nonnull
@@ -71,17 +78,21 @@ public class Node<D> {
     @Getter
     @Nonnull
     private final List<Action<? super D>> inlineActions = new ArrayList<>();
-    @Getter
     @Setter
     @Nullable
-    protected ViewChangedListener viewChangedListener;
-    @Getter
+    protected ViewRenderer viewRenderer;
     @Setter
     @Nullable
-    protected ChildrenChangedListener childrenChangedListener;
+    protected ChildrenRenderer childrenRenderer;
     @Getter
     private boolean lazy = true;
     private final Map<String, Object> data = new HashMap<>();
+    private List<Node<?>> children;
+    private View view;
+    private final Debouncer refreshViewLater = new TailingDebouncer(this::refreshView, 500);
+    private final Debouncer refreshChildrenLater = new TailingDebouncer(this::refreshChildren, 500);
+    @Nullable
+    private Boolean resetChildrenLater; // for debouncing `refreshChildren`
 
     public Node(@Nonnull D value) {
         this.value = value;
@@ -236,26 +247,94 @@ public class Node<D> {
     }
 
     public List<Node<?>> getChildren() {
+        if (Objects.isNull(this.children)) {
+            synchronized (this) {
+                if (Objects.isNull(this.children)) {
+                    this.children = this.buildChildren();
+                }
+            }
+        }
+        return this.children;
+    }
+
+    @Nonnull
+    @ToString.Include
+    public View getView() {
+        if (Objects.isNull(this.view)) {
+            synchronized (this) {
+                if (Objects.isNull(this.view)) {
+                    this.view = new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel());
+                    this.refreshViewLater();
+                }
+            }
+        }
+        return this.view;
+    }
+
+    protected List<Node<?>> buildChildren() {
         try {
             return this.childrenBuilders.stream().flatMap((builder) -> builder.build(this)).collect(Collectors.toList());
         } catch (final Exception e) {
-            AzureMessager.getMessager().error(e);
+            final Throwable root = ExceptionUtils.getRootCause(e);
+            if (!(root instanceof InterruptedException)) {
+                AzureMessager.getMessager().error(e);
+            }
             return Collections.emptyList();
         }
     }
 
-    public View getView() {
-        return this.buildView();
+    protected View buildView() {
+        try {
+            final String label = this.buildLabel();
+            final AzureIcon icon = this.buildIcon();
+            final String desc = this.buildDescription();
+            final String tips = this.buildTips();
+            final boolean enabled = this.checkEnabled();
+            final boolean visible = this.checkVisible();
+            return new View(icon, label, desc, tips, enabled, visible);
+        } catch (final Exception e) {
+            final Throwable root = ExceptionUtils.getRootCause(e);
+            if (!(root instanceof InterruptedException)) {
+                AzureMessager.getMessager().error(e);
+            }
+            return new View(AzureIcons.Common.UNKNOWN_ICON, buildLabel());
+        }
     }
 
-    public View buildView() {
-        final AzureIcon icon = this.buildIcon();
-        final String label = this.buildLabel();
-        final String desc = this.buildDescription();
-        final String tips = this.buildTips();
-        final boolean enabled = this.checkEnabled();
-        final boolean visible = this.checkVisible();
-        return new View(icon, label, desc, tips, enabled, visible);
+    protected synchronized void refreshChildren() {
+        final boolean incremental = BooleanUtils.isFalse(this.resetChildrenLater);
+        final View view = Optional.ofNullable(this.view).orElseGet(() -> new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()));
+        view.setIcon(AzureIcons.Common.REFRESH_ICON);
+        this.rerenderView();
+        this.children = this.buildChildren();
+        this.rerenderChildren(incremental);
+        this.view = this.buildView();
+        this.rerenderView();
+    }
+
+    protected synchronized void refreshView() {
+        final View view = Optional.ofNullable(this.view).orElseGet(() -> new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()));
+        view.setIcon(AzureIcons.Common.REFRESH_ICON);
+        this.rerenderView();
+        this.view = this.buildView();
+        this.rerenderView();
+    }
+
+    public void refreshChildrenLater(boolean... incremental) {
+        this.resetChildrenLater = BooleanUtils.isTrue(this.resetChildrenLater) || Objects.isNull(incremental) || incremental.length < 1 || !incremental[0];
+        this.refreshChildrenLater.debounce();
+    }
+
+    public void refreshViewLater() {
+        this.refreshViewLater.debounce();
+    }
+
+    private void rerenderChildren(boolean... incremental) {
+        Optional.ofNullable(this.childrenRenderer).ifPresent(r -> r.updateChildren(incremental));
+    }
+
+    private void rerenderView() {
+        Optional.ofNullable(this.viewRenderer).ifPresent(ViewRenderer::updateView);
     }
 
     public AzureIcon buildIcon() {
@@ -286,14 +365,6 @@ public class Node<D> {
 
     public boolean checkVisible() {
         return this.visibleWhen.test(this.value);
-    }
-
-    protected void onViewChanged() {
-        Optional.ofNullable(this.viewChangedListener).ifPresent(ViewChangedListener::onViewChanged);
-    }
-
-    protected void onChildrenChanged(boolean... incremental) {
-        Optional.ofNullable(this.childrenChangedListener).ifPresent(r -> r.onChildrenChanged(incremental));
     }
 
     public boolean hasChildren() {
@@ -336,8 +407,8 @@ public class Node<D> {
     }
 
     public void dispose() {
-        this.setChildrenChangedListener(null);
-        this.setViewChangedListener(null);
+        this.setChildrenRenderer(null);
+        this.setViewRenderer(null);
     }
 
     @RequiredArgsConstructor
@@ -351,18 +422,27 @@ public class Node<D> {
         }
     }
 
+    @Setter
     @Getter
     @RequiredArgsConstructor
     @AllArgsConstructor
+    @ToString(onlyExplicitlyIncluded = true)
     public static class View implements IView.Label {
-        private final AzureIcon icon;
+        @ToString.Include
+        private AzureIcon icon;
         @Nonnull
+        @ToString.Include
         private final String label;
         private String description;
         @Getter(AccessLevel.NONE)
         private String tips;
         private boolean enabled = true;
         private boolean visible = true;
+
+        public View(AzureIcon icon, @Nonnull String label) {
+            this.label = label;
+            this.icon = icon;
+        }
 
         @Nullable
         public String getIconPath() {
@@ -379,12 +459,12 @@ public class Node<D> {
     }
 
     @FunctionalInterface
-    public static interface ViewChangedListener {
-        void onViewChanged();
+    public static interface ViewRenderer {
+        void updateView();
     }
 
     @FunctionalInterface
-    public static interface ChildrenChangedListener {
-        void onChildrenChanged(boolean... incremental);
+    public static interface ChildrenRenderer {
+        void updateChildren(boolean... incremental);
     }
 }
