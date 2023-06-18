@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
-import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,8 +22,6 @@ public class AppCentricRootNode extends AzServiceNode<AzureResources> {
     private static final String NAME = "Resource Groups";
     private final AzureEventBus.EventListener subscriptionListener;
     private final AzureEventBus.EventListener logoutListener;
-    @Getter
-    private View view;
 
     public AppCentricRootNode(@Nonnull AzureResources service) {
         super(service);
@@ -38,7 +35,6 @@ public class AppCentricRootNode extends AzServiceNode<AzureResources> {
         AzureEventBus.on("account.subscription_changed.account", subscriptionListener);
         AzureEventBus.on("account.logged_out.account", logoutListener);
 
-        this.view = new View(AzureIcons.Resources.MODULE, NAME);
         this.onLogin(null);
     }
 
@@ -57,13 +53,13 @@ public class AppCentricRootNode extends AzServiceNode<AzureResources> {
                 label = NAME + " (No Subscriptions Selected)";
             }
         }
-        this.view = new View(AzureIcons.Resources.MODULE, label);
-        this.onViewChanged();
+        this.withLabel(label);
+        this.refreshViewLater();
     }
 
     private void onLogout(AzureEvent azureEvent) {
-        this.view = new View(AzureIcons.Resources.MODULE, NAME);
-        this.onViewChanged();
+        this.withDescription("");
+        this.refreshViewLater();
     }
 
     public void dispose() {
