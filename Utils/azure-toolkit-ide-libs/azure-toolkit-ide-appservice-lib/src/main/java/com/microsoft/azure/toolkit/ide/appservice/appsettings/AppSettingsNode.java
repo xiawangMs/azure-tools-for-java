@@ -20,6 +20,7 @@ public class AppSettingsNode extends AzResourceNode<AppServiceAppBase<?, ?, ?>> 
         super(app);
         this.withIcon(AzureIcons.AppService.APP_SETTINGS)
             .withLabel("App Settings")
+            .withDescription("")
             .withTips("Variables passed as environment variables to the application code")
             .addChildren(
                 a -> Optional.ofNullable(a.getAppSettings()).map(Map::entrySet).map(s -> s.stream().toList()).orElse(Collections.emptyList()),
@@ -36,7 +37,7 @@ public class AppSettingsNode extends AzResourceNode<AppServiceAppBase<?, ?, ?>> 
                 .withDescription(value -> visible ? " = " + data.getValue() : " = ***")
                 .onClicked(v -> {
                     this.visible = !this.visible;
-                    this.refreshViewLater();
+                    this.refreshViewLater(10);
                 });
         }
     }

@@ -329,6 +329,10 @@ public class Node<D> {
         this.refreshViewLater.debounce();
     }
 
+    public void refreshViewLater(int delay) {
+        this.refreshViewLater.debounce(delay);
+    }
+
     private void rerenderChildren(boolean... incremental) {
         Optional.ofNullable(this.childrenRenderer).ifPresent(r -> r.updateChildren(incremental));
     }
