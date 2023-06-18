@@ -156,7 +156,7 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
         protected void onEvent(AzureEvent event) {
             final Object source = event.getSource();
             if (source instanceof AzService && source.equals(this.getValue())) {
-                this.onChildrenChanged();
+                this.refreshChildrenLater();
             }
         }
     }

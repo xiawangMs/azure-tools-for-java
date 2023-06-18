@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode, Node.ChildrenChangedListener, Node.ViewChangedListener {
+public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode, Node.ChildrenRenderer, Node.ViewRenderer {
     public ResourceNode(@Nonnull Project project, final Node<?> node) {
         super(project, node);
-        node.setViewChangedListener(this);
-        node.setChildrenChangedListener(this);
+        node.setViewRenderer(this);
+        node.setChildrenRenderer(this);
     }
 
     @Override
@@ -79,12 +79,12 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     }
 
     @Override
-    public void onViewChanged() {
+    public void updateView() {
         rerender(false);
     }
 
     @Override
-    public void onChildrenChanged(boolean... incremental) {
+    public void updateChildren(boolean... incremental) {
         rerender(true);
     }
 

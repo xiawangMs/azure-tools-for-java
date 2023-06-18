@@ -121,7 +121,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
             if (source instanceof AzureContainerAppsServiceSubscription
                 && StringUtils.equals(((AzureContainerAppsServiceSubscription) source).getSubscriptionId(), this.getValue().getSubscriptionId())
                 && StringUtils.equals(type, "resource.children_changed.resource")) {
-                this.onChildrenChanged(true);
+                this.refreshChildrenLater(true);
             }
             super.onEvent(event);
         }

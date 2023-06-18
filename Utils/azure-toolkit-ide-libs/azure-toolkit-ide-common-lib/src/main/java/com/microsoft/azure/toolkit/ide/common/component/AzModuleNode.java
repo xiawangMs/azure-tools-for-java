@@ -38,7 +38,7 @@ public class AzModuleNode<T extends AbstractAzResourceModule<?, ?, ?>> extends N
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsIgnoreCase(type, "module.children_changed.module");
         if (source instanceof AzResourceModule && source.equals(this.getValue())) {
-            this.onChildrenChanged(childrenChanged);
+            this.refreshChildrenLater(childrenChanged);
         }
     }
 }

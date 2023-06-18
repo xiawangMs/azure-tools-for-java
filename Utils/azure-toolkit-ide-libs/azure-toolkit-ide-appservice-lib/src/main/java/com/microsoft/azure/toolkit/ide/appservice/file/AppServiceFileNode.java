@@ -55,7 +55,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
     }
 
     @Override
-    public List<Node<?>> getChildren() {
+    public List<Node<?>> buildChildren() {
         try {
             final AppServiceFile file = this.getValue();
             if (file.getType() != AppServiceFile.Type.DIRECTORY) {
@@ -82,7 +82,7 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
         final String type = event.getType();
         final Object source = event.getSource();
         if ((source instanceof AppServiceFile && StringUtils.equalsIgnoreCase(((AppServiceFile) source).getFullName(), file.getFullName()))) {
-            this.onChildrenChanged();
+            this.refreshChildrenLater();
         }
     }
 

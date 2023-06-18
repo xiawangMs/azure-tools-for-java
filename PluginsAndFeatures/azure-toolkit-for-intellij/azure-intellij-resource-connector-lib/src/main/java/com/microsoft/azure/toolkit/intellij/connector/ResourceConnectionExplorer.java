@@ -71,7 +71,7 @@ public class ResourceConnectionExplorer extends Tree {
             this.connection = module.getProject().getMessageBus().connect();
             this.connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {
                 if (conn.getConsumer().getId().equalsIgnoreCase(module.getName())) {
-                    this.onChildrenChanged();
+                    this.refreshChildrenLater();
                 }
             });
         }
@@ -89,7 +89,7 @@ public class ResourceConnectionExplorer extends Tree {
         public RootNode(@Nonnull Project project) {
             super(project);
             this.connection = project.getMessageBus().connect();
-            this.connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) RootNode.this::onChildrenChanged);
+            this.connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) RootNode.this::refreshChildrenLater);
         }
 
         @Override

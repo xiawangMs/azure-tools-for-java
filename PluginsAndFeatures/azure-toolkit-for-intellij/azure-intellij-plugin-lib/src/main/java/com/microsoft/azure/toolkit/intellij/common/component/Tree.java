@@ -82,7 +82,7 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-    public static class TreeNode<T> extends DefaultMutableTreeNode implements Node.ChildrenChangedListener, Node.ViewChangedListener {
+    public static class TreeNode<T> extends DefaultMutableTreeNode implements Node.ViewRenderer, Node.ChildrenRenderer {
         @Nonnull
         @EqualsAndHashCode.Include
         protected final Node<T> inner;
@@ -99,8 +99,8 @@ public class Tree extends SimpleTree implements DataProvider {
             if (!this.inner.isLazy()) {
                 this.loadChildren();
             }
-            this.inner.setViewChangedListener(this);
-            this.inner.setChildrenChangedListener(this);
+            this.inner.setViewRenderer(this);
+            this.inner.setChildrenRenderer(this);
         }
 
         @Override
@@ -121,7 +121,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
-        public void onViewChanged() {
+        public void updateView() {
             synchronized (this.tree) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
                 if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
@@ -141,7 +141,7 @@ public class Tree extends SimpleTree implements DataProvider {
 
         @Override
         @AzureOperation(name = "user/common.load_children.node", params = "this.getLabel()")
-        public synchronized void onChildrenChanged(boolean... incremental) {
+        public synchronized void updateChildren(boolean... incremental) {
             AzureTaskManager.getInstance().runLater(() -> { // queue up/wait until pending UI update finishes.
                 if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                     final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();

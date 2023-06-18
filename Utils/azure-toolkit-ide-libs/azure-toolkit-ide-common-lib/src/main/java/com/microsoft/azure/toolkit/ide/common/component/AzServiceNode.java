@@ -41,7 +41,7 @@ public class AzServiceNode<T extends AbstractAzService<?, ?>> extends Node<T> {
         final Object source = event.getSource();
         final boolean childrenChanged = StringUtils.equalsAnyIgnoreCase(type, "module.children_changed.module", "service.children_changed.service");
         if (source instanceof AzService && source.equals(this.getValue())) {
-            onChildrenChanged(childrenChanged);
+            this.refreshChildrenLater(childrenChanged);
         }
     }
 }

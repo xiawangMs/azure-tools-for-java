@@ -36,7 +36,7 @@ public class AppSettingsNode extends AzResourceNode<AppServiceAppBase<?, ?, ?>> 
                 .withDescription(value -> visible ? " = " + data.getValue() : " = ***")
                 .onClicked(v -> {
                     this.visible = !this.visible;
-                    this.onViewChanged();
+                    this.refreshViewLater();
                 });
         }
     }
