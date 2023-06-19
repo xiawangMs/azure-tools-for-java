@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
 import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.facet.Facet;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
@@ -13,6 +14,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetConfiguration;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
@@ -64,12 +67,18 @@ public class AzureModule {
     private Profile defaultProfile;
 
     public AzureModule(@Nonnull final Module module) {
+        this(module, null);
+    }
+
+    public AzureModule(@Nonnull final Module module, @Nullable VirtualFile dotAzure) {
         this.module = module;
-        this.getModuleDir().map(d -> d.findChild(DOT_AZURE)).ifPresent(dotAzure -> {
-            this.dotAzure = dotAzure;
-            this.profilesXmlFile = this.dotAzure.findChild(PROFILES_XML);
-            Optional.ofNullable(this.profilesXmlFile).ifPresent(this::loadProfiles);
-        });
+        Optional.ofNullable(dotAzure)
+            .or(() -> Optional.ofNullable(AzureProjectFacet.getInstance(module)).map(Facet::getConfiguration).map(AzureProjectFacetConfiguration::getDotAzureDir))
+            .or(() -> this.getModuleDir().map(d -> d.findChild(DOT_AZURE))).ifPresent(d -> {
+                this.dotAzure = d;
+                this.profilesXmlFile = this.dotAzure.findChild(PROFILES_XML);
+                Optional.ofNullable(this.profilesXmlFile).ifPresent(this::loadProfiles);
+            });
     }
 
     @SneakyThrows(value = {IOException.class, JDOMException.class})
