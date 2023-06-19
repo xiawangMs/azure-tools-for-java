@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common.genericresource;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.common.component.AzResourceNode;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -16,7 +17,7 @@ public class GenericResourceNode extends AzResourceNode<AzResource> {
     public GenericResourceNode(@Nonnull AzResource resource) {
         super(resource);
         this.withIcon(r -> r.getFormalStatus().isWaiting() ? AzureIcons.Common.REFRESH_ICON : AzureIcons.Resources.GENERIC_RESOURCE)
-            .withLabel(AzResource::getName)
+            .withLabel(r -> ResourceId.fromString(r.getId()).name())
             .withDescription(r -> (r.getFormalStatus().isUnknown() ? "" : resource.getStatus() + " ") + resource.getResourceTypeName());
     }
 }
