@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -182,10 +181,11 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     private static void removeConnection(Connection<?, ?> connection, AnActionEvent e) {
         final Project project = Objects.requireNonNull(e.getProject());
         final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
-        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(module).map(AzureModule::from)
+        final AzureTaskManager m = AzureTaskManager.getInstance();
+        m.runLater(() -> Optional.ofNullable(module).map(AzureModule::from)
             .map(AzureModule::getDefaultProfile)
             .map(env -> env.removeConnection(connection))
-            .ifPresent(Profile::save));
+            .ifPresent(p -> m.write(p::save)));
     }
 
     @AzureOperation("user/connector.refresh_connections")
