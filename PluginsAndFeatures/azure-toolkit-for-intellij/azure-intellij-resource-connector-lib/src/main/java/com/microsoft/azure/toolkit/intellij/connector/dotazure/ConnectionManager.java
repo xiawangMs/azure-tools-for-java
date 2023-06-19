@@ -133,6 +133,11 @@ public class ConnectionManager {
         return connections.stream().filter(e -> StringUtils.equals(id, e.getConsumer().getId())).collect(Collectors.toList());
     }
 
+    @Nullable
+    public VirtualFile getConnectionsFile() {
+        return this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
+    }
+
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.save_connections")
     void save() throws IOException {
@@ -151,7 +156,7 @@ public class ConnectionManager {
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_connections")
     void load() throws Exception {
-        final VirtualFile connectionsFile = this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
+        final VirtualFile connectionsFile = getConnectionsFile();
         if (Objects.isNull(connectionsFile) || connectionsFile.contentsToByteArray().length < 1) {
             return;
         }

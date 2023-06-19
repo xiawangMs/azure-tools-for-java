@@ -29,6 +29,7 @@ import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -192,6 +193,14 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             tree.addMouseListener(new AzureProjectExplorerMouseListener(tree, project));
             Arrays.stream(mouseListeners).forEach(tree::addMouseListener);
         }
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable Object getData(@NotNull Collection<? extends AbstractTreeNode<?>> selected, @NotNull String dataId) {
+        final IAzureFacetNode azureFacetNode = selected.stream()
+                .filter(node -> node instanceof IAzureFacetNode)
+                .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);
+        return Objects.nonNull(azureFacetNode) ? azureFacetNode.getData(dataId) : TreeStructureProvider.super.getData(selected, dataId);
     }
 }
 

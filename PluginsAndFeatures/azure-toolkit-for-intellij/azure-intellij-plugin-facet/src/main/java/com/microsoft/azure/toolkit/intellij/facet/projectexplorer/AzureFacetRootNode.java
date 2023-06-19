@@ -85,7 +85,12 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
     @Override
     @Nullable
     public Object getData(@Nonnull String dataId) {
-        return StringUtils.equalsIgnoreCase(dataId, "ACTION_SOURCE") ? this.getValue() : null;
+        return switch (StringUtils.lowerCase(dataId)) {
+            case "action_source" -> this.getValue();
+            case "virtualfile" ->
+                    Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
+            default -> null;
+        };
     }
 
     @Nullable

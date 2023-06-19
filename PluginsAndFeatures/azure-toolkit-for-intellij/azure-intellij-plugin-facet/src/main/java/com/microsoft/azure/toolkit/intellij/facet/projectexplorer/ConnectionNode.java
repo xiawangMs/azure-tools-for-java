@@ -5,10 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -19,13 +24,16 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.auth.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import org.apache.commons.lang3.ObjectUtils;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -35,13 +43,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.*;
+
+import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.EDIT_CONNECTION;
+import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.REMOVE_CONNECTION;
 
 public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implements IAzureFacetNode {
     private final AzureModule module;
+    private final Action<?> editAction;
 
     public ConnectionNode(@Nonnull Project project, @Nonnull AzureModule module, @Nonnull final Connection<?, ?> connection) {
         super(project, connection);
         this.module = module;
+        this.editAction = new Action<>(Action.Id.of("user/connector.edit_connection_in_editor"))
+                .withLabel("Edit Azure Connection in Editor")
+                .withIcon(AzureIcons.Action.EDIT.getIconPath())
+                .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.navigate(true)))
+                .withAuthRequired(false);
     }
 
     @Override
@@ -110,7 +128,12 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     @Nullable
     @Override
     public IActionGroup getActionGroup() {
-        return AzureActionManager.getInstance().getGroup(ResourceConnectionActionsContributor.CONNECTION_ACTIONS);
+        return new ActionGroup(
+                editAction,
+                "---",
+                EDIT_CONNECTION,
+                REMOVE_CONNECTION
+        );
     }
 
     @Override
@@ -121,5 +144,31 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     @Override
     public String toString() {
         return "->" + this.getValue().getResource().getName();
+    }
+
+    @Override
+    public void navigate(boolean requestFocus) {
+        final VirtualFile connectionsFile = this.getConnectionsFile();
+        final PsiFile psiFile = Optional.ofNullable(connectionsFile)
+                .map(f -> PsiManager.getInstance(getProject()).findFile(f)).orElse(null);
+        if (Objects.isNull(psiFile)) {
+            return;
+        }
+        NavigationUtil.openFileWithPsiElement(psiFile, requestFocus, requestFocus);
+        EditorUtils.focusContentInCurrentEditor(getProject(), connectionsFile, getValue().getId());
+    }
+
+    @Override
+    public boolean canNavigateToSource() {
+        return Objects.nonNull(getConnectionsFile());
+    }
+
+    @Nullable
+    private VirtualFile getConnectionsFile() {
+        return Optional.ofNullable(getValue())
+                .map(Connection::getProfile)
+                .map(Profile::getConnectionManager)
+                .map(ConnectionManager::getConnectionsFile)
+                .orElse(null);
     }
 }
