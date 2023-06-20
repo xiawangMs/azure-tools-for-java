@@ -16,6 +16,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
@@ -31,6 +32,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -76,8 +78,14 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
         final AzureModule value = getValue();
-        final boolean connected = CollectionUtils.isNotEmpty(Optional.ofNullable(value.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()));
+        final List<Connection<?, ?>> connections = Optional.ofNullable(value.getDefaultProfile())
+                .map(Profile::getConnections).orElse(Collections.emptyList());
+        final boolean connected = CollectionUtils.isNotEmpty(connections);
+        final boolean invalidConnections = connections.stream().anyMatch(c -> !c.validate(getProject()));
         presentation.addText("Azure" + StringUtils.SPACE, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+        if (invalidConnections) {
+            presentation.addText("Contains Invalid Connections", SimpleTextAttributes.ERROR_ATTRIBUTES);
+        }
         presentation.setTooltip("Manage connected Azure resources here.");
         presentation.setIcon(connected ? IntelliJAzureIcons.getIcon("/icons/Common/AzureResourceConnector.svg") : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
     }

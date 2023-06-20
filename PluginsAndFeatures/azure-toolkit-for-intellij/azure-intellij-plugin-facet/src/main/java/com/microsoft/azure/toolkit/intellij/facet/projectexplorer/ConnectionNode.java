@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
@@ -32,17 +31,13 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
-import org.apache.commons.lang3.ObjectUtils;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
 import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.EDIT_CONNECTION;
@@ -110,10 +105,6 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         }
         if (resource.getDefinition().isCustomizedEnvPrefixSupported()) {
             presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        }
-        if(!isValid) {
-            final String message = connection.getResource().isValidResource() ? "Missing Consumer" : "Missing Resource";
-            presentation.addText(String.format(" (%s)", message), SimpleTextAttributes.ERROR_ATTRIBUTES);
         }
         // presentation.setIcon(AllIcons.CodeWithMe.CwmInvite);
         // presentation.setIcon(AllIcons.Debugger.ThreadStates.Socket);
