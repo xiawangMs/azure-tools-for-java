@@ -28,7 +28,7 @@ import javax.swing.*;
 import java.util.Collection;
 
 public class AzureFacetType extends FacetType<AzureFacet, AzureFacetConfiguration> {
-    private static final String STRING_ID = "azure-facet";
+    private static final String STRING_ID = "azure";
     private static final String PRESENTABLE_NAME = "Azure";
     public static final FacetTypeId<AzureFacet> ID = new FacetTypeId<>(STRING_ID);
     public static final AzureFacetType INSTANCE = new AzureFacetType();
