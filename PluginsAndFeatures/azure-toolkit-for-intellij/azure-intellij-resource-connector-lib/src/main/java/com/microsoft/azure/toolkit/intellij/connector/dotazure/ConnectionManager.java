@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -54,6 +55,7 @@ public class ConnectionManager {
         this.profile = profile;
         try {
             this.load();
+        } catch (final ProcessCanceledException ignored) {
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
