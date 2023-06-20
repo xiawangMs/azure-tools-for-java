@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -87,8 +88,8 @@ public class Node<D> {
     @Getter
     private boolean lazy = true;
     private final Map<String, Object> data = new HashMap<>();
-    private List<Node<?>> children;
-    private View view;
+    private final AtomicReference<List<Node<?>>> children = new AtomicReference<>();
+    private final AtomicReference<View> view = new AtomicReference<>();
     private final Debouncer refreshViewLater = new TailingDebouncer(this::refreshView, 500);
     private final Debouncer refreshChildrenLater = new TailingDebouncer(this::refreshChildren, 500);
     @Nullable
@@ -247,21 +248,19 @@ public class Node<D> {
     }
 
     public List<Node<?>> getChildren() {
-        if (Objects.isNull(this.children)) {
+        if (this.children.compareAndSet(null, Collections.emptyList())) {
             this.refreshChildrenLater();
-            return Collections.emptyList();
         }
-        return this.children;
+        return this.children.get();
     }
 
     @Nonnull
     @ToString.Include
     public View getView() {
-        if (Objects.isNull(this.view)) {
+        if (this.view.compareAndSet(null, new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()))) {
             this.refreshViewLater();
-            return new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel());
         }
-        return this.view;
+        return this.view.get();
     }
 
     protected List<Node<?>> buildChildren() {
@@ -296,20 +295,20 @@ public class Node<D> {
 
     protected synchronized void refreshChildren() {
         final boolean incremental = BooleanUtils.isFalse(this.resetChildrenLater);
-        final View view = Optional.ofNullable(this.view).orElseGet(() -> new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()));
-        view.setIcon(AzureIcons.Common.REFRESH_ICON);
+        this.view.compareAndSet(null, new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()));
+        this.view.get().setIcon(AzureIcons.Common.REFRESH_ICON);
         this.rerenderView();
-        this.children = this.buildChildren();
+        this.children.set(this.buildChildren());
         this.rerenderChildren(incremental);
-        this.view = this.buildView();
+        this.view.set(this.buildView());
         this.rerenderView();
     }
 
     protected synchronized void refreshView() {
-        final View view = Optional.ofNullable(this.view).orElseGet(() -> new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()));
-        view.setIcon(AzureIcons.Common.REFRESH_ICON);
+        this.view.compareAndSet(null, new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel()));
+        this.view.get().setIcon(AzureIcons.Common.REFRESH_ICON);
         this.rerenderView();
-        this.view = this.buildView();
+        this.view.set(this.buildView());
         this.rerenderView();
     }
 
