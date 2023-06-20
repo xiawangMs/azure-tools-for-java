@@ -165,10 +165,10 @@ public class TreeUtils {
                     .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
                 final int inlineActionIndex = getHoverInlineActionIndex(tree, e, inlineActionViews.size());
                 if (Objects.nonNull(node) && e.getClickCount() == 1 && inlineActionIndex > -1) {
-                    final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                    final String place = ResourceCommonActionsContributor.AZURE_EXPLORER + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                    node.inner.triggerInlineAction(event, inlineActionIndex);
+                    node.inner.triggerInlineAction(event, inlineActionIndex, ResourceCommonActionsContributor.AZURE_EXPLORER);
                 }
             }
         };

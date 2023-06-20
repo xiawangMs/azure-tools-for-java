@@ -12,6 +12,7 @@ import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -119,7 +120,8 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         public List<IView.Label> getInlineActionViews() {
-            return this.inner.getInlineActions().stream().map(action -> action.getView(this.inner.getValue()))
+            return this.inner.getInlineActions().stream()
+                .map(action -> action.getView(this.inner.getValue(), ResourceCommonActionsContributor.AZURE_EXPLORER))
                 .filter(IView.Label::isEnabled)
                 .collect(Collectors.toList());
         }
