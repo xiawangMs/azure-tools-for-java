@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
@@ -55,9 +56,11 @@ public class ConnectionManager {
         this.profile = profile;
         try {
             this.load();
-        } catch (final ProcessCanceledException ignored) {
         } catch (final Exception e) {
-            throw new AzureToolkitRuntimeException(e);
+            final Throwable root = ExceptionUtils.getRootCause(e);
+            if (!(root instanceof ProcessCanceledException)) {
+                throw new AzureToolkitRuntimeException(e);
+            }
         }
     }
 
