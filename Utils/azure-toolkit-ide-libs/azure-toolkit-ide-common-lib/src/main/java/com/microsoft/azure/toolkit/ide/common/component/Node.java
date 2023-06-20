@@ -248,11 +248,8 @@ public class Node<D> {
 
     public List<Node<?>> getChildren() {
         if (Objects.isNull(this.children)) {
-            synchronized (this) {
-                if (Objects.isNull(this.children)) {
-                    this.children = this.buildChildren();
-                }
-            }
+            this.refreshChildrenLater();
+            return Collections.emptyList();
         }
         return this.children;
     }
@@ -261,12 +258,8 @@ public class Node<D> {
     @ToString.Include
     public View getView() {
         if (Objects.isNull(this.view)) {
-            synchronized (this) {
-                if (Objects.isNull(this.view)) {
-                    this.view = new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel());
-                    this.refreshViewLater();
-                }
-            }
+            this.refreshViewLater();
+            return new View(AzureIcons.Common.REFRESH_ICON, this.buildLabel());
         }
         return this.view;
     }
