@@ -28,8 +28,8 @@ import javax.swing.*;
 import java.util.Collection;
 
 public class AzureProjectFacetType extends FacetType<AzureProjectFacet, AzureProjectFacetConfiguration> {
-    private static final String STRING_ID = "Azure";
-    private static final String PRESENTABLE_NAME = "Azure Resource Connections";
+    private static final String STRING_ID = "azure-facet";
+    private static final String PRESENTABLE_NAME = "Azure";
     public static final FacetTypeId<AzureProjectFacet> ID = new FacetTypeId<>(STRING_ID);
     public static final AzureProjectFacetType INSTANCE = new AzureProjectFacetType();
 

@@ -36,11 +36,6 @@ public class AzureProjectFacetConfiguration implements FacetConfiguration, Persi
         this.state = new AzureProjectFacetState(dotAzureFile.toNioPath().toString());
     }
 
-    @Override
-    public FacetEditorTab[] createEditorTabs(FacetEditorContext editorContext, FacetValidatorsManager validatorsManager) {
-        return new FacetEditorTab[0];
-    }
-
     @Nonnull
     @Override
     public AzureProjectFacetState getState() {
@@ -57,6 +52,17 @@ public class AzureProjectFacetConfiguration implements FacetConfiguration, Persi
         return Optional.ofNullable(this.state.dotAzurePath)
             .filter(StringUtils::isNotBlank).map(Path::of)
             .map(p -> VfsUtil.findFile(p, true)).orElse(null);
+    }
+
+    public void setDotAzureDir(final VirtualFile dotAzureDir) {
+        this.state.setDotAzurePath(Optional.ofNullable(dotAzureDir).map(VirtualFile::getPath).orElse(null));
+    }
+
+    @Override
+    public FacetEditorTab[] createEditorTabs(FacetEditorContext editorContext, FacetValidatorsManager validatorsManager) {
+        return new FacetEditorTab[]{
+            new AzureProjectFacetEditorTab(this.state, editorContext, validatorsManager)
+        };
     }
 
     @Data
