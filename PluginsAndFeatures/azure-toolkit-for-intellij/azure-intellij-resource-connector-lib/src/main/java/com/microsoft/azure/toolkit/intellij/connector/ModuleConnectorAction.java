@@ -12,13 +12,19 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import static com.microsoft.azure.toolkit.lib.common.action.Action.EMPTY_PLACE;
+import static com.microsoft.azure.toolkit.lib.common.action.Action.PLACE;
 
 public class ModuleConnectorAction extends AnAction {
     @Override
     @ExceptionNotification
     @AzureOperation(name = "user/connector.connect_from_project_open_dialog")
     public void actionPerformed(@NotNull final AnActionEvent event) {
+        OperationContext.current().setTelemetryProperty(PLACE, StringUtils.firstNonBlank(event.getPlace(), EMPTY_PLACE));
         final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
         if (module != null) {
             connectModuleToAzureResource(module);

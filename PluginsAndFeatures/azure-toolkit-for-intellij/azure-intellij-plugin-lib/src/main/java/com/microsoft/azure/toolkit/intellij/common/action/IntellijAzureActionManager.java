@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.lib.common.action.Action.EMPTY_PLACE;
+import static com.microsoft.azure.toolkit.lib.common.action.Action.PLACE;
+
 public class IntellijAzureActionManager extends AzureActionManager {
     private static final ExtensionPointName<IActionsContributor> actionsExtensionPoint =
         ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.actions");
@@ -153,6 +156,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Override
         public void actionPerformed(@Nonnull AnActionEvent e) {
             final T source = getSource(e);
+            this.action.getContext().setTelemetryProperty(PLACE, StringUtils.firstNonBlank(e.getPlace(), EMPTY_PLACE));
             this.action.handle(source, e);
         }
 
