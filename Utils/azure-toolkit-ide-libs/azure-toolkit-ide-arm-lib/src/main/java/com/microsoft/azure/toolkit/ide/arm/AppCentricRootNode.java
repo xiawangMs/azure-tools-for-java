@@ -58,7 +58,7 @@ public class AppCentricRootNode extends AzServiceNode<AzureResources> {
     }
 
     private void onLogout(AzureEvent azureEvent) {
-        this.withDescription("");
+        this.withLabel(NAME);
         this.refreshViewLater();
     }
 
