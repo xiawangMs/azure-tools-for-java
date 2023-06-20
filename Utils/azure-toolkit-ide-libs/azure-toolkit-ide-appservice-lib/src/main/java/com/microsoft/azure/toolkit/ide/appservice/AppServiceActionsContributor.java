@@ -18,7 +18,9 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
@@ -33,7 +35,9 @@ public class AppServiceActionsContributor implements IActionsContributor {
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> OPEN_IN_BROWSER = Action.Id.of("user/webapp.open_in_browser.app");
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> SSH_INTO_WEBAPP = Action.Id.of("user/webapp.connect_ssh.app");
     public static final Action.Id<AppServiceAppBase<?, ?, ?>> PROFILE_FLIGHT_RECORD = Action.Id.of("user/webapp.profile_flight_recorder.app");
-    public static final Action.Id<AppServiceAppBase<?, ?, ?>> COPY_FULL_APP_SETTINGS = Action.Id.of("user/appservice.copy_app_settings");
+    public static final Action.Id<AppServiceAppBase<?, ?, ?>> COPY_FULL_APP_SETTINGS = Action.Id.of("user/appservice.copy_app_settings.app");
+    public static final Action.Id<Map.Entry<String, String>> COPY_APP_SETTING = Action.Id.of("user/appservice.copy_app_setting");
+    public static final Action.Id<Map.Entry<String, String>> COPY_APP_SETTING_KEY = Action.Id.of("user/appservice.copy_app_setting_key.key");
     public static final String APP_SETTINGS_ACTIONS = "actions.appservice.app_settings";
 
     @Override
@@ -96,15 +100,38 @@ public class AppServiceActionsContributor implements IActionsContributor {
 
         new Action<>(COPY_FULL_APP_SETTINGS)
             .withLabel("Copy All")
+            .withIdParam(AppServiceAppBase::getName)
             .withIcon(AzureIcons.Action.COPY.getIconPath())
             .withHandler(app -> {
-                final Map<String, String> variables = app.getAppSettings();
+                final Map<String, String> variables = Optional.ofNullable(app.getAppSettings()).orElse(Collections.emptyMap());
                 final String str = variables.entrySet().stream().map(v -> String.format("%s=%s", v.getKey(), v.getValue())).collect(Collectors.joining(System.lineSeparator()));
                 AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.COPY_STRING).handle(str);
-                AzureMessager.getMessager().success(AzureString.format("Environment variables are copied into clipboard."));
+                AzureMessager.getMessager().success(AzureString.format("App settings of app (%s) has been copied into clipboard.", app.getName()));
             })
             .withAuthRequired(false)
             .register(am);
+
+        new Action<>(COPY_APP_SETTING)
+                .withLabel("Copy")
+                .withIcon(AzureIcons.Action.COPY.getIconPath())
+                .withHandler(entry -> {
+                    final String str = String.format("%s=%s", entry.getKey(), entry.getValue());
+                    AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.COPY_STRING).handle(str);
+                    AzureMessager.getMessager().success(AzureString.format("App setting (%s) has been copied into clipboard.", entry.getKey()));
+                })
+                .withAuthRequired(false)
+                .register(am);
+
+        new Action<>(COPY_APP_SETTING_KEY)
+                .withLabel("Copy Key")
+                .withIdParam(Map.Entry::getKey)
+                .withIcon(AzureIcons.Action.COPY.getIconPath())
+                .withHandler(entry -> {
+                    AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.COPY_STRING).handle(entry.getKey());
+                    AzureMessager.getMessager().success(AzureString.format("App setting key (%s) been copied into clipboard.", entry.getKey()));
+                })
+                .withAuthRequired(false)
+                .register(am);
     }
 
     @Override

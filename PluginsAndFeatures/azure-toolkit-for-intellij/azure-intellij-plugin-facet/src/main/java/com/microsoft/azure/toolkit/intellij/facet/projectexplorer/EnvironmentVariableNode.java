@@ -37,6 +37,7 @@ public class EnvironmentVariableNode extends AbstractTreeNode<Pair<String, Strin
     private boolean visible;
     private final Connection<?,?> connection;
     private final Action<?> editAction;
+    private final Action<?> toggleVisibilityAction;
 
     public EnvironmentVariableNode(Project project, Pair<String, String> generated, Connection<?,?> connection) {
         super(project, generated);
@@ -46,6 +47,10 @@ public class EnvironmentVariableNode extends AbstractTreeNode<Pair<String, Strin
                 .withLabel("Edit Environment Variable in Editor")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
                 .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.navigate(true)))
+                .withAuthRequired(false);
+        this.toggleVisibilityAction = new Action<>(Action.Id.of("user/connector.show_env"))
+                .withLabel(ignore -> this.visible ? "Hide Environment Variables" : "View Environment Variables")
+                .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.toggleVisibility()))
                 .withAuthRequired(false);
     }
 
@@ -80,13 +85,13 @@ public class EnvironmentVariableNode extends AbstractTreeNode<Pair<String, Strin
         return new ActionGroup(
                 editAction,
                 "---",
-                ResourceConnectionActionsContributor.COPY_ENV_KEY,
-                ResourceConnectionActionsContributor.COPY_ENV_PAIR
+                toggleVisibilityAction,
+                ResourceConnectionActionsContributor.COPY_ENV_PAIR,
+                ResourceConnectionActionsContributor.COPY_ENV_KEY
         );
     }
 
-    @Override
-    public void onClicked(Object event) {
+    private void toggleVisibility() {
         this.visible = !this.visible;
         this.rerender(false);
     }
