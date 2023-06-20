@@ -21,9 +21,9 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public class AzureProjectFacet extends Facet<AzureProjectFacetConfiguration> {
+public class AzureFacet extends Facet<AzureFacetConfiguration> {
 
-    public AzureProjectFacet(@Nonnull FacetType facetType, @Nonnull Module module, @Nonnull String name, @Nonnull AzureProjectFacetConfiguration configuration, Facet underlyingFacet) {
+    public AzureFacet(@Nonnull FacetType facetType, @Nonnull Module module, @Nonnull String name, @Nonnull AzureFacetConfiguration configuration, Facet underlyingFacet) {
         super(facetType, module, name, configuration, underlyingFacet);
         if (configuration.getDotAzureDir() == null) {
             Optional.of(module).map(ProjectUtil::guessModuleDir).map(d -> d.findChild(".azure")).ifPresent(configuration::setDotAzureDir);
@@ -31,36 +31,36 @@ public class AzureProjectFacet extends Facet<AzureProjectFacetConfiguration> {
     }
 
     public static void addTo(@Nonnull final Module module) {
-        final AzureProjectFacet facet = getInstance(module);
+        final AzureFacet facet = getInstance(module);
         if (Objects.isNull(facet)) {
-            FacetManager.getInstance(module).addFacet(AzureProjectFacetType.INSTANCE, "Azure", null);
+            FacetManager.getInstance(module).addFacet(AzureFacetType.INSTANCE, "Azure", null);
         }
     }
 
     @Nonnull
-    public static AzureProjectFacet getOrAddTo(@Nonnull final Module module) {
-        final AzureProjectFacet facet = getInstance(module);
+    public static AzureFacet getOrAddTo(@Nonnull final Module module) {
+        final AzureFacet facet = getInstance(module);
         if (Objects.isNull(facet)) {
-            return FacetManager.getInstance(module).addFacet(AzureProjectFacetType.INSTANCE, "Azure", null);
+            return FacetManager.getInstance(module).addFacet(AzureFacetType.INSTANCE, "Azure", null);
         }
         return facet;
     }
 
     @Nullable
-    public static AzureProjectFacet getInstance(@Nonnull final Module module) {
-        return FacetManager.getInstance(module).getFacetByType(AzureProjectFacetType.ID);
+    public static AzureFacet getInstance(@Nonnull final Module module) {
+        return FacetManager.getInstance(module).getFacetByType(AzureFacetType.ID);
     }
 
     @Nullable
-    public static AzureProjectFacet getInstance(@Nonnull VirtualFile file, @Nonnull Project project) {
+    public static AzureFacet getInstance(@Nonnull VirtualFile file, @Nonnull Project project) {
         final Module module = ModuleUtil.findModuleForFile(file, project);
         return Objects.isNull(module) ? null : getInstance(module);
     }
 
     @Nullable
-    public static AzureProjectFacet getInstance(RunConfiguration configuration) {
+    public static AzureFacet getInstance(RunConfiguration configuration) {
         return Optional.ofNullable(configuration)
             .map(AzureModule::getTargetModule)
-            .map(AzureProjectFacet::getInstance).orElse(null);
+            .map(AzureFacet::getInstance).orElse(null);
     }
 }

@@ -27,24 +27,24 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Collection;
 
-public class AzureProjectFacetType extends FacetType<AzureProjectFacet, AzureProjectFacetConfiguration> {
+public class AzureFacetType extends FacetType<AzureFacet, AzureFacetConfiguration> {
     private static final String STRING_ID = "azure-facet";
     private static final String PRESENTABLE_NAME = "Azure";
-    public static final FacetTypeId<AzureProjectFacet> ID = new FacetTypeId<>(STRING_ID);
-    public static final AzureProjectFacetType INSTANCE = new AzureProjectFacetType();
+    public static final FacetTypeId<AzureFacet> ID = new FacetTypeId<>(STRING_ID);
+    public static final AzureFacetType INSTANCE = new AzureFacetType();
 
-    public AzureProjectFacetType() {
+    public AzureFacetType() {
         super(ID, STRING_ID, PRESENTABLE_NAME);
     }
 
     @Override
-    public AzureProjectFacetConfiguration createDefaultConfiguration() {
-        return new AzureProjectFacetConfiguration();
+    public AzureFacetConfiguration createDefaultConfiguration() {
+        return new AzureFacetConfiguration();
     }
 
     @Override
-    public AzureProjectFacet createFacet(@Nonnull Module module, String name, @Nonnull AzureProjectFacetConfiguration configuration, @Nullable Facet underlyingFacet) {
-        return new AzureProjectFacet(this, module, name, configuration, underlyingFacet);
+    public AzureFacet createFacet(@Nonnull Module module, String name, @Nonnull AzureFacetConfiguration configuration, @Nullable Facet underlyingFacet) {
+        return new AzureFacet(this, module, name, configuration, underlyingFacet);
     }
 
     @Override
@@ -63,18 +63,18 @@ public class AzureProjectFacetType extends FacetType<AzureProjectFacet, AzurePro
     }
 
     @Getter
-    public static class AzureProjectFacetDetector extends FacetBasedFrameworkDetector<AzureProjectFacet, AzureProjectFacetConfiguration> {
-        private final FacetType<AzureProjectFacet, AzureProjectFacetConfiguration> facetType = AzureProjectFacetType.INSTANCE;
+    public static class AzureFacetDetector extends FacetBasedFrameworkDetector<AzureFacet, AzureFacetConfiguration> {
+        private final FacetType<AzureFacet, AzureFacetConfiguration> facetType = AzureFacetType.INSTANCE;
         private final FileType fileType = XmlFileType.INSTANCE;
 
-        public AzureProjectFacetDetector() {
+        public AzureFacetDetector() {
             super(STRING_ID);
         }
 
         @Override
         @Nullable
-        protected AzureProjectFacetConfiguration createConfiguration(Collection<? extends VirtualFile> files) {
-            return files.stream().findAny().map(VirtualFile::getParent).map(AzureProjectFacetConfiguration::new).orElse(null);
+        protected AzureFacetConfiguration createConfiguration(Collection<? extends VirtualFile> files) {
+            return files.stream().findAny().map(VirtualFile::getParent).map(AzureFacetConfiguration::new).orElse(null);
         }
 
         @Nonnull

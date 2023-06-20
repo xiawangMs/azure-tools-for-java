@@ -11,14 +11,14 @@ import lombok.Getter;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 
-public class AzureProjectFacetEditorPanel {
+public class AzureFacetEditorPanel {
     @Nonnull
     private final Module module;
     @Getter
     private JPanel contentPanel;
     private TextFieldWithBrowseButton dotAzureDirInput;
 
-    public AzureProjectFacetEditorPanel(@Nonnull final Module module) {
+    public AzureFacetEditorPanel(@Nonnull final Module module) {
         this.module = module;
         $$$setupUI$$$();
     }

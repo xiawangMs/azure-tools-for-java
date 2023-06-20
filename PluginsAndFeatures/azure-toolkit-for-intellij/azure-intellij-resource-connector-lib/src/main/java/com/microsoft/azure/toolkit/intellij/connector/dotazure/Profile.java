@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
-import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacet;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -97,7 +97,7 @@ public class Profile {
     }
 
     public synchronized Profile addConnection(@Nonnull Connection<?, ?> connection) {
-        AzureProjectFacet.addTo(this.module.getModule());
+        AzureFacet.addTo(this.module.getModule());
         this.resourceManager.addResource(connection.getResource());
         this.connectionManager.addConnection(connection);
         this.addConnectionToDotEnv(connection).subscribe(v -> {

@@ -23,27 +23,27 @@ import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class AzureProjectFacetConfiguration implements FacetConfiguration, PersistentStateComponent<AzureProjectFacetConfiguration.AzureProjectFacetState> {
+public class AzureFacetConfiguration implements FacetConfiguration, PersistentStateComponent<AzureFacetConfiguration.AzureFacetState> {
     @Getter
     @Nonnull
-    private AzureProjectFacetState state;
+    private AzureFacetState state;
 
-    public AzureProjectFacetConfiguration() {
-        this.state = new AzureProjectFacetState();
+    public AzureFacetConfiguration() {
+        this.state = new AzureFacetState();
     }
 
-    public AzureProjectFacetConfiguration(@Nonnull final VirtualFile dotAzureFile) {
-        this.state = new AzureProjectFacetState(dotAzureFile.toNioPath().toString());
+    public AzureFacetConfiguration(@Nonnull final VirtualFile dotAzureFile) {
+        this.state = new AzureFacetState(dotAzureFile.toNioPath().toString());
     }
 
     @Nonnull
     @Override
-    public AzureProjectFacetState getState() {
+    public AzureFacetState getState() {
         return state;
     }
 
     @Override
-    public void loadState(@Nonnull AzureProjectFacetState state) {
+    public void loadState(@Nonnull AzureFacetState state) {
         this.state = state;
     }
 
@@ -61,14 +61,14 @@ public class AzureProjectFacetConfiguration implements FacetConfiguration, Persi
     @Override
     public FacetEditorTab[] createEditorTabs(FacetEditorContext editorContext, FacetValidatorsManager validatorsManager) {
         return new FacetEditorTab[]{
-            new AzureProjectFacetEditorTab(this.state, editorContext, validatorsManager)
+            new AzureFacetEditorTab(this.state, editorContext, validatorsManager)
         };
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AzureProjectFacetState {
+    public static class AzureFacetState {
         @Nullable
         private String dotAzurePath;
     }

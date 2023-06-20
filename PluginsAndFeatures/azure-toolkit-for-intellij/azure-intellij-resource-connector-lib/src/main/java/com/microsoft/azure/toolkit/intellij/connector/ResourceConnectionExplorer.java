@@ -23,7 +23,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
-import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetType;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacetType;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -132,7 +132,7 @@ public class ResourceConnectionExplorer extends Tree {
 
         @Override
         public boolean shouldBeAvailable(@Nonnull Project project) {
-            return ProjectFacetManager.getInstance(project).getModulesWithFacet(AzureProjectFacetType.ID).size() > 0;
+            return ProjectFacetManager.getInstance(project).getModulesWithFacet(AzureFacetType.ID).size() > 0;
         }
 
         @Override

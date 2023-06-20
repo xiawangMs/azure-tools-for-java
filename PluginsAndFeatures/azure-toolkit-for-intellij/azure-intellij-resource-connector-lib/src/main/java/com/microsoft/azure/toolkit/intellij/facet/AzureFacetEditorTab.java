@@ -9,7 +9,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetConfiguration.AzureProjectFacetState;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacetConfiguration.AzureFacetState;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 
@@ -17,26 +17,26 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.nio.file.Path;
 
-public class AzureProjectFacetEditorTab extends FacetEditorTab {
-    private final AzureProjectFacetState state;
-    private final AzureProjectFacetEditorPanel panel;
+public class AzureFacetEditorTab extends FacetEditorTab {
+    private final AzureFacetState state;
+    private final AzureFacetEditorPanel panel;
 
     /**
-     * Only org.intellij.sdk.facet.AzureProjectFacetState is captured so it can be updated per user changes in the EditorTab.
+     * Only org.intellij.sdk.facet.AzureFacetState is captured so it can be updated per user changes in the EditorTab.
      *
-     * @param state     {@link AzureProjectFacetState} object persisting {@link AzureProjectFacet} state.
+     * @param state     {@link AzureFacetState} object persisting {@link AzureFacet} state.
      * @param context   Facet editor context, can be used to get e.g. the current project module.
      * @param validator Facet validator manager, can be used to get and apply a custom validator for this facet.
      */
-    public AzureProjectFacetEditorTab(@Nonnull AzureProjectFacetState state, @Nonnull FacetEditorContext context,
+    public AzureFacetEditorTab(@Nonnull AzureFacetState state, @Nonnull FacetEditorContext context,
                                       @Nonnull FacetValidatorsManager validator) {
         super();
         this.state = state;
-        this.panel = new AzureProjectFacetEditorPanel(context.getModule());
+        this.panel = new AzureFacetEditorPanel(context.getModule());
         validator.registerValidator(new FacetEditorValidator() {
             @Override
             public ValidationResult check() {
-                return AzureProjectFacetEditorTab.this.validate();
+                return AzureFacetEditorTab.this.validate();
             }
         }, this.panel.getInputs());
     }
@@ -44,7 +44,7 @@ public class AzureProjectFacetEditorTab extends FacetEditorTab {
     /**
      * Provides the {@link JPanel} displayed in the Project Structure | Facet UI
      *
-     * @return {@link JPanel} to be displayed in the {@link AzureProjectFacetEditorTab}.
+     * @return {@link JPanel} to be displayed in the {@link AzureFacetEditorTab}.
      */
     @Nonnull
     @Override
@@ -58,7 +58,7 @@ public class AzureProjectFacetEditorTab extends FacetEditorTab {
     @Override
     @Nls(capitalization = Nls.Capitalization.Title)
     public String getDisplayName() {
-        return AzureProjectFacetType.INSTANCE.getPresentableName();
+        return AzureFacetType.INSTANCE.getPresentableName();
     }
 
     /**
@@ -90,7 +90,7 @@ public class AzureProjectFacetEditorTab extends FacetEditorTab {
     }
 
     /**
-     * Copies current {@link AzureProjectFacetState} into the {@link #panel} UI element.
+     * Copies current {@link AzureFacetState} into the {@link #panel} UI element.
      * This method is called each time this editor tab is needed for display.
      */
     @Override

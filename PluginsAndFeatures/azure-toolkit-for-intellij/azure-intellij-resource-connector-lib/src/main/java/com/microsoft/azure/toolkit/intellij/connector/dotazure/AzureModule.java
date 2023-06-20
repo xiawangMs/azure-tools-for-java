@@ -14,8 +14,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
-import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
-import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetConfiguration;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacet;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacetConfiguration;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
@@ -73,7 +73,7 @@ public class AzureModule {
     public AzureModule(@Nonnull final Module module, @Nullable VirtualFile dotAzure) {
         this.module = module;
         Optional.ofNullable(dotAzure)
-            .or(() -> Optional.ofNullable(AzureProjectFacet.getInstance(module)).map(Facet::getConfiguration).map(AzureProjectFacetConfiguration::getDotAzureDir))
+            .or(() -> Optional.ofNullable(AzureFacet.getInstance(module)).map(Facet::getConfiguration).map(AzureFacetConfiguration::getDotAzureDir))
             .or(() -> this.getModuleDir().map(d -> d.findChild(DOT_AZURE))).ifPresent(d -> {
                 this.dotAzure = d;
                 this.profilesXmlFile = this.dotAzure.findChild(PROFILES_XML);
