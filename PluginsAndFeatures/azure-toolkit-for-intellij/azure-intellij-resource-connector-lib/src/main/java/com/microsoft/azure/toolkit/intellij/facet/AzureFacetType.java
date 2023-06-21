@@ -20,7 +20,6 @@ import com.intellij.util.indexing.FileContent;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,7 +48,7 @@ public class AzureFacetType extends FacetType<AzureFacet, AzureFacetConfiguratio
 
     @Override
     public boolean isSuitableModuleType(ModuleType moduleType) {
-        return StringUtils.containsIgnoreCase(moduleType.getId(), "JAVA");
+        return true;
     }
 
     @Override
