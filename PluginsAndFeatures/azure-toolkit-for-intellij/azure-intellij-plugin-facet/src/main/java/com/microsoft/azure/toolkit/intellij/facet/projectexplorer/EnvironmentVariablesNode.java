@@ -37,7 +37,7 @@ public class EnvironmentVariablesNode extends AbstractTreeNode<Connection<?, ?>>
         super(project, connection);
         this.profile = profile;
         this.editAction = new Action<>(Action.Id.of("user/connector.edit_envs_in_editor"))
-                .withLabel("Edit Environment Variables in Editor")
+                .withLabel("Open In Editor")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
                 .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.navigate(true)))
                 .withAuthRequired(false);

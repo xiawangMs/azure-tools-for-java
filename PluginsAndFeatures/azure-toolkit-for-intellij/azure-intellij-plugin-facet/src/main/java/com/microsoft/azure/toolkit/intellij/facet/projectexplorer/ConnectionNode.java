@@ -51,7 +51,7 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         super(project, connection);
         this.module = module;
         this.editAction = new Action<>(Action.Id.of("user/connector.edit_connection_in_editor"))
-                .withLabel("Edit Azure Connection in Editor")
+                .withLabel("Open In Editor")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
                 .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.navigate(true)))
                 .withAuthRequired(false);

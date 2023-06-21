@@ -11,6 +11,7 @@ import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
@@ -22,6 +23,7 @@ import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -93,12 +95,13 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
     @Override
     @Nullable
     public Object getData(@Nonnull String dataId) {
-        return switch (StringUtils.lowerCase(dataId)) {
-            case "action_source" -> this.getValue();
-            case "virtualfile" ->
-                    Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
-            default -> null;
-        };
+        if (StringUtils.equalsIgnoreCase(dataId, Action.SOURCE)) {
+            return this.getValue();
+        } else if (StringUtils.equalsIgnoreCase(dataId, CommonDataKeys.VIRTUAL_FILE.getName())) {
+            return Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
+        } else {
+            return null;
+        }
     }
 
     @Nullable

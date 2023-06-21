@@ -29,7 +29,6 @@ import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -196,7 +195,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     }
 
     @Override
-    public @org.jetbrains.annotations.Nullable Object getData(@NotNull Collection<? extends AbstractTreeNode<?>> selected, @NotNull String dataId) {
+    public @Nullable Object getData(@Nonnull Collection<? extends AbstractTreeNode<?>> selected, @Nonnull String dataId) {
         final IAzureFacetNode azureFacetNode = selected.stream()
                 .filter(node -> node instanceof IAzureFacetNode)
                 .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);

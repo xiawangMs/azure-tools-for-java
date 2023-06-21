@@ -45,7 +45,7 @@ public class AppSettingsNode extends AzResourceNode<AppServiceAppBase<?, ?, ?>> 
 
         private IActionGroup createActionGroup() {
             final Action<Map.Entry<String, String>> toggleVisibleAction = new Action<Map.Entry<String, String>>(Action.Id.of("user/appservice.show_app_setting.key"))
-                    .withLabel(ignore -> this.visible ? "Hide App Settings": "View App Settings")
+                    .withLabel(ignore -> this.visible ? "Hide Value": "Show Value")
                     .withIdParam(Map.Entry::getKey)
                     .withHandler(e -> toggleVisible())
                     .withAuthRequired(false);

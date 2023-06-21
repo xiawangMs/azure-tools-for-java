@@ -36,7 +36,7 @@ public class ConnectionsNode extends AbstractTreeNode<AzureModule> implements IA
     public ConnectionsNode(@Nonnull final AzureModule module) {
         super(module.getProject(), module);
         this.editAction = new Action<>(Action.Id.of("user/connector.edit_connections_in_editor"))
-                .withLabel("Edit Project Azure Connections in Editor")
+                .withLabel("Open In Editor")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
                 .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.navigate(true)))
                 .withAuthRequired(false);

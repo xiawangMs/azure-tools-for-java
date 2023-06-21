@@ -44,12 +44,12 @@ public class EnvironmentVariableNode extends AbstractTreeNode<Pair<String, Strin
         this.visible = false;
         this.connection = connection;
         this.editAction = new Action<>(Action.Id.of("user/connector.edit_env_in_editor"))
-                .withLabel("Edit Environment Variable in Editor")
+                .withLabel("Open In Editor")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
                 .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.navigate(true)))
                 .withAuthRequired(false);
         this.toggleVisibilityAction = new Action<>(Action.Id.of("user/connector.show_env"))
-                .withLabel(ignore -> this.visible ? "Hide Environment Variables" : "View Environment Variables")
+                .withLabel(ignore -> this.visible ? "Hide Value" : "Show Value")
                 .withHandler(ignore -> AzureTaskManager.getInstance().runLater(() -> this.toggleVisibility()))
                 .withAuthRequired(false);
     }
