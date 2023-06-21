@@ -34,6 +34,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterNode;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
@@ -104,9 +105,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final SortableTreeNode hiddenRoot = new SortableTreeNode();
         final DefaultTreeModel treeModel = new DefaultTreeModel(hiddenRoot);
         final JTree tree = new Tree(treeModel);
+        final String place = ResourceCommonActionsContributor.AZURE_EXPLORER;
 
-        final var favorRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildFavoriteRoot(), tree);
-        final var acvRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildAppCentricViewRoot(), tree);
+        final var favorRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildFavoriteRoot(), tree, place);
+        final var acvRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildAppCentricViewRoot(), tree, place);
         final var azureRootNode = createTreeNode(azureModule, project);
         final var arisRootNode = createTreeNode(arisModule, project);
         hiddenRoot.add(favorRootNode);
@@ -136,16 +138,16 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         new TreeSpeedSearch(tree);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules()
             .stream()
-            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree))
+            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree, place))
             .toList();
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> {
             modules.forEach(m -> m.clearChildren());
             acvRootNode.clearChildren();
         });
-        TreeUtils.installSelectionListener(tree);
+        TreeUtils.installSelectionListener(tree, place);
         TreeUtils.installExpandListener(tree);
-        TreeUtils.installMouseListener(tree);
+        TreeUtils.installMouseListener(tree, place);
         TreeHoverListener.DEFAULT.addTo(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {

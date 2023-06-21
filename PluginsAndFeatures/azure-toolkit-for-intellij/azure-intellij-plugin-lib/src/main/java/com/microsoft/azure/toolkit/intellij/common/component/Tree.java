@@ -12,7 +12,6 @@ import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -28,17 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import javax.swing.tree.*;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,14 +37,20 @@ import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 @Getter
 public class Tree extends SimpleTree implements DataProvider {
     protected Node<?> root;
+    protected String place;
 
     public Tree() {
         super();
     }
 
     public Tree(Node<?> root) {
+        this(root, null);
+    }
+
+    public Tree(Node<?> root, @Nullable String place) {
         super();
         this.root = root;
+        this.place = place;
         init(root);
     }
 
@@ -67,10 +63,10 @@ public class Tree extends SimpleTree implements DataProvider {
         TreeUIHelper.getInstance().installSelectionSaver(this);
         TreeUIHelper.getInstance().installEditSourceOnEnterKeyHandler(this);
         this.setCellRenderer(new NodeRenderer());
-        this.setModel(new DefaultTreeModel(new TreeNode<>(root, this)));
+        this.setModel(new DefaultTreeModel(new TreeNode<>(root, this, place)));
         TreeUtils.installExpandListener(this);
-        TreeUtils.installSelectionListener(this);
-        TreeUtils.installMouseListener(this);
+        TreeUtils.installSelectionListener(this, place);
+        TreeUtils.installMouseListener(this, place);
     }
 
     @Override
@@ -93,8 +89,13 @@ public class Tree extends SimpleTree implements DataProvider {
         Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
 
         private final Debouncer updateChildrenLater = new TailingDebouncer(this::doUpdateChildren, 300);
+        protected final String place;
 
         public TreeNode(@Nonnull Node<T> n, JTree tree) {
+            this(n, tree, null);
+        }
+
+        public TreeNode(@Nonnull Node<T> n, JTree tree, String place) {
             super(n.getValue(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
@@ -106,6 +107,13 @@ public class Tree extends SimpleTree implements DataProvider {
             }
             this.inner.setViewRenderer(this);
             this.inner.setChildrenRenderer(this);
+            this.place = place;
+        }
+
+        @Nullable
+        public String getPlace() {
+            return Optional.ofNullable(this.place)
+                    .orElseGet(() -> this.getParent() instanceof TreeNode ? ((TreeNode<?>) this.getParent()).getPlace() : null);
         }
 
         @Override
@@ -121,7 +129,7 @@ public class Tree extends SimpleTree implements DataProvider {
 
         public List<IView.Label> getInlineActionViews() {
             return this.inner.getInlineActions().stream()
-                .map(action -> action.getView(this.inner.getValue(), ResourceCommonActionsContributor.AZURE_EXPLORER))
+                .map(action -> action.getView(this.inner.getValue(), this.getPlace()))
                 .filter(IView.Label::isEnabled)
                 .collect(Collectors.toList());
         }
@@ -196,7 +204,7 @@ public class Tree extends SimpleTree implements DataProvider {
 
         private synchronized void setChildren(List<Node<?>> children) {
             this.removeAllChildren();
-            children.stream().map(c -> new TreeNode<>(c, this.tree)).forEach(this::add);
+            children.stream().map(c -> new TreeNode<>(c, this.tree, this.getPlace())).forEach(this::add);
             this.addLoadMoreNode();
             this.loaded = true;
             this.updateChildrenLater.debounce();
@@ -214,7 +222,7 @@ public class Tree extends SimpleTree implements DataProvider {
             for (int i = 0; i < children.size(); i++) {
                 final Node<?> node = children.get(i);
                 if (!oldChildrenNodes.contains(node)) {
-                    final TreeNode<?> treeNode = new TreeNode<>(node, this.tree);
+                    final TreeNode<?> treeNode = new TreeNode<>(node, this.tree, this.getPlace());
                     this.insert(treeNode, i);
                 } else { // discarded nodes should be disposed manually to unregister listeners.
                     node.dispose();

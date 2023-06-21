@@ -43,6 +43,7 @@ public class ResourceConnectionExplorer extends Tree {
     public ResourceConnectionExplorer(Project project) {
         super();
         this.project = project;
+        this.place = "azure.resource_connector_explorer";
         this.root = buildRoot();
         this.init(this.root);
         this.setRootVisible(false);

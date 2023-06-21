@@ -7,11 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPopupMenu;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
@@ -21,7 +17,6 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
-import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -56,12 +51,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 public class TreeUtils {
@@ -72,7 +63,7 @@ public class TreeUtils {
     public static final int INLINE_ACTION_ICON_MARGIN = 4;
     public static final String KEY_SCROLL_PANE = "SCROLL_PANE";
 
-    public static void installSelectionListener(@Nonnull JTree tree) {
+    public static void installSelectionListener(@Nonnull JTree tree, @Nonnull final String treePlace) {
         tree.addTreeSelectionListener(e -> {
             final Object n = tree.getLastSelectedPathComponent();
             Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
@@ -81,7 +72,7 @@ public class TreeUtils {
             }
             if (n instanceof Tree.TreeNode) {
                 final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                final String place = ResourceCommonActionsContributor.AZURE_EXPLORER + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                final String place = treePlace + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                 final IActionGroup actions = node.inner.getActions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
@@ -115,7 +106,7 @@ public class TreeUtils {
         tree.addTreeWillExpandListener(listener);
     }
 
-    public static void installMouseListener(@Nonnull JTree tree) {
+    public static void installMouseListener(@Nonnull JTree tree, @Nullable String treePlace) {
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -132,7 +123,7 @@ public class TreeUtils {
                 final Object n = tree.getLastSelectedPathComponent();
                 if (n instanceof Tree.TreeNode) {
                     final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                    final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                    final String place = treePlace + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final IActionGroup actions = node.inner.getActions();
                         if (Objects.nonNull(actions)) {
@@ -165,10 +156,10 @@ public class TreeUtils {
                     .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
                 final int inlineActionIndex = getHoverInlineActionIndex(tree, e, inlineActionViews.size());
                 if (Objects.nonNull(node) && e.getClickCount() == 1 && inlineActionIndex > -1) {
-                    final String place = ResourceCommonActionsContributor.AZURE_EXPLORER + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                    final String place = treePlace + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                    node.inner.triggerInlineAction(event, inlineActionIndex, ResourceCommonActionsContributor.AZURE_EXPLORER);
+                    node.inner.triggerInlineAction(event, inlineActionIndex, treePlace);
                 }
             }
         };

@@ -41,7 +41,12 @@ public class AzureExplorer extends Tree {
     public static final String AZURE_ICON = AzureIcons.Common.AZURE.getIconPath();
 
     private AzureExplorer() {
+        this(null);
+    }
+
+    private AzureExplorer(@Nonnull final String place) {
         super();
+        this.place = place;
         this.root = buildAzureRoot();
         this.init(this.root);
     }
@@ -93,7 +98,7 @@ public class AzureExplorer extends Tree {
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
         public void createToolWindowContent(@Nonnull Project project, @Nonnull ToolWindow toolWindow) {
             final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
-            windowPanel.setContent(new AzureExplorer());
+            windowPanel.setContent(new AzureExplorer(ResourceCommonActionsContributor.AZURE_EXPLORER));
             final ContentFactory contentFactory = ContentFactory.getInstance();
             final Content content = contentFactory.createContent(windowPanel, null, false);
             toolWindow.getContentManager().addContent(content);
