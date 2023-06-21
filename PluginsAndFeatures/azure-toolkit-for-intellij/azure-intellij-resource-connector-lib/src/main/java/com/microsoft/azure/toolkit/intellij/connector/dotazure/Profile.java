@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacet;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -35,7 +36,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -93,6 +99,7 @@ public class Profile {
     }
 
     public synchronized Observable<?> addConnection(@Nonnull Connection<?, ?> connection) {
+        AzureFacet.addTo(this.module.getModule());
         this.resourceManager.addResource(connection.getResource());
         this.connectionManager.addConnection(connection);
         final Observable<?> observable = this.addConnectionToDotEnv(connection);

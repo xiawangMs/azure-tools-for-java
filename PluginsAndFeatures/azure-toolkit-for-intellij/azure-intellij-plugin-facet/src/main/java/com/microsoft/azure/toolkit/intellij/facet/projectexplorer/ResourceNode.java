@@ -10,7 +10,6 @@ import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
@@ -22,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode, NodeView.Refresher {
+public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode, Node.ChildrenRenderer, Node.ViewRenderer {
     public ResourceNode(@Nonnull Project project, final Node<?> node) {
         super(project, node);
-        final NodeView view = node.view();
-        view.setRefresher(this);
+        node.setViewRenderer(this);
+        node.setChildrenRenderer(this);
     }
 
     @Override
@@ -47,7 +46,7 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
         final Node<?> node = this.getValue();
-        final NodeView view = node.view();
+        final Node.View view = node.getView();
         presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIcon()));
         presentation.addText(view.getLabel(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
         presentation.setTooltip(view.getTips());
@@ -58,39 +57,39 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     @Nullable
     public Object getData(@Nonnull String dataId) {
         if (StringUtils.equalsIgnoreCase(dataId, Action.SOURCE)) {
-            return Optional.ofNullable(getValue()).map(Node::data).orElse(null);
+            return Optional.ofNullable(getValue()).map(Node::getValue).orElse(null);
         }
         return null;
     }
 
     @Override
     public void onDoubleClicked(Object event) {
-        Optional.ofNullable(this.getValue()).ifPresent(n -> n.triggerDoubleClickAction(event));
+        Optional.ofNullable(this.getValue()).ifPresent(n -> n.doubleClick(event));
     }
 
     @Override
     public void onClicked(Object event) {
-        Optional.ofNullable(this.getValue()).ifPresent(n -> n.triggerClickAction(event));
+        Optional.ofNullable(this.getValue()).ifPresent(n -> n.click(event));
     }
 
     @Override
     @Nullable
     public IActionGroup getActionGroup() {
-        return Optional.ofNullable(getValue()).map(Node::actions).orElse(null);
+        return Optional.ofNullable(getValue()).map(Node::getActions).orElse(null);
     }
 
     @Override
-    public void refreshView() {
+    public void updateView() {
         rerender(false);
     }
 
     @Override
-    public void refreshChildren(boolean... incremental) {
+    public void updateChildren(boolean... incremental) {
         rerender(true);
     }
 
     @Override
     public String toString() {
-        return this.getValue().view().getLabel();
+        return this.getValue().buildLabel();
     }
 }

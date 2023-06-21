@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -20,6 +21,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
@@ -55,7 +57,10 @@ public class ConnectionManager {
         try {
             this.load();
         } catch (final Exception e) {
-            throw new AzureToolkitRuntimeException(e);
+            final Throwable root = ExceptionUtils.getRootCause(e);
+            if (!(root instanceof ProcessCanceledException)) {
+                throw new AzureToolkitRuntimeException(e);
+            }
         }
     }
 

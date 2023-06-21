@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -12,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
@@ -37,7 +39,10 @@ public class DeploymentTargetManager {
         try {
             this.load();
         } catch (final Exception e) {
-            throw new AzureToolkitRuntimeException(e);
+            final Throwable root = ExceptionUtils.getRootCause(e);
+            if (!(root instanceof ProcessCanceledException)) {
+                throw new AzureToolkitRuntimeException(e);
+            }
         }
     }
 

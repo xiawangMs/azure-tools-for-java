@@ -36,7 +36,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus(true).isConnected())
+            .enableWhen(s -> s.getFormalStatus().isConnected())
             .withHandler(s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + s.getHostName()))
             .register(am);
 
@@ -45,7 +45,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(STOP_STREAM_LOG)
@@ -53,21 +53,21 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(PROFILE_FLIGHT_RECORD)
             .withLabel("Profile Flight Recorder")
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(SSH_INTO_WEBAPP)
             .withLabel("SSH into Web App")
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
         new Action<>(REFRESH_DEPLOYMENT_SLOTS)
@@ -84,7 +84,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus(true).isRunning())
+            .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
     }
 

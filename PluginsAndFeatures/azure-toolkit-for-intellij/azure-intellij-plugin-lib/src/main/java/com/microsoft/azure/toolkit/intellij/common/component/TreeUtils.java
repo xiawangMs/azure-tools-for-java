@@ -15,7 +15,6 @@ import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
-import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
@@ -23,7 +22,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
@@ -42,7 +41,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.ResourcesServiceSubscription;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -83,8 +81,8 @@ public class TreeUtils {
             }
             if (n instanceof Tree.TreeNode) {
                 final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                final String place = ResourceCommonActionsContributor.AZURE_EXPLORER +  "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
-                final IActionGroup actions = node.inner.actions();
+                final String place = ResourceCommonActionsContributor.AZURE_EXPLORER + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                final IActionGroup actions = node.inner.getActions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
                     selectionDisposable = Disposer.newDisposable();
@@ -103,8 +101,8 @@ public class TreeUtils {
                 final Object component = event.getPath().getLastPathComponent();
                 if (component instanceof Tree.TreeNode) {
                     final Tree.TreeNode<?> treeNode = (Tree.TreeNode<?>) component;
-                    if (treeNode.getAllowsChildren()) {
-                        treeNode.loadChildren();
+                    if (treeNode.getAllowsChildren() && treeNode.loaded == null) {
+                        treeNode.inner.refreshChildrenLater();
                     }
                 }
             }
@@ -136,7 +134,7 @@ public class TreeUtils {
                     final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
                     final String place = "azure.explorer." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-                        final IActionGroup actions = node.inner.actions();
+                        final IActionGroup actions = node.inner.getActions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
                             final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
@@ -145,14 +143,14 @@ public class TreeUtils {
                             final JPopupMenu popupMenu = menu.getComponent();
                             popupMenu.show(tree, e.getX(), e.getY());
                         }
-                    } else if (node.inner.hasClickAction()) {
+                    } else {
                         final DataContext context = DataManager.getInstance().getDataContext(tree);
                         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        node.inner.triggerClickAction(event);
-                    } else if (e.getClickCount() == 2) {
-                        final DataContext context = DataManager.getInstance().getDataContext(tree);
-                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        node.inner.triggerDoubleClickAction(event);
+                        if (e.getClickCount() == 1) {
+                            node.inner.click(event);
+                        } else if (e.getClickCount() == 2) {
+                            node.inner.doubleClick(event);
+                        }
                     }
                 } else if (n instanceof Tree.LoadMoreNode && SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
                     ((Tree.LoadMoreNode) n).load();
@@ -227,12 +225,8 @@ public class TreeUtils {
     }
 
     public static void renderMyTreeNode(JTree tree, @Nonnull Tree.TreeNode<?> node, boolean selected, @Nonnull SimpleColoredComponent renderer) {
-        final NodeView view = node.inner.view();
-        if (BooleanUtils.isFalse(node.loaded)) {
-            renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-        } else {
-            renderer.setIcon(Optional.ofNullable(view.getIcon()).map(IntelliJAzureIcons::getIcon).orElse(IntelliJAzureIcons.getIcon(AzureIcons.Resources.GENERIC_RESOURCE)));
-        }
+        final Node.View view = node.inner.getView();
+        renderer.setIcon(Optional.ofNullable(view.getIcon()).map(IntelliJAzureIcons::getIcon).orElse(IntelliJAzureIcons.getIcon(AzureIcons.Resources.GENERIC_RESOURCE)));
         final Object highlighted = tree.getClientProperty(HIGHLIGHTED_RESOURCE_KEY);
         //noinspection unchecked
         final boolean toHighlightThisNode = Optional.ofNullable(highlighted).map(h -> ((Pair<Object, Long>) h))
@@ -349,18 +343,18 @@ public class TreeUtils {
                 final Tree.TreeNode<?> source = (Tree.TreeNode<?>) sourceNode;
                 final List<AbstractAzResource<?, ?, ?>> resourcesToShow = getResourcesToFocus(tree);
                 final List<AbstractAzResource<?, ?, ?>> targetResources = resourcesToShow.stream()
-                        .filter(resource -> isParentResource(source.getData(), resource)).toList();
+                    .filter(resource -> isParentResource(source.getUserObject(), resource)).toList();
                 for (final AbstractAzResource<?, ?, ?> targetResource : targetResources) {
-                    final Tree.TreeNode<?> treeNode = Objects.equals(source.getData(), targetResource) ? source :
-                            StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)
-                                    .filter(node -> node instanceof Tree.TreeNode<?>)
-                                    .map(node -> (Tree.TreeNode<?>) node)
-                                    .filter(node -> ((Tree.TreeNode<?>) node).getData() != null && isParentResource(((Tree.TreeNode<?>) node).getData(), targetResource))
-                                    .findFirst().orElse(null);
+                    final Tree.TreeNode<?> treeNode = Objects.equals(source.getUserObject(), targetResource) ? source :
+                        StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)
+                            .filter(node -> node instanceof Tree.TreeNode<?>)
+                            .map(node -> (Tree.TreeNode<?>) node)
+                            .filter(node -> node.getUserObject() != null && isParentResource(node.getUserObject(), targetResource))
+                            .findFirst().orElse(null);
                     if (Objects.isNull(treeNode)) {
                         // remove resource from list if its parent was not found
                         resourcesToShow.remove(targetResource);
-                    } else if (Objects.equals(treeNode.getData(), targetResource)) {
+                    } else if (Objects.equals(treeNode.getUserObject(), targetResource)) {
                         // remove resource from list if it was founded
                         resourcesToShow.remove(targetResource);
                         focusResource(tree, targetResource);

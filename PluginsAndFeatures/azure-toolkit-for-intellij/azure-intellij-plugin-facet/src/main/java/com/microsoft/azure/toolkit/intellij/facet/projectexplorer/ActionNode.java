@@ -90,6 +90,11 @@ public class ActionNode<T> extends AbstractTreeNode<Action<T>> implements IAzure
     }
 
     @Override
+    public int getWeight() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
     public String toString() {
         return this.getValue().toString();
     }

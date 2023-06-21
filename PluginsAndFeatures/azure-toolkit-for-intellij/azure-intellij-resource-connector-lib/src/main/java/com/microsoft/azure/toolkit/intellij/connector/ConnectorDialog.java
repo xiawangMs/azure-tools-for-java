@@ -300,7 +300,6 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         };
 
         this.lblSignIn = new HyperlinkLabel();
-        this.lblSignIn.setForeground(UIUtil.getContextHelpForeground());
         this.lblSignIn.setHtmlText(NOT_SIGNIN_TIPS);
         this.lblSignIn.setIcon(AllIcons.General.Information);
         this.lblSignIn.setAlignmentX(Component.LEFT_ALIGNMENT);
