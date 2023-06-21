@@ -128,10 +128,12 @@ public class Tree extends SimpleTree implements DataProvider {
             final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
             if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
                 AzureTaskManager.getInstance().runLater(() -> {
-                    if (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this)) {
-                        try {
-                            model.nodeStructureChanged(this);
-                        } catch (final NullPointerException ignored) {
+                    synchronized (this.tree) {
+                        if (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this)) {
+                            try {
+                                model.nodeStructureChanged(this);
+                            } catch (final NullPointerException ignored) {
+                            }
                         }
                     }
                 });
@@ -143,10 +145,12 @@ public class Tree extends SimpleTree implements DataProvider {
             final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
             if (Objects.nonNull(model) && (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this))) {
                 AzureTaskManager.getInstance().runLater(() -> {
-                    if (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this)) {
-                        try {
-                            model.nodeChanged(this);
-                        } catch (final NullPointerException ignored) {
+                    synchronized (this.tree) {
+                        if (Objects.nonNull(this.getParent()) || Objects.equals(model.getRoot(), this)) {
+                            try {
+                                model.nodeChanged(this);
+                            } catch (final NullPointerException ignored) {
+                            }
                         }
                     }
                 });
