@@ -56,4 +56,8 @@ public interface Resource<T> {
     default boolean isValidResource() {
         return true;
     }
+
+    default String getEnvPrefix() {
+        return this.getDefinition().getDefaultEnvPrefix();
+    }
 }

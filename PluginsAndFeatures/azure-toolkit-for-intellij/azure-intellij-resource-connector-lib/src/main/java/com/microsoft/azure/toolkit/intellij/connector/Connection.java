@@ -124,10 +124,8 @@ public class Connection<R, C> {
     }
 
     public String getEnvPrefix() {
-        if (StringUtils.isBlank(this.envPrefix)) {
-            return this.definition.getResourceDefinition().getDefaultEnvPrefix();
-        }
-        return this.envPrefix;
+        return resource.getDefinition().isCustomizedEnvPrefixSupported() ?
+                StringUtils.firstNonBlank(this.envPrefix, this.resource.getEnvPrefix()) : this.resource.getEnvPrefix();
     }
 
     public void write(Element connectionEle) {
