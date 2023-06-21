@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -63,7 +64,7 @@ public class TreeUtils {
     public static final int INLINE_ACTION_ICON_MARGIN = 4;
     public static final String KEY_SCROLL_PANE = "SCROLL_PANE";
 
-    public static void installSelectionListener(@Nonnull JTree tree, @Nonnull final String treePlace) {
+    public static void installSelectionListener(@Nonnull JTree tree) {
         tree.addTreeSelectionListener(e -> {
             final Object n = tree.getLastSelectedPathComponent();
             Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
@@ -72,7 +73,7 @@ public class TreeUtils {
             }
             if (n instanceof Tree.TreeNode) {
                 final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                final String place = treePlace + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                final String place = TreeUtils.getPlace(tree) + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                 final IActionGroup actions = node.inner.getActions();
                 if (Objects.nonNull(actions)) {
                     final ActionManager am = ActionManager.getInstance();
@@ -106,7 +107,7 @@ public class TreeUtils {
         tree.addTreeWillExpandListener(listener);
     }
 
-    public static void installMouseListener(@Nonnull JTree tree, @Nullable String treePlace) {
+    public static void installMouseListener(@Nonnull JTree tree) {
         tree.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -123,7 +124,7 @@ public class TreeUtils {
                 final Object n = tree.getLastSelectedPathComponent();
                 if (n instanceof Tree.TreeNode) {
                     final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                    final String place = treePlace + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                    final String place = TreeUtils.getPlace(tree) + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final IActionGroup actions = node.inner.getActions();
                         if (Objects.nonNull(actions)) {
@@ -156,10 +157,10 @@ public class TreeUtils {
                     .map(Tree.TreeNode::getInlineActionViews).orElse(new ArrayList<>());
                 final int inlineActionIndex = getHoverInlineActionIndex(tree, e, inlineActionViews.size());
                 if (Objects.nonNull(node) && e.getClickCount() == 1 && inlineActionIndex > -1) {
-                    final String place = treePlace + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
+                    final String place = TreeUtils.getPlace(tree) + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                    node.inner.triggerInlineAction(event, inlineActionIndex, treePlace);
+                    node.inner.triggerInlineAction(event, inlineActionIndex, TreeUtils.getPlace(tree));
                 }
             }
         };
@@ -320,6 +321,10 @@ public class TreeUtils {
         final Condition<DefaultMutableTreeNode> condition = n -> (resource instanceof AzService || isInAppCentricView(n)) &&
                 Objects.equals(n.getUserObject(), resource);
         return TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), condition);
+    }
+
+    public static String getPlace(@Nonnull JTree tree) {
+        return StringUtils.firstNonBlank((String) tree.getClientProperty(Action.PLACE), Action.EMPTY_PLACE);
     }
 
     @AllArgsConstructor

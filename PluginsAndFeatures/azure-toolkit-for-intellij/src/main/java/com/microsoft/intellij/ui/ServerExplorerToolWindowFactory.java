@@ -8,12 +8,7 @@ package com.microsoft.intellij.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.util.treeView.NodeRenderer;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -59,26 +54,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -105,10 +88,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final SortableTreeNode hiddenRoot = new SortableTreeNode();
         final DefaultTreeModel treeModel = new DefaultTreeModel(hiddenRoot);
         final JTree tree = new Tree(treeModel);
-        final String place = ResourceCommonActionsContributor.AZURE_EXPLORER;
+        tree.putClientProperty(Action.PLACE, ResourceCommonActionsContributor.AZURE_EXPLORER);
 
-        final var favorRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildFavoriteRoot(), tree, place);
-        final var acvRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildAppCentricViewRoot(), tree, place);
+        final var favorRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildFavoriteRoot(), tree);
+        final var acvRootNode = new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(AzureExplorer.buildAppCentricViewRoot(), tree);
         final var azureRootNode = createTreeNode(azureModule, project);
         final var arisRootNode = createTreeNode(arisModule, project);
         hiddenRoot.add(favorRootNode);
@@ -138,16 +121,16 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         new TreeSpeedSearch(tree);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules()
             .stream()
-            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree, place))
+            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree))
             .toList();
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> {
             modules.forEach(m -> m.clearChildren());
             acvRootNode.clearChildren();
         });
-        TreeUtils.installSelectionListener(tree, place);
+        TreeUtils.installSelectionListener(tree);
         TreeUtils.installExpandListener(tree);
-        TreeUtils.installMouseListener(tree, place);
+        TreeUtils.installMouseListener(tree);
         TreeHoverListener.DEFAULT.addTo(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {

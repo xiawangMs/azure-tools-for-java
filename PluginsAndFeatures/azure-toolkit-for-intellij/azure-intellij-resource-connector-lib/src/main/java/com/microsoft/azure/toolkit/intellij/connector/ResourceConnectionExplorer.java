@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
+import static com.microsoft.azure.toolkit.lib.common.action.Action.PLACE;
 
 public class ResourceConnectionExplorer extends Tree {
 
@@ -43,7 +44,7 @@ public class ResourceConnectionExplorer extends Tree {
     public ResourceConnectionExplorer(Project project) {
         super();
         this.project = project;
-        this.place = "azure.resource_connector_explorer";
+        this.putClientProperty(PLACE, "azure.resource_connector_explorer");
         this.root = buildRoot();
         this.init(this.root);
         this.setRootVisible(false);

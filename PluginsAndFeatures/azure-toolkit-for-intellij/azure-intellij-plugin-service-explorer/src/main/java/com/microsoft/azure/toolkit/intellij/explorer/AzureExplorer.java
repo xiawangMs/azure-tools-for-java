@@ -35,18 +35,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.common.action.Action.PLACE;
+
 public class AzureExplorer extends Tree {
     @Getter
     public static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
     public static final String AZURE_ICON = AzureIcons.Common.AZURE.getIconPath();
 
     private AzureExplorer() {
-        this(null);
-    }
-
-    private AzureExplorer(@Nonnull final String place) {
         super();
-        this.place = place;
+        this.putClientProperty(PLACE, ResourceCommonActionsContributor.AZURE_EXPLORER);
         this.root = buildAzureRoot();
         this.init(this.root);
     }
@@ -98,7 +96,7 @@ public class AzureExplorer extends Tree {
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
         public void createToolWindowContent(@Nonnull Project project, @Nonnull ToolWindow toolWindow) {
             final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
-            windowPanel.setContent(new AzureExplorer(ResourceCommonActionsContributor.AZURE_EXPLORER));
+            windowPanel.setContent(new AzureExplorer());
             final ContentFactory contentFactory = ContentFactory.getInstance();
             final Content content = contentFactory.createContent(windowPanel, null, false);
             toolWindow.getContentManager().addContent(content);
