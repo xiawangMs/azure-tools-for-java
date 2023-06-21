@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
 import com.intellij.codeInsight.navigation.NavigationUtil;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
@@ -32,7 +31,6 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -97,17 +95,28 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         final Connection<?, ?> connection = this.getValue();
         final Resource<?> resource = connection.getResource();
         final boolean isValid = connection.validate(getProject());
-        final String iconPath = ObjectUtils.firstNonNull(resource.getDefinition().getIcon(), AzureIcons.Common.AZURE.getIconPath());
-        presentation.setIcon(isValid ? IntelliJAzureIcons.getIcon(iconPath) : AllIcons.General.Warning);
-        presentation.addText(resource.getDefinition().getTitle(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+        final String icon = StringUtils.firstNonBlank(resource.getDefinition().getIcon(), AzureIcons.Common.AZURE.getIconPath());
+        presentation.setIcon(IntelliJAzureIcons.getIcon(icon));
+        presentation.addText(resource.getDefinition().getTitle(), AzureFacetRootNode.getTextAttributes(isValid));
         if (isValid) {
             presentation.addText(" :" + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        } else {
+            presentation.setTooltip("Resource is not available in current connection, please check the connection.");
         }
         if (resource.getDefinition().isCustomizedEnvPrefixSupported()) {
             presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         // presentation.setIcon(AllIcons.CodeWithMe.CwmInvite);
         // presentation.setIcon(AllIcons.Debugger.ThreadStates.Socket);
+    }
+
+    @Override
+    public void onDoubleClicked(Object event) {
+        final boolean isValid = getValue().validate(getProject());
+        if (!isValid) {
+            Optional.ofNullable(AzureActionManager.getInstance().getAction(EDIT_CONNECTION))
+                    .ifPresent(action -> action.handle(getValue(), event));
+        }
     }
 
     @Override

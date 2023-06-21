@@ -12,6 +12,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiManager;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
@@ -61,8 +62,11 @@ public class ConnectionsNode extends AbstractTreeNode<AzureModule> implements IA
 
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
+        final List<Connection<?, ?>> connections = Optional.ofNullable(getValue().getDefaultProfile())
+                .map(Profile::getConnections).orElse(Collections.emptyList());
+        final boolean isConnectionValid = connections.stream().allMatch(c -> c.validate(getProject()));
+        presentation.addText("Resource Connections", AzureFacetRootNode.getTextAttributes(isConnectionValid));
         presentation.setIcon(AllIcons.Nodes.HomeFolder);
-        presentation.setPresentableText("Resource Connections");
         presentation.setTooltip("The dependent/connected resources.");
     }
 

@@ -15,6 +15,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.NamedColorUtil;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -83,13 +85,16 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
         final List<Connection<?, ?>> connections = Optional.ofNullable(value.getDefaultProfile())
                 .map(Profile::getConnections).orElse(Collections.emptyList());
         final boolean connected = CollectionUtils.isNotEmpty(connections);
-        final boolean invalidConnections = connections.stream().anyMatch(c -> !c.validate(getProject()));
-        presentation.addText("Azure" + StringUtils.SPACE, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        if (invalidConnections) {
-            presentation.addText("Contains Invalid Connections", SimpleTextAttributes.ERROR_ATTRIBUTES);
-        }
-        presentation.setTooltip("Manage connected Azure resources here.");
+        final boolean isConnectionValid = connections.stream().allMatch(c -> c.validate(getProject()));
+        presentation.addText("Azure", getTextAttributes(isConnectionValid));
+        presentation.setTooltip(isConnectionValid ? "Manage connected Azure resources here." : "Invalid Connections Founded.");
         presentation.setIcon(connected ? IntelliJAzureIcons.getIcon("/icons/Common/AzureResourceConnector.svg") : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
+    }
+
+    public static SimpleTextAttributes getTextAttributes(boolean isValid) {
+        final SimpleTextAttributes regularAttributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
+        return isValid ? regularAttributes : new SimpleTextAttributes(regularAttributes.getBgColor(),
+                regularAttributes.getFgColor(), JBUI.CurrentTheme.Focus.warningColor(true), SimpleTextAttributes.STYLE_WAVED);
     }
 
     @Override
