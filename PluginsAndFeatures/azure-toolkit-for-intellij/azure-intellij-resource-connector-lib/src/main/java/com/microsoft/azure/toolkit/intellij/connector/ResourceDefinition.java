@@ -59,6 +59,10 @@ public interface ResourceDefinition<T> {
      */
     Resource<T> read(@Nonnull final Element element);
 
+    default boolean isCustomizedEnvPrefixSupported() {
+        return true;
+    }
+
     default String getDefaultEnvPrefix() {
         return this.getName().toUpperCase().replaceAll("[^a-zA-Z0-9]", "_");
     }

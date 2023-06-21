@@ -5,16 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -51,10 +52,12 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
             return Collections.singletonList(new ActionNode<>(this.myProject, ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
         }
         final ArrayList<AbstractTreeNode<?>> children = new ArrayList<>();
-        final AbstractTreeNode<?> resourceNode = getResourceNode(connection);
+        if (connection.getResource() instanceof AzureServiceResource) {
+            final AbstractTreeNode<?> resourceNode = getResourceNode(connection);
+            children.add(resourceNode);
+        }
         final Profile profile = Objects.requireNonNull(module.getDefaultProfile());
         final EnvironmentVariablesNode environmentVariablesNode = new EnvironmentVariablesNode(this.getProject(), profile, connection);
-        children.add(resourceNode);
         children.add(environmentVariablesNode);
         return children;
     }
@@ -80,16 +83,18 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     protected void update(@Nonnull final PresentationData presentation) {
         final Connection<?, ?> connection = this.getValue();
         final Resource<?> resource = connection.getResource();
-        final ResourceId resourceId = ResourceId.fromString(resource.getDataId());
         final boolean isValid = connection.validate(getProject());
-        presentation.setIcon(isValid ? IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceIconPath(resourceId)) : AllIcons.General.Warning);
+        final String iconPath = ObjectUtils.firstNonNull(resource.getDefinition().getIcon(), AzureIcons.Common.AZURE.getIconPath());
+        presentation.setIcon(isValid ? IntelliJAzureIcons.getIcon(iconPath) : AllIcons.General.Warning);
         presentation.addText(resource.getDefinition().getTitle(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
         if (isValid) {
             presentation.addText(" :" + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        }
+        if (resource.getDefinition().isCustomizedEnvPrefixSupported()) {
             presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        } else {
-            presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
-            final String message = connection.getResource().isValidResource() ? "Invalid Consumer" : "Invalid Resource";
+        }
+        if(!isValid) {
+            final String message = connection.getResource().isValidResource() ? "Missing Consumer" : "Missing Resource";
             presentation.addText(String.format(" (%s)", message), SimpleTextAttributes.ERROR_ATTRIBUTES);
         }
         // presentation.setIcon(AllIcons.CodeWithMe.CwmInvite);

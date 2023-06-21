@@ -64,6 +64,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private HyperlinkLabel lblSignIn;
     private JPanel descriptionContainer;
     private JTextPane descriptionPane;
+    private JPanel pnlEnvPrefix;
+    private JLabel lblEnvPrefix;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
 
@@ -193,7 +195,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             connection.setConsumer(consumer);
             connection.setDefinition(connectionDefinition);
         }
-        connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
+        if (resourceDef.isCustomizedEnvPrefixSupported()) {
+            connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
+        }
         return connection;
     }
 
@@ -241,6 +245,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.envPrefixTextField.setText(definition.getDefaultEnvPrefix());
             this.resourceTypeSelector.setValue(new ItemReference<>(definition.getName(), ResourceDefinition::getName));
             this.resourcePanel = this.updatePanel(definition, this.resourcePanelContainer);
+            this.lblEnvPrefix.setVisible(resourceDefinition.isCustomizedEnvPrefixSupported());
+            this.envPrefixTextField.setVisible(resourceDefinition.isCustomizedEnvPrefixSupported());
         }
     }
 
