@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
 import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.facet.Facet;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
@@ -15,7 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.facet.AzureFacet;
-import com.microsoft.azure.toolkit.intellij.facet.AzureFacetConfiguration;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
@@ -42,8 +40,8 @@ import java.util.regex.Pattern;
 public class AzureModule {
     private static final Pattern PATTERN = Pattern.compile("(Gradle|Maven): (.+):(.+):(.+)");
 
-    static final String DOT_AZURE = ".azure";
-    static final String PROFILES_XML = "profiles.xml";
+    public static final String DOT_AZURE = ".azure";
+    public static final String PROFILES_XML = "profiles.xml";
     static final String DOT_GITIGNORE = ".gitignore";
     static final String DEFAULT_PROFILE_NAME = "default";
     static final String DOT_ENV = ".env";
@@ -73,7 +71,7 @@ public class AzureModule {
     public AzureModule(@Nonnull final Module module, @Nullable VirtualFile dotAzure) {
         this.module = module;
         Optional.ofNullable(dotAzure)
-            .or(() -> Optional.ofNullable(AzureFacet.getInstance(module)).map(Facet::getConfiguration).map(AzureFacetConfiguration::getDotAzureDir))
+            .or(() -> Optional.ofNullable(AzureFacet.getInstance(module)).map(AzureFacet::getDotAzurePath).map(p -> VfsUtil.findFile(p, true)))
             .or(() -> this.getModuleDir().map(d -> d.findChild(DOT_AZURE))).ifPresent(d -> {
                 this.dotAzure = d;
                 this.profilesXmlFile = this.dotAzure.findChild(PROFILES_XML);
@@ -219,6 +217,14 @@ public class AzureModule {
 
     public boolean isInitialized() {
         return Objects.nonNull(this.profilesXmlFile);
+    }
+
+    public boolean hasAzureFacet() {
+        return Objects.nonNull(AzureFacet.getInstance(this.module));
+    }
+
+    public boolean neverHasAzureFacet() {
+        return !AzureFacet.wasEverAddedTo(this.module);
     }
 
     public boolean hasAzureDependencies() {

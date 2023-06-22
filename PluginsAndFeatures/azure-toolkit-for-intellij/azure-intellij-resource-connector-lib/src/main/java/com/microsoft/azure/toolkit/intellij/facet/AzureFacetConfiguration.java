@@ -10,7 +10,6 @@ import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.facet.ui.FacetEditorTab;
 import com.intellij.facet.ui.FacetValidatorsManager;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,14 +47,14 @@ public class AzureFacetConfiguration implements FacetConfiguration, PersistentSt
     }
 
     @Nullable
-    public VirtualFile getDotAzureDir() {
+    public Path getDotAzurePath() {
         return Optional.ofNullable(this.state.dotAzurePath)
             .filter(StringUtils::isNotBlank).map(Path::of)
-            .map(p -> VfsUtil.findFile(p, true)).orElse(null);
+            .orElse(null);
     }
 
-    public void setDotAzureDir(final VirtualFile dotAzureDir) {
-        this.state.setDotAzurePath(Optional.ofNullable(dotAzureDir).map(VirtualFile::getPath).orElse(null));
+    public void setDotAzureDir(final Path dotAzureDir) {
+        this.state.setDotAzurePath(Optional.ofNullable(dotAzureDir).map(Path::toString).orElse(null));
     }
 
     @Override

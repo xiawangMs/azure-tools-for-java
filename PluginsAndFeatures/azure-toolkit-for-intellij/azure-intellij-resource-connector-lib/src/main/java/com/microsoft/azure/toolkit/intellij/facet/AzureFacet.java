@@ -9,6 +9,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetType;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
@@ -18,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,25 +27,30 @@ public class AzureFacet extends Facet<AzureFacetConfiguration> {
 
     public AzureFacet(@Nonnull FacetType facetType, @Nonnull Module module, @Nonnull String name, @Nonnull AzureFacetConfiguration configuration, Facet underlyingFacet) {
         super(facetType, module, name, configuration, underlyingFacet);
-        if (configuration.getDotAzureDir() == null) {
-            Optional.of(module).map(ProjectUtil::guessModuleDir).map(d -> d.findChild(".azure")).ifPresent(configuration::setDotAzureDir);
+        if (configuration.getDotAzurePath() == null) {
+            Optional.of(module).map(ProjectUtil::guessModuleDir).map(d -> Path.of(d.getPath(), ".azure")).ifPresent(configuration::setDotAzureDir);
         }
+    }
+
+    public Path getDotAzurePath() {
+        return this.getConfiguration().getDotAzurePath();
     }
 
     public static void addTo(@Nonnull final Module module) {
         final AzureFacet facet = getInstance(module);
+        final PropertiesComponent properties = PropertiesComponent.getInstance(module.getProject());
+        final String key = getFacetFlag(module);
         if (Objects.isNull(facet)) {
             FacetManager.getInstance(module).addFacet(AzureFacetType.INSTANCE, "Azure", null);
+            properties.setValue(key, true);
         }
     }
 
-    @Nonnull
-    public static AzureFacet getOrAddTo(@Nonnull final Module module) {
+    public static boolean wasEverAddedTo(@Nonnull final Module module) {
         final AzureFacet facet = getInstance(module);
-        if (Objects.isNull(facet)) {
-            return FacetManager.getInstance(module).addFacet(AzureFacetType.INSTANCE, "Azure", null);
-        }
-        return facet;
+        final PropertiesComponent properties = PropertiesComponent.getInstance(module.getProject());
+        final String key = getFacetFlag(module);
+        return properties.isValueSet(key);
     }
 
     @Nullable
@@ -62,5 +69,10 @@ public class AzureFacet extends Facet<AzureFacetConfiguration> {
         return Optional.ofNullable(configuration)
             .map(AzureModule::getTargetModule)
             .map(AzureFacet::getInstance).orElse(null);
+    }
+
+    @Nonnull
+    private static String getFacetFlag(@Nonnull Module module) {
+        return module.getName() + ".wasFacetEverAdded";
     }
 }

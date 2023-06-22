@@ -26,6 +26,9 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Collection;
 
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.DOT_AZURE;
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.PROFILES_XML;
+
 public class AzureFacetType extends FacetType<AzureFacet, AzureFacetConfiguration> {
     private static final String STRING_ID = "azure";
     private static final String PRESENTABLE_NAME = "Azure";
@@ -79,7 +82,7 @@ public class AzureFacetType extends FacetType<AzureFacet, AzureFacetConfiguratio
         @Nonnull
         @Override
         public ElementPattern<FileContent> createSuitableFilePattern() {
-            return FileContentPattern.fileContent().inDirectory(".azure").withName("profiles.xml");
+            return FileContentPattern.fileContent().inDirectory(DOT_AZURE).withName(PROFILES_XML);
         }
     }
 }

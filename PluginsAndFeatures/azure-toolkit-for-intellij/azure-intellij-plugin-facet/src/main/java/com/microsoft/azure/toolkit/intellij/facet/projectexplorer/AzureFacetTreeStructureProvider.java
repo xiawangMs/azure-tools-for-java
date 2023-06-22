@@ -23,9 +23,10 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.intellij.facet.AzureFacet;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -54,11 +55,20 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     @Override
     @Nonnull
     public Collection<AbstractTreeNode<?>> modify(@Nonnull AbstractTreeNode<?> parent, @Nonnull Collection<AbstractTreeNode<?>> children, ViewSettings settings) {
+        if (!(parent instanceof PsiDirectoryNode)) {
+            return children;
+        }
         final AzureModule azureModule = Optional.ofNullable(toModule(parent))
             .map(AzureModule::from)
             .filter(m -> m.isInitialized() || m.hasAzureDependencies())
             .orElse(null);
-        if (Objects.nonNull(azureModule)) {
+        final boolean neverHasAzureFacet = Objects.nonNull(azureModule) && azureModule.neverHasAzureFacet();
+        final boolean hasAzureFacet = Objects.nonNull(azureModule) && azureModule.hasAzureFacet();
+        if (Objects.nonNull(azureModule) && !hasAzureFacet && neverHasAzureFacet) {
+            final AzureTaskManager tm = AzureTaskManager.getInstance();
+            tm.runLater(() -> tm.write(() -> AzureFacet.addTo(azureModule.getModule())));
+        }
+        if (Objects.nonNull(azureModule) && hasAzureFacet || neverHasAzureFacet) {
             addListener(parent.getProject());
             final AbstractTreeNode<?> dotAzureDir = children.stream()
                 .filter(n -> n instanceof PsiDirectoryNode)
