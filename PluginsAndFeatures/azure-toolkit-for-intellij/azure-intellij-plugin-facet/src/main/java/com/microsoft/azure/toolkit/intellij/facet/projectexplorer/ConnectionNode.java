@@ -103,7 +103,7 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         } else {
             presentation.setTooltip("Resource is missing, please edit the connection.");
         }
-        if (resource.getDefinition().isCustomizedEnvPrefixSupported()) {
+        if (resource.getDefinition().isEnvPrefixSupported()) {
             presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         // presentation.setIcon(AllIcons.CodeWithMe.CwmInvite);

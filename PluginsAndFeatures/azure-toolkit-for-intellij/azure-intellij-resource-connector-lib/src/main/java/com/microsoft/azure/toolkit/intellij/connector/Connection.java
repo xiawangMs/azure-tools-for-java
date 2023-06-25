@@ -12,23 +12,13 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -124,8 +114,8 @@ public class Connection<R, C> {
     }
 
     public String getEnvPrefix() {
-        return resource.getDefinition().isCustomizedEnvPrefixSupported() ?
-                StringUtils.firstNonBlank(this.envPrefix, this.resource.getEnvPrefix()) : this.resource.getEnvPrefix();
+        return resource.getDefinition().isEnvPrefixSupported() ?
+                StringUtils.firstNonBlank(this.envPrefix, this.resource.getDefinition().getDefaultEnvPrefix()) : StringUtils.EMPTY;
     }
 
     public void write(Element connectionEle) {

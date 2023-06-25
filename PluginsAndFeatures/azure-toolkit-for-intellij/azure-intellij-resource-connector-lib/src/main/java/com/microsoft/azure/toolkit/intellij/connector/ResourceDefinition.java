@@ -59,7 +59,7 @@ public interface ResourceDefinition<T> {
      */
     Resource<T> read(@Nonnull final Element element);
 
-    default boolean isCustomizedEnvPrefixSupported() {
+    default boolean isEnvPrefixSupported() {
         return true;
     }
 

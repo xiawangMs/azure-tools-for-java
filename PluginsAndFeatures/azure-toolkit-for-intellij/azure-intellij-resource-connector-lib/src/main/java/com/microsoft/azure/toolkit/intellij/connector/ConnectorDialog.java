@@ -202,7 +202,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             connection.setConsumer(consumer);
             connection.setDefinition(connectionDefinition);
         }
-        if (resourceDef.isCustomizedEnvPrefixSupported()) {
+        if (resourceDef.isEnvPrefixSupported()) {
             connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         }
         return connection;
@@ -252,8 +252,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.envPrefixTextField.setText(definition.getDefaultEnvPrefix());
             this.resourceTypeSelector.setValue(new ItemReference<>(definition.getName(), ResourceDefinition::getName));
             this.resourcePanel = this.updatePanel(definition, this.resourcePanelContainer);
-            this.lblEnvPrefix.setVisible(resourceDefinition.isCustomizedEnvPrefixSupported());
-            this.envPrefixTextField.setVisible(resourceDefinition.isCustomizedEnvPrefixSupported());
+            this.lblEnvPrefix.setVisible(resourceDefinition.isEnvPrefixSupported());
+            this.envPrefixTextField.setVisible(resourceDefinition.isEnvPrefixSupported());
         }
     }
 

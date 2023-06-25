@@ -74,7 +74,7 @@ public class ResourceManager {
     public static List<ResourceDefinition<?>> getDefinitions() {
         return getDefinitionsMap().values().stream()
             .sorted(Comparator.comparing(ResourceDefinition::getTitle))
-            .sorted(Comparator.comparing((ResourceDefinition<?> d) -> !d.isCustomizedEnvPrefixSupported()))
+            .sorted(Comparator.comparing((ResourceDefinition<?> d) -> !d.isEnvPrefixSupported()))
             .collect(Collectors.toList());
     }
 
