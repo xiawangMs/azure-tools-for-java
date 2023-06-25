@@ -101,7 +101,7 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         if (isValid) {
             presentation.addText(" :" + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
         } else {
-            presentation.setTooltip("Resource is not available in current connection, please check the connection.");
+            presentation.setTooltip("Resource is missing, please edit the connection.");
         }
         if (resource.getDefinition().isCustomizedEnvPrefixSupported()) {
             presentation.addText(" (" + connection.getEnvPrefix() + "_*)", SimpleTextAttributes.GRAYED_ATTRIBUTES);

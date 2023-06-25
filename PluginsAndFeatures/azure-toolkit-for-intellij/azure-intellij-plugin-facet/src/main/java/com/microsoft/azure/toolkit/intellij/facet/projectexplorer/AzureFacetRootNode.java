@@ -87,7 +87,7 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
         final boolean connected = CollectionUtils.isNotEmpty(connections);
         final boolean isConnectionValid = connections.stream().allMatch(c -> c.validate(getProject()));
         presentation.addText("Azure", getTextAttributes(isConnectionValid));
-        presentation.setTooltip(isConnectionValid ? "Manage connected Azure resources here." : "Invalid Connections Founded.");
+        presentation.setTooltip(isConnectionValid ? "Manage connected Azure resources here." : "Invalid connections found.");
         presentation.setIcon(connected ? IntelliJAzureIcons.getIcon("/icons/Common/AzureResourceConnector.svg") : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
     }
 
