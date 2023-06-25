@@ -20,8 +20,10 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.tuple.Pair;
+import rx.Observable;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -152,7 +154,8 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .register(am);
     }
 
-    public static void fixResourceConnection(Connection<?, ?> c, Project project) {
+    public static Observable<Void> fixResourceConnection(Connection<?, ?> c, Project project) {
+        final Observable[] result = new Observable[1];
         AzureTaskManager.getInstance().runAndWait(() -> {
             final String invalidResourceName = c.getResource().isValidResource() ? null : c.getResource().getDefinition().getTitle();
             final String invalidConsumerName = c.getConsumer().isValidResource() ? null : c.getConsumer().getDefinition().getTitle();
@@ -166,7 +169,9 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             dialog.setFixedConnectionDefinition(c.getDefinition());
             dialog.setValue(c);
             dialog.show();
+            result[0] = dialog.getObservable();
         });
+        return Optional.ofNullable(result[0]).orElse(Observable.empty());
     }
 
     private void refreshModuleConnections(AzureModule module) {

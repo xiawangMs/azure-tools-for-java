@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -27,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,17 +98,18 @@ public class Profile {
         return this;
     }
 
-    public synchronized Profile addConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Observable<?> addConnection(@Nonnull Connection<?, ?> connection) {
         AzureFacet.addTo(this.module.getModule());
         this.resourceManager.addResource(connection.getResource());
         this.connectionManager.addConnection(connection);
-        this.addConnectionToDotEnv(connection).subscribe(v -> {
+        final Observable<?> observable = this.addConnectionToDotEnv(connection);
+        observable.subscribeOn(Schedulers.io()).subscribe(v -> {
             final String message = String.format("The connection between %s and %s has been successfully created/updated.", connection.getResource().getName(), connection.getConsumer().getName());
             AzureMessager.getMessager().success(message);
             final Project project = this.module.getProject();
             project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, connection, ConnectionTopics.Action.ADD);
         });
-        return this;
+        return observable;
     }
 
     public synchronized Profile removeConnection(@Nonnull Connection<?, ?> connection) {
@@ -117,11 +120,10 @@ public class Profile {
         return this;
     }
 
-    public synchronized Profile createOrUpdateConnection(@Nonnull Connection<?, ?> connection) {
+    public synchronized Observable<?> createOrUpdateConnection(@Nonnull Connection<?, ?> connection) {
         // Remove old connection
         this.getConnections().stream().filter(c -> c.getId().equals(connection.getId())).findFirst().ifPresent(this::removeConnection);
-        this.addConnection(connection);
-        return this;
+        return this.addConnection(connection);
     }
 
     public void save() {
@@ -172,14 +174,14 @@ public class Profile {
 
     @SneakyThrows(IOException.class)
     @AzureOperation(value = "boundary/connector.add_connection_to_dotenv.resource", params = "connection.getResource().getName()")
-    private Observable<Void> addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
+    private Observable<?> addConnectionToDotEnv(@Nonnull Connection<?, ?> connection) {
         if (!this.profileDir.isValid()) {
             throw new AzureToolkitRuntimeException(String.format("'.azure/%s' doesn't exist.", this.name));
         }
         WriteAction.run(() -> this.dotEnvFile = this.profileDir.findOrCreateChildData(this, DOT_ENV));
         Objects.requireNonNull(this.dotEnvFile, String.format("'.azure/%s/.env' can not be created.", this.name));
         final AzureString description = OperationBundle.description("boundary/connector.load_env.resource", connection.getResource().getDataId());
-        return AzureTaskManager.getInstance().runInBackgroundAsObservable(description, () -> {
+        return Observable.fromCallable(() -> ApplicationManager.getApplication().executeOnPooledThread(() -> {
             final String envVariables = generateEnvLines(module.getProject(), connection).stream().collect(Collectors.joining(System.lineSeparator()));
             try {
                 Files.writeString(this.dotEnvFile.toNioPath(), envVariables + System.lineSeparator() + System.lineSeparator(), StandardOpenOption.APPEND);
@@ -187,7 +189,7 @@ public class Profile {
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
-        });
+        }));
     }
 
     @Nonnull
