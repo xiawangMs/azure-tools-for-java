@@ -389,9 +389,9 @@ public class Node<D> {
         this.data.put(key, value);
     }
 
-    public void triggerInlineAction(final Object event, int index) {
+    public void triggerInlineAction(final Object event, int index, final String place) {
         final List<Action<? super D>> enabledActions = this.inlineActions.stream()
-            .filter(action -> action.getView(this.value).isEnabled()).toList();
+            .filter(action -> action.getView(this.value, place).isEnabled()).toList();
         if (index >= 0 && index < enabledActions.size()) {
             Optional.ofNullable(enabledActions.get(index)).ifPresent(a -> a.handle(this.value, event));
         }

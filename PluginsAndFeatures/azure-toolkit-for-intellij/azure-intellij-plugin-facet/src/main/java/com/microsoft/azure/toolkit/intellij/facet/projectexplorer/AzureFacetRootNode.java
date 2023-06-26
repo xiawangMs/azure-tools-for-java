@@ -11,16 +11,21 @@ import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.NamedColorUtil;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -31,6 +36,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -76,16 +82,31 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
         final AzureModule value = getValue();
-        final boolean connected = CollectionUtils.isNotEmpty(Optional.ofNullable(value.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()));
-        presentation.addText("Azure" + StringUtils.SPACE, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        presentation.setTooltip("Manage connected Azure resources here.");
+        final List<Connection<?, ?>> connections = Optional.ofNullable(value.getDefaultProfile())
+                .map(Profile::getConnections).orElse(Collections.emptyList());
+        final boolean connected = CollectionUtils.isNotEmpty(connections);
+        final boolean isConnectionValid = connections.stream().allMatch(c -> c.validate(getProject()));
+        presentation.addText("Azure", getTextAttributes(isConnectionValid));
+        presentation.setTooltip(isConnectionValid ? "Manage connected Azure resources here." : "Invalid connections found.");
         presentation.setIcon(connected ? IntelliJAzureIcons.getIcon("/icons/Common/AzureResourceConnector.svg") : IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
+    }
+
+    public static SimpleTextAttributes getTextAttributes(boolean isValid) {
+        final SimpleTextAttributes regularAttributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
+        return isValid ? regularAttributes : new SimpleTextAttributes(regularAttributes.getBgColor(),
+                regularAttributes.getFgColor(), JBUI.CurrentTheme.Focus.warningColor(true), SimpleTextAttributes.STYLE_WAVED);
     }
 
     @Override
     @Nullable
     public Object getData(@Nonnull String dataId) {
-        return StringUtils.equalsIgnoreCase(dataId, "ACTION_SOURCE") ? this.getValue() : null;
+        if (StringUtils.equalsIgnoreCase(dataId, Action.SOURCE)) {
+            return this.getValue();
+        } else if (StringUtils.equalsIgnoreCase(dataId, CommonDataKeys.VIRTUAL_FILE.getName())) {
+            return Optional.ofNullable(getValue()).map(AzureModule::getDotAzureDir).flatMap(op -> op).orElse(null);
+        } else {
+            return null;
+        }
     }
 
     @Nullable

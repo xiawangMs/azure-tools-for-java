@@ -46,6 +46,8 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     public static final Action.Id<Pair<String, String>> COPY_ENV_PAIR = Action.Id.of("user/connector.copy_env_pair");
     public static final Action.Id<Pair<String, String>> COPY_ENV_KEY = Action.Id.of("user/connector.copy_env_key");
     public static final Action.Id<Connection<?, ?>> COPY_ENV_VARS = Action.Id.of("user/connector.copy_env_variables");
+    public static final Action.Id<Pair<String, String>> EDIT_ENV_IN_EDITOR = Action.Id.of("user/connector.edit_env_in_editor");
+    public static final Action.Id<Connection<?,?>> EDIT_ENV_FILE_IN_EDITOR = Action.Id.of("user/connector.edit_env_file_in_editor");
 
     public static final String MODULE_ACTIONS = "actions.connector.module";
     public static final String CONNECTION_ACTIONS = "actions.connector.connection";
@@ -205,7 +207,9 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         final ActionGroup explorerModuleRootActions = new ActionGroup(
             REFRESH_MODULE,
             "---",
-            CONNECT_TO_MODULE
+            CONNECT_TO_MODULE,
+            "---",
+            "RevealGroup"
         );
         am.registerGroup(EXPLORER_MODULE_ROOT_ACTIONS, explorerModuleRootActions);
 

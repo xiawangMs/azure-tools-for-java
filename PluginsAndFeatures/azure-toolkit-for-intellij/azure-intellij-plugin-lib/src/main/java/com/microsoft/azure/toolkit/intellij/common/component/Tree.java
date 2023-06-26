@@ -27,17 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import javax.swing.tree.*;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -52,8 +43,13 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     public Tree(Node<?> root) {
+        this(root, null);
+    }
+
+    public Tree(Node<?> root, @Nullable String place) {
         super();
         this.root = root;
+        this.putClientProperty(Action.PLACE, place);
         init(root);
     }
 
@@ -107,6 +103,11 @@ public class Tree extends SimpleTree implements DataProvider {
             this.inner.setChildrenRenderer(this);
         }
 
+        @Nullable
+        public String getPlace() {
+            return TreeUtils.getPlace(this.tree);
+        }
+
         @Override
         @EqualsAndHashCode.Include
         // NOTE: equivalent nodes in same tree will cause rendering problems.
@@ -119,7 +120,8 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         public List<IView.Label> getInlineActionViews() {
-            return this.inner.getInlineActions().stream().map(action -> action.getView(this.inner.getValue()))
+            return this.inner.getInlineActions().stream()
+                .map(action -> action.getView(this.inner.getValue(), this.getPlace()))
                 .filter(IView.Label::isEnabled)
                 .collect(Collectors.toList());
         }

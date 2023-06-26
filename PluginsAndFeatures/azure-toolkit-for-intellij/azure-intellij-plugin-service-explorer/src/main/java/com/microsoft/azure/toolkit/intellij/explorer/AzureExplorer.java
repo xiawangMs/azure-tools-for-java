@@ -35,6 +35,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.common.action.Action.PLACE;
+
 public class AzureExplorer extends Tree {
     @Getter
     public static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
@@ -42,6 +44,7 @@ public class AzureExplorer extends Tree {
 
     private AzureExplorer() {
         super();
+        this.putClientProperty(PLACE, ResourceCommonActionsContributor.AZURE_EXPLORER);
         this.root = buildAzureRoot();
         this.init(this.root);
     }

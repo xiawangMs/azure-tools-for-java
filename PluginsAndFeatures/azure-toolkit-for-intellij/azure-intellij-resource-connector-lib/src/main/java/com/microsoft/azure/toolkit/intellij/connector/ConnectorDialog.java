@@ -14,7 +14,6 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -203,7 +202,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             connection.setConsumer(consumer);
             connection.setDefinition(connectionDefinition);
         }
-        if (resourceDef.isCustomizedEnvPrefixSupported()) {
+        if (resourceDef.isEnvPrefixSupported()) {
             connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         }
         return connection;
@@ -253,8 +252,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.envPrefixTextField.setText(definition.getDefaultEnvPrefix());
             this.resourceTypeSelector.setValue(new ItemReference<>(definition.getName(), ResourceDefinition::getName));
             this.resourcePanel = this.updatePanel(definition, this.resourcePanelContainer);
-            this.lblEnvPrefix.setVisible(resourceDefinition.isCustomizedEnvPrefixSupported());
-            this.envPrefixTextField.setVisible(resourceDefinition.isCustomizedEnvPrefixSupported());
+            this.lblEnvPrefix.setVisible(resourceDefinition.isEnvPrefixSupported());
+            this.envPrefixTextField.setVisible(resourceDefinition.isEnvPrefixSupported());
         }
     }
 

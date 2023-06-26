@@ -114,7 +114,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode) {
                 final IAzureFacetNode node = (IAzureFacetNode) currentTreeNode;
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
-                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ResourceCommonActionsContributor.AZURE_EXPLORER + ".connection", context);
+                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.PROJECT_VIEW_POPUP, context);
                 if (e.getClickCount() == 1) {
                     node.onClicked(event);
                 } else if (e.getClickCount() == 2) {
@@ -192,6 +192,14 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             tree.addMouseListener(new AzureProjectExplorerMouseListener(tree, project));
             Arrays.stream(mouseListeners).forEach(tree::addMouseListener);
         }
+    }
+
+    @Override
+    public @Nullable Object getData(@Nonnull Collection<? extends AbstractTreeNode<?>> selected, @Nonnull String dataId) {
+        final IAzureFacetNode azureFacetNode = selected.stream()
+                .filter(node -> node instanceof IAzureFacetNode)
+                .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);
+        return Objects.nonNull(azureFacetNode) ? azureFacetNode.getData(dataId) : TreeStructureProvider.super.getData(selected, dataId);
     }
 }
 

@@ -109,7 +109,7 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
         if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return true;
         }
-        return Optional.ofNullable(getData()).map(AzResource::exists).orElse(false);
+        return Optional.ofNullable(getData()).map(AzResource::getFormalStatus).map(AzResource.FormalStatus::isConnected).orElse(false);
     }
 
     @Getter

@@ -51,6 +51,8 @@ public class ConnectionManager {
     private final Set<Connection<?, ?>> connections = new LinkedHashSet<>();
     @Getter
     private final Profile profile;
+    @Getter
+    private VirtualFile connectionsFile;
 
     public ConnectionManager(@Nonnull final Profile profile) {
         this.profile = profile;
@@ -133,6 +135,11 @@ public class ConnectionManager {
         return connections.stream().filter(e -> StringUtils.equals(id, e.getConsumer().getId())).collect(Collectors.toList());
     }
 
+    @Nullable
+    public VirtualFile getConnectionsFile() {
+        return this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
+    }
+
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.save_connections")
     void save() throws IOException {
@@ -144,14 +151,16 @@ public class ConnectionManager {
             connection.write(connectionEle);
             connectionsEle.addContent(connectionEle);
         }
-        final VirtualFile connectionFiles = this.profile.getProfileDir().findOrCreateChildData(this, CONNECTIONS_FILE);
-        JDOMUtil.write(connectionsEle, connectionFiles.toNioPath());
+        if (Objects.isNull(connectionsFile)) {
+            this.connectionsFile = this.profile.getProfileDir().findOrCreateChildData(this, CONNECTIONS_FILE);
+        }
+        JDOMUtil.write(connectionsEle, connectionsFile.toNioPath());
     }
 
     @ExceptionNotification
     @AzureOperation(name = "boundary/connector.load_connections")
     void load() throws Exception {
-        final VirtualFile connectionsFile = this.profile.getProfileDir().findChild(CONNECTIONS_FILE);
+        this.connectionsFile = getConnectionsFile();
         if (Objects.isNull(connectionsFile) || connectionsFile.contentsToByteArray().length < 1) {
             return;
         }

@@ -149,7 +149,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
         }
 
         @Override
-        public boolean isCustomizedEnvPrefixSupported() {
+        public boolean isEnvPrefixSupported() {
             return false;
         }
     }
